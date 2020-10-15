@@ -1,4 +1,4 @@
 export interface IFrameLabel {
-	name:string,
-	keyFrameIndex:number
+	name: string,
+	keyFrameIndex: number
 }

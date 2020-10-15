@@ -1,12 +1,12 @@
-import {Box, Point, ArgumentError, RangeError, Matrix3D} from "@awayjs/core";
+import { Box, Point, ArgumentError, RangeError, Matrix3D } from '@awayjs/core';
 
-import { PartitionBase, EntityNode} from "@awayjs/view";
+import { PartitionBase, EntityNode } from '@awayjs/view';
 
-import {HierarchicalProperties} from "../base/HierarchicalProperties";
+import { HierarchicalProperties } from '../base/HierarchicalProperties';
 
-import {Scene} from "../Scene";
+import { Scene } from '../Scene';
 
-import {DisplayObject} from "./DisplayObject";
+import { DisplayObject } from './DisplayObject';
 import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
 //import {Sprite} from "./Sprite";
 
@@ -32,61 +32,62 @@ import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
  * <i>ActionScript 3.0 Developer's Guide</i>.</p>
  */
 
- function sortByDepth(a: DisplayObject, b: DisplayObject) {
+function sortByDepth(a: DisplayObject, b: DisplayObject) {
 	 return a._depthID - b._depthID;
- }
+}
 
-export class DisplayObjectContainer extends DisplayObject
-{
-	public static assetType:string = "[asset DisplayObjectContainer]";
+export class DisplayObjectContainer extends DisplayObject {
+	public static assetType: string = '[asset DisplayObjectContainer]';
 
-	private _mouseChildren:boolean = true;
-	private _depth_childs:Object = {};
-	private _nextHighestDepth:number = 0;
-	private _nextHighestDepthDirty:boolean;
-	public _children:Array<DisplayObject> = new Array<DisplayObject>();
+	private _mouseChildren: boolean = true;
+	private _depth_childs: Object = {};
+	private _nextHighestDepth: number = 0;
+	private _nextHighestDepthDirty: boolean;
+	public _children: Array<DisplayObject> = new Array<DisplayObject>();
 	public doingSwap: boolean = false;
 
 	/**
 	 *
 	 */
-	public get assetType():string
-	{
+	public get assetType(): string {
 		return DisplayObjectContainer.assetType;
 	}
 
-	public dispatchFrameEvents(events:any[]) {
+	public dispatchFrameEvents(events: any[]) {
 		this.dispatchEvent(events[0]);//ENTER_FRAME
-		var i:number=this._children.length;
-		while(i>0){
+		let i: number = this._children.length;
+		while (i > 0) {
 			i--;
 			this._children[i].dispatchFrameEvents(events);
 		}
 		this.dispatchEvent(events[1]);//EXIT_FRAME
 
 	}
-	public dispatchEnterFrame(event:any) {
-		var i:number=this._children.length;
-		while(i>0){
+
+	public dispatchEnterFrame(event: any) {
+		let i: number = this._children.length;
+		while (i > 0) {
 			i--;
 			// the dispatched Event might change the childs, so make sure they still exits
-			if(i<this._children.length){
+			if (i < this._children.length) {
 				this._children[i].dispatchEnterFrame(event);
 			}
 		}
 		this.dispatchEvent(event);//ENTER_FRAME
 	}
-	public dispatchExitFrame(event:any) {
-		var i:number=this._children.length;
-		while(i>0){
+
+	public dispatchExitFrame(event: any) {
+		let i: number = this._children.length;
+		while (i > 0) {
 			i--;
 			// the dispatched Event might change the childs, so make sure they still exits
-			if(i<this._children.length){
+			if (i < this._children.length) {
 				this._children[i].dispatchExitFrame(event);
 			}
 		}
 		this.dispatchEvent(event);//Exit
 	}
+
 	/**
 	 * Determines whether or not the children of the object are mouse, or user
 	 * input device, enabled. If an object is enabled, a user can interact with
@@ -108,8 +109,7 @@ export class DisplayObjectContainer extends DisplayObject
 	 * <code>addEventListener()</code> method to create interactive
 	 * functionality.</p>
 	 */
-	public get mouseChildren():boolean
-	{
+	public get mouseChildren(): boolean {
 		//ensure the update of _implicitMouseEnabled for cases where child _implicitMouseEnabled is calculated
 		if (this._hierarchicalPropsDirty & HierarchicalProperties.MOUSE_ENABLED)
 			this._updateMouseEnabled();
@@ -117,8 +117,7 @@ export class DisplayObjectContainer extends DisplayObject
 		return this._mouseChildren;
 	}
 
-	public set mouseChildren(value:boolean)
-	{
+	public set mouseChildren(value: boolean) {
 		if (this._mouseChildren == value)
 			return;
 
@@ -130,8 +129,7 @@ export class DisplayObjectContainer extends DisplayObject
 	/**
 	 * Returns the number of children of this object.
 	 */
-	public get numChildren():number
-	{
+	public get numChildren(): number {
 		return this._children.length;
 	}
 
@@ -148,7 +146,7 @@ export class DisplayObjectContainer extends DisplayObject
 	 *                               throws an exception. The Stage object does
 	 *                               not implement this property.
 	 */
-	public tabChildren:boolean;
+	public tabChildren: boolean;
 
 	/**
 	 * Calling the <code>new DisplayObjectContainer()</code> constructor throws
@@ -160,10 +158,9 @@ export class DisplayObjectContainer extends DisplayObject
 	 *   <li><code>new MovieClip()</code></li>
 	 * </ul>
 	 */
-	constructor()
-	{
+	constructor() {
 		super();
-		this.tabChildren=false;
+		this.tabChildren = false;
 	}
 
 	/**
@@ -196,26 +193,23 @@ export class DisplayObjectContainer extends DisplayObject
 	 * @event added Dispatched when a display object is added to the display
 	 *              list.
 	 */
-	public addChild(child:DisplayObject):DisplayObject
-	{
+	public addChild(child: DisplayObject): DisplayObject {
 		return this.addChildAt(child, this._children.length);
 	}
 
-	public addChildAtDepth(child:DisplayObject, depth:number, replace:boolean = true):DisplayObject
-	{
+	public addChildAtDepth(child: DisplayObject, depth: number, replace: boolean = true): DisplayObject {
 		if (child == null)
-			throw new ArgumentError("Parameter child cannot be null.");
+			throw new ArgumentError('Parameter child cannot be null.');
 
 		//if child already has a parent, remove it.
 		if (child.parent)
 			child.parent.removeChildAtInternal(child.parent.getChildIndex(child));
 
-
-		if(this.isSlice9ScaledMC && child.assetType=="[asset Sprite]"){
-			child.isSlice9ScaledSprite=true;
+		if (this.isSlice9ScaledMC && child.assetType == '[asset Sprite]') {
+			child.isSlice9ScaledSprite = true;
 		}
 
-		var index = this.getDepthIndexInternal(depth);
+		const index = this.getDepthIndexInternal(depth);
 
 		if (index != -1) {
 			if (replace) {
@@ -277,39 +271,35 @@ export class DisplayObjectContainer extends DisplayObject
 	 * @event added Dispatched when a display object is added to the display
 	 *              list.
 	 */
-	public addChildAt(child:DisplayObject, index:number):DisplayObject
-	{
-		return this.addChildAtDepth(child, (index < this._children.length)? this._children[index]._depthID : this.getNextHighestDepth(), false);
+	public addChildAt(child: DisplayObject, index: number): DisplayObject {
+		return this.addChildAtDepth(child, (index < this._children.length) ? this._children[index]._depthID : this.getNextHighestDepth(), false);
 	}
 
-	public addChildren(...childarray:Array<DisplayObject>):void
-	{
-		var len:number = childarray.length;
-		for (var i:number = 0; i <  len; i++)
+	public addChildren(...childarray: Array<DisplayObject>): void {
+		const len: number = childarray.length;
+		for (let i: number = 0; i <  len; i++)
 			this.addChild(childarray[i]);
 	}
 
 	/**
 	 *
 	 */
-	public clone():DisplayObjectContainer
-	{
-		var newInstance:DisplayObjectContainer = new DisplayObjectContainer();
+	public clone(): DisplayObjectContainer {
+		const newInstance: DisplayObjectContainer = new DisplayObjectContainer();
 
 		this.copyTo(newInstance);
 
 		return newInstance;
 	}
 
-	public copyTo(newInstance:DisplayObjectContainer):void
-	{
+	public copyTo(newInstance: DisplayObjectContainer): void {
 		super.copyTo(newInstance);
 
 		newInstance.mouseChildren = this._mouseChildren;
 
-		var len:number = this._children.length;
-		for (var i:number = 0; i < len; ++i){
-			var newChild=(<any>this._children[i].adapter).clone().adaptee;
+		const len: number = this._children.length;
+		for (let i: number = 0; i < len; ++i) {
+			const newChild = (<any> this._children[i].adapter).clone().adaptee;
 			newInstance.addChild(newChild);
 
 		}
@@ -327,24 +317,21 @@ export class DisplayObjectContainer extends DisplayObject
 	 *         the DisplayObjectContainer or the container itself; otherwise
 	 *         <code>false</code>.
 	 */
-	public contains(child:DisplayObject):boolean
-	{
+	public contains(child: DisplayObject): boolean {
 		return this._children.indexOf(child) >= 0;
 	}
 
 	/**
 	 *
 	 */
-	public disposeValues():void
-	{
-		for (var i:number = this._children.length - 1; i >= 0; i--)
+	public disposeValues(): void {
+		for (let i: number = this._children.length - 1; i >= 0; i--)
 			this.removeChild(this._children[i]);
 
 		super.disposeValues();
 	}
 
-	public getChildAtDepth(depth:number):DisplayObject
-	{
+	public getChildAtDepth(depth: number): DisplayObject {
 		return this._depth_childs[depth];
 	}
 
@@ -357,12 +344,11 @@ export class DisplayObjectContainer extends DisplayObject
 	 * @throws RangeError    Throws if the index does not exist in the child
 	 *                       list.
 	 */
-	public getChildAt(index:number):DisplayObject
-	{
-		var child:DisplayObject = this._children[index];
+	public getChildAt(index: number): DisplayObject {
+		const child: DisplayObject = this._children[index];
 
 		if (child == null)
-			throw new RangeError("Index does not exist in the child list of the caller");
+			throw new RangeError('Index does not exist in the child list of the caller');
 
 		return child;
 	}
@@ -381,10 +367,9 @@ export class DisplayObjectContainer extends DisplayObject
 	 * @param name The name of the child to return.
 	 * @return The child display object with the specified name.
 	 */
-	public getChildByName(name:string):DisplayObject
-	{
-		var len:number = this._children.length;
-		for (var i:number = 0; i < len; ++i)
+	public getChildByName(name: string): DisplayObject {
+		const len: number = this._children.length;
+		for (let i: number = 0; i < len; ++i)
 			if (this._children[i].name == name)
 				return this._children[i];
 
@@ -399,18 +384,16 @@ export class DisplayObjectContainer extends DisplayObject
 	 * @throws ArgumentError Throws if the child parameter is not a child of this
 	 *                       object.
 	 */
-	public getChildIndex(child:DisplayObject):number
-	{
-		var childIndex:number = this._children.indexOf(child);
+	public getChildIndex(child: DisplayObject): number {
+		const childIndex: number = this._children.indexOf(child);
 
 		if (childIndex == -1)
-			throw new ArgumentError("Child parameter is not a child of the caller");
+			throw new ArgumentError('Child parameter is not a child of the caller');
 
 		return childIndex;
 	}
 
-	public getNextHighestDepth():number
-	{
+	public getNextHighestDepth(): number {
 		if (this._nextHighestDepthDirty)
 			this._updateNextHighestDepth();
 
@@ -436,8 +419,7 @@ export class DisplayObjectContainer extends DisplayObject
 	 *         children(or grandchildren, and so on) of this
 	 *         DisplayObjectContainer instance.
 	 */
-	public getObjectsUnderPoint(point:Point):Array<DisplayObject>
-	{
+	public getObjectsUnderPoint(point: Point): Array<DisplayObject> {
 		return new Array<DisplayObject>();
 	}
 
@@ -460,18 +442,16 @@ export class DisplayObjectContainer extends DisplayObject
 	 * @throws ArgumentError Throws if the child parameter is not a child of this
 	 *                       object.
 	 */
-	public removeChild(child:DisplayObject):DisplayObject
-	{
+	public removeChild(child: DisplayObject): DisplayObject {
 		if (child == null)
-			throw new ArgumentError("Parameter child cannot be null");
+			throw new ArgumentError('Parameter child cannot be null');
 
 		this.removeChildAt(this.getChildIndex(child));
 
 		return child;
 	}
 
-	public removeChildAtDepth(depth:number):DisplayObject
-	{
+	public removeChildAtDepth(depth: number): DisplayObject {
 		return this.removeChildAt(this.getDepthIndexInternal(depth));
 	}
 
@@ -497,9 +477,8 @@ export class DisplayObjectContainer extends DisplayObject
 	 *                       can avoid this situation by having the child movie
 	 *                       call the <code>Security.allowDomain()</code> method.
 	 */
-	public removeChildAt(index:number):DisplayObject
-	{
-		var child:DisplayObject = this.removeChildAtInternal(index);
+	public removeChildAt(index: number): DisplayObject {
+		const child: DisplayObject = this.removeChildAtInternal(index);
 
 		child._setParent(null);
 
@@ -522,16 +501,15 @@ export class DisplayObjectContainer extends DisplayObject
 	 * @throws RangeError    Throws if the beginIndex or endIndex positions do
 	 *                       not exist in the child list.
 	 */
-	public removeChildren(beginIndex:number = 0, endIndex:number = 2147483647):void
-	{
+	public removeChildren(beginIndex: number = 0, endIndex: number = 2147483647): void {
 		if (beginIndex < 0)
-			throw new RangeError("beginIndex is out of range of the child list");
+			throw new RangeError('beginIndex is out of range of the child list');
 
 		if (endIndex > this._children.length)
-			throw new RangeError("endIndex is out of range of the child list");
+			throw new RangeError('endIndex is out of range of the child list');
 
 		//var oldChilds:DisplayObject[]=this._children.slice();
-		for(var i:number = endIndex-1;i >= beginIndex; i--)
+		for (let i: number = endIndex - 1;i >= beginIndex; i--)
 			this.removeChildAtInternal(i)._setParent(null);
 	}
 
@@ -563,8 +541,7 @@ export class DisplayObjectContainer extends DisplayObject
 	 * @throws RangeError    Throws if the index does not exist in the child
 	 *                       list.
 	 */
-	public setChildIndex(child:DisplayObject, index:number):void
-	{
+	public setChildIndex(child: DisplayObject, index: number): void {
 		//TODO
 	}
 
@@ -578,11 +555,10 @@ export class DisplayObjectContainer extends DisplayObject
 	 * @throws ArgumentError Throws if either child parameter is not a child of
 	 *                       this object.
 	 */
-	public swapChildren(child1:DisplayObject, child2:DisplayObject):void
-	{
-		if(child1.parent!=this || child2.parent!=this)
+	public swapChildren(child1: DisplayObject, child2: DisplayObject): void {
+		if (child1.parent != this || child2.parent != this)
 			return;
-		this.swapChildrenAt(this.getChildIndex(child1), this.getChildIndex(child2))
+		this.swapChildrenAt(this.getChildIndex(child1), this.getChildIndex(child2));
 	}
 
 	/**
@@ -594,41 +570,37 @@ export class DisplayObjectContainer extends DisplayObject
 	 * @param index2 The index position of the second child object.
 	 * @throws RangeError If either index does not exist in the child list.
 	 */
-	public swapChildrenAt(index1:number, index2:number):void
-	{
-		var depth:number = this._children[index2]._depthID;
-		var child:DisplayObject = this._children[index1];
+	public swapChildrenAt(index1: number, index2: number): void {
+		const depth: number = this._children[index2]._depthID;
+		const child: DisplayObject = this._children[index1];
 
 		this.addChildAtDepth(this._children[index2], this._children[index1]._depthID);
 		this.addChildAtDepth(child, depth);
 	}
-	
+
 	/**
 	 * @protected
 	 */
-	public _invalidateHierarchicalProperties(propDirty:number):boolean
-	{
+	public _invalidateHierarchicalProperties(propDirty: number): boolean {
 		if (super._invalidateHierarchicalProperties(propDirty))
 			return true;
 
-		var len:number = this._children.length;
-		for (var i:number = 0; i < len; ++i)
+		const len: number = this._children.length;
+		for (let i: number = 0; i < len; ++i)
 			this._children[i]._invalidateHierarchicalProperties(propDirty);
 
 		return false;
 	}
 
-
 	/**
 	 * @internal
 	 */
-	public _setPartition(parentPartition:PartitionBase):boolean
-	{
+	public _setPartition(parentPartition: PartitionBase): boolean {
 		if (super._setPartition(parentPartition))
 			return true;
 
-		var len:number = this._children.length;
-		for (var i:number = 0; i < len; ++i)
+		const len: number = this._children.length;
+		for (let i: number = 0; i < len; ++i)
 			this._children[i]._setPartition(this._implicitPartition);
 
 		return false;
@@ -639,9 +611,8 @@ export class DisplayObjectContainer extends DisplayObject
 	 *
 	 * @param child
 	 */
-	public removeChildAtInternal(index:number):DisplayObject
-	{
-		var child:DisplayObject = this._children.splice(index, 1)[0];
+	public removeChildAtInternal(index: number): DisplayObject {
+		const child: DisplayObject = this._children.splice(index, 1)[0];
 
 		//update next highest depth
 		if (this._nextHighestDepth == child._depthID + 1)
@@ -654,29 +625,26 @@ export class DisplayObjectContainer extends DisplayObject
 		return child;
 	}
 
-	public getDepthIndexInternal(depth:number):number
-	{
+	public getDepthIndexInternal(depth: number): number {
 		if (!this._depth_childs[depth])
 			return -1;
 
 		return this._children.indexOf(this._depth_childs[depth]);
 	}
 
-	private _updateNextHighestDepth():void
-	{
+	private _updateNextHighestDepth(): void {
 		this._nextHighestDepthDirty = false;
 
 		this._nextHighestDepth = 0;
-		var len:number = this._children.length;
-		for (var i:number = 0; i < len; i++)
+		const len: number = this._children.length;
+		for (let i: number = 0; i < len; i++)
 			if (this._nextHighestDepth < this._children[i]._depthID)
 				this._nextHighestDepth = this._children[i]._depthID;
 
 		this._nextHighestDepth += 1;
 	}
 
-	public _updateMaskMode():void
-	{
+	public _updateMaskMode(): void {
 		if (this.maskMode)
 			this.mouseChildren = false;
 

@@ -1,46 +1,44 @@
-import {Vector3D} from "@awayjs/core";
+import { Vector3D } from '@awayjs/core';
 
-import {DisplayObject} from "../display/DisplayObject";
-import {LookAtController} from "../controllers/LookAtController";
+import { DisplayObject } from '../display/DisplayObject';
+import { LookAtController } from '../controllers/LookAtController';
 
 /**
  * Uses spring physics to animate the target object towards a position that is
  * defined as the lookAtTarget object's position plus the vector defined by the
  * positionOffset property.
  */
-export class SpringController extends LookAtController
-{
-	private _velocity:Vector3D;
-	private _dv:Vector3D;
-	private _stretch:Vector3D;
-	private _force:Vector3D;
-	private _acceleration:Vector3D;
-	private _desiredPosition:Vector3D;
+export class SpringController extends LookAtController {
+	private _velocity: Vector3D;
+	private _dv: Vector3D;
+	private _stretch: Vector3D;
+	private _force: Vector3D;
+	private _acceleration: Vector3D;
+	private _desiredPosition: Vector3D;
 
 	/**
 	 * Stiffness of the spring, how hard is it to extend. The higher it is, the more "fixed" the cam will be.
 	 * A number between 1 and 20 is recommended.
 	 */
-	public stiffness:number;
+	public stiffness: number;
 
 	/**
 	 * Damping is the spring internal friction, or how much it resists the "boinggggg" effect. Too high and you'll lose it!
 	 * A number between 1 and 20 is recommended.
 	 */
-	public damping:number;
+	public damping: number;
 
 	/**
 	 * Mass of the camera, if over 120 and it'll be very heavy to move.
 	 */
-	public mass:number;
+	public mass: number;
 
 	/**
 	 * Offset of spring center from target in target object space, ie: Where the camera should ideally be in the target object space.
 	 */
-	public positionOffset:Vector3D = new Vector3D(0, 500, -1000);
+	public positionOffset: Vector3D = new Vector3D(0, 500, -1000);
 
-	constructor(targetObject:DisplayObject = null, lookAtObject:DisplayObject = null, stiffness:number = 1, mass:number = 40, damping:number = 4)
-	{
+	constructor(targetObject: DisplayObject = null, lookAtObject: DisplayObject = null, stiffness: number = 1, mass: number = 40, damping: number = 4) {
 		super(targetObject, lookAtObject);
 
 		this.stiffness = stiffness;
@@ -56,9 +54,8 @@ export class SpringController extends LookAtController
 
 	}
 
-	public update(interpolate:boolean = true):void
-	{
-		var offs:Vector3D;
+	public update(interpolate: boolean = true): void {
+		let offs: Vector3D;
 
 		if (!this._pLookAtObject || !this._pTargetObject)
 			return;
@@ -81,11 +78,11 @@ export class SpringController extends LookAtController
 		this._force.z = this._stretch.z - this._dv.z;
 
 		this._acceleration.copyFrom(this._force);
-		this._acceleration.scaleBy(1/this.mass);
+		this._acceleration.scaleBy(1 / this.mass);
 
 		this._velocity.incrementBy(this._acceleration);
 
-		var position:Vector3D = this._pTargetObject.transform.position.add(this._velocity);
+		const position: Vector3D = this._pTargetObject.transform.position.add(this._velocity);
 		this._pTargetObject.transform.moveTo(position.x, position.y, position.z);
 
 		super.update();

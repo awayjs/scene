@@ -1,7 +1,7 @@
 export interface IFilter{
 	type: number;
 
-	alpha?:number;
+	alpha?: number;
 	colors?: number[];
 	ratios?: number[];
 	blurX?: number;
@@ -14,7 +14,7 @@ export interface IFilter{
 	compositeSource?: boolean;
 	onTop?: boolean;
 	quality?: number;
-	
+
 	matrixX?: number;
 	matrixY?: number;
 	divisor?: number;

@@ -1,29 +1,28 @@
-import {MathConsts, Vector3D} from "@awayjs/core";
+import { MathConsts, Vector3D } from '@awayjs/core';
 
-import {DisplayObject} from "../display/DisplayObject";
-import {LookAtController} from "../controllers/LookAtController";
+import { DisplayObject } from '../display/DisplayObject';
+import { LookAtController } from '../controllers/LookAtController';
 
 /**
  * Extended camera used to hover round a specified target object.
  *
  * @see    away.containers.View
  */
-export class HoverController extends LookAtController
-{
-	public _iCurrentPanAngle:number = 0;
-	public _iCurrentTiltAngle:number = 90;
+export class HoverController extends LookAtController {
+	public _iCurrentPanAngle: number = 0;
+	public _iCurrentTiltAngle: number = 90;
 
-	private _panAngle:number = 0;
-	private _tiltAngle:number = 90;
-	private _distance:number = 1000;
-	private _minPanAngle:number = -Infinity;
-	private _maxPanAngle:number = Infinity;
-	private _minTiltAngle:number = -90;
-	private _maxTiltAngle:number = 90;
-	private _steps:number = 8;
-	private _yFactor:number = 2;
-	private _wrapPanAngle:boolean = false;
-	private _upAxis:Vector3D = new Vector3D();
+	private _panAngle: number = 0;
+	private _tiltAngle: number = 90;
+	private _distance: number = 1000;
+	private _minPanAngle: number = -Infinity;
+	private _maxPanAngle: number = Infinity;
+	private _minTiltAngle: number = -90;
+	private _maxTiltAngle: number = 90;
+	private _steps: number = 8;
+	private _yFactor: number = 2;
+	private _wrapPanAngle: boolean = false;
+	private _upAxis: Vector3D = new Vector3D();
 
 	/**
 	 * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
@@ -33,14 +32,12 @@ export class HoverController extends LookAtController
 	 * @see    #tiltAngle
 	 * @see    #panAngle
 	 */
-	public get steps():number
-	{
+	public get steps(): number {
 		return this._steps;
 	}
 
-	public set steps(val:number)
-	{
-		val = (val < 1)? 1 : val;
+	public set steps(val: number) {
+		val = (val < 1) ? 1 : val;
 
 		if (this._steps == val)
 			return;
@@ -53,13 +50,11 @@ export class HoverController extends LookAtController
 	/**
 	 * Rotation of the camera in degrees around the y axis. Defaults to 0.
 	 */
-	public get panAngle():number
-	{
+	public get panAngle(): number {
 		return this._panAngle;
 	}
 
-	public set panAngle(val:number)
-	{
+	public set panAngle(val: number) {
 		val = Math.max(this._minPanAngle, Math.min(this._maxPanAngle, val));
 
 		if (this._panAngle == val)
@@ -73,13 +68,11 @@ export class HoverController extends LookAtController
 	/**
 	 * Elevation angle of the camera in degrees. Defaults to 90.
 	 */
-	public get tiltAngle():number
-	{
+	public get tiltAngle(): number {
 		return this._tiltAngle;
 	}
 
-	public set tiltAngle(val:number)
-	{
+	public set tiltAngle(val: number) {
 		val = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, val));
 
 		if (this._tiltAngle == val)
@@ -93,13 +86,11 @@ export class HoverController extends LookAtController
 	/**
 	 * Distance between the camera and the specified target. Defaults to 1000.
 	 */
-	public get distance():number
-	{
+	public get distance(): number {
 		return this._distance;
 	}
 
-	public set distance(val:number)
-	{
+	public set distance(val: number) {
 		if (this._distance == val)
 			return;
 
@@ -113,13 +104,11 @@ export class HoverController extends LookAtController
 	 *
 	 * @see    #panAngle
 	 */
-	public get minPanAngle():number
-	{
+	public get minPanAngle(): number {
 		return this._minPanAngle;
 	}
 
-	public set minPanAngle(val:number)
-	{
+	public set minPanAngle(val: number) {
 		if (this._minPanAngle == val)
 			return;
 
@@ -133,13 +122,11 @@ export class HoverController extends LookAtController
 	 *
 	 * @see    #panAngle
 	 */
-	public get maxPanAngle():number
-	{
+	public get maxPanAngle(): number {
 		return this._maxPanAngle;
 	}
 
-	public set maxPanAngle(val:number)
-	{
+	public set maxPanAngle(val: number) {
 		if (this._maxPanAngle == val)
 			return;
 
@@ -153,13 +140,11 @@ export class HoverController extends LookAtController
 	 *
 	 * @see    #tiltAngle
 	 */
-	public get minTiltAngle():number
-	{
+	public get minTiltAngle(): number {
 		return this._minTiltAngle;
 	}
 
-	public set minTiltAngle(val:number)
-	{
+	public set minTiltAngle(val: number) {
 		if (this._minTiltAngle == val)
 			return;
 
@@ -173,13 +158,11 @@ export class HoverController extends LookAtController
 	 *
 	 * @see    #tiltAngle
 	 */
-	public get maxTiltAngle():number
-	{
+	public get maxTiltAngle(): number {
 		return this._maxTiltAngle;
 	}
 
-	public set maxTiltAngle(val:number)
-	{
+	public set maxTiltAngle(val: number) {
 		if (this._maxTiltAngle == val)
 			return;
 
@@ -193,13 +176,11 @@ export class HoverController extends LookAtController
 	 *
 	 * @see    #distance
 	 */
-	public get yFactor():number
-	{
+	public get yFactor(): number {
 		return this._yFactor;
 	}
 
-	public set yFactor(val:number)
-	{
+	public set yFactor(val: number) {
 		if (this._yFactor == val)
 			return;
 
@@ -211,13 +192,11 @@ export class HoverController extends LookAtController
 	/**
 	 * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
 	 */
-	public get wrapPanAngle():boolean
-	{
+	public get wrapPanAngle(): boolean {
 		return this._wrapPanAngle;
 	}
 
-	public set wrapPanAngle(val:boolean)
-	{
+	public set wrapPanAngle(val: boolean) {
 		if (this._wrapPanAngle == val)
 			return;
 
@@ -229,15 +208,14 @@ export class HoverController extends LookAtController
 	/**
 	 * Creates a new <code>HoverController</code> object.
 	 */
-	constructor(targetObject:DisplayObject = null, lookAtObject:DisplayObject = null, panAngle:number = 0, tiltAngle:number = 90, distance:number = 1000, minTiltAngle:number = -90, maxTiltAngle:number = 90, minPanAngle:number = null, maxPanAngle:number = null, steps:number = 8, yFactor:number = 2, wrapPanAngle:boolean = false)
-	{
+	constructor(targetObject: DisplayObject = null, lookAtObject: DisplayObject = null, panAngle: number = 0, tiltAngle: number = 90, distance: number = 1000, minTiltAngle: number = -90, maxTiltAngle: number = 90, minPanAngle: number = null, maxPanAngle: number = null, steps: number = 8, yFactor: number = 2, wrapPanAngle: boolean = false) {
 		super(targetObject, lookAtObject);
 
 		this.distance = distance;
 		this.panAngle = panAngle;
 		this.tiltAngle = tiltAngle;
-		this.minPanAngle = ( minPanAngle != null )? minPanAngle : -Infinity;
-		this.maxPanAngle = ( maxPanAngle != null )? maxPanAngle : Infinity;
+		this.minPanAngle = (minPanAngle != null) ? minPanAngle : -Infinity;
+		this.maxPanAngle = (maxPanAngle != null) ? maxPanAngle : Infinity;
 		this.minTiltAngle = minTiltAngle;
 		this.maxTiltAngle = maxTiltAngle;
 		this.steps = steps;
@@ -260,19 +238,18 @@ export class HoverController extends LookAtController
 	 * @see    #panAngle
 	 * @see    #steps
 	 */
-	public update(interpolate:boolean = true):void
-	{
+	public update(interpolate: boolean = true): void {
 		if (this._tiltAngle != this._iCurrentTiltAngle || this._panAngle != this._iCurrentPanAngle) {
 
 			this._pControllerDirty = true;
 
 			if (this._wrapPanAngle) {
 				if (this._panAngle < 0) {
-					this._iCurrentPanAngle += this._panAngle%360 + 360 - this._panAngle;
-					this._panAngle = this._panAngle%360 + 360;
+					this._iCurrentPanAngle += this._panAngle % 360 + 360 - this._panAngle;
+					this._panAngle = this._panAngle % 360 + 360;
 				} else {
-					this._iCurrentPanAngle += this._panAngle%360 - this._panAngle;
-					this._panAngle = this._panAngle%360;
+					this._iCurrentPanAngle += this._panAngle % 360 - this._panAngle;
+					this._panAngle = this._panAngle % 360;
 				}
 
 				while (this._panAngle - this._iCurrentPanAngle < -180)
@@ -283,8 +260,8 @@ export class HoverController extends LookAtController
 			}
 
 			if (interpolate) {
-				this._iCurrentTiltAngle += (this._tiltAngle - this._iCurrentTiltAngle)/(this.steps + 1);
-				this._iCurrentPanAngle += (this._panAngle - this._iCurrentPanAngle)/(this.steps + 1);
+				this._iCurrentTiltAngle += (this._tiltAngle - this._iCurrentTiltAngle) / (this.steps + 1);
+				this._iCurrentPanAngle += (this._panAngle - this._iCurrentPanAngle) / (this.steps + 1);
 			} else {
 				this._iCurrentPanAngle = this._panAngle;
 				this._iCurrentTiltAngle = this._tiltAngle;
@@ -297,14 +274,14 @@ export class HoverController extends LookAtController
 			}
 		}
 
-		var pos:Vector3D = (this.lookAtObject)? this.lookAtObject.transform.position : (this.lookAtPosition)? this.lookAtPosition : this._pOrigin;
-		this.targetObject.x = pos.x + this.distance*Math.sin(this._iCurrentPanAngle*MathConsts.DEGREES_TO_RADIANS)*Math.cos(this._iCurrentTiltAngle*MathConsts.DEGREES_TO_RADIANS);
-		this.targetObject.y = pos.y + this.distance*Math.sin(this._iCurrentTiltAngle*MathConsts.DEGREES_TO_RADIANS)*this.yFactor;
-		this.targetObject.z = pos.z + this.distance*Math.cos(this._iCurrentPanAngle*MathConsts.DEGREES_TO_RADIANS)*Math.cos(this._iCurrentTiltAngle*MathConsts.DEGREES_TO_RADIANS);
+		const pos: Vector3D = (this.lookAtObject) ? this.lookAtObject.transform.position : (this.lookAtPosition) ? this.lookAtPosition : this._pOrigin;
+		this.targetObject.x = pos.x + this.distance * Math.sin(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.cos(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
+		this.targetObject.y = pos.y + this.distance * Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS) * this.yFactor;
+		this.targetObject.z = pos.z + this.distance * Math.cos(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.cos(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
 
-		this._upAxis.x = -Math.sin(this._iCurrentPanAngle*MathConsts.DEGREES_TO_RADIANS)*Math.sin(this._iCurrentTiltAngle*MathConsts.DEGREES_TO_RADIANS);
-		this._upAxis.y = Math.cos(this._iCurrentTiltAngle*MathConsts.DEGREES_TO_RADIANS);
-		this._upAxis.z = -Math.cos(this._iCurrentPanAngle*MathConsts.DEGREES_TO_RADIANS)*Math.sin(this._iCurrentTiltAngle*MathConsts.DEGREES_TO_RADIANS);
+		this._upAxis.x = -Math.sin(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
+		this._upAxis.y = Math.cos(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
+		this._upAxis.z = -Math.cos(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
 
 		if (this._pTargetObject) {
 			if (this._pLookAtPosition)

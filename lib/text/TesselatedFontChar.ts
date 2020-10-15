@@ -1,5 +1,5 @@
-import {AttributesBuffer} from "@awayjs/stage";
-import {GraphicsPath, GraphicsFactoryFills} from "@awayjs/graphics"
+import { AttributesBuffer } from '@awayjs/stage';
+import { GraphicsPath, GraphicsFactoryFills } from '@awayjs/graphics';
 import { Rectangle } from '@awayjs/core';
 
 /**
@@ -28,57 +28,53 @@ import { Rectangle } from '@awayjs/core';
  * <p>The default formatting for each property is also described in each
  * property description.</p>
  */
-export class TesselatedFontChar
-{
+export class TesselatedFontChar {
 
 	/**
 	 * The width of the char
 	 */
-	public char_width:number;
-	public glyph_idx:number;
-	public name:string;
-	
-	public fnt_rect:Rectangle;
-	public fnt_uv:Rectangle;
-	public fnt_channel:number=0;
+	public char_width: number;
+	public glyph_idx: number;
+	public name: string;
+
+	public fnt_rect: Rectangle;
+	public fnt_uv: Rectangle;
+	public fnt_channel: number=0;
 
 	/**
 	 * Elements for this char
 	 */
-	public stroke_data:AttributesBuffer;
-	public fill_data:AttributesBuffer;
-	public fill_data_path:GraphicsPath;
+	public stroke_data: AttributesBuffer;
+	public fill_data: AttributesBuffer;
+	public fill_data_path: GraphicsPath;
 
 	/**
 	 * the char_codes that this geom has kerning set for
 	 */
-	public kerningCharCodes:Array<number>=[];
+	public kerningCharCodes: Array<number>=[];
 	/**
 	 * the kerning values per char_code
 	 */
-	public kerningValues:Array<number>=[];
+	public kerningValues: Array<number>=[];
 
-
-	constructor(fill_data:AttributesBuffer=null, stroke_data:AttributesBuffer=null, fill_data_path:GraphicsPath=null)
-	{
+	constructor(fill_data: AttributesBuffer = null, stroke_data: AttributesBuffer = null, fill_data_path: GraphicsPath = null) {
 		this.fill_data = fill_data;
 		this.stroke_data = stroke_data;
 		this.fill_data_path = fill_data_path;
 	}
 
-	
-	public dispose(){
-		if(this.stroke_data){
+	public dispose() {
+		if (this.stroke_data) {
 			//this.stroke_data.dispose();
-			this.stroke_data=null;
+			this.stroke_data = null;
 		}
-		if(this.fill_data){
+		if (this.fill_data) {
 			//this.fill_data.dispose();
-			this.fill_data=null;
+			this.fill_data = null;
 		}
-		if(this.fill_data_path){
+		if (this.fill_data_path) {
 			//this.fill_data_path.dispose();
-			this.fill_data_path=null;
+			this.fill_data_path = null;
 		}
 	}
 

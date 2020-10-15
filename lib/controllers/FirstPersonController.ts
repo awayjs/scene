@@ -1,28 +1,27 @@
-import {MathConsts} from "@awayjs/core";
+import { MathConsts } from '@awayjs/core';
 
-import {ControllerBase} from "../controllers/ControllerBase";
-import {DisplayObject} from "../display/DisplayObject";
+import { ControllerBase } from '../controllers/ControllerBase';
+import { DisplayObject } from '../display/DisplayObject';
 
 /**
  * Extended camera used to hover round a specified target object.
  *
  * @see    away3d.containers.View3D
  */
-export class FirstPersonController extends ControllerBase
-{
-	public _iCurrentPanAngle:number = 0;
-	public  _iCurrentTiltAngle:number = 90;
+export class FirstPersonController extends ControllerBase {
+	public _iCurrentPanAngle: number = 0;
+	public  _iCurrentTiltAngle: number = 90;
 
-	private _panAngle:number = 0;
-	private _tiltAngle:number = 90;
-	private _minTiltAngle:number = -90;
-	private _maxTiltAngle:number = 90;
-	private _steps:number = 8;
-	private _walkIncrement:number = 0;
-	private _strafeIncrement:number = 0;
-	private _wrapPanAngle:boolean = false;
+	private _panAngle: number = 0;
+	private _tiltAngle: number = 90;
+	private _minTiltAngle: number = -90;
+	private _maxTiltAngle: number = 90;
+	private _steps: number = 8;
+	private _walkIncrement: number = 0;
+	private _strafeIncrement: number = 0;
+	private _wrapPanAngle: boolean = false;
 
-	public fly:boolean = false;
+	public fly: boolean = false;
 
 	/**
 	 * Fractional step taken each time the <code>hover()</code> method is called. Defaults to 8.
@@ -32,14 +31,12 @@ export class FirstPersonController extends ControllerBase
 	 * @see    #tiltAngle
 	 * @see    #panAngle
 	 */
-	public get steps():number
-	{
+	public get steps(): number {
 		return this._steps;
 	}
 
-	public set steps(val:number)
-	{
-		val = (val < 1)? 1 : val;
+	public set steps(val: number) {
+		val = (val < 1) ? 1 : val;
 
 		if (this._steps == val)
 			return;
@@ -52,13 +49,11 @@ export class FirstPersonController extends ControllerBase
 	/**
 	 * Rotation of the camera in degrees around the y axis. Defaults to 0.
 	 */
-	public get panAngle():number
-	{
+	public get panAngle(): number {
 		return this._panAngle;
 	}
 
-	public set panAngle(val:number)
-	{
+	public set panAngle(val: number) {
 		if (this._panAngle == val)
 			return;
 
@@ -70,13 +65,11 @@ export class FirstPersonController extends ControllerBase
 	/**
 	 * Elevation angle of the camera in degrees. Defaults to 90.
 	 */
-	public get tiltAngle():number
-	{
+	public get tiltAngle(): number {
 		return this._tiltAngle;
 	}
 
-	public set tiltAngle(val:number)
-	{
+	public set tiltAngle(val: number) {
 		val = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, val));
 
 		if (this._tiltAngle == val)
@@ -92,13 +85,11 @@ export class FirstPersonController extends ControllerBase
 	 *
 	 * @see    #tiltAngle
 	 */
-	public get minTiltAngle():number
-	{
+	public get minTiltAngle(): number {
 		return this._minTiltAngle;
 	}
 
-	public set minTiltAngle(val:number)
-	{
+	public set minTiltAngle(val: number) {
 		if (this._minTiltAngle == val)
 			return;
 
@@ -112,13 +103,11 @@ export class FirstPersonController extends ControllerBase
 	 *
 	 * @see    #tiltAngle
 	 */
-	public get maxTiltAngle():number
-	{
+	public get maxTiltAngle(): number {
 		return this._maxTiltAngle;
 	}
 
-	public set maxTiltAngle(val:number)
-	{
+	public set maxTiltAngle(val: number) {
 		if (this._maxTiltAngle == val)
 			return;
 
@@ -127,17 +116,14 @@ export class FirstPersonController extends ControllerBase
 		this.tiltAngle = Math.max(this._minTiltAngle, Math.min(this._maxTiltAngle, this._tiltAngle));
 	}
 
-
 	/**
 	 * Defines whether the value of the pan angle wraps when over 360 degrees or under 0 degrees. Defaults to false.
 	 */
-	public get wrapPanAngle():boolean
-	{
+	public get wrapPanAngle(): boolean {
 		return this._wrapPanAngle;
 	}
 
-	public set wrapPanAngle(val:boolean)
-	{
+	public set wrapPanAngle(val: boolean) {
 		if (this._wrapPanAngle == val)
 			return;
 
@@ -149,8 +135,7 @@ export class FirstPersonController extends ControllerBase
 	/**
 	 * Creates a new <code>HoverController</code> object.
 	 */
-	constructor(targetObject:DisplayObject = null, panAngle:number = 0, tiltAngle:number = 90, minTiltAngle:number = -90, maxTiltAngle:number = 90, steps:number = 8, wrapPanAngle:boolean = false)
-	{
+	constructor(targetObject: DisplayObject = null, panAngle: number = 0, tiltAngle: number = 90, minTiltAngle: number = -90, maxTiltAngle: number = 90, steps: number = 8, wrapPanAngle: boolean = false) {
 		super(targetObject);
 
 		this.panAngle = panAngle;
@@ -176,19 +161,18 @@ export class FirstPersonController extends ControllerBase
 	 * @see    #panAngle
 	 * @see    #steps
 	 */
-	public update(interpolate:boolean = true):void
-	{
+	public update(interpolate: boolean = true): void {
 		if (this._tiltAngle != this._iCurrentTiltAngle || this._panAngle != this._iCurrentPanAngle) {
 
 			this._pControllerDirty = true;
 
 			if (this._wrapPanAngle) {
 				if (this._panAngle < 0) {
-					this._iCurrentPanAngle += this._panAngle%360 + 360 - this._panAngle;
-					this._panAngle = this._panAngle%360 + 360;
+					this._iCurrentPanAngle += this._panAngle % 360 + 360 - this._panAngle;
+					this._panAngle = this._panAngle % 360 + 360;
 				} else {
-					this._iCurrentPanAngle += this._panAngle%360 - this._panAngle;
-					this._panAngle = this._panAngle%360;
+					this._iCurrentPanAngle += this._panAngle % 360 - this._panAngle;
+					this._panAngle = this._panAngle % 360;
 				}
 
 				while (this._panAngle - this._iCurrentPanAngle < -180)
@@ -199,8 +183,8 @@ export class FirstPersonController extends ControllerBase
 			}
 
 			if (interpolate) {
-				this._iCurrentTiltAngle += (this._tiltAngle - this._iCurrentTiltAngle)/(this.steps + 1);
-				this._iCurrentPanAngle += (this._panAngle - this._iCurrentPanAngle)/(this.steps + 1);
+				this._iCurrentTiltAngle += (this._tiltAngle - this._iCurrentTiltAngle) / (this.steps + 1);
+				this._iCurrentPanAngle += (this._panAngle - this._iCurrentPanAngle) / (this.steps + 1);
 			} else {
 				this._iCurrentTiltAngle = this._tiltAngle;
 				this._iCurrentPanAngle = this._panAngle;
@@ -220,8 +204,8 @@ export class FirstPersonController extends ControllerBase
 			if (this.fly) {
 				this.targetObject.transform.moveForward(this._walkIncrement);
 			} else {
-				this.targetObject.x += this._walkIncrement*Math.sin(this._panAngle*MathConsts.DEGREES_TO_RADIANS);
-				this.targetObject.z += this._walkIncrement*Math.cos(this._panAngle*MathConsts.DEGREES_TO_RADIANS);
+				this.targetObject.x += this._walkIncrement * Math.sin(this._panAngle * MathConsts.DEGREES_TO_RADIANS);
+				this.targetObject.z += this._walkIncrement * Math.cos(this._panAngle * MathConsts.DEGREES_TO_RADIANS);
 			}
 			this._walkIncrement = 0;
 		}
@@ -233,8 +217,7 @@ export class FirstPersonController extends ControllerBase
 
 	}
 
-	public incrementWalk(val:number):void
-	{
+	public incrementWalk(val: number): void {
 		if (val == 0)
 			return;
 
@@ -243,8 +226,7 @@ export class FirstPersonController extends ControllerBase
 		this.pNotifyUpdate();
 	}
 
-	public incrementStrafe(val:number):void
-	{
+	public incrementStrafe(val: number): void {
 		if (val == 0)
 			return;
 

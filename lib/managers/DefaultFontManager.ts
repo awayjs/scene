@@ -1,76 +1,73 @@
-import {TesselatedFontTable} from "../text/TesselatedFontTable";
-import {Font} from "../text/Font";
-import {AssetBase} from "@awayjs/core";
-export class DefaultFontManager
-{
-	private static _default_font:Font;
-	private static _registered_fonts:any = {};
+import { TesselatedFontTable } from '../text/TesselatedFontTable';
+import { Font } from '../text/Font';
+import { AssetBase } from '@awayjs/core';
+export class DefaultFontManager {
+	private static _default_font: Font;
+	private static _registered_fonts: any = {};
 	private static _namespaces: string[] = [];
 
-	public static shared_fonts_ns:string;
+	public static shared_fonts_ns: string;
 
-    public static deviceFont:Font=null;
-    
-	public static getDefaultFont():Font
-	{
-		if(this._default_font === null){
+	public static deviceFont: Font=null;
+
+	public static getDefaultFont(): Font {
+		if (this._default_font === null) {
 			this.setDefaultFont();
 		}
 
 		return this._default_font;
 	}
 
-	public static applySharedFonts(ns:string)
-	{
-        if(ns === this.shared_fonts_ns) {
+	public static applySharedFonts(ns: string) {
+		if (ns === this.shared_fonts_ns) {
 			return;
 		}
 
-        if(!this._registered_fonts[ns]) {
-            this._registered_fonts[ns] = {};
+		if (!this._registered_fonts[ns]) {
+			this._registered_fonts[ns] = {};
 		}
 
-        if(!this._registered_fonts[this.shared_fonts_ns]){
-            this._registered_fonts[this.shared_fonts_ns]={};
+		if (!this._registered_fonts[this.shared_fonts_ns]) {
+			this._registered_fonts[this.shared_fonts_ns] = {};
 		}
 
-        if(!this._default_font){
-            if(this._registered_fonts[this.shared_fonts_ns]["arial"]){
-                this._default_font = this._registered_fonts[this.shared_fonts_ns]["arial"];
-            }
+		if (!this._default_font) {
+			if (this._registered_fonts[this.shared_fonts_ns]['arial']) {
+				this._default_font = this._registered_fonts[this.shared_fonts_ns]['arial'];
+			}
 		}
 
-        const fontsInSharedSWF = this._registered_fonts[this.shared_fonts_ns];
-        for(var key in fontsInSharedSWF){
-            if(!this._registered_fonts[ns][key]){
-                this._registered_fonts[ns][key] = fontsInSharedSWF[key];
-            } else {
-                const len = this._registered_fonts[this.shared_fonts_ns][key].font_styles.length;
-				
-				for (let i = 0; i < len; i++ ) {
-                    const fontStyle = this._registered_fonts[this.shared_fonts_ns][key].font_styles[i];
-                    const oldTable = this._registered_fonts[ns][key].get_font_table(fontStyle.name, TesselatedFontTable.assetType, null, false);
-					
+		const fontsInSharedSWF = this._registered_fonts[this.shared_fonts_ns];
+		for (const key in fontsInSharedSWF) {
+			if (!this._registered_fonts[ns][key]) {
+				this._registered_fonts[ns][key] = fontsInSharedSWF[key];
+			} else {
+				const len = this._registered_fonts[this.shared_fonts_ns][key].font_styles.length;
+
+				for (let i = 0; i < len; i++) {
+					const fontStyle = this._registered_fonts[this.shared_fonts_ns][key].font_styles[i];
+					const oldTable = this._registered_fonts[ns][key].get_font_table(fontStyle.name, TesselatedFontTable.assetType, null, false);
+
 					if (!oldTable) {
 						this._registered_fonts[ns][key].font_styles.push(fontStyle);
 					} else if (!oldTable.getGlyphCount()) {
-						this._registered_fonts[ns][key].replace_font_table(fontStyle.name, fontStyle);				
-                    }
+						this._registered_fonts[ns][key].replace_font_table(fontStyle.name, fontStyle);
+					}
 				}
-			} 
-			
-			if(this._registered_fonts[ns][key].font){
-                this._registered_fonts[ns][key] = fontsInSharedSWF[key];
-            }
-        }
+			}
+
+			if (this._registered_fonts[ns][key].font) {
+				this._registered_fonts[ns][key] = fontsInSharedSWF[key];
+			}
+		}
 	}
 
-	public static defineFont(fontName: string, ns: string = AssetBase.DEFAULT_NAMESPACE) {		
+	public static defineFont(fontName: string, ns: string = AssetBase.DEFAULT_NAMESPACE) {
 		this._registered_fonts || (this._registered_fonts = {});
 		this._registered_fonts[ns] || (this._registered_fonts[ns] = {});
 
-		fontName = (fontName + "").toLowerCase().replace(/bold|italic|regular/g, "").trim();
-		
+		fontName = (fontName + '').toLowerCase().replace(/bold|italic|regular/g, '').trim();
+
 		const alias = fontName.replace(/ |-/g, '');
 
 		let font: Font = this._registered_fonts[ns][fontName] || this._registered_fonts[ns][alias];
@@ -79,14 +76,14 @@ export class DefaultFontManager
 			return font;
 		}
 
-		if(this._namespaces.indexOf(ns) === -1) {
+		if (this._namespaces.indexOf(ns) === -1) {
 			this._namespaces.push(ns);
 		}
 
 		font = new Font();
 		font.name = fontName;
 
-		if(!this._default_font) {			
+		if (!this._default_font) {
 			this.deviceFont = this._default_font = font;
 		}
 
@@ -96,15 +93,15 @@ export class DefaultFontManager
 		return font;
 	}
 
-	public static getFont(fontName:string, namespace:string = undefined):Font{
-        //console.warn("get font", fontName, DefaultFontManager._registered_fonts);
-		if(!fontName) {
+	public static getFont(fontName: string, namespace: string = undefined): Font {
+		//console.warn("get font", fontName, DefaultFontManager._registered_fonts);
+		if (!fontName) {
 			return this.getDefaultFont();
 		}
 
 		const ns = namespace || AssetBase.DEFAULT_NAMESPACE;
 
-		fontName = (fontName + "").toLowerCase().replace(/bold|italic|regular|-/g, "").trim();
+		fontName = (fontName + '').toLowerCase().replace(/bold|italic|regular|-/g, '').trim();
 
 		this._registered_fonts || (this._registered_fonts = {});
 		this._registered_fonts[ns] || (this._registered_fonts[ns] = {});
@@ -113,17 +110,17 @@ export class DefaultFontManager
 
 		if (font) {
 			return font;
-		} else if(this._namespaces.length > 1 && !namespace) {
+		} else if (this._namespaces.length > 1 && !namespace) {
 			// lookup over all NS
-			for(const ns of this._namespaces) {
-				if(this._registered_fonts[ns][fontName]) {
+			for (const ns of this._namespaces) {
+				if (this._registered_fonts[ns][fontName]) {
 					return this._registered_fonts[ns][fontName];
 				}
 			}
 		} else if (this.shared_fonts_ns) {
 			font = this._registered_fonts[this.shared_fonts_ns][fontName];
 
-			if(font) {
+			if (font) {
 				return font;
 			}
 		}
@@ -131,9 +128,7 @@ export class DefaultFontManager
 		return this.getDefaultFont();
 	}
 
-
-	private static setDefaultFont(font:Font = null):void
-	{
+	private static setDefaultFont(font: Font = null): void {
 		this.deviceFont = this._default_font = (font || new Font());
 
 		/*
@@ -159,10 +154,11 @@ export class DefaultFontManager
 		*/
 		//DefaultFontManager._default_font_table.
 	}
-    public static clearAll(){
-        this._default_font=null;
-        this._registered_fonts={};
-        this.shared_fonts_ns=null;
-    }
+
+	public static clearAll() {
+		this._default_font = null;
+		this._registered_fonts = {};
+		this.shared_fonts_ns = null;
+	}
 
 }

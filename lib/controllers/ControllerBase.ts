@@ -1,32 +1,27 @@
-import {AbstractMethodError} from "@awayjs/core";
+import { AbstractMethodError } from '@awayjs/core';
 
-import {DisplayObject} from "../display/DisplayObject";
+import { DisplayObject } from '../display/DisplayObject';
 import { HierarchicalProperties } from '../base/HierarchicalProperties';
 
-export class ControllerBase
-{
-	public _pControllerDirty:boolean;
-	public _pAutoUpdate:boolean = true;
-	public _pTargetObject:DisplayObject;
+export class ControllerBase {
+	public _pControllerDirty: boolean;
+	public _pAutoUpdate: boolean = true;
+	public _pTargetObject: DisplayObject;
 
-	constructor(targetObject:DisplayObject = null)
-	{
+	constructor(targetObject: DisplayObject = null) {
 		this.targetObject = targetObject;
 	}
 
-	public pNotifyUpdate():void
-	{
+	public pNotifyUpdate(): void {
 		if (this._pTargetObject)
 			this._pTargetObject._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
 	}
 
-	public get targetObject():DisplayObject
-	{
+	public get targetObject(): DisplayObject {
 		return this._pTargetObject;
 	}
 
-	public set targetObject(val:DisplayObject)
-	{
+	public set targetObject(val: DisplayObject) {
 		if (this._pTargetObject == val)
 			return;
 
@@ -41,13 +36,11 @@ export class ControllerBase
 		this.pNotifyUpdate();
 	}
 
-	public get autoUpdate():boolean
-	{
+	public get autoUpdate(): boolean {
 		return this._pAutoUpdate;
 	}
 
-	public set autoUpdate(val:boolean)
-	{
+	public set autoUpdate(val: boolean) {
 		if (this._pAutoUpdate == val)
 			return;
 
@@ -61,13 +54,11 @@ export class ControllerBase
 		}
 	}
 
-	public update(interpolate:boolean = true):void
-	{
+	public update(interpolate: boolean = true): void {
 		throw new AbstractMethodError();
 	}
 
-	public updateController():void
-	{
+	public updateController(): void {
 		if (this._pControllerDirty && this._pAutoUpdate) {
 			this._pControllerDirty = false;
 			this.pNotifyUpdate();

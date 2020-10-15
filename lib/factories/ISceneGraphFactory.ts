@@ -1,28 +1,28 @@
-import {Image2D, IGraphicsFactory} from "@awayjs/stage";
+import { Image2D, IGraphicsFactory } from '@awayjs/stage';
 
-import {IMaterial} from "@awayjs/renderer";
+import { IMaterial } from '@awayjs/renderer';
 
-import {Timeline} from "../base/Timeline";
-import {Billboard} from "../display/Billboard";
-import {TextField} from "../display/TextField";
-import {MovieClip} from "../display/MovieClip";
-import {Sprite} from "../display/Sprite";
-import {PrefabBase} from "../prefabs/PrefabBase";
-import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
+import { Timeline } from '../base/Timeline';
+import { Billboard } from '../display/Billboard';
+import { TextField } from '../display/TextField';
+import { MovieClip } from '../display/MovieClip';
+import { Sprite } from '../display/Sprite';
+import { PrefabBase } from '../prefabs/PrefabBase';
+import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 import { Graphics } from '@awayjs/graphics';
 
 export interface ISceneGraphFactory extends IGraphicsFactory
 {
-	createMovieClip(timelime?:Timeline, symbol?:any):MovieClip;
+	createMovieClip(timelime?: Timeline, symbol?: any): MovieClip;
 
-	createTextField(symbol?:any):TextField;
+	createTextField(symbol?: any): TextField;
 
-	createDisplayObjectContainer(symbol?:any):DisplayObjectContainer;
+	createDisplayObjectContainer(symbol?: any): DisplayObjectContainer;
 
-	createSprite(prefab?:PrefabBase, graphics?:Graphics, symbol?:any):Sprite;
+	createSprite(prefab?: PrefabBase, graphics?: Graphics, symbol?: any): Sprite;
 
-	createBillboard(material?:IMaterial, symbol?:any):Billboard;
+	createBillboard(material?: IMaterial, symbol?: any): Billboard;
 
-	createMaterial(image?:Image2D, alpha?:number, symbol?:any):IMaterial;
-	createMaterial(color?:number, alpha?:number, symbol?:any):IMaterial;
+	createMaterial(image?: Image2D, alpha?: number, symbol?: any): IMaterial;
+	createMaterial(color?: number, alpha?: number, symbol?: any): IMaterial;
 }

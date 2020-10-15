@@ -1,12 +1,12 @@
-import {Rectangle, Matrix3D, Box, Vector3D, Sphere} from "@awayjs/core";
+import { Rectangle, Matrix3D, Box, Vector3D, Sphere } from '@awayjs/core';
 
-import {ImageSampler, Image2D, ImageUtils} from "@awayjs/stage";
+import { ImageSampler, Image2D, ImageUtils } from '@awayjs/stage';
 
-import {PickingCollision, PartitionBase, PickEntity, _Pick_PickableBase, EntityNode} from "@awayjs/view";
+import { PickingCollision, PartitionBase, PickEntity, _Pick_PickableBase, EntityNode } from '@awayjs/view';
 
-import {RenderableEvent, MaterialEvent, IMaterial, ITexture, StyleEvent} from "@awayjs/renderer";
+import { RenderableEvent, MaterialEvent, IMaterial, ITexture, StyleEvent } from '@awayjs/renderer';
 
-import {DisplayObjectContainer} from "./DisplayObjectContainer";
+import { DisplayObjectContainer } from './DisplayObjectContainer';
 
 /**
  * The Billboard class represents display objects that represent bitmap images.
@@ -43,26 +43,24 @@ import {DisplayObjectContainer} from "./DisplayObjectContainer";
  * contains the Billboard object.</p>
  */
 
-	// todo: billboard needed to extend on DisplayObjectContainer in order for as3web/away3d adapters to compile without errors
+// todo: billboard needed to extend on DisplayObjectContainer in order for as3web/away3d adapters to compile without errors
 // (in away3d Sprite3D extends on ObjectContainer3D)
-export class Billboard extends DisplayObjectContainer
-{
-	private static _billboards:Array<Billboard> = new Array<Billboard>();
+export class Billboard extends DisplayObjectContainer {
+	private static _billboards: Array<Billboard> = new Array<Billboard>();
 
-	public static assetType:string = "[asset Billboard]";
+	public static assetType: string = '[asset Billboard]';
 
-	private _width:number;
-	private _height:number;
-	private _billboardWidth:number;
-	private _billboardHeight:number;
-	private _billboardRect:Rectangle;
+	private _width: number;
+	private _height: number;
+	private _billboardWidth: number;
+	private _billboardHeight: number;
+	private _billboardRect: Rectangle;
 
-	private _onInvalidateTextureDelegate:(event:MaterialEvent) => void;
+	private _onInvalidateTextureDelegate: (event: MaterialEvent) => void;
 
-	public static getNewBillboard(material:IMaterial, pixelSnapping:string = "auto", smoothing:boolean = false):Billboard
-	{
+	public static getNewBillboard(material: IMaterial, pixelSnapping: string = 'auto', smoothing: boolean = false): Billboard {
 		if (Billboard._billboards.length) {
-			var billboard:Billboard = Billboard._billboards.pop();
+			const billboard: Billboard = Billboard._billboards.pop();
 			billboard.material = material;
 			//billboard.pixelSnapping = pixelSnapping;
 			//billboard.smoothing = smoothing;
@@ -72,50 +70,44 @@ export class Billboard extends DisplayObjectContainer
 		return new Billboard(material, pixelSnapping, smoothing);
 	}
 
-	public preserveDimensions:boolean = false;
+	public preserveDimensions: boolean = false;
 
 	/**
 	 *
 	 */
-	public get assetType():string
-	{
+	public get assetType(): string {
 		return Billboard.assetType;
 	}
 
 	/**
 	 *
 	 */
-	public get billboardRect():Rectangle
-	{
+	public get billboardRect(): Rectangle {
 		return this._billboardRect;
 	}
 
 	/**
 	 *
 	 */
-	public get billboardHeight():number
-	{
+	public get billboardHeight(): number {
 		return this._billboardHeight;
 	}
 
 	/**
 	 *
 	 */
-	public get billboardWidth():number
-	{
+	public get billboardWidth(): number {
 		return this._billboardWidth;
 	}
 
 	/**
 	 *
 	 */
-	public get material():IMaterial
-	{
+	public get material(): IMaterial {
 		return this._material;
 	}
 
-	public set material(value:IMaterial)
-	{
+	public set material(value: IMaterial) {
 		if (value == this._material)
 			return;
 
@@ -131,94 +123,83 @@ export class Billboard extends DisplayObjectContainer
 		this._invalidateMaterial();
 	}
 
-	
 	/**
 	 *
 	 */
-	public get width():number
-	{
+	public get width(): number {
 		return this._width;
 	}
-	
-	public set width(val:number)
-	{
+
+	public set width(val: number) {
 		if (this._width == val)
 			return;
 
 		this._width = val;
 
-		this.scaleX = this._width/this._billboardRect.width;
+		this.scaleX = this._width / this._billboardRect.width;
 	}
-	
+
 	/**
 	 *
 	 */
-	public get height():number
-	{
+	public get height(): number {
 		return this._height;
 	}
 
-	public set height(val:number)
-	{
+	public set height(val: number) {
 		if (this._height == val)
 			return;
 
 		this._height = val;
 
-		this.scaleY = this._height/this._billboardRect.height;
+		this.scaleY = this._height / this._billboardRect.height;
 	}
 
-	constructor(material:IMaterial, pixelSnapping:string = "auto", smoothing:boolean = false)
-	{
+	constructor(material: IMaterial, pixelSnapping: string = 'auto', smoothing: boolean = false) {
 		super();
 
-		this._onInvalidateTextureDelegate = (event:MaterialEvent) => this._onInvalidateTexture(event);
+		this._onInvalidateTextureDelegate = (event: MaterialEvent) => this._onInvalidateTexture(event);
 
 		this.material = material;
 
 		this._updateDimensions();
 	}
 
-	public isEntity():boolean
-	{
+	public isEntity(): boolean {
 		return true;
 	}
-	
+
 	/**
 	 * @inheritDoc
 	 */
-	public dispose():void
-	{
+	public dispose(): void {
 		this.disposeValues();
 
 		Billboard._billboards.push(this);
 	}
 
-	public clone():Billboard
-	{
-		var newInstance:Billboard = Billboard.getNewBillboard(this._material);
+	public clone(): Billboard {
+		const newInstance: Billboard = Billboard.getNewBillboard(this._material);
 
 		this.copyTo(newInstance);
 
 		return newInstance;
 	}
 
-	public _acceptTraverser(traverser:IEntityTraverser):void
-	{
+	public _acceptTraverser(traverser: IEntityTraverser): void {
 		traverser.applyTraversable(this);
 	}
 
-	private _updateDimensions():void
-	{
-		var texture:ITexture = this.material.getTextureAt(0);
+	private _updateDimensions(): void {
+		const texture: ITexture = this.material.getTextureAt(0);
 
-		var image:Image2D = texture? <Image2D> ((this._style? this._style.getImageAt(texture) : null) || (this.material.style? this.material.style.getImageAt(texture) : null) || texture.getImageAt(0)) : null;
+		const image: Image2D = texture ? <Image2D> ((this._style ? this._style.getImageAt(texture) : null) || (this.material.style ? this.material.style.getImageAt(texture) : null) || texture.getImageAt(0)) : null;
 
 		if (image) {
-			var sampler:ImageSampler = <ImageSampler> ((this._style? this._style.getSamplerAt(texture) : null) || (this.material.style? this.material.style.getSamplerAt(texture) : null) || texture.getSamplerAt(0) || ImageUtils.getDefaultSampler());
+			const sampler: ImageSampler = <ImageSampler> ((this._style ? this._style.getSamplerAt(texture) : null) || (this.material.style ? this.material.style.getSamplerAt(texture) : null) || texture.getSamplerAt(0) || ImageUtils.getDefaultSampler());
 			if (sampler.imageRect) {
-				this._billboardWidth = sampler.imageRect.width*image.width;
-				this._billboardHeight = sampler.imageRect.height*image.height;
+				this._billboardWidth = sampler.imageRect.width * image.width;
+				this._billboardHeight = sampler.imageRect.height * image.height;
 			} else {
 				this._billboardWidth = image.rect.width;
 				this._billboardHeight = image.rect.height;
@@ -236,16 +217,15 @@ export class Billboard extends DisplayObjectContainer
 		this.invalidateElements();
 
 		if (!this.preserveDimensions) {
-			this._width = this._billboardRect.width*this.scaleX;
-			this._height = this._billboardRect.height*this.scaleY;
+			this._width = this._billboardRect.width * this.scaleX;
+			this._height = this._billboardRect.height * this.scaleY;
 		} else {
-			this.scaleX = this._width/this._billboardRect.width;
-			this.scaleY = this._height/this._billboardRect.height;
+			this.scaleX = this._width / this._billboardRect.width;
+			this.scaleY = this._height / this._billboardRect.height;
 		}
 	}
 
-	protected _onInvalidateProperties(event:StyleEvent = null):void
-	{
+	protected _onInvalidateProperties(event: StyleEvent = null): void {
 		super._onInvalidateProperties(event);
 
 		this._updateDimensions();
@@ -254,85 +234,78 @@ export class Billboard extends DisplayObjectContainer
 	/**
 	 * @private
 	 */
-	private _onInvalidateTexture(event:MaterialEvent):void
-	{
+	private _onInvalidateTexture(event: MaterialEvent): void {
 		this._updateDimensions();
 	}
 }
 
-import {AssetEvent} from "@awayjs/core";
+import { AssetEvent } from '@awayjs/core';
 
-import {AttributesBuffer} from "@awayjs/stage";
+import { AttributesBuffer } from '@awayjs/stage';
 
-import {MaterialUtils, _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase, RenderEntity, Style} from "@awayjs/renderer";
+import { MaterialUtils, _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase, RenderEntity, Style } from '@awayjs/renderer';
 
-import {TriangleElements} from "@awayjs/graphics";
-import { IEntityTraverser } from "@awayjs/view";
+import { TriangleElements } from '@awayjs/graphics';
+import { IEntityTraverser } from '@awayjs/view';
 
 /**
  * @class away.pool.RenderableListItem
  */
-export class _Render_Billboard extends _Render_RenderableBase
-{
-    private static _samplerElements:Object = new Object();
+export class _Render_Billboard extends _Render_RenderableBase {
+	private static _samplerElements: Object = new Object();
 
-    public _id:string;
+	public _id: string;
 
-    /**
+	/**
      * //TODO
      *
      * @returns {away.base.TriangleElements}
      */
-    protected _getStageElements():_Stage_ElementsBase
-    {
-        var width:number = (<Billboard> this._asset).billboardWidth;
-        var height:number = (<Billboard> this._asset).billboardHeight;
-        var billboardRect:Rectangle = (<Billboard> this._asset).billboardRect;
+	protected _getStageElements(): _Stage_ElementsBase {
+		const width: number = (<Billboard> this._asset).billboardWidth;
+		const height: number = (<Billboard> this._asset).billboardHeight;
+		const billboardRect: Rectangle = (<Billboard> this._asset).billboardRect;
 
-        var id:string = width.toString() + height.toString() + billboardRect.toString();
+		const id: string = width.toString() + height.toString() + billboardRect.toString();
 
-        this._id = id;
+		this._id = id;
 
-        var elements:TriangleElements = _Render_Billboard._samplerElements[id];
+		let elements: TriangleElements = _Render_Billboard._samplerElements[id];
 
+		if (!elements) {
+			elements = _Render_Billboard._samplerElements[id] = new TriangleElements(new AttributesBuffer(11, 4));
+			elements.autoDeriveNormals = false;
+			elements.autoDeriveTangents = false;
+			elements.setIndices(Array<number>(0, 1, 2, 0, 2, 3));
+			elements.setPositions(Array<number>(-billboardRect.x, height - billboardRect.y, 0, width - billboardRect.x, height - billboardRect.y, 0, width - billboardRect.x, -billboardRect.y, 0, -billboardRect.x, -billboardRect.y, 0));
+			elements.setNormals(Array<number>(1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0));
+			elements.setTangents(Array<number>(0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1));
+			elements.setUVs(Array<number>(0, 1, 1, 1, 1, 0, 0, 0));
+		} else {
+			elements.setPositions(Array<number>(-billboardRect.x, height - billboardRect.y, 0, width - billboardRect.x, height - billboardRect.y, 0, width - billboardRect.x, -billboardRect.y, 0, -billboardRect.x, -billboardRect.y, 0));
+		}
 
-        if (!elements) {
-            elements = _Render_Billboard._samplerElements[id] = new TriangleElements(new AttributesBuffer(11, 4));
-            elements.autoDeriveNormals = false;
-            elements.autoDeriveTangents = false;
-            elements.setIndices(Array<number>(0, 1, 2, 0, 2, 3));
-            elements.setPositions(Array<number>(-billboardRect.x, height-billboardRect.y, 0, width-billboardRect.x, height-billboardRect.y, 0, width-billboardRect.x, -billboardRect.y, 0, -billboardRect.x, -billboardRect.y, 0));
-            elements.setNormals(Array<number>(1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0));
-            elements.setTangents(Array<number>(0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1));
-            elements.setUVs(Array<number>(0, 1, 1, 1, 1, 0, 0, 0));
-        } else {
-            elements.setPositions(Array<number>(-billboardRect.x, height-billboardRect.y, 0, width-billboardRect.x, height-billboardRect.y, 0, width-billboardRect.x, -billboardRect.y, 0, -billboardRect.x, -billboardRect.y, 0));
-        }
-
-        return <_Stage_ElementsBase> this._stage.getAbstraction(elements);
-    }
-
-    protected _getRenderMaterial():_Render_MaterialBase
-    {
-        return this.renderGroup.getRenderElements(this.stageElements.elements).getAbstraction((<Billboard> this._asset).material || MaterialUtils.getDefaultColorMaterial());
+		return <_Stage_ElementsBase> this._stage.getAbstraction(elements);
 	}
-		
-	protected _getStyle():Style
-    {
-        return (<Billboard> this._asset).style;
-    }
+
+	protected _getRenderMaterial(): _Render_MaterialBase {
+		return this.renderGroup.getRenderElements(this.stageElements.elements).getAbstraction((<Billboard> this._asset).material || MaterialUtils.getDefaultColorMaterial());
+	}
+
+	protected _getStyle(): Style {
+		return (<Billboard> this._asset).style;
+	}
 }
 
 /**
  * @class away.pool._Render_Shape
  */
-export class _Pick_Billboard extends _Pick_PickableBase
-{
-	private _billboardBox:Box;
-	private _billboardBoxDirty:boolean = true;
-	private _onInvalidateElementsDelegate:(event:RenderableEvent) => void;
+export class _Pick_Billboard extends _Pick_PickableBase {
+	private _billboardBox: Box;
+	private _billboardBoxDirty: boolean = true;
+	private _onInvalidateElementsDelegate: (event: RenderableEvent) => void;
 
-    /**
+	/**
      * //TODO
      *
      * @param renderEntity
@@ -340,54 +313,47 @@ export class _Pick_Billboard extends _Pick_PickableBase
      * @param level
      * @param indexOffset
      */
-    constructor(billboard:Billboard, pickEntity:PickEntity)
-    {
-        super(billboard, pickEntity);
+	constructor(billboard: Billboard, pickEntity: PickEntity) {
+		super(billboard, pickEntity);
 
-		this._onInvalidateElementsDelegate = (event:RenderableEvent) => this._onInvalidateElements(event);
+		this._onInvalidateElementsDelegate = (event: RenderableEvent) => this._onInvalidateElements(event);
 
 		this._asset.addEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
-    }
-	
-	public _onInvalidateElements(event:RenderableEvent):void
-    {
+	}
+
+	public _onInvalidateElements(event: RenderableEvent): void {
 		this._billboardBoxDirty = true;
 	}
 
-    public onClear(event:AssetEvent):void
-    {
+	public onClear(event: AssetEvent): void {
 		this._asset.removeEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
 
-        super.onClear(event);
+		super.onClear(event);
 	}
-	
-	public hitTestPoint(x:number, y:number, z:number):boolean
-	{
+
+	public hitTestPoint(x: number, y: number, z: number): boolean {
 		return true;
 	}
 
-	public getBoxBounds(matrix3D:Matrix3D = null, strokeFlag:boolean = true, cache:Box = null, target:Box = null):Box
-	{
+	public getBoxBounds(matrix3D: Matrix3D = null, strokeFlag: boolean = true, cache: Box = null, target: Box = null): Box {
 		if (this._billboardBoxDirty) {
 			this._billboardBoxDirty = false;
 
-			var billboardRect:Rectangle = (<Billboard> this._asset).billboardRect
+			const billboardRect: Rectangle = (<Billboard> this._asset).billboardRect;
 			this._billboardBox = new Box(billboardRect.x, billboardRect.y, 0, billboardRect.width, billboardRect.height, 0);
 		}
 
-		return (matrix3D? matrix3D.transformBox(this._billboardBox) : this._billboardBox).union(target, target || cache);
+		return (matrix3D ? matrix3D.transformBox(this._billboardBox) : this._billboardBox).union(target, target || cache);
 	}
 
-	public getSphereBounds(center:Vector3D, matrix3D:Matrix3D = null, strokeFlag:boolean = true, cache:Sphere = null, target:Sphere = null):Sphere
-	{
+	public getSphereBounds(center: Vector3D, matrix3D: Matrix3D = null, strokeFlag: boolean = true, cache: Sphere = null, target: Sphere = null): Sphere {
 		//TODO
 		return target;
 	}
 
-	public testCollision(collision:PickingCollision, closestFlag:boolean):boolean
-	{
-		var rayEntryDistance:number = -collision.rayPosition.z/collision.rayDirection.z;
-		var position:Vector3D = new Vector3D(collision.rayPosition.x + rayEntryDistance*collision.rayDirection.x, collision.rayPosition.y + rayEntryDistance*collision.rayDirection.y);
+	public testCollision(collision: PickingCollision, closestFlag: boolean): boolean {
+		const rayEntryDistance: number = -collision.rayPosition.z / collision.rayDirection.z;
+		const position: Vector3D = new Vector3D(collision.rayPosition.x + rayEntryDistance * collision.rayDirection.x, collision.rayPosition.y + rayEntryDistance * collision.rayDirection.y);
 
 		collision.traversable = this._asset;
 		collision.rayEntryDistance = rayEntryDistance;

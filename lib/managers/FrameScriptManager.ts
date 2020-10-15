@@ -1,8 +1,7 @@
-import { DisplayObject } from "../display/DisplayObject";
-import { MovieClip } from "../display/MovieClip";
-import { IMovieClipAdapter } from "../adapters/IMovieClipAdapter";
+import { DisplayObject } from '../display/DisplayObject';
+import { MovieClip } from '../display/MovieClip';
+import { IMovieClipAdapter } from '../adapters/IMovieClipAdapter';
 import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
-
 
 interface IInterval {
 	f: Function;
@@ -23,19 +22,15 @@ export class FrameScriptManager {
 	// the exporter creates a js file, containing a object that has the framescripts functions set as properties according to the unique names
 	// this object can be set as "frameScriptDebug" in order to enable debug mode
 
-
 	public static frameScriptDebug: Object = undefined;
 	public static useAVM1: boolean = false;
-
 
 	//queue of objects for disposal
 	private static _queued_dispose: DisplayObject[] = [];
 
-
 	private static _queue: IScriptQueue;
 
 	private static _active_intervals: Object = new Object(); // maps id to function
-
 
 	private static _intervalID: number = 0;
 	public static setInterval(fun: Function, time: number): number {
@@ -44,17 +39,18 @@ export class FrameScriptManager {
 		if (time < 4) {
 			time = 4;
 		}
-		this._active_intervals[this._intervalID] = <IInterval>{ "f": fun, "t": time, "dt": 0, "isTimeout": false };
-		return this._intervalID
+		this._active_intervals[this._intervalID] = <IInterval>{ 'f': fun, 't': time, 'dt': 0, 'isTimeout': false };
+		return this._intervalID;
 	}
+
 	public static setTimeOut(fun: Function, time: number): number {
 		this._intervalID++;
 		// make sure we have at least 4ms intervals
 		if (time < 4) {
 			time = 4;
 		}
-		this._active_intervals[this._intervalID] = <IInterval>{ "f": fun, "t": time, "dt": 0, "isTimeout": true };
-		return this._intervalID
+		this._active_intervals[this._intervalID] = <IInterval>{ 'f': fun, 't': time, 'dt': 0, 'isTimeout': true };
+		return this._intervalID;
 	}
 
 	public static clearInterval(id: number): void {
@@ -66,8 +62,8 @@ export class FrameScriptManager {
 	}
 
 	public static execute_intervals(dt: number = 0): void {
-		var interval: IInterval;
-		for (var key in this._active_intervals) {
+		let interval: IInterval;
+		for (const key in this._active_intervals) {
 			interval = this._active_intervals[key];
 			interval.dt += dt;
 			// keep executing the setInterval for as many times as the dt allows
@@ -86,11 +82,9 @@ export class FrameScriptManager {
 		this._queued_dispose.push(child);
 	}
 
-
-
 	public static get_queue(): IScriptQueue {
 		if (!FrameScriptManager._queue) {
-			FrameScriptManager._queue={
+			FrameScriptManager._queue = {
 				queued_mcs: [],
 				queued_scripts: [],
 				queued_mcs_pass2: [],
@@ -100,11 +94,12 @@ export class FrameScriptManager {
 		}
 		return FrameScriptManager._queue;
 	}
+
 	public static add_script_to_queue(mc: MovieClip, script: any): void {
 		//console.log("add_script_to_queue", mc.name);
-		let queue = FrameScriptManager.get_queue();
+		const queue = FrameScriptManager.get_queue();
 		// whenever we queue scripts of new objects, we first inject the lists of pass2
-		var i = queue.queued_mcs_pass2.length;
+		let i = queue.queued_mcs_pass2.length;
 		while (i > 0) {
 			i--;
 			queue.queued_mcs.push(queue.queued_mcs_pass2[i]);
@@ -116,9 +111,10 @@ export class FrameScriptManager {
 		queue.queued_mcs.push(mc);
 		queue.queued_scripts.push(script);
 	}
+
 	public static add_loaded_action_to_queue(mc: MovieClip): void {
 		//console.log("add_loaded_action_to_queue", mc.name);
-		let queue = FrameScriptManager.get_queue();
+		const queue = FrameScriptManager.get_queue();
 		queue.queued_mcs.push(mc);
 		queue.queued_scripts.push(null);
 	}
@@ -126,7 +122,7 @@ export class FrameScriptManager {
 	public static add_script_to_queue_pass2(mc: MovieClip, script: any): void {
 
 		//console.log("add_script_to_queue_pass2", mc.name);
-		let queue = FrameScriptManager.get_queue();
+		const queue = FrameScriptManager.get_queue();
 		(<any>mc.adapter).allowScript = true;
 		queue.queued_mcs_pass2.push(mc);
 		queue.queued_scripts_pass2.push(script);
@@ -136,23 +132,24 @@ export class FrameScriptManager {
 		/**
 		 * this gets executed after a timeline-navigation
 		 * first execute_as3_constructors_recursiv is called for the mc that was navigated
-		 * after that execute_as3_constructors_finish_scene is called for the scene-mc 
+		 * after that execute_as3_constructors_finish_scene is called for the scene-mc
 		 * so that we can continue with the next top-level child that has not yet been processed
 		 */
-		let children=mc._children;
-		for(let i=0; i<children.length; i++){
-			if(children[i].parent && (<IDisplayObjectAdapter>children[i].adapter).executeConstructor)
+		const children = mc._children;
+		for (let i = 0; i < children.length; i++) {
+			if (children[i].parent && (<IDisplayObjectAdapter>children[i].adapter).executeConstructor)
 				FrameScriptManager.execute_as3_constructors_recursiv(<MovieClip>children[i]);
 		}
 	}
+
 	public static execute_as3_constructors_recursiv(mc: MovieClip): void {
 		/**
 		 * when called from advanceFrame, this should iterate all childs and execute constructors
-		 * 
-		 * when called after a navigation command, 
-		 * this should iterate the navigated object first, 
+		 *
+		 * when called after a navigation command,
+		 * this should iterate the navigated object first,
 		 * than it should continue with unprocessed top-level children
-		 * 
+		 *
 		 * this scenegraph:
 		 * 	scene
 		 * 		- mc1
@@ -162,7 +159,7 @@ export class FrameScriptManager {
 		 *		- mc3
 		 *			- child3
 		 *
-		 * should normally be executed in the same order. 
+		 * should normally be executed in the same order.
 		 * the constructors of childs will be executed from within the super-calls in the parent-constructors
 		 * this happens after the parent constructor has initialized the parent properties,
 		 * but before the parents custom constructor code has run
@@ -179,9 +176,9 @@ export class FrameScriptManager {
 		 * - child3 - end constructor
 		 * - mc3 - start constructor
 		 * - mc3 - end constructor
-		 * 
+		 *
 		 * now when we have a timeline navigation called from for example constructor of mc1
-		 * 
+		 *
 		 * after the timeline navigation, it will first process new constructors added for the new frame we navigated too
 		 * it will than continue to work of top-level childs that have not been processed yet
 		 * so the order should look like this:
@@ -199,40 +196,38 @@ export class FrameScriptManager {
 		 *		- mc3 - start constructor
 		 *		- mc3 - end constructor
 		 * 	- mc1 - end constructor
-		 * 
+		 *
 		 */
 
-		let mcadapter = mc.adapter;
-		let constructorFunc = (<IDisplayObjectAdapter>mcadapter).executeConstructor;
+		const mcadapter = mc.adapter;
+		const constructorFunc = (<IDisplayObjectAdapter>mcadapter).executeConstructor;
 		if (constructorFunc) {
 			// constructor has not run yet. will run constructors of all childs aswell
 			(<IDisplayObjectAdapter>mcadapter).executeConstructor = null;
 			constructorFunc();
-		}
-		else{
+		} else {
 			// constructor already has run. we need to still do recursion on childs
-			let children=mc._children;
-			for(let i=0; i<children.length; i++){
-				if(children[i].parent)
+			const children = mc._children;
+			for (let i = 0; i < children.length; i++) {
+				if (children[i].parent)
 					FrameScriptManager.execute_as3_constructors_recursiv(<MovieClip>children[i]);
 			}
 		}
 
 		// if mc was created by timeline, instanceID != ""
-		if ((<any>mc).just_added_to_timeline && mc.instanceID != "" && mcadapter && (<any>mcadapter).dispatchStaticEvent) {
+		if ((<any>mc).just_added_to_timeline && mc.instanceID != '' && mcadapter && (<any>mcadapter).dispatchStaticEvent) {
 
-			(<any>mcadapter).dispatchStaticEvent("added", mcadapter);
+			(<any>mcadapter).dispatchStaticEvent('added', mcadapter);
 			(<any>mc).just_added_to_timeline = false;
 			mc.hasDispatchedAddedToStage = mc.isOnDisplayList();
 			if (mc.hasDispatchedAddedToStage)
-				(<any>mcadapter).dispatchStaticEvent("addedToStage", mcadapter);
-			// 	todo: this does not dispatch ADDED and ADDED_TO_STAGE on SHAPE, 
+				(<any>mcadapter).dispatchStaticEvent('addedToStage', mcadapter);
+			// 	todo: this does not dispatch ADDED and ADDED_TO_STAGE on SHAPE,
 			//	because in awayjs timeline Shape are Sprite without any as3-adapter
 		}
 	}
-	
 
-	// todo: better / faster way to check if a obj is currently on stage 
+	// todo: better / faster way to check if a obj is currently on stage
 	public static isOnStage(mc: DisplayObject): boolean {
 		let parent = mc;
 		while (parent && !parent.isAVMScene) {
@@ -242,15 +237,15 @@ export class FrameScriptManager {
 			return true;
 		return false;
 	}
-	
+
 	public static execute_avm1_constructors(): void {
 
-		let queue = FrameScriptManager.get_queue();
+		const queue = FrameScriptManager.get_queue();
 
 		if (queue.queued_mcs.length == 0 && queue.queued_mcs_pass2.length == 0)
 			return;
 
-		var i = queue.queued_mcs_pass2.length;
+		let i = queue.queued_mcs_pass2.length;
 		while (i > 0) {
 			i--;
 			queue.queued_mcs.push(queue.queued_mcs_pass2[i]);
@@ -259,9 +254,9 @@ export class FrameScriptManager {
 		queue.queued_mcs_pass2.length = 0;
 		queue.queued_scripts_pass2.length = 0;
 
-		var queues_tmp: any[] = queue.queued_mcs;
+		const queues_tmp: any[] = queue.queued_mcs;
 
-		var mc: MovieClip;
+		let mc: MovieClip;
 
 		if (FrameScriptManager.useAVM1) {
 			i = queues_tmp.length;
@@ -272,7 +267,7 @@ export class FrameScriptManager {
 					continue;
 
 				if ((<any>mc).onInitialize) {
-					let myFunc = (<any>mc).onInitialize;
+					const myFunc = (<any>mc).onInitialize;
 					(<any>mc).onInitialize = null;
 					myFunc();
 				}
@@ -283,12 +278,12 @@ export class FrameScriptManager {
 					continue;
 				// onClipEvent (construct) comes before class-constructor
 				if ((<any>mc).onConstruct) {
-					let myFunc = (<any>mc).onConstruct;
+					const myFunc = (<any>mc).onConstruct;
 					(<any>mc).onConstruct = null;
 					myFunc();
 				}
 				// class-constructor
-				let constructorFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
+				const constructorFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
 				if (constructorFunc) {
 					(<IDisplayObjectAdapter>mc.adapter).executeConstructor = null;
 					//console.log(randomVal, "call constructor for ", mc.parent.name, mc.name);
@@ -298,18 +293,19 @@ export class FrameScriptManager {
 		}
 
 	}
+
 	public static execute_queue(): void {
 
-		let queue = FrameScriptManager.get_queue();
+		const queue = FrameScriptManager.get_queue();
 		if (queue.queued_mcs.length == 0 && queue.queued_mcs_pass2.length == 0)
 			return;
 
-		var queues_tmp: any[] = queue.queued_mcs.concat();
-		var queues_scripts_tmp: any[] = queue.queued_scripts.concat();
+		const queues_tmp: any[] = queue.queued_mcs.concat();
+		const queues_scripts_tmp: any[] = queue.queued_scripts.concat();
 		queue.queued_mcs.length = 0;
 		queue.queued_scripts.length = 0;
 
-		var i = queue.queued_mcs_pass2.length;
+		let i = queue.queued_mcs_pass2.length;
 		while (i > 0) {
 			i--;
 			queues_tmp.push(queue.queued_mcs_pass2[i]);
@@ -318,7 +314,7 @@ export class FrameScriptManager {
 		queue.queued_mcs_pass2.length = 0;
 		queue.queued_scripts_pass2.length = 0;
 
-		var mc: MovieClip;
+		let mc: MovieClip;
 
 		if (FrameScriptManager.useAVM1) {
 			// first we need to execute all onclipEvent(initialize)
@@ -328,12 +324,12 @@ export class FrameScriptManager {
 				if (!FrameScriptManager.isOnStage(mc))
 					continue;
 				if ((<any>mc).onInitialize) {
-					let myFunc = (<any>mc).onInitialize;
+					const myFunc = (<any>mc).onInitialize;
 					(<any>mc).onInitialize = null;
 					myFunc();
 				}
 			}
-			// second we execute onClipEvent (construct) and class-constructors	
+			// second we execute onClipEvent (construct) and class-constructors
 			for (i = 0; i < queues_tmp.length; i++) {
 				mc = queues_tmp[i];
 				// ignore objects that are not on stage
@@ -341,12 +337,12 @@ export class FrameScriptManager {
 					continue;
 
 				if ((<any>mc).onConstruct) {
-					let myFunc = (<any>mc).onConstruct;
+					const myFunc = (<any>mc).onConstruct;
 					(<any>mc).onConstruct = null;
 					myFunc();
 				}
 
-				let constructorFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
+				const constructorFunc = (<IDisplayObjectAdapter>mc.adapter).executeConstructor;
 				if (constructorFunc) {
 					(<IDisplayObjectAdapter>mc.adapter).executeConstructor = null;
 					//console.log(randomVal, "call constructor for ", mc.parent.name, mc.name);
@@ -364,7 +360,7 @@ export class FrameScriptManager {
 					continue;
 				// execute onclipEvent(loaded)
 				if ((<any>mc).onLoaded) {
-					let myFunc = (<any>mc).onLoaded;
+					const myFunc = (<any>mc).onLoaded;
 					(<any>mc).onLoaded = null;
 					myFunc();
 				}
@@ -374,7 +370,7 @@ export class FrameScriptManager {
 					// but its a prototype-method, and not sure how to savly delete it
 					// thats why i am working with the "hasOnLoadExecuted" for now
 					(<any>mc.adapter).hasOnLoadExecuted = true;
-					let func = (<any>mc.adapter).alGet("onLoad");
+					const func = (<any>mc.adapter).alGet('onLoad');
 					if (func) {
 						func.alCall(mc.adapter);
 					}
@@ -390,30 +386,26 @@ export class FrameScriptManager {
 				// once it has processed the super-constructors. not when we actually call the constructor-function
 				// (this is because child-constructor do execute from within the super-constructor)
 				// for avm1 (<any>mc.adapter).constructorHasRun should always be true
-				if(mc && mc.adapter && !(<any>mc.adapter).constructorHasRun){
+				if (mc && mc.adapter && !(<any>mc.adapter).constructorHasRun) {
 					//console.log("mc with contructor - queue script", mc.name)
 					queue.queued_mcs.push(mc);
 					queue.queued_scripts.push(queues_scripts_tmp[i]);
-				}
-				else if (mc && mc.adapter && (<IMovieClipAdapter>mc.adapter).executeScript){
+				} else if (mc && mc.adapter && (<IMovieClipAdapter>mc.adapter).executeScript) {
 					//console.log("mc script", mc.name);
 					(<IMovieClipAdapter>mc.adapter).executeScript(queues_scripts_tmp[i]);
-				}
-				else{
+				} else {
 					//console.log("mc ignored", mc.name)
 				}
-			}
-			else{
+			} else {
 				//console.log("script is null", mc.name)
 			}
 
 		}
 	}
 
-
 	public static execute_dispose(): void {
-		var len: number = this._queued_dispose.length;
-		for (var i: number = 0; i < len; i++)
+		const len: number = this._queued_dispose.length;
+		for (let i: number = 0; i < len; i++)
 			this._queued_dispose[i].dispose();
 
 		this._queued_dispose.length = 0;

@@ -1,35 +1,34 @@
 /**
  * The TextLineMetrics class contains information about the text position and
  * measurements of a line of text within a text field. All measurements are in
- * pixels. Objects of this class are returned by the 
+ * pixels. Objects of this class are returned by the
  * <code>away.entities.TextField.getLineMetrics()</code> method.
  */
-export class TextLineMetrics
-{
+export class TextLineMetrics {
 	/**
 	 * The ascent value of the text is the length from the baseline to the top of
 	 * the line height in pixels.
 	 */
-	public ascent:number;
+	public ascent: number;
 
 	/**
 	 * The descent value of the text is the length from the baseline to the
 	 * bottom depth of the line in pixels.
 	 */
-	public descent:number;
+	public descent: number;
 
 	/**
 	 * The height value of the text of the selected lines (not necessarily the
 	 * complete text) in pixels. The height of the text line does not include the
 	 * gutter height.
 	 */
-	public height:number;
+	public height: number;
 
 	/**
 	 * The leading value is the measurement of the vertical distance between the
 	 * lines of text.
 	 */
-	public leading:number;
+	public leading: number;
 
 	/**
 	 * The width value is the width of the text of the selected lines (not
@@ -38,13 +37,13 @@ export class TextLineMetrics
 	 * relative to the text field width, minus the gutter width of 4 pixels
 	 * (2 pixels on each side).
 	 */
-	public width:number;
+	public width: number;
 
 	/**
 	 * The x value is the left position of the first character in pixels. This
 	 * value includes the margin, indent (if any), and gutter widths.
 	 */
-	public x:number;
+	public x: number;
 
 	/**
 	 * Creates a TextLineMetrics object. The TextLineMetrics object contains
@@ -64,8 +63,7 @@ export class TextLineMetrics
 	 * @param leading     The measurement of the vertical distance between the
 	 *                    lines of text.
 	 */
-	constructor(x:number = 0, width:number = 0, height:number = 0, ascent:number = 0, descent:number = 0, leading:number = 0)
-	{
+	constructor(x: number = 0, width: number = 0, height: number = 0, ascent: number = 0, descent: number = 0, leading: number = 0) {
 		this.x = x;
 		this.width = width;
 		this.height = height;

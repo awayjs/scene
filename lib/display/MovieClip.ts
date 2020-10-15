@@ -1,18 +1,18 @@
-import { AssetEvent, IAsset, WaveAudio, AudioManager, IAssetAdapter } from "@awayjs/core";
+import { AssetEvent, IAsset, WaveAudio, AudioManager, IAssetAdapter } from '@awayjs/core';
 
 import { PartitionBase, EntityNode } from '@awayjs/view';
 
-import { Graphics } from "@awayjs/graphics";
+import { Graphics } from '@awayjs/graphics';
 
-import { IMovieClipAdapter } from "../adapters/IMovieClipAdapter";
-import { IDisplayObjectAdapter } from "../adapters/IDisplayObjectAdapter";
-import { Timeline } from "../base/Timeline";
-import { MouseEvent } from "../events/MouseEvent";
-import { FrameScriptManager } from "../managers/FrameScriptManager";
+import { IMovieClipAdapter } from '../adapters/IMovieClipAdapter';
+import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
+import { Timeline } from '../base/Timeline';
+import { MouseEvent } from '../events/MouseEvent';
+import { FrameScriptManager } from '../managers/FrameScriptManager';
 
-import { DisplayObject } from "./DisplayObject";
-import { Sprite } from "./Sprite";
-import { TextField } from "./TextField";
+import { DisplayObject } from './DisplayObject';
+import { Sprite } from './Sprite';
+import { TextField } from './TextField';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 import { LoaderContainer } from './LoaderContainer';
 
@@ -23,19 +23,17 @@ export class MovieClip extends Sprite {
 	public static avm1ScriptQueueScripts: any[] = [];
 	public static avm1LoadedActions: any[] = [];
 
-
-
 	public static movieClipSoundsManagerClass = null;
 
 	private static _movieClips: Array<MovieClip> = new Array<MovieClip>();
 
 	private static _activeSounds: any = {};
-	
-	public static assetType: string = "[asset MovieClip]";
+
+	public static assetType: string = '[asset MovieClip]';
 
 	public static getNewMovieClip(timeline: Timeline = null): MovieClip {
 		if (MovieClip._movieClips.length) {
-			var movieClip: MovieClip = MovieClip._movieClips.pop()
+			const movieClip: MovieClip = MovieClip._movieClips.pop();
 			movieClip.timeline = timeline || new Timeline();
 			movieClip.graphics = Graphics.getGraphics();
 			return movieClip;
@@ -47,8 +45,8 @@ export class MovieClip extends Sprite {
 	public static clearPool() {
 		MovieClip._movieClips = [];
 	}
-	
-	public symbolID:number=0;
+
+	public symbolID: number=0;
 	public preventScript: boolean = false;
 	private _timeline: Timeline;
 
@@ -80,17 +78,17 @@ export class MovieClip extends Sprite {
 	private _sounds: Object = {};
 
 	public _useHandCursor: boolean;
-	
+
 	private _parentSoundVolume: number;
 
 	private _soundVolume: number;
-	private _skipFramesForStream:number=0;
+	private _skipFramesForStream: number=0;
 
 	public buttonEnabled: boolean = true;
 
 	private _soundStreams: any;
 
-	public initSoundStream(streamInfo: any, maxFrameNum:number) {
+	public initSoundStream(streamInfo: any, maxFrameNum: number) {
 		if (!this._soundStreams) {
 			this._soundStreams = new MovieClip.movieClipSoundsManagerClass(this);
 		}
@@ -103,14 +101,14 @@ export class MovieClip extends Sprite {
 		}
 		this._soundStreams.addSoundStreamBlock(frameNum, streamBlock);
 	}
-	
-	
+
 	private stopCurrentStream(frameNum: number) {
 		if (this._soundStreams) {
 			//console.log("sync sounds for mc: ", this.numFrames);
 			return this._soundStreams.stopStream(frameNum);
 		}
 	}
+
 	private resetStreamStopped() {
 		if (this._soundStreams) {
 			//console.log("sync sounds for mc: ", this.numFrames);
@@ -118,13 +116,14 @@ export class MovieClip extends Sprite {
 		}
 	}
 
-	private _syncSounds(frameNum: number):number {
+	private _syncSounds(frameNum: number): number {
 		if (this._soundStreams) {
 			//console.log("sync sounds for mc: ", this.numFrames);
 			return this._soundStreams.syncSounds(frameNum, this._isPlaying, this.parent);
 		}
 		return 0;
 	}
+
 	constructor(timeline: Timeline = null) {
 		super();
 
@@ -134,7 +133,7 @@ export class MovieClip extends Sprite {
 		this._isButton = false;
 		this._buttonMode = false;
 		this._useHandCursor = true;
-		this.cursorType = "pointer";
+		this.cursorType = 'pointer';
 		//this.debugVisible=true;
 
 		this.inheritColorTransform = true;
@@ -181,22 +180,22 @@ export class MovieClip extends Sprite {
 			MovieClip._activeSounds[id] = [];
 		MovieClip._activeSounds[id].push(sound);
 	}
+
 	public stopSounds(soundID: any = null) {
 		if (soundID) {
 			if (this._sounds[soundID]) {
 				this._sounds[soundID].stop();
 				delete this._sounds[soundID];
 			}
-		}
-		else {
-			for (var key in this._sounds) {
+		} else {
+			for (const key in this._sounds) {
 				this._sounds[key].stop();
 			}
 			this._sounds = {};
 		}
-		var len: number = this._children.length;
-		var child: DisplayObject;
-		for (var i: number = 0; i < len; ++i) {
+		const len: number = this._children.length;
+		let child: DisplayObject;
+		for (let i: number = 0; i < len; ++i) {
 			child = this._children[i];
 			if (child.isAsset(MovieClip))
 				(<MovieClip>child).stopSounds(soundID);
@@ -207,40 +206,45 @@ export class MovieClip extends Sprite {
 			this._soundStreams.syncSounds(0, false, this.parent);
 		}
 	}
+
 	public get isPlaying(): boolean {
 		return this._isPlaying;
 	}
+
 	public get soundVolume(): number {
 		return this._soundVolume;
 	}
+
 	public set soundVolume(value: number) {
 		if (this._soundVolume == value) {
 			return;
 		}
 		this._soundVolume = value;
-		for (var key in this._sounds) {
+		for (const key in this._sounds) {
 			this._sounds[key].volume = value;
 		}
-		var len: number = this._children.length;
-		var child: DisplayObject;
-		for (var i: number = 0; i < len; ++i) {
+		const len: number = this._children.length;
+		let child: DisplayObject;
+		for (let i: number = 0; i < len; ++i) {
 			child = this._children[i];
 			if (child.isAsset(MovieClip))
 				(<MovieClip>child).soundVolume = value;
 		}
 	}
+
 	public stopSound(id: number) {
 		if (this._sounds[id]) {
 			this._sounds[id].stop();
 			delete this._sounds[id];
 		}
 		if (MovieClip._activeSounds[id]) {
-			for (var i: number = 0; i < MovieClip._activeSounds[id].length; i++) {
+			for (let i: number = 0; i < MovieClip._activeSounds[id].length; i++) {
 				MovieClip._activeSounds[id][i].stop();
 			}
 			delete MovieClip._activeSounds[id];
 		}
 	}
+
 	public buttonReset() {
 		if (this._isButton && !this.buttonEnabled) {
 			this.currentFrameIndex = 0;
@@ -248,13 +252,13 @@ export class MovieClip extends Sprite {
 	}
 
 	public getMouseCursor(): string {
-		if (this.name == "scene")
-			return "initial";
+		if (this.name == 'scene')
+			return 'initial';
 		if (this._useHandCursor && this.buttonMode) {
 			return this.cursorType;
 		}
-		return "initial";
-        /*
+		return 'initial';
+		/*
 		var cursorName:string;
 		var parent:DisplayObject=this.parent;
 		while(parent){
@@ -272,18 +276,21 @@ export class MovieClip extends Sprite {
         return "initial";
         */
 	}
+
 	public registerScriptObject(child: DisplayObject): void {
 		this[child.name] = child;
 
 		if (child.isAsset(MovieClip))
 			(<MovieClip>child).removeButtonListeners();
 	}
+
 	public unregisterScriptObject(child: DisplayObject): void {
 		delete this[child.name];
 
 		if (child.isAsset(MovieClip))
 			(<MovieClip>child).removeButtonListeners();
 	}
+
 	public dispose(): void {
 		this.disposeValues();
 
@@ -303,13 +310,12 @@ export class MovieClip extends Sprite {
 	public reset_textclones(): void {
 		if (this.timeline) {
 			//var len:number = this._potentialInstances.length;
-			for (var key in this._potentialInstances) {
+			for (const key in this._potentialInstances) {
 				if (this._potentialInstances[key] != null) {
 					if (this._potentialInstances[key].isAsset(TextField)) {
-						(<TextField>this._potentialInstances[key]).text = (<TextField>this.timeline.getPotentialChildPrototype(parseInt(key))).text;
-					}
-					else if (this._potentialInstances[key].isAsset(MovieClip))
-						(<MovieClip>this._potentialInstances[key]).reset_textclones();
+						(<TextField> this._potentialInstances[key]).text = (<TextField> this.timeline.getPotentialChildPrototype(parseInt(key))).text;
+					} else if (this._potentialInstances[key].isAsset(MovieClip))
+						(<MovieClip> this._potentialInstances[key]).reset_textclones();
 				}
 			}
 		}
@@ -318,24 +324,31 @@ export class MovieClip extends Sprite {
 	public get useHandCursor(): boolean {
 		return this._useHandCursor;
 	}
+
 	public set useHandCursor(value: boolean) {
 		this._useHandCursor = value;
 	}
+
 	public get buttonMode(): boolean {
 		return this._buttonMode;
 	}
+
 	public set buttonMode(value: boolean) {
 		this._buttonMode = value;
 	}
+
 	public get isButton(): boolean {
 		return this._isButton;
 	}
+
 	public set isButton(value: boolean) {
 		this._isButton = value;
 	}
+
 	public get isInit(): boolean {
 		return this._isInit;
 	}
+
 	public set isInit(value: boolean) {
 		this._isInit = value;
 	}
@@ -372,8 +385,8 @@ export class MovieClip extends Sprite {
 	 */
 	public constructedKeyFrameIndex: number = -1;
 
-	public reset(fireScripts: boolean = true, resetSelf:boolean=true): void {
-		if(resetSelf)
+	public reset(fireScripts: boolean = true, resetSelf: boolean = true): void {
+		if (resetSelf)
 			super.reset();
 
 		this.resetStreamStopped();
@@ -383,19 +396,16 @@ export class MovieClip extends Sprite {
 		//this.stopSounds();
 
 		if (resetSelf && this._adapter)
-			(<IMovieClipAdapter>this.adapter).freeFromScript();
+			(<IMovieClipAdapter> this.adapter).freeFromScript();
 
 		this.constructedKeyFrameIndex = -1;
-		for (var i: number = this.numChildren - 1; i >= 0; i--)
+		for (let i: number = this.numChildren - 1; i >= 0; i--)
 			this.removeChildAt(i);
 
 		this.graphics.clear();
 
-
-
-
 		if (fireScripts) {
-			var numFrames: number = this._timeline.keyframe_indices.length;
+			const numFrames: number = this._timeline.keyframe_indices.length;
 			this._isPlaying = Boolean(numFrames > 1);
 			if (numFrames) {
 				this._currentFrameIndex = 0;
@@ -407,13 +417,11 @@ export class MovieClip extends Sprite {
 				this._currentFrameIndex = -1;
 			}
 		}
-		// prevents the playhead to get moved in the advance frame again:	
+		// prevents the playhead to get moved in the advance frame again:
 		this._skipAdvance = true;
 		//FrameScriptManager.execute_queue();
 
-
 	}
-
 
 	public resetSessionIDs(): void {
 		this._depth_sessionIDs = {};
@@ -427,9 +435,9 @@ export class MovieClip extends Sprite {
 	}
 
 	public set currentFrameIndex(value: number) {
-		var queue_script: boolean = true;
+		let queue_script: boolean = true;
 
-		var numFrames: number = this._timeline.keyframe_indices.length;
+		const numFrames: number = this._timeline.keyframe_indices.length;
 
 		this.resetStreamStopped();
 		if (!numFrames)
@@ -440,12 +448,11 @@ export class MovieClip extends Sprite {
 		} else if (value >= numFrames) {
 			// if value is greater than the available number of
 			// frames, the playhead is moved to the last frame in the timeline.
-			// In this case the frame specified is not considered a keyframe, 
+			// In this case the frame specified is not considered a keyframe,
 			// no scripts should be executed in this case
 			value = numFrames - 1;
 			queue_script = false;
 		}
-
 
 		this._skipAdvance = false;
 		if (this._currentFrameIndex == value)
@@ -494,8 +501,8 @@ export class MovieClip extends Sprite {
 	}
 
 	public swapChildrenAt(index1: number, index2: number): void {
-		var depth: number = this._children[index2]._depthID;
-		var child: DisplayObject = this._children[index1];
+		const depth: number = this._children[index2]._depthID;
+		const child: DisplayObject = this._children[index1];
 
 		this.doingSwap = true;
 		this.addChildAtDepth(this._children[index2], this._children[index1]._depthID);
@@ -504,10 +511,11 @@ export class MovieClip extends Sprite {
 		this._depth_sessionIDs[this._children[index1]._depthID] = this._children[index2]._sessionID;
 		this.doingSwap = false;
 	}
+
 	public swapDepths(child: DisplayObject, depth: number) {
 
-		var existingChild: DisplayObject = this.getChildAtDepth(depth);
-		var currentDepth: number = child._depthID;
+		const existingChild: DisplayObject = this.getChildAtDepth(depth);
+		const currentDepth: number = child._depthID;
 		if (currentDepth == depth) {
 			return;
 		}
@@ -526,19 +534,19 @@ export class MovieClip extends Sprite {
 
 	public _addTimelineChildAt(child: DisplayObject, depth: number, sessionID: number): DisplayObject {
 		this._depth_sessionIDs[depth] = child._sessionID = sessionID;
-		(<any>child).addedByTimeline=true;
+		(<any>child).addedByTimeline = true;
 
 		if (child.adapter != child && (<any>child.adapter).deleteOwnProperties) {
 			(<any>child.adapter).deleteOwnProperties();
-        }
-        if (!this.doingSwap) {
+		}
+		if (!this.doingSwap) {
 			child.reset();// this takes care of transform and visibility
 		}
-		(<any>child).just_added_to_timeline=true;
-		var returnObj=this.addChildAtDepth(child, depth);
+		(<any>child).just_added_to_timeline = true;
+		const returnObj = this.addChildAtDepth(child, depth);
 		this._sessionID_childs[sessionID] = child;
 		//console.log(this.name, this.id, "addchild at ", depth, child.id)
-		return returnObj
+		return returnObj;
 	}
 
 	public finalizeTimelineConstruction() {
@@ -546,13 +554,13 @@ export class MovieClip extends Sprite {
 	}
 
 	public removeChildAtInternal(index: number): DisplayObject {
-		var child: DisplayObject = this._children[index];
+		const child: DisplayObject = this._children[index];
 
 		if (!this.doingSwap) {
 			if (child._adapter)
 				(<IMovieClipAdapter>child.adapter).freeFromScript();
 
-			(<IMovieClipAdapter>this.adapter).unregisterScriptObject(child);
+			(<IMovieClipAdapter> this.adapter).unregisterScriptObject(child);
 		}
 
 		//check to make sure _depth_sessionIDs wasn't modified with a new child
@@ -563,27 +571,23 @@ export class MovieClip extends Sprite {
 
 		if (!this.doingSwap) {
 			child._sessionID = -1;
-		}
-		else {
+		} else {
 			child._sessionID = -2;
 
 		}
-		if(child.adapter && (<any>child.adapter).dispatchStaticEvent){
-			(<any>child.adapter).dispatchStaticEvent("removed", child.adapter);
+		if (child.adapter && (<any>child.adapter).dispatchStaticEvent) {
+			(<any>child.adapter).dispatchStaticEvent('removed', child.adapter);
 		}
-		if(this.isOnDisplayList() && (<any>child.adapter).dispatch_REMOVED_FROM_STAGE){
+		if (this.isOnDisplayList() && (<any>child.adapter).dispatch_REMOVED_FROM_STAGE) {
 			(<any>child.adapter).dispatch_REMOVED_FROM_STAGE(<DisplayObjectContainer>child);
 		}
 
 		return super.removeChildAtInternal(index);
 	}
 
-
-
 	public get assetType(): string {
 		return MovieClip.assetType;
 	}
-
 
 	/**
 	 * Starts playback of animation from current position
@@ -600,14 +604,13 @@ export class MovieClip extends Sprite {
 		this.advanceFrame();
 	}
 
-	public getPotentialChildInstance(id: number, instanceID: string, forceClone:boolean=false): IAsset {
-		if (!this._potentialInstances[id] || this._potentialInstances[id]._sessionID == -2 || 
+	public getPotentialChildInstance(id: number, instanceID: string, forceClone: boolean = false): IAsset {
+		if (!this._potentialInstances[id] || this._potentialInstances[id]._sessionID == -2 ||
 			(this._potentialInstances[id].cloneForEveryInstance && forceClone))
 			this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id, instanceID);
-		this._timeline.initChildInstance(<DisplayObject>this._potentialInstances[id], instanceID);
+		this._timeline.initChildInstance(<DisplayObject> this._potentialInstances[id], instanceID);
 		return this._potentialInstances[id];
 	}
-
 
 	/**
 	 * Stop playback of animation and hold current position
@@ -619,7 +622,7 @@ export class MovieClip extends Sprite {
 	}
 
 	public clone(): MovieClip {
-		var newInstance: MovieClip = MovieClip.getNewMovieClip(this._timeline);
+		const newInstance: MovieClip = MovieClip.getNewMovieClip(this._timeline);
 
 		this.copyTo(newInstance);
 
@@ -630,9 +633,10 @@ export class MovieClip extends Sprite {
 		super.copyTo(movieClip);
 		movieClip.loop = this.loop;
 		movieClip._soundStreams = this._soundStreams;
-		movieClip.symbolID=this.symbolID;
+		movieClip.symbolID = this.symbolID;
 
 	}
+
 	public advanceFrameInternal(): void {
 
 		// if this._skipadvance is true, the mc has already been moving on its timeline this frame
@@ -646,14 +650,12 @@ export class MovieClip extends Sprite {
 					// end of loop - jump to first frame.
 					if (this._currentFrameIndex == 0) {
 						// do nothing if we are already on frame 1
-					}
-					else {
+					} else {
 						this._currentFrameIndex = 0;
 						this.resetStreamStopped();
 						this._timeline.gotoFrame(this, 0, true, true, true);
 					}
-				}
-				else //end of timeline, stop playing
+				} else //end of timeline, stop playing
 					this._isPlaying = false;
 			} else { // not end - construct next frame
 				this._currentFrameIndex++;
@@ -663,8 +665,8 @@ export class MovieClip extends Sprite {
 		}
 
 		// than come the children from bottom up:
-		var child: DisplayObject;
-		for (var i: number = 0; i < this._children.length; i++) {
+		let child: DisplayObject;
+		for (let i: number = 0; i < this._children.length; i++) {
 
 			child = this._children[i];
 
@@ -677,19 +679,20 @@ export class MovieClip extends Sprite {
 		}
 		this._skipAdvance = false;
 	}
+
 	public advanceFrame(): void {
-		if(this._skipFramesForStream==0){
+		if (this._skipFramesForStream == 0) {
 			this.advanceFrameInternal();
 		}
 		/*if(this._skipFramesForStream<0){
 			console.log("wait for audio to catch up");
 		}*/
-		this._skipFramesForStream=this._syncSounds(this._currentFrameIndex);
-		while(this._skipFramesForStream>0){
+		this._skipFramesForStream = this._syncSounds(this._currentFrameIndex);
+		while (this._skipFramesForStream > 0) {
 			//console.log("skip frame for keeping audio stream synced");
 			FrameScriptManager.execute_queue();
 			this.advanceFrameInternal();
-			this._skipFramesForStream=this._syncSounds(this._currentFrameIndex);
+			this._skipFramesForStream = this._syncSounds(this._currentFrameIndex);
 		}
 	}
 
@@ -697,9 +700,9 @@ export class MovieClip extends Sprite {
 	logHierarchy(depth: number = 0): void {
 		this.printHierarchyName(depth, this);
 
-		var len = this._children.length;
-		var child: DisplayObject;
-		for (var i: number = 0; i < len; i++) {
+		const len = this._children.length;
+		let child: DisplayObject;
+		for (let i: number = 0; i < len; i++) {
 			child = this._children[i];
 
 			if (child.isAsset(MovieClip))
@@ -710,19 +713,19 @@ export class MovieClip extends Sprite {
 	}
 
 	printHierarchyName(depth: number, target: DisplayObject): void {
-		var str = "";
-		for (var i = 0; i < depth; ++i)
-			str += "--";
+		let str = '';
+		for (let i = 0; i < depth; ++i)
+			str += '--';
 
-		str += " " + target.name + " = " + target.id;
+		str += ' ' + target.name + ' = ' + target.id;
 		console.log(str);
 	}
 
 	public clear(): void {
 		//clear out potential instances
 		this.resetStreamStopped();
-		for (var key in this._potentialInstances) {
-			var instance: IAsset = this._potentialInstances[key];
+		for (const key in this._potentialInstances) {
+			const instance: IAsset = this._potentialInstances[key];
 
 			//only dispose instances that are not used in script ie. do not have an instance name
 			if (instance && !instance.name) {

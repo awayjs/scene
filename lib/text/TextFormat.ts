@@ -1,13 +1,13 @@
-import {AssetBase, IgnoreConflictStrategy} from "@awayjs/core";
+import { AssetBase, IgnoreConflictStrategy } from '@awayjs/core';
 
-import {IMaterial} from "@awayjs/renderer";
+import { IMaterial } from '@awayjs/renderer';
 
-import {IFontTable} from "./IFontTable";
-import {FontStyleName} from "./FontStyleName";
-import {TextFormatAlign} from "./TextFormatAlign";
-import {Font} from "./Font";
-import {TesselatedFontTable} from "./TesselatedFontTable";
-import {DefaultFontManager} from "../managers/DefaultFontManager";
+import { IFontTable } from './IFontTable';
+import { FontStyleName } from './FontStyleName';
+import { TextFormatAlign } from './TextFormatAlign';
+import { Font } from './Font';
+import { TesselatedFontTable } from './TesselatedFontTable';
+import { DefaultFontManager } from '../managers/DefaultFontManager';
 
 /**
  * The TextFormat class represents character formatting information. Use the
@@ -37,39 +37,36 @@ import {DefaultFontManager} from "../managers/DefaultFontManager";
  */
 
 const PUBLIC_FIELDS = [
-	"font", "align", "leftMargin",
-	"rightMargin", "indent",
-	"size", "color",
-	"bold", "italic",
-	"underline", "leading",
-	"letterSpacing"
+	'font', 'align', 'leftMargin',
+	'rightMargin', 'indent',
+	'size', 'color',
+	'bold', 'italic',
+	'underline', 'leading',
+	'letterSpacing'
 ];
 
-export class TextFormat extends AssetBase
-{
-	public static assetType:string = "[asset TextFormat]";
-	
+export class TextFormat extends AssetBase {
+	public static assetType: string = '[asset TextFormat]';
+
 	// flag marked that format is changed.
 	_updateID: number = 0;
 	public get updateID() {
 		return this._updateID;
 	}
 
-    /**
+	/**
      * return true if a certain property was set for this format.
-     * 
-     * @param property_name 
+     *
+     * @param property_name
      */
-    public hasPropertySet(property_name:string){
-        return this["_"+property_name]!==null;
-    }
+	public hasPropertySet(property_name: string) {
+		return this['_' + property_name] !== null;
+	}
 
-    /**
+	/**
      * paragraph props
      * the textformat on the first char of a paragraph will be used for all the chars in the paragrahp
      * */
-
-
 
 	/**
 	 * Indicates the alignment of the paragraph. Valid values are TextFormatAlign
@@ -79,17 +76,18 @@ export class TextFormat extends AssetBase
 	 * @throws ArgumentError The <code>align</code> specified is not a member of
 	 *                       flash.text.TextFormatAlign.
 	 */
-    private _align:string;
-    public get align():string{
-        return this._align?this._align:TextFormatAlign.LEFT;
-    }
-    public set align(value:string){
-		if(this._align !== value) {
-			this._updateID ++;
+	private _align: string;
+	public get align(): string {
+		return this._align ? this._align : TextFormatAlign.LEFT;
+	}
+
+	public set align(value: string) {
+		if (this._align !== value) {
+			this._updateID++;
 		}
 
-		this._align=value;
-    }
+		this._align = value;
+	}
 
 	/**
 	 * Indicates the block indentation in pixels. Block indentation is applied to
@@ -100,34 +98,35 @@ export class TextFormat extends AssetBase
 	 * 0).
 	 */
 	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
-	private _blockIndent:number;
-    public get blockIndent():number{
-        return this._blockIndent?this._blockIndent:0;
-    }
-    public set blockIndent(value:number) {
-		if(this._blockIndent !== value) {
-			this._updateID ++;
+	private _blockIndent: number;
+	public get blockIndent(): number {
+		return this._blockIndent ? this._blockIndent : 0;
+	}
+
+	public set blockIndent(value: number) {
+		if (this._blockIndent !== value) {
+			this._updateID++;
 		}
 
-        this._blockIndent = value;
-    }
+		this._blockIndent = value;
+	}
 
 	/**
 	 * The left margin of the paragraph, in pixels. The default value is
 	 * <code>null</code>, which indicates that the left margin is 0 pixels.
 	 */
 	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
-	private _leftMargin:number;
-	public get leftMargin():number{
-		return this._leftMargin?this._leftMargin:0;
+	private _leftMargin: number;
+	public get leftMargin(): number {
+		return this._leftMargin ? this._leftMargin : 0;
 	}
 
-	public set leftMargin(value:number){
-		if(value !== this._leftMargin) {
-			this._updateID ++;
+	public set leftMargin(value: number) {
+		if (value !== this._leftMargin) {
+			this._updateID++;
 		}
 
-		this._leftMargin=value;
+		this._leftMargin = value;
 	}
 
 	/**
@@ -135,16 +134,17 @@ export class TextFormat extends AssetBase
 	 * <code>null</code>, which indicates that the right margin is 0 pixels.
 	 */
 	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
-	private _rightMargin:number;
-	public get rightMargin():number{
-		return this._rightMargin?this._rightMargin:0;
+	private _rightMargin: number;
+	public get rightMargin(): number {
+		return this._rightMargin ? this._rightMargin : 0;
 	}
-	public set rightMargin(value:number){
-		if(value !== this._rightMargin) {
-			this._updateID ++;
+
+	public set rightMargin(value: number) {
+		if (value !== this._rightMargin) {
+			this._updateID++;
 		}
 
-		this._rightMargin=value;
+		this._rightMargin = value;
 	}
 
 	/**
@@ -153,23 +153,23 @@ export class TextFormat extends AssetBase
 	 * that no indentation is used.
 	 */
 	//todo: not used with in tesselated-font-table yet (flash-pro offers this as paragraph-properties)
-	private _indent:number;
-	public get indent():number{
-		return this._indent?this._indent:0;
+	private _indent: number;
+	public get indent(): number {
+		return this._indent ? this._indent : 0;
 	}
-	public set indent(value:number){
-		if(value !== this._indent) {
-			this._updateID ++;
+
+	public set indent(value: number) {
+		if (value !== this._indent) {
+			this._updateID++;
 		}
 
-		this._indent=value;
+		this._indent = value;
 	}
 
-    /**
+	/**
      * character props
      * these properties can actually be assigned to individual chars inside a paragraph
      * */
-
 
 	/**
 	 * Indicates the color of the text. A number containing three 8-bit RGB
@@ -177,18 +177,19 @@ export class TextFormat extends AssetBase
 	 * default value is <code>null</code>, which means that Flash Player uses the
 	 * color black(0x000000).
 	 */
-	private _color:number;
-    public get color():number{
-        return (this._color!==null)?this._color:0x000000;
+	private _color: number;
+	public get color(): number {
+		return (this._color !== null) ? this._color : 0x000000;
 	}
 
-    public set color(value:number){
-		if(value !== this._color) {
-			this._updateID ++;
+	public set color(value: number) {
+		if (value !== this._color) {
+			this._updateID++;
 		}
 
-        this._color=value;
-    }
+		this._color = value;
+	}
+
 	/**
 	 * A Boolean value that indicates whether kerning is enabled
 	 * (<code>true</code>) or disabled(<code>false</code>). Kerning adjusts the
@@ -202,17 +203,17 @@ export class TextFormat extends AssetBase
 	 * <p>The default value is <code>null</code>, which means that kerning is not
 	 * enabled.</p>
 	 */
-	private _kerning:boolean;
-	public get kerning():boolean{
-		return this._kerning?this._kerning:false;
+	private _kerning: boolean;
+	public get kerning(): boolean {
+		return this._kerning ? this._kerning : false;
 	}
 
-	public set kerning(value:boolean){
-		if(value !== this._kerning) {
-			this._updateID ++;
+	public set kerning(value: boolean) {
+		if (value !== this._kerning) {
+			this._updateID++;
 		}
 
-		this._kerning=value;
+		this._kerning = value;
 	}
 
 	/**
@@ -220,16 +221,17 @@ export class TextFormat extends AssetBase
 	 * <i>leading</i>) between lines. The default value is <code>null</code>,
 	 * which indicates that the amount of leading used is 0.
 	 */
-	private _leading:number;
-	public get leading():number{
-		return this._leading?this._leading:0;
+	private _leading: number;
+	public get leading(): number {
+		return this._leading ? this._leading : 0;
 	}
-	public set leading(value:number){
-		if(value !== this._leading) {
-			this._updateID ++;
+
+	public set leading(value: number) {
+		if (value !== this._leading) {
+			this._updateID++;
 		}
 
-		this._leading=value;
+		this._leading = value;
 	}
 
 	/**
@@ -239,57 +241,59 @@ export class TextFormat extends AssetBase
 	 * <code>null</code>, which means that 0 pixels of letter spacing is used.
 	 * You can use decimal values such as <code>1.75</code>.
 	 */
-	private _letterSpacing:number;
-	public get letterSpacing():number{
-		return this._letterSpacing?this._letterSpacing:0;
+	private _letterSpacing: number;
+	public get letterSpacing(): number {
+		return this._letterSpacing ? this._letterSpacing : 0;
 	}
-	public set letterSpacing(value:number){
-		if(value !== this._letterSpacing) {
-			this._updateID ++;
+
+	public set letterSpacing(value: number) {
+		if (value !== this._letterSpacing) {
+			this._updateID++;
 		}
 
-		this._letterSpacing=value;
+		this._letterSpacing = value;
 	}
-
 
 	/**
 	 * The size in pixels of text in this text format. The default value is
 	 * <code>null</code>, which means that a size of 12 is used.
 	 */
-	private _size:number;
-	public get size():number{
-		return this._size?this._size:12;
+	private _size: number;
+	public get size(): number {
+		return this._size ? this._size : 12;
 	}
-	public set size(value:number){
-		if(value !== this._size) {
-			this._updateID ++;
+
+	public set size(value: number) {
+		if (value !== this._size) {
+			this._updateID++;
 		}
 
-		this._size=value;
+		this._size = value;
 	}
 
-    /**
+	/**
      * props for defining font and font-style
      * */
-    
+
 	/**
 	 * Specifies whether the text is boldface. The default value is
 	 * <code>null</code>, which means no boldface is used. If the value is
 	 * <code>true</code>, then the text is boldface.
 	 */
-	private _bold:boolean;
-    public get bold():boolean{
-        return this._bold?this._bold:false;
-    }
-	public set bold(value:boolean){
-		if(value !== this._bold) {
-			this._updateID ++;
+	private _bold: boolean;
+	public get bold(): boolean {
+		return this._bold ? this._bold : false;
+	}
+
+	public set bold(value: boolean) {
+		if (value !== this._bold) {
+			this._updateID++;
 		}
 
-		this._bold=value;
-        if(this._font){		
-            this.font_table=this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
-        }
+		this._bold = value;
+		if (this._font) {
+			this.font_table = this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
+		}
 
 	}
 
@@ -297,20 +301,22 @@ export class TextFormat extends AssetBase
 	 * Indicates whether text in this text format is italicized. The default
 	 * value is <code>null</code>, which means no italics are used.
 	 */
-	private _italic:boolean;
-	public get italic():boolean{
-		return this._italic?this._italic:false;
+	private _italic: boolean;
+	public get italic(): boolean {
+		return this._italic ? this._italic : false;
 	}
-	public set italic(value:boolean){
-		if(value !== this._italic) {
-			this._updateID ++;
+
+	public set italic(value: boolean) {
+		if (value !== this._italic) {
+			this._updateID++;
 		}
 
-		this._italic=value;
-        if(this._font){
-            this.font_table=this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
-        }
+		this._italic = value;
+		if (this._font) {
+			this.font_table = this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
+		}
 	}
+
 	/**
 	 * Indicates whether the text that uses this text format is underlined
 	 * (<code>true</code>) or not(<code>false</code>). This underlining is
@@ -319,17 +325,19 @@ export class TextFormat extends AssetBase
 	 * default value is <code>null</code>, which indicates that underlining is
 	 * not used.
 	 */
-	private _underline:boolean;
-	public get underline():boolean{
-		return this._underline?this._underline:false;
+	private _underline: boolean;
+	public get underline(): boolean {
+		return this._underline ? this._underline : false;
 	}
-	public set underline(value:boolean){
-		if(value !== this._underline) {
-			this._updateID ++;
+
+	public set underline(value: boolean) {
+		if (value !== this._underline) {
+			this._updateID++;
 		}
 
-		this._underline=value;
+		this._underline = value;
 	}
+
 	/**
 	 * The name of the font-style for text in this text format, as a string.
 	 * To be valid, for use with curve-rendering, the textFormat must have a Font-table assigned.
@@ -338,46 +346,47 @@ export class TextFormat extends AssetBase
 	/**
 	 * The font-table that provides the subgeos for the chars
 	 */
-	private _font_table:IFontTable;
-	public get font_table():IFontTable{
-        if(!this._font_table){
-            this.font_table=<TesselatedFontTable>this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
-        }
-        return this._font_table;
-    }
-	public set font_table(value:IFontTable){
-		if(value !== this._font_table) {
-			this._updateID ++;
+	private _font_table: IFontTable;
+	public get font_table(): IFontTable {
+		if (!this._font_table) {
+			this.font_table = <TesselatedFontTable> this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
+		}
+		return this._font_table;
+	}
+
+	public set font_table(value: IFontTable) {
+		if (value !== this._font_table) {
+			this._updateID++;
 		}
 
-        this._font_table=value;
-		this._style_name=this._font_table.name;
-		if(this._style_name==FontStyleName.ITALIC)
-            this._italic=true;
-		if(this._style_name==FontStyleName.BOLD)
-            this._bold=true;
-        if(this._style_name==FontStyleName.BOLDITALIC){
-            this._bold=true;
-            this._italic=true;
-        }
+		this._font_table = value;
+		this._style_name = this._font_table.name;
+		if (this._style_name == FontStyleName.ITALIC)
+			this._italic = true;
+		if (this._style_name == FontStyleName.BOLD)
+			this._bold = true;
+		if (this._style_name == FontStyleName.BOLDITALIC) {
+			this._bold = true;
+			this._italic = true;
+		}
 
-    }
+	}
 
 	/**
 	 * The font-table that provides the subgeos for the chars
 	 */
-	public fallback_font_table:IFontTable;
-    
+	public fallback_font_table: IFontTable;
+
 	/**
 	 * The material to use for texturing geometry generated for this text-format. this material will be used by the TextField
 	 */
-	public material:IMaterial;
+	public material: IMaterial;
 
 	/**
 	 * The uv-values of the colors in textureatlas.
 	 * The lenght migth be 4 in future to support bitmap-fills and gradients, but for now it will should always be 2
 	 */
-	public uv_values:Array<number>;
+	public uv_values: Array<number>;
 
 	/**
 	 * The name of the font for text in this text format, as a string.
@@ -385,93 +394,91 @@ export class TextFormat extends AssetBase
 	 * The font-name can be used to get a Font-object from the AssetLibrary.
 	 * A Font object provides a list of Font-table, corresponding to font-table names.
 	 */
-	private _font_name:string;
-	private _font:Font;
+	private _font_name: string;
+	private _font: Font;
 
+	private _style_name: FontStyleName;
 
-	private _style_name:FontStyleName;
-
-	public get font_name():string{
-		return this._font_name?this._font_name:"";
+	public get font_name(): string {
+		return this._font_name ? this._font_name : '';
 	}
 
-	public set font_name(value:string){
-		if(value !== this._font_name) {
-			this._updateID ++;
+	public set font_name(value: string) {
+		if (value !== this._font_name) {
+			this._updateID++;
 		}
 
-		var newFont=DefaultFontManager.getFont(value);
-		if(newFont){
-			this._font=newFont;
-			this.font_table=<TesselatedFontTable>newFont.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
-			if(!this.font_table){
-				console.log("could not find font-table on font", value, this._font);
+		const newFont = DefaultFontManager.getFont(value);
+		if (newFont) {
+			this._font = newFont;
+			this.font_table = <TesselatedFontTable>newFont.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+			if (!this.font_table) {
+				console.log('could not find font-table on font', value, this._font);
 			}
-			if((<TesselatedFontTable>this.font_table).get_font_chars().length==0){
-				this.font_table=<TesselatedFontTable>newFont.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
-				if(!this.font_table){
-					console.log("could not find font-table on font", value, this._font);
+			if ((<TesselatedFontTable> this.font_table).get_font_chars().length == 0) {
+				this.font_table = <TesselatedFontTable>newFont.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+				if (!this.font_table) {
+					console.log('could not find font-table on font', value, this._font);
 				}
 			}
-			this._font_name=value;
+			this._font_name = value;
 
-		}
-		else{
+		} else {
 
-			console.log("could not find font for name ", value);
+			console.log('could not find font for name ', value);
 		}
-    }
-    
-	public get style_name():FontStyleName{
-		if(!this._italic && !this._bold)
-			this._style_name=FontStyleName.STANDART;
-		else if(this._italic && !this._bold)
-			this._style_name=FontStyleName.ITALIC;
-        else if(!this._italic && this._bold)
-            this._style_name=FontStyleName.BOLD;
-		else if(this._italic && this._bold)
-			this._style_name=FontStyleName.BOLDITALIC;
+	}
+
+	public get style_name(): FontStyleName {
+		if (!this._italic && !this._bold)
+			this._style_name = FontStyleName.STANDART;
+		else if (this._italic && !this._bold)
+			this._style_name = FontStyleName.ITALIC;
+		else if (!this._italic && this._bold)
+			this._style_name = FontStyleName.BOLD;
+		else if (this._italic && this._bold)
+			this._style_name = FontStyleName.BOLDITALIC;
 		return this._style_name;
 	}
 
-	public set style_name(value:FontStyleName){
-		if(value !== this._style_name) {
-			this._updateID ++;
+	public set style_name(value: FontStyleName) {
+		if (value !== this._style_name) {
+			this._updateID++;
 		}
 
-		this._style_name=value;
-		if(this._style_name==FontStyleName.BOLD || this._style_name==FontStyleName.BOLDITALIC)
-			this._bold=true;
-		if(this._style_name==FontStyleName.ITALIC || this._style_name==FontStyleName.BOLDITALIC)
-            this._italic=true;
-        if(this._font)
-		    this.font_table=this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+		this._style_name = value;
+		if (this._style_name == FontStyleName.BOLD || this._style_name == FontStyleName.BOLDITALIC)
+			this._bold = true;
+		if (this._style_name == FontStyleName.ITALIC || this._style_name == FontStyleName.BOLDITALIC)
+			this._italic = true;
+		if (this._font)
+		    this.font_table = this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
 	}
 
-	public get font():Font{
-        if(this._font){
-            return this._font;
-        }
-        
-		this._font=DefaultFontManager.getFont(null);
-		this._font_table=<TesselatedFontTable>this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
-  
+	public get font(): Font {
+		if (this._font) {
+			return this._font;
+		}
+
+		this._font = DefaultFontManager.getFont(null);
+		this._font_table = <TesselatedFontTable> this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+
 		return this._font;
 	}
-	public set font(value:Font) {
-		if(typeof value === "string") {
+
+	public set font(value: Font) {
+		if (typeof value === 'string') {
 			this.font_name = value;
 			return;
 		}
 
-		if(value !== this._font) {
-			this._updateID ++;
+		if (value !== this._font) {
+			this._updateID++;
 		}
 
-		this._font=value;
-        this._font_table=this._font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+		this._font = value;
+		this._font_table = this._font.get_font_table(this._style_name, TesselatedFontTable.assetType);
 	}
-
 
 	/**
 	 * Specifies custom tab stops as an array of non-negative integers. Each tab
@@ -479,7 +486,7 @@ export class TextFormat extends AssetBase
 	 * (<code>null</code>), the default tab stop is 4(average character width).
 	 */
 	//todo: not used with in tesselated-font-table yet
-	public tabStops:Array<number /*int*/> = [];
+	public tabStops: Array<number /*int*/> = [];
 
 	/**
 	 * Indicates that the text is part of a bulleted list. In a bulleted list,
@@ -488,7 +495,7 @@ export class TextFormat extends AssetBase
 	 * <code>null</code>, which means no bulleted list is used.
 	 */
 	//todo: not used with in tesselated-font-table yet (flash-pro does not output this directly)
-    public bullet:boolean;
+	public bullet: boolean;
 
 	/**
 	 * Indicates the target window where the hyperlink is displayed. If the
@@ -503,8 +510,7 @@ export class TextFormat extends AssetBase
 	 * have no effect.
 	 */
 	//todo: not used with in tesselated-font-table yet
-	public link_target:string;
-
+	public link_target: string;
 
 	/**
 	 * Indicates the target URL for the text in this text format. If the
@@ -516,7 +522,7 @@ export class TextFormat extends AssetBase
 	 * the <code>htmlText</code> property for the hyperlink to work.</p>
 	 */
 	//todo: not used with in tesselated-font-table yet
-	public url:string;
+	public url: string;
 
 	/**
 	 * Creates a TextFormat object with the specified properties. You can then
@@ -557,17 +563,16 @@ export class TextFormat extends AssetBase
 	 * @param leading     A number that indicates the amount of leading vertical
 	 *                    space between lines.
 	 */
-    constructor(
-        font:string=null, size:number=null, color:number=null, bold:boolean=null, 
-        italic:boolean=null, underline:boolean=null, url:string=null, link_target:string=null, align:string=null, 
-        leftMargin:number=null, rightMargin:number=null, indent:number=null, leading:number=null)
-	{
+	constructor(
+		font: string = null, size: number = null, color: number = null, bold: boolean = null,
+		italic: boolean = null, underline: boolean = null, url: string = null, link_target: string = null, align: string = null,
+		leftMargin: number = null, rightMargin: number = null, indent: number = null, leading: number = null) {
 		super();
 		this._align = align;
 		this._leftMargin = leftMargin;
 		this._rightMargin = rightMargin;
-        this._indent = indent;
-        
+		this._indent = indent;
+
 		this._font_name = font;
 		this._size = size;
 		this._color = color;
@@ -577,21 +582,20 @@ export class TextFormat extends AssetBase
 		this._leading = leading;
 		this._letterSpacing = null;
 		this._font = null;
-    
-        // not really used yet:
+
+		// not really used yet:
 		this.url = url;
-        this.link_target = link_target;
-        
-		this._font_table=null;//=<TesselatedFontTable>this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+		this.link_target = link_target;
+
+		this._font_table = null;//=<TesselatedFontTable>this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
 		this._style_name = FontStyleName.STANDART;
-	
-		
+
 		if (typeof font === 'string') {
 			const asset = DefaultFontManager.getFont(font);
 			const low = font.toLowerCase();
 
 			if (asset) {
-				if(low.indexOf(FontStyleName.BOLD)) {
+				if (low.indexOf(FontStyleName.BOLD)) {
 					this._style_name = FontStyleName.BOLD;
 				} else if (low.indexOf(FontStyleName.BOLDITALIC.toLowerCase())) {
 					this._style_name = FontStyleName.BOLDITALIC;
@@ -602,16 +606,16 @@ export class TextFormat extends AssetBase
 
 			this.font = asset;
 		}
-    }
-    
-	public clone():TextFormat{
-        var clonedFormat:TextFormat=new TextFormat();
-        this.applyToFormat(clonedFormat);
+	}
+
+	public clone(): TextFormat {
+		const clonedFormat: TextFormat = new TextFormat();
+		this.applyToFormat(clonedFormat);
 		return clonedFormat;
 
 	}
-    
-    /*
+
+	/*
 
 	public cloneForStyle(style_name:FontStyleName):TextFormat{
 		if(this._style_name==style_name){
@@ -622,9 +626,9 @@ export class TextFormat extends AssetBase
 		return clonedFormat;
 	}*/
 
-	public applyToFormat(format:TextFormat) {
-        
-        /*if(this._style_name!==null){
+	public applyToFormat(format: TextFormat) {
+
+		/*if(this._style_name!==null){
             format.style_name=this._style_name;
         }*/
 		/*
@@ -639,7 +643,7 @@ export class TextFormat extends AssetBase
             format.rightMargin=this._rightMargin;
         if(this._indent!==null)
             format.indent=this._indent;
-        
+
 		if(this._size!==null)
             format.size=this._size;
         if(this._color!==null)
@@ -655,24 +659,23 @@ export class TextFormat extends AssetBase
         if(this._letterSpacing!==null)
 			format.letterSpacing=this._letterSpacing;
 		*/
-		
-		for(let field of PUBLIC_FIELDS) {
-			if(this["_" + field] !== null) {
-				format[field] = this["_" + field];
+
+		for (const field of PUBLIC_FIELDS) {
+			if (this['_' + field] !== null) {
+				format[field] = this['_' + field];
 			}
 		}
 
-        //if(this._font_name!==null)
-        //    format.font_name=this._font_name;
+		//if(this._font_name!==null)
+		//    format.font_name=this._font_name;
 
-        return format;
+		return format;
 	}
 
 	/**
 	 *
 	 */
-	public get assetType():string
-	{
+	public get assetType(): string {
 		return TextFormat.assetType;
 	}
 }

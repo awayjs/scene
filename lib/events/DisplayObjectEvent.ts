@@ -1,33 +1,30 @@
-import {EventBase} from "@awayjs/core";
+import { EventBase } from '@awayjs/core';
 
-import {DisplayObject} from "../display/DisplayObject";
+import { DisplayObject } from '../display/DisplayObject';
 
-export class DisplayObjectEvent extends EventBase
-{
+export class DisplayObjectEvent extends EventBase {
 	/**
 	 *
 	 */
-	public static VISIBLITY_UPDATED:string = "visiblityUpdated";
-
-	/**
-	 *
-	 */
-	public static SCENETRANSFORM_CHANGED:string = "scenetransformChanged";
+	public static VISIBLITY_UPDATED: string = 'visiblityUpdated';
 
 	/**
 	 *
 	 */
-	public static PARTITION_CHANGED:string = "partitionChanged";
+	public static SCENETRANSFORM_CHANGED: string = 'scenetransformChanged';
 
-	private _object:DisplayObject;
+	/**
+	 *
+	 */
+	public static PARTITION_CHANGED: string = 'partitionChanged';
 
-	public get object():DisplayObject
-	{
+	private _object: DisplayObject;
+
+	public get object(): DisplayObject {
 		return this._object;
 	}
 
-	constructor(type:string, object:DisplayObject)
-	{
+	constructor(type: string, object: DisplayObject) {
 		super(type);
 		this._object = object;
 	}
@@ -36,8 +33,7 @@ export class DisplayObjectEvent extends EventBase
 	 * Clones the event.
 	 * @return An exact duplicate of the current object.
 	 */
-	public clone():DisplayObjectEvent
-	{
+	public clone(): DisplayObjectEvent {
 		return new DisplayObjectEvent(this.type, this._object);
 	}
 }

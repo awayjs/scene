@@ -1,25 +1,25 @@
-import {IAssetAdapter} from "@awayjs/core";
+import { IAssetAdapter } from '@awayjs/core';
 
-import {DisplayObject} from "../display/DisplayObject";
+import { DisplayObject } from '../display/DisplayObject';
 import { IFilter } from './IFilter';
 
 export interface IDisplayObjectAdapter extends IAssetAdapter
 {
-	isBlockedByScript():boolean;
+	isBlockedByScript(): boolean;
 
-	isVisibilityByScript():boolean;
-	
-	isColorTransformByScript():boolean;
+	isVisibilityByScript(): boolean;
 
-	initAdapter():void;
+	isColorTransformByScript(): boolean;
 
-	onLoaded?:Function;
-	
-	executeConstructor?:Function;
-	
-	freeFromScript():void;
+	initAdapter(): void;
 
-	clone():IDisplayObjectAdapter;
+	onLoaded?: Function;
 
-	updateFilters(newFilters:IFilter[]);
+	executeConstructor?: Function;
+
+	freeFromScript(): void;
+
+	clone(): IDisplayObjectAdapter;
+
+	updateFilters(newFilters: IFilter[]);
 }

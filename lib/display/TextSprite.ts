@@ -1,27 +1,24 @@
-﻿import {ColorTransform} from "@awayjs/core";
+﻿import { ColorTransform } from '@awayjs/core';
 
-import {Sprite} from "./Sprite";
+import { Sprite } from './Sprite';
 import { TextField } from './TextField';
 import { TesselatedFontTable } from '../text/TesselatedFontTable';
-import {HierarchicalProperties} from "../base/HierarchicalProperties";
+import { HierarchicalProperties } from '../base/HierarchicalProperties';
 import { IEntityTraverser } from '@awayjs/view';
 
 /**
  * TextSprite is used for masked text. It is a child of the textfield that is used to render all visible (masked) graphics
  */
-export class TextSprite extends Sprite
-{
-	public parentTextField:TextField;
+export class TextSprite extends Sprite {
+	public parentTextField: TextField;
 
-	
-	public _acceptTraverser(traverser:IEntityTraverser):void
-	{
-		var tf:TextField=this.parentTextField;
+	public _acceptTraverser(traverser: IEntityTraverser): void {
+		const tf: TextField = this.parentTextField;
 		tf.reConstruct(true);
-		
-		if(tf._textFormat && !tf._textFormat.font_table.isAsset(TesselatedFontTable) && !tf._textFormat.material ){
-			var new_ct:ColorTransform = tf.transform.colorTransform || (tf.transform.colorTransform = new ColorTransform());
-			this.transform.colorTransform.color = (tf.textColor!=null) ? tf.textColor : tf._textFormat.color;
+
+		if (tf._textFormat && !tf._textFormat.font_table.isAsset(TesselatedFontTable) && !tf._textFormat.material) {
+			const new_ct: ColorTransform = tf.transform.colorTransform || (tf.transform.colorTransform = new ColorTransform());
+			this.transform.colorTransform.color = (tf.textColor != null) ? tf.textColor : tf._textFormat.color;
 			this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
 		}
 
@@ -34,7 +31,7 @@ export class TextSprite extends Sprite
 		//if(tf.showSelection && tf.isInFocus && tf.bgShapeSelect){
 		//	traverser[tf.bgShapeSelect.elements.traverseName](tf.bgShapeSelect);
 		//}
-		
+
 		//if(tf.bgShape && tf.background){
 		//	traverser[tf.bgShape.elements.traverseName](tf.bgShape);
 		//}

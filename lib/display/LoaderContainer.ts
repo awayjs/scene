@@ -1,7 +1,7 @@
-import {AssetLibraryBundle, Loader, LoaderContext, URLRequest, AssetEvent, URLLoaderEvent, LoaderEvent, ParserEvent, ParserBase, EventBase} from "@awayjs/core";
+import { AssetLibraryBundle, Loader, LoaderContext, URLRequest, AssetEvent, URLLoaderEvent, LoaderEvent, ParserEvent, ParserBase, EventBase } from '@awayjs/core';
 
-import {DisplayObjectContainer} from "./DisplayObjectContainer";
-import {DisplayObject} from "./DisplayObject";
+import { DisplayObjectContainer } from './DisplayObjectContainer';
+import { DisplayObject } from './DisplayObject';
 
 /**
  * The LoaderContainer class is used to load SWF files or image(JPG, PNG, or GIF)
@@ -66,8 +66,7 @@ import {DisplayObject} from "./DisplayObject";
  * of the LoaderContainer object) from drawing to portions of the Stage outside of that
  * mask, as shown in the following code:</p>
  */
-export class LoaderContainer extends DisplayObjectContainer
-{
+export class LoaderContainer extends DisplayObjectContainer {
 	/**
 	 * Dispatched when any asset finishes parsing. Also see specific events for each
 	 * individual asset type (sprites, materials et c.)
@@ -76,7 +75,6 @@ export class LoaderContainer extends DisplayObjectContainer
 	 */
 	//[Event(name="assetComplete", type="AssetEvent")]
 
-
 	/**
 	 * Dispatched when a full resource (including dependencies) finishes loading.
 	 *
@@ -84,19 +82,19 @@ export class LoaderContainer extends DisplayObjectContainer
 	 */
 	//[Event(name="resourceComplete", type="LoaderEvent")]
 
-	private _contentLoader:Loader;
-	private _useAssetLib:boolean;
-	private _assetLibId:string;
-	private _onLoaderStartDelegate:(event:LoaderEvent) => void;
-	private _onLoadProgressDelegate:(event:URLLoaderEvent) => void;
-	private _onLoadCompleteDelegate:(event:URLLoaderEvent) => void;
-	private _onAssetCompleteDelegate:(event:AssetEvent) => void;
-	private _onLoaderCompleteDelegate:(event:LoaderEvent) => void;
-	private _onLoadErrorDelegate:(event:URLLoaderEvent) => void;
-	private _onParseErrorDelegate:(event:ParserEvent) => void;
-	private _errorDelegateSelector:{[index: string]:((event: EventBase) => void)};
+	private _contentLoader: Loader;
+	private _useAssetLib: boolean;
+	private _assetLibId: string;
+	private _onLoaderStartDelegate: (event: LoaderEvent) => void;
+	private _onLoadProgressDelegate: (event: URLLoaderEvent) => void;
+	private _onLoadCompleteDelegate: (event: URLLoaderEvent) => void;
+	private _onAssetCompleteDelegate: (event: AssetEvent) => void;
+	private _onLoaderCompleteDelegate: (event: LoaderEvent) => void;
+	private _onLoadErrorDelegate: (event: URLLoaderEvent) => void;
+	private _onParseErrorDelegate: (event: ParserEvent) => void;
+	private _errorDelegateSelector: {[index: string]: ((event: EventBase) => void)};
 
-	private _content:DisplayObject;
+	private _content: DisplayObject;
 
 	/**
 	 * Contains the root display object of the SWF file or image(JPG, PNG, or
@@ -115,16 +113,14 @@ export class LoaderContainer extends DisplayObjectContainer
 	 *                       call the <code>load()</code> or
 	 *                       <code>loadBytes()</code> method.
 	 */
-	public get content():DisplayObject
-	{
+	public get content(): DisplayObject {
 		return this._content;
 	}
 
 	/**
-	 * 
+	 *
 	 */
-	public get contentLoader():Loader
-	{
+	public get contentLoader(): Loader {
 		return this._contentLoader;
 	}
 
@@ -176,51 +172,47 @@ export class LoaderContainer extends DisplayObjectContainer
 	 * handler.</li>
 	 * </ul>
 	 */
-	constructor(useAssetLibrary:boolean = true, assetLibraryId:string = null)
-	{
+	constructor(useAssetLibrary: boolean = true, assetLibraryId: string = null) {
 		super();
-		
+
 		this._useAssetLib = useAssetLibrary;
 		this._assetLibId = assetLibraryId;
 
-		this._onLoaderStartDelegate = (event:LoaderEvent) => this._onLoaderStart(event);
-		this._onLoadProgressDelegate = (event:URLLoaderEvent) => this._onLoadProgress(event);
-		this._onLoadCompleteDelegate = (event:URLLoaderEvent) => this._onLoadComplete(event);
-		this._onAssetCompleteDelegate = (event:AssetEvent) => this._onAssetComplete(event);
-		this._onLoaderCompleteDelegate = (event:LoaderEvent) => this._onLoaderComplete(event);
-		this._onLoadErrorDelegate = (event:URLLoaderEvent) => this._onLoadError(event);
-		this._onParseErrorDelegate = (event:ParserEvent) => this._onParseError(event);
+		this._onLoaderStartDelegate = (event: LoaderEvent) => this._onLoaderStart(event);
+		this._onLoadProgressDelegate = (event: URLLoaderEvent) => this._onLoadProgress(event);
+		this._onLoadCompleteDelegate = (event: URLLoaderEvent) => this._onLoadComplete(event);
+		this._onAssetCompleteDelegate = (event: AssetEvent) => this._onAssetComplete(event);
+		this._onLoaderCompleteDelegate = (event: LoaderEvent) => this._onLoaderComplete(event);
+		this._onLoadErrorDelegate = (event: URLLoaderEvent) => this._onLoadError(event);
+		this._onParseErrorDelegate = (event: ParserEvent) => this._onParseError(event);
 
 		this._errorDelegateSelector = {
 			[URLLoaderEvent.LOAD_ERROR]: this._onLoadErrorDelegate,
 			[ParserEvent.PARSE_ERROR]: this._onParseErrorDelegate
-		}
+		};
 	}
 
-	
 	/**
 	 * Special addEventListener case for <code>URLLoaderEvent.LOAD_ERROR</code> and <code>ype == ParserEvent.PARSE_ERROR</code>
-	 * 
-	 * @param type 
-	 * @param listener 
+	 *
+	 * @param type
+	 * @param listener
 	 */
-	public addEventListener(type:string, listener:(event:EventBase) => void):void
-	{
+	public addEventListener(type: string, listener: (event: EventBase) => void): void {
 		if (this._contentLoader && type == URLLoaderEvent.LOAD_ERROR || type == ParserEvent.PARSE_ERROR)
 			this._contentLoader.addEventListener(type, this._errorDelegateSelector[type]);
 
 		super.addEventListener(type, listener);
 	}
-	
+
 	/**
 	 * Special removeEventListener case for <code>URLLoaderEvent.LOAD_ERROR</code> and <code>ype == ParserEvent.PARSE_ERROR</code>
-	 * 
-	 * @param type 
-	 * @param listener 
+	 *
+	 * @param type
+	 * @param listener
 	 */
 
-	public removeEventListener(type:string, listener:(event:EventBase) => void):void
-	{
+	public removeEventListener(type: string, listener: (event: EventBase) => void): void {
 		if (this._contentLoader && type == URLLoaderEvent.LOAD_ERROR || type == ParserEvent.PARSE_ERROR)
 			this._contentLoader.removeEventListener(type, this._errorDelegateSelector[type]);
 
@@ -232,14 +224,13 @@ export class LoaderContainer extends DisplayObjectContainer
 	 * progress for the Loader instance.
 	 *
 	 */
-	public close():void
-	{
+	public close(): void {
 		if (!this._contentLoader)
 			return;
-		
+
 		if (this._useAssetLib)
 			AssetLibraryBundle.getInstance(this._assetLibId).stopLoader(this._contentLoader);
-		
+
 		this._disposeLoader();
 	}
 
@@ -410,8 +401,7 @@ export class LoaderContainer extends DisplayObjectContainer
 	 * @event unload        Dispatched by the <code>contentLoaderInfo</code>
 	 *                      object when a loaded object is removed.
 	 */
-	public load(request:URLRequest, context:LoaderContext = null, ns:string = null, parser:ParserBase = null):void
-	{
+	public load(request: URLRequest, context: LoaderContext = null, ns: string = null, parser: ParserBase = null): void {
 		this._getLoader().load(request, context, ns, parser);
 	}
 
@@ -501,17 +491,15 @@ export class LoaderContainer extends DisplayObjectContainer
 	 * @event unload        Dispatched by the <code>contentLoaderInfo</code>
 	 *                      object when a loaded object is removed.
 	 */
-	public loadData(data:any, context:LoaderContext = null, ns:string = null, parser:ParserBase = null):void
-	{
+	public loadData(data: any, context: LoaderContext = null, ns: string = null, parser: ParserBase = null): void {
 		this._getLoader().loadData(data, '', context, ns, parser);
 	}
 
-	private _getLoader():Loader
-	{
+	private _getLoader(): Loader {
 		if (this._contentLoader)
 			this.close();
 
-		this._contentLoader = (this._useAssetLib)? AssetLibraryBundle.getInstance(this._assetLibId).getLoader() : new Loader();
+		this._contentLoader = (this._useAssetLib) ? AssetLibraryBundle.getInstance(this._assetLibId).getLoader() : new Loader();
 
 		this._contentLoader.addEventListener(LoaderEvent.LOADER_START, this._onLoaderStartDelegate);
 		this._contentLoader.addEventListener(URLLoaderEvent.LOAD_PROGRESS, this._onLoadProgressDelegate);
@@ -520,16 +508,15 @@ export class LoaderContainer extends DisplayObjectContainer
 		this._contentLoader.addEventListener(LoaderEvent.LOADER_COMPLETE, this._onLoaderCompleteDelegate);
 
 		if (this.hasEventListener(URLLoaderEvent.LOAD_ERROR))
-		this._contentLoader.addEventListener(URLLoaderEvent.LOAD_ERROR, this._onLoadErrorDelegate);
-	
+			this._contentLoader.addEventListener(URLLoaderEvent.LOAD_ERROR, this._onLoadErrorDelegate);
+
 		if (this.hasEventListener(ParserEvent.PARSE_ERROR))
 			this._contentLoader.addEventListener(ParserEvent.PARSE_ERROR, this._onParseErrorDelegate);
 
 		return this._contentLoader;
 	}
 
-	private _disposeLoader():void
-	{
+	private _disposeLoader(): void {
 		this._contentLoader.removeEventListener(LoaderEvent.LOADER_START, this._onLoaderStartDelegate);
 		this._contentLoader.removeEventListener(URLLoaderEvent.LOAD_PROGRESS, this._onLoadProgressDelegate);
 		this._contentLoader.removeEventListener(URLLoaderEvent.LOAD_COMPLETE, this._onLoadCompleteDelegate);
@@ -537,8 +524,8 @@ export class LoaderContainer extends DisplayObjectContainer
 		this._contentLoader.removeEventListener(LoaderEvent.LOADER_COMPLETE, this._onLoaderCompleteDelegate);
 
 		if (this.hasEventListener(URLLoaderEvent.LOAD_ERROR))
-		this._contentLoader.removeEventListener(URLLoaderEvent.LOAD_ERROR, this._onLoadErrorDelegate);
-	
+			this._contentLoader.removeEventListener(URLLoaderEvent.LOAD_ERROR, this._onLoadErrorDelegate);
+
 		if (this.hasEventListener(ParserEvent.PARSE_ERROR))
 			this._contentLoader.removeEventListener(ParserEvent.PARSE_ERROR, this._onParseErrorDelegate);
 
@@ -547,7 +534,7 @@ export class LoaderContainer extends DisplayObjectContainer
 
 		this._contentLoader = null;
 	}
-	
+
 	/**
 	 * Removes a child of this Loader object that was loaded by using the
 	 * <code>load()</code> method. The <code>property</code> of the associated
@@ -571,8 +558,7 @@ export class LoaderContainer extends DisplayObjectContainer
 	 * closeAllStreams);</pre>
 	 *
 	 */
-	public unload():void
-	{
+	public unload(): void {
 		//TODO
 	}
 
@@ -585,8 +571,7 @@ export class LoaderContainer extends DisplayObjectContainer
 	 * @param parserClass The parser class to enable.
 	 * @see away.parsers.Parsers
 	 */
-	public static enableParser(parserClass:Object):void
-	{
+	public static enableParser(parserClass: Object): void {
 		Loader.enableParser(parserClass);
 	}
 
@@ -599,38 +584,33 @@ export class LoaderContainer extends DisplayObjectContainer
 	 * @param parserClasses A Vector of parser classes to enable.
 	 * @see away.parsers.Parsers
 	 */
-	public static enableParsers(parserClasses:Array<Object>):void
-	{
+	public static enableParsers(parserClasses: Array<Object>): void {
 		Loader.enableParsers(parserClasses);
 	}
 
 	/**
 	 * .
 	 */
-	private _onLoaderStart(event:LoaderEvent):void
-	{
+	private _onLoaderStart(event: LoaderEvent): void {
 		this.dispatchEvent(event);
 	}
 
-	private _onLoadProgress(event:URLLoaderEvent):void
-	{
+	private _onLoadProgress(event: URLLoaderEvent): void {
 		this.dispatchEvent(event);
 	}
-	
-	private _onLoadComplete(event:URLLoaderEvent):void
-	{
+
+	private _onLoadComplete(event: URLLoaderEvent): void {
 		this.dispatchEvent(event);
 	}
-	private _onAssetComplete(event:AssetEvent):void
-	{
+
+	private _onAssetComplete(event: AssetEvent): void {
 		this.dispatchEvent(event);
 	}
 
 	/**
 	 * Called when an error occurs during loading
 	 */
-	private _onLoadError(event:URLLoaderEvent):boolean
-	{
+	private _onLoadError(event: URLLoaderEvent): boolean {
 		if (this.hasEventListener(URLLoaderEvent.LOAD_ERROR)) {
 			this.dispatchEvent(event);
 			return true;
@@ -642,8 +622,7 @@ export class LoaderContainer extends DisplayObjectContainer
 	/**
 	 * Called when a an error occurs during parsing
 	 */
-	private _onParseError(event:ParserEvent):boolean
-	{
+	private _onParseError(event: ParserEvent): boolean {
 		if (this.hasEventListener(ParserEvent.PARSE_ERROR)) {
 			this.dispatchEvent(event);
 			return true;
@@ -655,8 +634,7 @@ export class LoaderContainer extends DisplayObjectContainer
 	/**
 	 * Called when the resource and all of its dependencies was retrieved.
 	 */
-	private _onLoaderComplete(event:LoaderEvent):void
-	{
+	private _onLoaderComplete(event: LoaderEvent): void {
 		this._content = <DisplayObject> event.content;
 
 		if (this._content)

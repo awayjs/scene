@@ -1,17 +1,16 @@
-import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D, Transform} from "@awayjs/core";
+import { ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D, Transform } from '@awayjs/core';
 
-import {Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode, ContextWebGL, ContextGLBlendFactor, ContextGLTriangleFace} from "@awayjs/stage";
+import { Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode, ContextWebGL, ContextGLBlendFactor, ContextGLTriangleFace } from '@awayjs/stage';
 
-import {DefaultRenderer, RenderGroup, RendererType, Style} from "@awayjs/renderer";
+import { DefaultRenderer, RenderGroup, RendererType, Style } from '@awayjs/renderer';
 
-import {DisplayObject} from "../display/DisplayObject";
-import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
+import { DisplayObject } from '../display/DisplayObject';
+import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 import { SceneGraphPartition } from '../partition/SceneGraphPartition';
 
 import { View } from '@awayjs/view';
 import { MethodMaterial } from '@awayjs/materials';
 import { Billboard } from '../display/Billboard';
-
 
 // empty matrix for transfrorm reset
 const TMP_COLOR_MATRIX = new ColorTransform();
@@ -20,29 +19,27 @@ const TMP_POINT = new Point(0,0);
 const TMP_RECT = new Rectangle();
 
 /**
- * 
+ *
  */
-export class SceneImage2D extends BitmapImage2D
-{
-	public static assetType:string = "[image SceneImage2D]";
+export class SceneImage2D extends BitmapImage2D {
+	public static assetType: string = '[image SceneImage2D]';
 	private static MAX_POOL_SIZE = 30;
-	private static MAX_GROW_SIZE = 300; // x10 of start value 
+	private static MAX_GROW_SIZE = 300; // x10 of start value
 	private static _pool: SceneImage2D[] = [];
 
 	public static getImage(
-		width: number, 
-		height: number, 
-		transparent: boolean = true, 
-		fillColor: number = 0xffffffff, 
-		powerOfTwo: boolean = true, 
-		stage:Stage = null) 
-	{
+		width: number,
+		height: number,
+		transparent: boolean = true,
+		fillColor: number = 0xffffffff,
+		powerOfTwo: boolean = true,
+		stage: Stage = null) {
 		let index = -1;
-		for(let i = 0; i < this._pool.length; i ++) {
+		for (let i = 0; i < this._pool.length; i++) {
 			const e = this._pool[i];
 
-			if((!stage || e._stage === stage) 
-				&& e.width === width  
+			if ((!stage || e._stage === stage)
+				&& e.width === width
 				&& e.height === height
 				&& e.transparent === transparent
 				&& e.powerOfTwo === powerOfTwo
@@ -52,32 +49,32 @@ export class SceneImage2D extends BitmapImage2D
 			}
 		}
 
-		if(index > -1) {
+		if (index > -1) {
 			const e = this._pool.splice(index, 1)[0];
 
-			if(fillColor !== null)
+			if (fillColor !== null)
 				e.fillRect(e.rect, fillColor);
 			return e;
 		} else {
-			if(this._pool.length === this.MAX_POOL_SIZE && this.MAX_POOL_SIZE < this.MAX_GROW_SIZE) {
+			if (this._pool.length === this.MAX_POOL_SIZE && this.MAX_POOL_SIZE < this.MAX_GROW_SIZE) {
 
-				// GROW POOL WHEN THERE ARE NOT needed image size 
+				// GROW POOL WHEN THERE ARE NOT needed image size
 				this.MAX_POOL_SIZE += this .MAX_POOL_SIZE * 0.25 | 0;
 			}
 		}
 
 		return new SceneImage2D(
-			width, 
-			height, 
-			transparent, 
-			fillColor, 
-			powerOfTwo, 
+			width,
+			height,
+			transparent,
+			fillColor,
+			powerOfTwo,
 			stage
-		)
+		);
 	}
 
 	public static tryStoreImage(image: SceneImage2D, force = false): boolean {
-		if(this._pool.length <= this.MAX_POOL_SIZE || force) {
+		if (this._pool.length <= this.MAX_POOL_SIZE || force) {
 			this._pool.push(image);
 			return true;
 		}
@@ -92,8 +89,8 @@ export class SceneImage2D extends BitmapImage2D
 
 		let size = this.TMP_STEP[0];
 
-		for(let i = 0; i < this.TMP_STEP.length; i ++) {
-			if(max <= this.TMP_STEP[i]) {
+		for (let i = 0; i < this.TMP_STEP.length; i++) {
+			if (max <= this.TMP_STEP[i]) {
 				size = this.TMP_STEP[i];
 				break;
 			}
@@ -102,18 +99,18 @@ export class SceneImage2D extends BitmapImage2D
 		return this.getImage(size, size, true, null, true, stage);
 	}
 
-	private static _renderer:DefaultRenderer;
-	private static _billboardRenderer:DefaultRenderer;
-	private static _root:DisplayObjectContainer;
-	private static _billboardRoot:DisplayObjectContainer;
-	private static _billboard:Billboard;
+	private static _renderer: DefaultRenderer;
+	private static _billboardRenderer: DefaultRenderer;
+	private static _root: DisplayObjectContainer;
+	private static _billboardRoot: DisplayObjectContainer;
+	private static _billboard: Billboard;
 
 	// regions that already updated by getPixel, getPixels methods
 	private _updateRegions: Rectangle[] = [];
 
 	private _dirtyRegions: Rectangle[] = [];
 	private _maxDirtyArea: Rectangle = null;
-	// when all SceneImageBitmap is updated 
+	// when all SceneImageBitmap is updated
 	private _fullDirty: boolean = false;
 	// legacy
 	private _imageDataDirty: boolean;
@@ -122,16 +119,16 @@ export class SceneImage2D extends BitmapImage2D
 		this.applySymbol();
 
 		// update data from pixels from GPU
-		if(!this._imageDataDirty) { 
+		if (!this._imageDataDirty) {
 			return false;
 		}
-		
+
 		const internalData = this._data || (this._data = new Uint8ClampedArray(this.width * this.height * 4));
 
 		this._stage.setRenderTarget(this, false);
 
 		const gl = (this._stage.context as ContextWebGL)._gl;
-		
+
 		// copy to self data, update it
 		gl.readPixels(0, 0, this.rect.width, this.rect.height, gl.RGBA, gl.UNSIGNED_BYTE, internalData);
 
@@ -152,8 +149,8 @@ export class SceneImage2D extends BitmapImage2D
 	private pushDirtyRegion(rect: Rectangle): void {
 		this._imageDataDirty = true;
 
-		if(this._fullDirty) {
-			if(this._updateRegions && this._updateRegions.length){
+		if (this._fullDirty) {
+			if (this._updateRegions && this._updateRegions.length) {
 				this._updateRegions.length = 0;
 			}
 			return;
@@ -161,18 +158,18 @@ export class SceneImage2D extends BitmapImage2D
 
 		const eq = rect.equals(this._rect);
 
-		if(!this._dirtyRegions) {
+		if (!this._dirtyRegions) {
 			this._dirtyRegions = [];
 		}
 
-		if(!eq){
+		if (!eq) {
 			this._dirtyRegions.push(rect);
 		} else {
 			this._dirtyRegions = [this._rect];
 			this._fullDirty = true;
 		}
 
-		if(!this._maxDirtyArea || eq) {
+		if (!this._maxDirtyArea || eq) {
 			this._maxDirtyArea = rect.clone();
 		} else {
 			const rr = rect._rawData;
@@ -181,20 +178,20 @@ export class SceneImage2D extends BitmapImage2D
 
 			mr[0] = rr[0] < mr[0] ? rr[0] : mr[0];
 			mr[1] = rr[1] < mr[1] ? rr[1] : mr[1];
-			
+
 			ma.right = ma.right < rect.right ? ma.right : rect.right;
 			ma.bottom = ma.bottom < rect.bottom ? ma.bottom : rect.bottom;
 
 			//clamp
-			if(mr[0] < 0) (mr[0] = 0);
-			if(mr[1] < 0) (mr[1] = 0);
-			if(mr[2] > this.width) (mr[2] = this.width);
-			if(mr[3] > this.height) (mr[3] = this.height);	
+			if (mr[0] < 0) (mr[0] = 0);
+			if (mr[1] < 0) (mr[1] = 0);
+			if (mr[2] > this.width) (mr[2] = this.width);
+			if (mr[3] > this.height) (mr[3] = this.height);
 		}
 
-		if(this._updateRegions ) {
-			for(let i = this._updateRegions.length - 1; i>= 0; i --) {
-				if(this._updateRegions[i].intersects(rect)) {
+		if (this._updateRegions) {
+			for (let i = this._updateRegions.length - 1; i >= 0; i--) {
+				if (this._updateRegions[i].intersects(rect)) {
 					this._updateRegions.splice(i, 1);
 				}
 			}
@@ -203,13 +200,13 @@ export class SceneImage2D extends BitmapImage2D
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private resetDirty() {
 		this._dirtyRegions = [];
 		this._updateRegions = [];
 
-		this._maxDirtyArea = null;		
+		this._maxDirtyArea = null;
 		this._fullDirty = false;
 
 		this._imageDataDirty = false;
@@ -219,8 +216,7 @@ export class SceneImage2D extends BitmapImage2D
 	 *
 	 * @returns {string}
 	 */
-	public get assetType():string
-	{
+	public get assetType(): string {
 		return SceneImage2D.assetType;
 	}
 
@@ -252,47 +248,43 @@ export class SceneImage2D extends BitmapImage2D
 	 *                    bitmap image area. The default value is
 	 *                    0xFFFFFFFF(solid white).
 	 */
-	constructor(width:number, height:number, transparent:boolean=true, fillColor:number=0xffffffff, powerOfTwo:boolean = true, stage:Stage = null)
-	{
+	constructor(width: number, height: number, transparent: boolean = true, fillColor: number = 0xffffffff, powerOfTwo: boolean = true, stage: Stage = null) {
 		super(width, height, transparent, fillColor, powerOfTwo, stage);
 	}
 
-	private createRenderer()
-	{
+	private createRenderer() {
 		//create the projection
-		var projection = new PerspectiveProjection();
-		projection.coordinateSystem = CoordinateSystem.RIGHT_HANDED;
-		projection.originX = -1;
-		projection.originY = 1;
-
-        //create the view
-        SceneImage2D._root = new DisplayObjectContainer()
-        SceneImage2D._renderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, this._stage, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(SceneImage2D._root));
-        SceneImage2D._root.partition = SceneImage2D._renderer.partition;
-
-		//setup the projection
-		SceneImage2D._renderer.disableClear = true;
-		SceneImage2D._renderer.view.backgroundAlpha = 0;
-        SceneImage2D._renderer.view.projection = projection;
-        SceneImage2D._renderer.view.projection.transform = new Transform();
-		SceneImage2D._renderer.view.projection.transform.moveTo(0, 0, -1000);
-		SceneImage2D._renderer.view.projection.transform.lookAt(new Vector3D());
-
-
-		SceneImage2D._renderer.renderableSorter = null;//new RenderableSort2D();
-	
-	}
-
-	private createBillboardRenderer():void
-	{
-		//create the projection
-		var projection = new PerspectiveProjection();
+		const projection = new PerspectiveProjection();
 		projection.coordinateSystem = CoordinateSystem.RIGHT_HANDED;
 		projection.originX = -1;
 		projection.originY = 1;
 
 		//create the view
-		SceneImage2D._billboardRoot = new DisplayObjectContainer()
+		SceneImage2D._root = new DisplayObjectContainer();
+		SceneImage2D._renderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, this._stage, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(SceneImage2D._root));
+		SceneImage2D._root.partition = SceneImage2D._renderer.partition;
+
+		//setup the projection
+		SceneImage2D._renderer.disableClear = true;
+		SceneImage2D._renderer.view.backgroundAlpha = 0;
+		SceneImage2D._renderer.view.projection = projection;
+		SceneImage2D._renderer.view.projection.transform = new Transform();
+		SceneImage2D._renderer.view.projection.transform.moveTo(0, 0, -1000);
+		SceneImage2D._renderer.view.projection.transform.lookAt(new Vector3D());
+
+		SceneImage2D._renderer.renderableSorter = null;//new RenderableSort2D();
+
+	}
+
+	private createBillboardRenderer(): void {
+		//create the projection
+		const projection = new PerspectiveProjection();
+		projection.coordinateSystem = CoordinateSystem.RIGHT_HANDED;
+		projection.originX = -1;
+		projection.originY = 1;
+
+		//create the view
+		SceneImage2D._billboardRoot = new DisplayObjectContainer();
 		SceneImage2D._billboardRenderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, this._stage, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(SceneImage2D._billboardRoot));
 		SceneImage2D._billboardRoot.partition = SceneImage2D._billboardRenderer.partition;
 
@@ -304,14 +296,13 @@ export class SceneImage2D extends BitmapImage2D
 		SceneImage2D._billboardRenderer.view.projection.transform.moveTo(0, 0, -1000);
 		SceneImage2D._billboardRenderer.view.projection.transform.lookAt(new Vector3D());
 
-
 		SceneImage2D._billboardRenderer.renderableSorter = null;//new RenderableSort2D();
-		
-		var mat:MethodMaterial = new MethodMaterial(new BitmapImage2D(128, 128, true, 0x0));
+
+		const mat: MethodMaterial = new MethodMaterial(new BitmapImage2D(128, 128, true, 0x0));
 		//mat.colorTransform = new ColorTransform(argb[1]/255, argb[2]/255, argb[3]/255);
 		mat.bothSides = true;
 		mat.alphaBlending = true;
-		
+
 		SceneImage2D._billboard = new Billboard(mat);
 		SceneImage2D._billboard.style = new Style();
 
@@ -337,8 +328,7 @@ export class SceneImage2D extends BitmapImage2D
 	 * collected by the garbage collector.</p>
 	 *
 	 */
-	public dispose():void
-	{	
+	public dispose(): void {
 		this.dropAllReferences();
 		this.unmarkToUnload();
 		this.unuseWeakRef();
@@ -347,11 +337,11 @@ export class SceneImage2D extends BitmapImage2D
 		this._updateRegions = null;
 		this._maxDirtyArea = null;
 
-		// drop buffer, because is big 
+		// drop buffer, because is big
 		this._data = null;
 		this._locked = false;
 
-		if(!SceneImage2D.tryStoreImage(this, false)){
+		if (!SceneImage2D.tryStoreImage(this, false)) {
 			super.dispose();
 		}
 
@@ -367,14 +357,13 @@ export class SceneImage2D extends BitmapImage2D
 		this.copyPixels(from, this._rect, new Point(0,0));
 	}
 
-	
 	public clone(): SceneImage2D {
 		const clone = SceneImage2D.getImage(this.width, this.height, this.transparent, null, false, this._stage);
 		this.addNestedReference(clone);
 
 		return clone;
 	}
-	
+
 	/**
 	 * Fills a rectangular area of pixels with a specified ARGB color.
 	 *
@@ -384,8 +373,7 @@ export class SceneImage2D extends BitmapImage2D
 	 *              0xFF336699.
 	 * @throws TypeError The rect is null.
 	 */
-	public fillRect(rect:Rectangle, color:number):void
-	{
+	public fillRect(rect: Rectangle, color: number): void {
 		this.dropAllReferences();
 
 		if (!SceneImage2D._renderer)
@@ -393,7 +381,7 @@ export class SceneImage2D extends BitmapImage2D
 
 		//set target and scale value
 		SceneImage2D._renderer.view.target = this;
-		SceneImage2D._renderer.view.projection.scale = 1000/this.rect.height;
+		SceneImage2D._renderer.view.projection.scale = 1000 / this.rect.height;
 
 		const alpha = this._transparent ? (color >> 24 & 0xff) / 255 : 1;
 		const rgb = color & 0xffffff;
@@ -407,10 +395,10 @@ export class SceneImage2D extends BitmapImage2D
 		SceneImage2D._renderer.view.backgroundColor = rgb;
 		SceneImage2D._renderer.view.clear(true, true);
 
-		this.pushDirtyRegion(rect)
+		this.pushDirtyRegion(rect);
 	}
 
-		/**
+	/**
 	 * Provides a fast routine to perform pixel manipulation between images with
 	 * no stretching, rotation, or color effects. This method copies a
 	 * rectangular area of a source image to a rectangular area of the same size
@@ -449,8 +437,7 @@ export class SceneImage2D extends BitmapImage2D
 	 *                         channel, set the value to <code>false</code>.
 	 * @throws TypeError The sourceBitmapImage2D, sourceRect, destPoint are null.
 	 */
-	public copyPixels(source:BitmapImage2D, sourceRect:Rectangle, destPoint:Point, alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?:boolean):void
-	{
+	public copyPixels(source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point, alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?: boolean): void {
 		this.dropAllReferences();
 		this.unmarkToUnload();
 
@@ -459,8 +446,8 @@ export class SceneImage2D extends BitmapImage2D
 
 		// need drop alpha from source when target is not has alpha
 		mergeAlpha = this.transparent !== source.transparent || mergeAlpha;
-		
-		if(source !== this) {
+
+		if (source !== this) {
 			this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
 		} else {
 			const tmp = SceneImage2D.getTemp(source.width, source.height, this._stage);
@@ -478,8 +465,7 @@ export class SceneImage2D extends BitmapImage2D
 		this.pushDirtyRegion(new Rectangle(destPoint.x, destPoint.y, sourceRect.width, sourceRect.height));
 	}
 
-	public threshold(source:BitmapImage2D, sourceRect:Rectangle, destPoint:Point, operation: string, threshold: number, color: number, mask: number, copySource: boolean):void
-	{
+	public threshold(source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point, operation: string, threshold: number, color: number, mask: number, copySource: boolean): void {
 		this.dropAllReferences();
 		this.unmarkToUnload();
 
@@ -491,8 +477,7 @@ export class SceneImage2D extends BitmapImage2D
 		this._imageDataDirty = true;
 	}
 
-	public colorTransform(rect:Rectangle, colorTransform:ColorTransform):void
-	{
+	public colorTransform(rect: Rectangle, colorTransform: ColorTransform): void {
 		this.dropAllReferences();
 		this.unmarkToUnload();
 
@@ -505,7 +490,7 @@ export class SceneImage2D extends BitmapImage2D
 		this._stage.copyPixels(tmp, this, rect, new Point(0,0), null, null, false);
 
 		this.pushDirtyRegion(new Rectangle(rect.x, rect.y, rect.width, rect.height));
-		
+
 		this._imageDataDirty = true;
 
 		SceneImage2D.tryStoreImage(tmp, true);
@@ -523,13 +508,12 @@ export class SceneImage2D extends BitmapImage2D
 	/**
 	 * @inheritdoc
 	 */
-	public getPixel(x: number, y: number): number 
-	{
+	public getPixel(x: number, y: number): number {
 		const result = this.getPixel32(x, y);
 
 		return result & 0x00ffffff;
 	}
-	
+
 	// /**
 	//  *
 	//  * @returns {ImageData}
@@ -621,30 +605,29 @@ export class SceneImage2D extends BitmapImage2D
 	 *                       restriction does not apply to AIR content in the
 	 *                       application security sandbox.
 	 */
-	public draw(source:DisplayObject, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:string, clipRect?:Rectangle, smoothing?:boolean);
-	public draw(source:BitmapImage2D, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:string, clipRect?:Rectangle, smoothing?:boolean);
-	public draw(source:any, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:string, clipRect?:Rectangle, smoothing?:boolean):void
-	{
+	public draw(source: DisplayObject, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean);
+	public draw(source: BitmapImage2D, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean);
+	public draw(source: any, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean): void {
 		this.dropAllReferences();
 		this.unmarkToUnload();
 
-		if(source instanceof DisplayObject) {
+		if (source instanceof DisplayObject) {
 			this._drawAsDisplay(source, matrix, colorTransform, blendMode, clipRect, smoothing);
 		} else {
 			this._drawAsBitmap(source, matrix, colorTransform, blendMode, clipRect, smoothing);
 		}
-		
+
 		//TODO implement passing real updated region
 		this.pushDirtyRegion(this._rect);
 		this._imageDataDirty = true;
 	}
 
 	private _mapBlendMode(blendMode: string = ''): string {
-		switch(blendMode) {
+		switch (blendMode) {
 			case null:
 			case '':
 			case BlendMode.NORMAL:
-			case BlendMode.LAYER:			
+			case BlendMode.LAYER:
 				return BlendMode.LAYER;
 			case BlendMode.MULTIPLY:
 			case BlendMode.ADD:
@@ -656,11 +639,11 @@ export class SceneImage2D extends BitmapImage2D
 		return BlendMode.LAYER;
 	}
 
-	private _drawAsBitmap(source:BitmapImage2D, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?: string, clipRect?:Rectangle, smoothing?:boolean) {
-		
+	private _drawAsBitmap(source: BitmapImage2D, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean) {
+
 		if (!SceneImage2D._billboardRenderer)
 			this.createBillboardRenderer();
-			
+
 		const renderer = SceneImage2D._billboardRenderer;
 		const root = SceneImage2D._billboardRoot;
 		const billboard = SceneImage2D._billboard;
@@ -674,13 +657,13 @@ export class SceneImage2D extends BitmapImage2D
 
 		if (matrix) {
 			const m = root.transform.matrix3D;
-			
+
 			m.identity();
 
 			m._rawData[0] = matrix.a;
-			m._rawData[1] = - matrix.b;
+			m._rawData[1] = -matrix.b;
 			m._rawData[4] = matrix.c;
-			m._rawData[5] = - matrix.d;
+			m._rawData[5] = -matrix.d;
 			m._rawData[12] = matrix.tx;
 			m._rawData[13] = this.rect.height - matrix.ty;
 
@@ -696,8 +679,8 @@ export class SceneImage2D extends BitmapImage2D
 		renderer.render();
 	}
 
-	private _drawAsDisplay(source:DisplayObject, matrix?:Matrix, colorTransform?:ColorTransform, blendMode?:string, clipRect?:Rectangle, smoothing?:boolean) {
-		
+	private _drawAsDisplay(source: DisplayObject, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean) {
+
 		if (!SceneImage2D._renderer)
 			this.createRenderer();
 
@@ -714,7 +697,7 @@ export class SceneImage2D extends BitmapImage2D
 		// clone TRS separatenly, because matrix saving/restoring is bugged, ex
 		// this works for all knowed cases
 
-		for(let i = 0; i < 4; i ++) {
+		for (let i = 0; i < 4; i++) {
 			TMP_RAW[0 + i] = sTrans.position._rawData[i];
 			TMP_RAW[4 + i] = sTrans.rotation._rawData[i];
 			TMP_RAW[8 + i] = sTrans.scale._rawData[i];
@@ -732,15 +715,15 @@ export class SceneImage2D extends BitmapImage2D
 			m.identity();
 
 			m._rawData[0] = matrix.a;
-			m._rawData[1] = - matrix.b;
+			m._rawData[1] = -matrix.b;
 			m._rawData[4] = matrix.c;
-			m._rawData[5] = - matrix.d;
+			m._rawData[5] = -matrix.d;
 			m._rawData[10] = zFlip;
 			m._rawData[12] = matrix.tx;
 			m._rawData[13] = this.rect.height - matrix.ty;
 
 			root.transform.invalidateComponents();
-			
+
 		} else {
 			root.transform.rotateTo(0,0,0);
 			root.transform.scaleTo(1, -1, 1);
@@ -755,7 +738,7 @@ export class SceneImage2D extends BitmapImage2D
 		renderer.view.y = 0;
 		renderer.view.width = this.width;
 		renderer.view.height = this.height;
-		
+
 		root.removeChildren(0, root.numChildren);
 		root.addChild(source);
 
@@ -776,26 +759,24 @@ export class SceneImage2D extends BitmapImage2D
 
 		source.visible = oldVisible;
 		//source.transform.matrix3D = TMP_MATRIX3D;
-		
+
 		sTrans.moveTo(TMP_RAW[0 + 0], TMP_RAW[0 + 1], TMP_RAW[0 + 2]);
 		sTrans.rotateTo(TMP_RAW[4 + 0], TMP_RAW[4 + 1], TMP_RAW[4 + 2]);
 		sTrans.scaleTo(TMP_RAW[8 + 0], TMP_RAW[8 + 1], TMP_RAW[8 + 2]);
 
 		source.transform.colorTransform = TMP_COLOR_MATRIX;
 
-		
-		if(oldParent){
-			if(oldParent.adapter && oldParent.adapter!=oldParent &&
-				source.adapter && source.adapter!=source && (<any>oldParent.adapter).addChildAt){
+		if (oldParent) {
+			if (oldParent.adapter && oldParent.adapter != oldParent &&
+				source.adapter && source.adapter != source && (<any>oldParent.adapter).addChildAt) {
 				(<any>oldParent.adapter).addChildAt(source.adapter, index);
 
-			}
-			else{
+			} else {
 				oldParent.addChildAtDepth(source, depth, true);
 			}
-			
+
 		}
-		
+
 		//SceneImage2D.scene.dispose();
 		//SceneImage2D.scene=null;
 

@@ -1,12 +1,12 @@
-﻿import {AssetEvent, Vector3D, ArgumentError} from "@awayjs/core";
+﻿import { AssetEvent, Vector3D, ArgumentError } from '@awayjs/core';
 
 import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
 
-import {IMaterial } from "@awayjs/renderer";
+import { IMaterial } from '@awayjs/renderer';
 
-import {Graphics} from "@awayjs/graphics";
+import { Graphics } from '@awayjs/graphics';
 
-import {DisplayObjectContainer} from "./DisplayObjectContainer";
+import { DisplayObjectContainer } from './DisplayObjectContainer';
 import { PrefabBase } from '../prefabs/PrefabBase';
 import { DisplayObject } from './DisplayObject';
 
@@ -15,20 +15,18 @@ import { DisplayObject } from './DisplayObject';
  * state. It consists out of Graphices, which in turn correspond to SubGeometries. Graphices allow different parts
  * of the graphics to be assigned different materials.
  */
-export class Sprite extends DisplayObjectContainer
-{
-	private _isEntity:boolean = false;
+export class Sprite extends DisplayObjectContainer {
+	private _isEntity: boolean = false;
 
-	public _iSourcePrefab:PrefabBase;
+	public _iSourcePrefab: PrefabBase;
 
-	private static _sprites:Array<Sprite> = new Array<Sprite>();
+	private static _sprites: Array<Sprite> = new Array<Sprite>();
 
-	public static assetType:string = "[asset Sprite]";
+	public static assetType: string = '[asset Sprite]';
 
-	public static getNewSprite(graphics:Graphics = null, material:IMaterial = null):Sprite
-	{
+	public static getNewSprite(graphics: Graphics = null, material: IMaterial = null): Sprite {
 		if (Sprite._sprites.length) {
-			var sprite:Sprite = Sprite._sprites.pop();
+			const sprite: Sprite = Sprite._sprites.pop();
 			sprite.graphics = graphics || Graphics.getGraphics();
 			sprite.material = material;
 			return sprite;
@@ -36,20 +34,19 @@ export class Sprite extends DisplayObjectContainer
 
 		return new Sprite(graphics, material);
 	}
-	public static clearPool()
-	{
-		Sprite._sprites=[];
+
+	public static clearPool() {
+		Sprite._sprites = [];
 	}
 
-	private _center:Vector3D;
-	public _graphics:Graphics;
-	protected _onGraphicsInvalidateDelegate:(event:AssetEvent) => void;
+	private _center: Vector3D;
+	public _graphics: Graphics;
+	protected _onGraphicsInvalidateDelegate: (event: AssetEvent) => void;
 
 	/**
 	 *
 	 */
-	public get assetType():string
-	{
+	public get assetType(): string {
 		return Sprite.assetType;
 	}
 
@@ -57,12 +54,11 @@ export class Sprite extends DisplayObjectContainer
 	 * Specifies the Graphics object belonging to this Sprite object, where
 	 * drawing commands can occur.
 	 */
-	public get graphics():Graphics
-	{
+	public get graphics(): Graphics {
 		if (this._iSourcePrefab)
 			this._iSourcePrefab._iValidate();
 
-		if(this.isSlice9ScaledSprite){
+		if (this.isSlice9ScaledSprite) {
 			//var comps:Array<Vector3D> = this.transform.concatenatedMatrix3D.decompose();
 
 			this._graphics.updateSlice9(this.parent.scaleX, this.parent.scaleY);
@@ -71,11 +67,10 @@ export class Sprite extends DisplayObjectContainer
 		return this._graphics;
 	}
 
-	public set graphics(value:Graphics)
-	{
+	public set graphics(value: Graphics) {
 		if (value == null)
-			throw new Error("Cannot have graphics set to null");
-		
+			throw new Error('Cannot have graphics set to null');
+
 		this._setGraphics(value);
 	}
 
@@ -91,7 +86,7 @@ export class Sprite extends DisplayObjectContainer
 			//if (!this._graphics.usages)
 			//	this.graphics.dispose();
 		}
-		
+
 		this._graphics = value;
 
 		this._graphics.usages++;
@@ -104,37 +99,33 @@ export class Sprite extends DisplayObjectContainer
 	 *
 	 * @param material    [optional]        The material with which to render the Sprite.
 	 */
-	constructor(graphics:Graphics = null, material:IMaterial = null)
-	{
+	constructor(graphics: Graphics = null, material: IMaterial = null) {
 		super();
 
-		this._onGraphicsInvalidateDelegate = (event:AssetEvent) => this._onGraphicsInvalidate(event);
+		this._onGraphicsInvalidateDelegate = (event: AssetEvent) => this._onGraphicsInvalidate(event);
 
 		this.graphics = graphics || Graphics.getGraphics();
 
 		this.material = material;
 	}
 
-	public _setParent(parent:DisplayObjectContainer):void
-	{
+	public _setParent(parent: DisplayObjectContainer): void {
 		super._setParent(parent);
 
 		if (parent)
 			this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
-		else 
+		else
 			this._graphics.removeEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
 	}
 
-	public isEntity():boolean
-	{
+	public isEntity(): boolean {
 		return Boolean(this._scrollRect || (this._graphics && this._graphics.count));
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public dispose():void
-	{
+	public dispose(): void {
 		this.disposeValues();
 
 		Sprite._sprites.push(this);
@@ -143,8 +134,7 @@ export class Sprite extends DisplayObjectContainer
 	/**
 	 * @inheritDoc
 	 */
-	public disposeValues():void
-	{
+	public disposeValues(): void {
 		super.disposeValues();
 	}
 
@@ -164,29 +154,26 @@ export class Sprite extends DisplayObjectContainer
 	 * var clone : Sprite = new Sprite(original.graphics, original.material);
 	 * </code>
 	 */
-	public clone():Sprite
-	{
-		var newInstance:Sprite = Sprite.getNewSprite();
+	public clone(): Sprite {
+		const newInstance: Sprite = Sprite.getNewSprite();
 
 		this.copyTo(newInstance);
 
 		return newInstance;
 	}
 
-	public copyTo(sprite:Sprite, cloneShapes:boolean = false):void
-	{
+	public copyTo(sprite: Sprite, cloneShapes: boolean = false): void {
 		super.copyTo(sprite);
 
 		sprite._iSourcePrefab = this._iSourcePrefab;
 
 		this._graphics.copyTo(sprite._graphics, cloneShapes);
-    }
+	}
 
 	/**
 	 *
 	 */
-	public _iInternalUpdate():void
-	{
+	public _iInternalUpdate(): void {
 		super._iInternalUpdate();
 
 		// if(this.parent)
@@ -198,9 +185,8 @@ export class Sprite extends DisplayObjectContainer
 	 *
 	 * @private
 	 */
-	protected _onGraphicsInvalidate(event:AssetEvent):void
-	{
-		var isEntity:boolean = this.isEntity();
+	protected _onGraphicsInvalidate(event: AssetEvent): void {
+		const isEntity: boolean = this.isEntity();
 
 		if (this._isEntity != isEntity) {
 			if (!isEntity && this._implicitPartition)
@@ -218,8 +204,7 @@ export class Sprite extends DisplayObjectContainer
 	 *
 	 * @internal
 	 */
-	public _acceptTraverser(traverser:IEntityTraverser):void
-	{
+	public _acceptTraverser(traverser: IEntityTraverser): void {
 		super._acceptTraverser(traverser);
 		this.graphics._acceptTraverser(traverser);
 	}
@@ -227,12 +212,11 @@ export class Sprite extends DisplayObjectContainer
 	/**
 	 *
 	 */
-	public bakeTransformations():void
-	{
+	public bakeTransformations(): void {
 		this._graphics.applyTransformation(this.transform.matrix3D);
 		this.transform.clearMatrix3D();
 	}
 }
 
-DisplayObject._scrollRectSpriteClass=Sprite;
+DisplayObject._scrollRectSpriteClass = Sprite;
 PartitionBase.registerAbstraction(EntityNode, Sprite);

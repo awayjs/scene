@@ -1,24 +1,21 @@
-import {EventBase} from "@awayjs/core";
+import { EventBase } from '@awayjs/core';
 
-import {Camera} from "../display/Camera";
+import { Camera } from '../display/Camera';
 
 /**
  * @class away.events.CameraEvent
  */
-export class KeyboardEvent extends EventBase
-{
-	public static KEYDOWN:string = "keydown";
-	public static KEYUP:string = "keyup";
+export class KeyboardEvent extends EventBase {
+	public static KEYDOWN: string = 'keydown';
+	public static KEYUP: string = 'keyup';
 
-	private _charCode:number;
-	private _char:string;
-	public isShift:boolean;
-	public isCTRL:boolean;
-	public isAlt:boolean;
+	private _charCode: number;
+	private _char: string;
+	public isShift: boolean;
+	public isCTRL: boolean;
+	public isAlt: boolean;
 
-	
-	constructor(type:string, char:string, charCode:number=0)
-	{
+	constructor(type: string, char: string, charCode: number = 0) {
 		super(type);
 
 		this._char = char;
@@ -28,12 +25,11 @@ export class KeyboardEvent extends EventBase
 		this.isAlt = false;
 	}
 
-	public get char():string
-	{
+	public get char(): string {
 		return this._char;
 	}
-	public get charCode():number
-	{
+
+	public get charCode(): number {
 		return this._charCode;
 	}
 
@@ -41,8 +37,7 @@ export class KeyboardEvent extends EventBase
 	 * Clones the event.
 	 * @return An exact duplicate of the current object.
 	 */
-	public clone():KeyboardEvent
-	{
+	public clone(): KeyboardEvent {
 		return new KeyboardEvent(this.type, this._char, this._charCode);
 	}
 }

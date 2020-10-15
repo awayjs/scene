@@ -1,5 +1,5 @@
-import { Sprite }from "./Sprite";
-import { DisplayObject }from "./DisplayObject";
+import { Sprite } from './Sprite';
+import { DisplayObject } from './DisplayObject';
 
 //import {SoundTransform} from "../media/SoundTransform";
 
@@ -37,8 +37,7 @@ import { DisplayObject }from "./DisplayObject";
  * the constructor based on the button's state.</li></ol><codeblock xml:space="preserve" class="+ topic/pre pr-d/codeblock ">
 
  */
-export class SimpleButton extends Sprite
-{
+export class SimpleButton extends Sprite {
 	/**
 	 * Creates a new SimpleButton instance. Any or all of the display objects that represent
 	 * the various button states can be set as parameters in the constructor.
@@ -47,33 +46,32 @@ export class SimpleButton extends Sprite
 	 * @param	downState	The initial value for the SimpleButton down state.
 	 * @param	hitTestState	The initial value for the SimpleButton hitTest state.
 	 */
-	constructor (upState:DisplayObject=null, overState:DisplayObject=null, downState:DisplayObject=null, hitTestState:DisplayObject=null){
+	constructor (upState: DisplayObject = null, overState: DisplayObject = null, downState: DisplayObject = null, hitTestState: DisplayObject = null) {
 		super();
 	}
 
 	// for AVM1:
-	public buttonMode:any;
-	public stage:any;
+	public buttonMode: any;
+	public stage: any;
 
-
-	private _downState:DisplayObject;
-	private _hitTestState:DisplayObject;
-	private _overState:DisplayObject;
-	private _upState:DisplayObject;
-	private _enabled:boolean;
-
+	private _downState: DisplayObject;
+	private _hitTestState: DisplayObject;
+	private _overState: DisplayObject;
+	private _upState: DisplayObject;
+	private _enabled: boolean;
 
 	/**
 	 * Specifies a display object that is used as the visual
 	 * object for the button "Down" state —the state that the button is in when the user
 	 * selects the hitTestState object.
 	 */
-	public get downState () : DisplayObject{
+	public get downState (): DisplayObject {
 		return this._downState;
 
 	}
-	public set downState (value:DisplayObject){
-		this._downState=value;
+
+	public set downState (value: DisplayObject) {
+		this._downState = value;
 	}
 
 	/**
@@ -88,11 +86,12 @@ export class SimpleButton extends Sprite
 	 *   Note: To prevent mouseClicks on a button, set both the enabled
 	 * and mouseEnabled properties to false.
 	 */
-	public get enabled () : boolean{
+	public get enabled (): boolean {
 		return this._enabled;
 	}
-	public set enabled (value:boolean){
-		this.enabled=value;
+
+	public set enabled (value: boolean) {
+		this.enabled = value;
 	}
 
 	/**
@@ -101,11 +100,12 @@ export class SimpleButton extends Sprite
 	 * property. If you do not set the hitTestState property, the SimpleButton
 	 * is inactive — it does not respond to user input events.
 	 */
-	public get hitTestState () : DisplayObject{
+	public get hitTestState (): DisplayObject {
 		return this._hitTestState;
 	}
-	public set hitTestState (value:DisplayObject){
-		this._hitTestState=value;
+
+	public set hitTestState (value: DisplayObject) {
+		this._hitTestState = value;
 	}
 
 	/**
@@ -113,11 +113,12 @@ export class SimpleButton extends Sprite
 	 * object for the button over state — the state that the button is in when
 	 * the pointer is positioned over the button.
 	 */
-	public get overState () : DisplayObject{
+	public get overState (): DisplayObject {
 		return this._overState;
 	}
-	public set overState (value:DisplayObject){
-		this._overState=value;
+
+	public set overState (value: DisplayObject) {
+		this._overState = value;
 	}
 
 	/**
@@ -129,13 +130,14 @@ export class SimpleButton extends Sprite
 	 *   how much of the left input to play in the left speaker or right speaker; it is generally
 	 *   best to use 22-KHZ 6-bit mono sounds?
 	 */
-	public get soundTransform () : any{
-		console.log("soundTransform not implemented yet in flash/SimpleButton");
+	public get soundTransform (): any {
+		console.log('soundTransform not implemented yet in flash/SimpleButton');
 		return null;
 
 	}
-	public set soundTransform (sndTransform:any){
-		console.log("soundTransform not implemented yet in flash/SimpleButton");
+
+	public set soundTransform (sndTransform: any) {
+		console.log('soundTransform not implemented yet in flash/SimpleButton');
 
 	}
 
@@ -149,13 +151,14 @@ export class SimpleButton extends Sprite
 	 *   You can change the trackAsMenu property at any time; the
 	 * modified button immediately takes on the new behavior.
 	 */
-	public get trackAsMenu () : boolean{
-		console.log("trackAsMenu not implemented yet in flash/SimpleButton");
+	public get trackAsMenu (): boolean {
+		console.log('trackAsMenu not implemented yet in flash/SimpleButton');
 		return false;
 
 	}
-	public set trackAsMenu (value:boolean){
-		console.log("trackAsMenu not implemented yet in flash/SimpleButton");
+
+	public set trackAsMenu (value: boolean) {
+		console.log('trackAsMenu not implemented yet in flash/SimpleButton');
 
 	}
 
@@ -164,11 +167,12 @@ export class SimpleButton extends Sprite
 	 * object for the button up state — the state that the button is in when
 	 * the pointer is not positioned over the button.
 	 */
-	public get upState () : DisplayObject{
+	public get upState (): DisplayObject {
 		return this._upState;
 	}
-	public set upState (value:DisplayObject){
-		this._upState=value;
+
+	public set upState (value: DisplayObject) {
+		this._upState = value;
 	}
 
 	/**
@@ -189,14 +193,13 @@ export class SimpleButton extends Sprite
 		 *   }
 	 *   </listing><p class="- topic/p ">When the mouse is over and clicks <code>myBtn1_btn</code>, there is no pointing hand. However, you see the pointing hand when the button is over and clicks <code>myBtn2_btn</code>.</p>
 	 */
-	public get useHandCursor () : boolean{
-		console.log("useHandCursor not implemented yet in flash/SimpleButton");
+	public get useHandCursor (): boolean {
+		console.log('useHandCursor not implemented yet in flash/SimpleButton');
 		return false;
 	}
-	public set useHandCursor (value:boolean){
-		console.log("useHandCursor not implemented yet in flash/SimpleButton");
+
+	public set useHandCursor (value: boolean) {
+		console.log('useHandCursor not implemented yet in flash/SimpleButton');
 	}
 
-
 }
-

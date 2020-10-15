@@ -4,20 +4,19 @@
  *
  * @see away.entities.TextField#type
  */
-export class TextFieldType
-{
+export class TextFieldType {
 	/**
 	 * Used to specify a <code>dynamic</code> TextField.
 	 */
-	public static DYNAMIC:string = "dynamic";
+	public static DYNAMIC: string = 'dynamic';
 
 	/**
 	 * Used to specify an <code>input</code> TextField.
 	 */
-	public static INPUT:string = "input";
+	public static INPUT: string = 'input';
 
 	/**
 	 * Used to specify an <code>static</code> TextField.
 	 */
-	public static STATIC:string = "input";
+	public static STATIC: string = 'input';
 }

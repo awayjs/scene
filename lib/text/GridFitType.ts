@@ -1,8 +1,7 @@
 /**
  * The GridFitType class defines values for grid fitting in the TextField class.
  */
-export class GridFitType
-{
+export class GridFitType {
 	/**
 	 * Doesn't set grid fitting. Horizontal and vertical lines in the glyphs are
 	 * not forced to the pixel grid. This constant is used in setting the
@@ -10,7 +9,7 @@ export class GridFitType
 	 * good setting for animation or for large font sizes. Use the syntax
 	 * <code>GridFitType.NONE</code>.
 	 */
-	public static NONE:string = "none";
+	public static NONE: string = 'none';
 
 	/**
 	 * Fits strong horizontal and vertical lines to the pixel grid. This constant
@@ -20,7 +19,7 @@ export class GridFitType
 	 * setting generally provides the best readability for left-aligned text. Use
 	 * the syntax <code>GridFitType.PIXEL</code>.
 	 */
-	public static PIXEL:string = "pixel";
+	public static PIXEL: string = 'pixel';
 
 	/**
 	 * Fits strong horizontal and vertical lines to the sub-pixel grid on LCD
@@ -30,5 +29,5 @@ export class GridFitType
 	 * constant is used in setting the <code>gridFitType</code> property of the
 	 * TextField class. Use the syntax <code>GridFitType.SUBPIXEL</code>.
 	 */
-	public static SUBPIXEL:string = "subpixel";
+	public static SUBPIXEL: string = 'subpixel';
 }

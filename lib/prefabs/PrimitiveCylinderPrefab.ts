@@ -1,37 +1,34 @@
-import {ElementsType, LineElements, ElementsBase, TriangleElements} from "@awayjs/graphics";
+import { ElementsType, LineElements, ElementsBase, TriangleElements } from '@awayjs/graphics';
 
-import {IMaterial} from "@awayjs/renderer";
+import { IMaterial } from '@awayjs/renderer';
 
-import {PrimitivePrefabBase} from "../prefabs/PrimitivePrefabBase";
+import { PrimitivePrefabBase } from '../prefabs/PrimitivePrefabBase';
 
 /**
  * A Cylinder primitive sprite.
  */
-export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
-{
-	public _pBottomRadius:number;
-	public _pSegmentsW:number;
-	public _pSegmentsH:number;
+export class PrimitiveCylinderPrefab extends PrimitivePrefabBase {
+	public _pBottomRadius: number;
+	public _pSegmentsW: number;
+	public _pSegmentsH: number;
 
-	private _topRadius:number;
-	private _height:number;
+	private _topRadius: number;
+	private _height: number;
 
-	private _topClosed:boolean;
-	private _bottomClosed:boolean;
-	private _surfaceClosed:boolean;
-	private _yUp:boolean;
-	private _numVertices:number = 0;
+	private _topClosed: boolean;
+	private _bottomClosed: boolean;
+	private _surfaceClosed: boolean;
+	private _yUp: boolean;
+	private _numVertices: number = 0;
 
 	/**
 	 * The radius of the top end of the cylinder.
 	 */
-	public get topRadius():number
-	{
+	public get topRadius(): number {
 		return this._topRadius;
 	}
 
-	public set topRadius(value:number)
-	{
+	public set topRadius(value: number) {
 		this._topRadius = value;
 		this._pInvalidatePrimitive();
 	}
@@ -39,13 +36,11 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	/**
 	 * The radius of the bottom end of the cylinder.
 	 */
-	public get bottomRadius():number
-	{
+	public get bottomRadius(): number {
 		return this._pBottomRadius;
 	}
 
-	public set bottomRadius(value:number)
-	{
+	public set bottomRadius(value: number) {
 		this._pBottomRadius = value;
 		this._pInvalidatePrimitive();
 	}
@@ -53,13 +48,11 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	/**
 	 * The radius of the top end of the cylinder.
 	 */
-	public get height():number
-	{
+	public get height(): number {
 		return this._height;
 	}
 
-	public set height(value:number)
-	{
+	public set height(value: number) {
 		this._height = value;
 		this._pInvalidatePrimitive();
 	}
@@ -67,18 +60,15 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	/**
 	 * Defines the number of horizontal segments that make up the cylinder. Defaults to 16.
 	 */
-	public get segmentsW():number
-	{
+	public get segmentsW(): number {
 		return this._pSegmentsW;
 	}
 
-	public set segmentsW(value:number)
-	{
+	public set segmentsW(value: number) {
 		this.setSegmentsW(value);
 	}
 
-	public setSegmentsW(value:number):void
-	{
+	public setSegmentsW(value: number): void {
 		this._pSegmentsW = value;
 		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
@@ -87,20 +77,17 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	/**
 	 * Defines the number of vertical segments that make up the cylinder. Defaults to 1.
 	 */
-	public get segmentsH():number
-	{
+	public get segmentsH(): number {
 		return this._pSegmentsH;
 	}
 
-	public set segmentsH(value:number)
-	{
+	public set segmentsH(value: number) {
 
-		this.setSegmentsH(value)
+		this.setSegmentsH(value);
 
 	}
 
-	public setSegmentsH(value:number):void
-	{
+	public setSegmentsH(value: number): void {
 		this._pSegmentsH = value;
 		this._pInvalidatePrimitive();
 		this._pInvalidateUVs();
@@ -110,13 +97,11 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	/**
 	 * Defines whether the top end of the cylinder is closed (true) or open.
 	 */
-	public get topClosed():boolean
-	{
+	public get topClosed(): boolean {
 		return this._topClosed;
 	}
 
-	public set topClosed(value:boolean)
-	{
+	public set topClosed(value: boolean) {
 		this._topClosed = value;
 		this._pInvalidatePrimitive();
 	}
@@ -124,13 +109,11 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	/**
 	 * Defines whether the bottom end of the cylinder is closed (true) or open.
 	 */
-	public get bottomClosed():boolean
-	{
+	public get bottomClosed(): boolean {
 		return this._bottomClosed;
 	}
 
-	public set bottomClosed(value:boolean)
-	{
+	public set bottomClosed(value: boolean) {
 		this._bottomClosed = value;
 		this._pInvalidatePrimitive();
 	}
@@ -138,13 +121,11 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	/**
 	 * Defines whether the cylinder poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	public get yUp():boolean
-	{
+	public get yUp(): boolean {
 		return this._yUp;
 	}
 
-	public set yUp(value:boolean)
-	{
+	public set yUp(value: boolean) {
 		this._yUp = value;
 		this._pInvalidatePrimitive();
 	}
@@ -160,8 +141,7 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	 * @param bottomClosed Defines whether the bottom end of the cylinder is closed (true) or open.
 	 * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(material:IMaterial = null, elementsType:string = "triangle", topRadius:number = 50, bottomRadius:number = 50, height:number = 100, segmentsW:number = 16, segmentsH:number = 1, topClosed:boolean = true, bottomClosed:boolean = true, surfaceClosed:boolean = true, yUp:boolean = true)
-	{
+	constructor(material: IMaterial = null, elementsType: string = 'triangle', topRadius: number = 50, bottomRadius: number = 50, height: number = 100, segmentsW: number = 16, segmentsH: number = 1, topClosed: boolean = true, bottomClosed: boolean = true, surfaceClosed: boolean = true, yUp: boolean = true) {
 		super(material, elementsType);
 
 		this._topRadius = topRadius;
@@ -175,65 +155,63 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 		this._yUp = yUp;
 	}
 
-
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildGraphics(target:ElementsBase, elementsType:string):void
-	{
-		var indices:Uint16Array;
-		var positions:ArrayBufferView;
-		var normals:Float32Array;
-		var tangents:Float32Array;
-		var stride:number;
-		
-		var i:number;
-		var j:number;
-		var x:number;
-		var y:number;
-		var z:number;
-		var vidx:number;
-		var fidx:number;
+	public _pBuildGraphics(target: ElementsBase, elementsType: string): void {
+		let indices: Uint16Array;
+		let positions: ArrayBufferView;
+		let normals: Float32Array;
+		let tangents: Float32Array;
+		let stride: number;
 
-		var radius:number;
-		var revolutionAngle:number;
+		let i: number;
+		let j: number;
+		let x: number;
+		let y: number;
+		let z: number;
+		let vidx: number;
+		let fidx: number;
 
-		var dr:number;
-		var latNormElev:number;
-		var latNormBase:number;
-		var numIndices:number = 0;
+		let radius: number;
+		let revolutionAngle: number;
 
-		var comp1:number;
-		var comp2:number;
-		var startIndex:number = 0;
-		var nextVertexIndex:number = 0;
-		var centerVertexIndex:number = 0;
+		let dr: number;
+		let latNormElev: number;
+		let latNormBase: number;
+		let numIndices: number = 0;
 
-		var t1:number;
-		var t2:number;
+		let comp1: number;
+		let comp2: number;
+		let startIndex: number = 0;
+		let nextVertexIndex: number = 0;
+		let centerVertexIndex: number = 0;
+
+		let t1: number;
+		let t2: number;
 
 		// reset utility variables
 		this._numVertices = 0;
 
 		// evaluate revolution steps
-		var revolutionAngleDelta:number = 2*Math.PI/this._pSegmentsW;
+		const revolutionAngleDelta: number = 2 * Math.PI / this._pSegmentsW;
 
 		if (elementsType == ElementsType.TRIANGLE) {
 
-			var triangleGraphics:TriangleElements = <TriangleElements> target;
+			const triangleGraphics: TriangleElements = <TriangleElements> target;
 
 			// evaluate target number of vertices, triangles and indices
 			if (this._surfaceClosed) {
-				this._numVertices += (this._pSegmentsH + 1)*(this._pSegmentsW + 1); // segmentsH + 1 because of closure, segmentsW + 1 because of UV unwrapping
-				numIndices += this._pSegmentsH*this._pSegmentsW*6; // each level has segmentW quads, each of 2 triangles
+				this._numVertices += (this._pSegmentsH + 1) * (this._pSegmentsW + 1); // segmentsH + 1 because of closure, segmentsW + 1 because of UV unwrapping
+				numIndices += this._pSegmentsH * this._pSegmentsW * 6; // each level has segmentW quads, each of 2 triangles
 			}
 			if (this._topClosed) {
-				this._numVertices += 2*(this._pSegmentsW + 1); // segmentsW + 1 because of unwrapping
-				numIndices += this._pSegmentsW*3; // one triangle for each segment
+				this._numVertices += 2 * (this._pSegmentsW + 1); // segmentsW + 1 because of unwrapping
+				numIndices += this._pSegmentsW * 3; // one triangle for each segment
 			}
 			if (this._bottomClosed) {
-				this._numVertices += 2*(this._pSegmentsW + 1);
-				numIndices += this._pSegmentsW*3;
+				this._numVertices += 2 * (this._pSegmentsW + 1);
+				numIndices += this._pSegmentsW * 3;
 			}
 
 			// need to initialize raw arrays or can be reused?
@@ -249,9 +227,9 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 				triangleGraphics.indices.invalidate();
 			} else {
 				triangleGraphics.setIndices(new Uint16Array(numIndices));
-				triangleGraphics.setPositions(new Float32Array(this._numVertices*3));
-				triangleGraphics.setNormals(new Float32Array(this._numVertices*3));
-				triangleGraphics.setTangents(new Float32Array(this._numVertices*3));
+				triangleGraphics.setPositions(new Float32Array(this._numVertices * 3));
+				triangleGraphics.setNormals(new Float32Array(this._numVertices * 3));
+				triangleGraphics.setTangents(new Float32Array(this._numVertices * 3));
 
 				this._pInvalidateUVs();
 			}
@@ -260,15 +238,15 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 			positions = triangleGraphics.positions.get(this._numVertices);
 			normals = triangleGraphics.normals.get(this._numVertices);
 			tangents = triangleGraphics.tangents.get(this._numVertices);
-			stride = triangleGraphics.concatenatedBuffer.stride/4;
-			
+			stride = triangleGraphics.concatenatedBuffer.stride / 4;
+
 			vidx = 0;
 			fidx = 0;
 
 			// top
 			if (this._topClosed && this._topRadius > 0) {
 
-				z = -0.5*this._height;
+				z = -0.5 * this._height;
 
 				// central vertex
 				if (this._yUp) {
@@ -300,9 +278,9 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 				for (i = 0; i <= this._pSegmentsW; ++i) {
 
 					// revolution vertex
-					revolutionAngle = i*revolutionAngleDelta;
-					x = this._topRadius*Math.cos(revolutionAngle);
-					y = this._topRadius*Math.sin(revolutionAngle);
+					revolutionAngle = i * revolutionAngleDelta;
+					x = this._topRadius * Math.cos(revolutionAngle);
+					y = this._topRadius * Math.sin(revolutionAngle);
 
 					if (this._yUp) {
 						comp1 = -z;
@@ -345,9 +323,9 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 			// bottom
 			if (this._bottomClosed && this._pBottomRadius > 0) {
 
-				z = 0.5*this._height;
+				z = 0.5 * this._height;
 
-				startIndex = nextVertexIndex*stride;
+				startIndex = nextVertexIndex * stride;
 
 				centerVertexIndex = nextVertexIndex;
 
@@ -382,9 +360,9 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 				for (i = 0; i <= this._pSegmentsW; ++i) {
 
 					// revolution vertex
-					revolutionAngle = i*revolutionAngleDelta;
-					x = this._pBottomRadius*Math.cos(revolutionAngle);
-					y = this._pBottomRadius*Math.sin(revolutionAngle);
+					revolutionAngle = i * revolutionAngleDelta;
+					x = this._pBottomRadius * Math.cos(revolutionAngle);
+					y = this._pBottomRadius * Math.sin(revolutionAngle);
 
 					if (this._yUp) {
 						comp1 = -z;
@@ -428,30 +406,30 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 			// Same principle goes for the "base" of these vectors, which will be
 			// calculated such that a vector [base,elev] will be a unit vector.
 			dr = (this._pBottomRadius - this._topRadius);
-			latNormElev = dr/this._height;
-			latNormBase = (latNormElev == 0)? 1 : this._height/dr;
+			latNormElev = dr / this._height;
+			latNormBase = (latNormElev == 0) ? 1 : this._height / dr;
 
 			// lateral surface
 			if (this._surfaceClosed) {
-				var a:number;
-				var b:number;
-				var c:number;
-				var d:number;
-				var na0:number, na1:number, naComp1:number, naComp2:number;
+				let a: number;
+				let b: number;
+				let c: number;
+				let d: number;
+				let na0: number, na1: number, naComp1: number, naComp2: number;
 
 				for (j = 0; j <= this._pSegmentsH; ++j) {
-					radius = this._topRadius - ((j/this._pSegmentsH)*(this._topRadius - this._pBottomRadius));
-					z = -(this._height/2) + (j/this._pSegmentsH*this._height);
+					radius = this._topRadius - ((j / this._pSegmentsH) * (this._topRadius - this._pBottomRadius));
+					z = -(this._height / 2) + (j / this._pSegmentsH * this._height);
 
-					startIndex = nextVertexIndex*stride;
+					startIndex = nextVertexIndex * stride;
 
 					for (i = 0; i <= this._pSegmentsW; ++i) {
 						// revolution vertex
-						revolutionAngle = i*revolutionAngleDelta;
-						x = radius*Math.cos(revolutionAngle);
-						y = radius*Math.sin(revolutionAngle);
-						na0 = latNormBase*Math.cos(revolutionAngle);
-						na1 = latNormBase*Math.sin(revolutionAngle);
+						revolutionAngle = i * revolutionAngleDelta;
+						x = radius * Math.cos(revolutionAngle);
+						y = radius * Math.sin(revolutionAngle);
+						na0 = latNormBase * Math.cos(revolutionAngle);
+						na1 = latNormBase * Math.sin(revolutionAngle);
 
 						if (this._yUp) {
 							t1 = 0;
@@ -514,26 +492,26 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 				}
 			}
 		} else if (elementsType == ElementsType.LINE) {
-			var lineGraphics:LineElements = <LineElements> target;
+			const lineGraphics: LineElements = <LineElements> target;
 
-			var numSegments:number = this._pSegmentsH*this._pSegmentsW*2 + this._pSegmentsW;
-			positions = new Float32Array(numSegments*6);
-			var thickness:Float32Array = new Float32Array(numSegments);
+			const numSegments: number = this._pSegmentsH * this._pSegmentsW * 2 + this._pSegmentsW;
+			positions = new Float32Array(numSegments * 6);
+			const thickness: Float32Array = new Float32Array(numSegments);
 
 			vidx = 0;
 
 			fidx = 0;
-			var _radius = 50;
+			const _radius = 50;
 			for (j = 0; j <= this._pSegmentsH; ++j) {
 
-				radius = this._topRadius - ((j/this._pSegmentsH)*(this._topRadius - this._pBottomRadius));
-				z = -(this._height/2) + (j/this._pSegmentsH*this._height);
+				radius = this._topRadius - ((j / this._pSegmentsH) * (this._topRadius - this._pBottomRadius));
+				z = -(this._height / 2) + (j / this._pSegmentsH * this._height);
 
 				for (i = 0; i <= this._pSegmentsW; ++i) {
 					// revolution vertex
-					revolutionAngle = i*revolutionAngleDelta;
-					x = radius*Math.cos(revolutionAngle);
-					y = radius*Math.sin(revolutionAngle);
+					revolutionAngle = i * revolutionAngleDelta;
+					x = radius * Math.cos(revolutionAngle);
+					y = radius * Math.sin(revolutionAngle);
 
 					if (this._yUp) {
 						comp1 = -z;
@@ -553,7 +531,7 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 
 						//vertical lines
 						if (j > 0) {
-							var addx:number = (j == 1)? 3 - (6*(this._pSegmentsW-i) + 12*i) : 3 - this._pSegmentsW*12;
+							const addx: number = (j == 1) ? 3 - (6 * (this._pSegmentsW - i) + 12 * i) : 3 - this._pSegmentsW * 12;
 							positions[vidx] = positions[vidx++ + addx];
 							positions[vidx] = positions[vidx++ + addx];
 							positions[vidx] = positions[vidx++ + addx];
@@ -585,52 +563,51 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 	/**
 	 * @inheritDoc
 	 */
-	public _pBuildUVs(target:ElementsBase, elementsType:string):void
-	{
-		var i:number;
-		var j:number;
-		var x:number;
-		var y:number;
-		var revolutionAngle:number;
-		var uvs:ArrayBufferView;
-		var stride:number;
+	public _pBuildUVs(target: ElementsBase, elementsType: string): void {
+		let i: number;
+		let j: number;
+		let x: number;
+		let y: number;
+		let revolutionAngle: number;
+		let uvs: ArrayBufferView;
+		let stride: number;
 
 		if (elementsType == ElementsType.TRIANGLE) {
 
-			var triangleGraphics:TriangleElements = <TriangleElements> target;
+			const triangleGraphics: TriangleElements = <TriangleElements> target;
 
 			// need to initialize raw array or can be reused?
 			if (triangleGraphics.uvs && this._numVertices == triangleGraphics.numVertices) {
 				triangleGraphics.invalidateVertices(triangleGraphics.uvs);
 			} else {
-				triangleGraphics.setUVs(new Float32Array(this._numVertices*2));
+				triangleGraphics.setUVs(new Float32Array(this._numVertices * 2));
 			}
 
 			uvs = triangleGraphics.uvs.get(this._numVertices);
 			stride = triangleGraphics.uvs.stride;
 
 			// evaluate revolution steps
-			var revolutionAngleDelta:number = 2*Math.PI/this._pSegmentsW;
+			const revolutionAngleDelta: number = 2 * Math.PI / this._pSegmentsW;
 
 			// current uv component index
-			var index:number = 0;
+			let index: number = 0;
 
 			// top
 			if (this._topClosed) {
 
-				uvs[index] = 0.5*this._scaleU; // central vertex
-				uvs[index + 1] = 0.5*this._scaleV;
+				uvs[index] = 0.5 * this._scaleU; // central vertex
+				uvs[index + 1] = 0.5 * this._scaleV;
 
 				index += stride;
 
 				for (i = 0; i <= this._pSegmentsW; ++i) {
 
-					revolutionAngle = i*revolutionAngleDelta;
-					x = 0.5 + 0.5* -Math.cos(revolutionAngle);
-					y = 0.5 + 0.5*Math.sin(revolutionAngle);
+					revolutionAngle = i * revolutionAngleDelta;
+					x = 0.5 + 0.5 * -Math.cos(revolutionAngle);
+					y = 0.5 + 0.5 * Math.sin(revolutionAngle);
 
-					uvs[index] = x*this._scaleU; // revolution vertex
-					uvs[index + 1] = y*this._scaleV;
+					uvs[index] = x * this._scaleU; // revolution vertex
+					uvs[index + 1] = y * this._scaleV;
 
 					index += stride;
 				}
@@ -639,19 +616,19 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 			// bottom
 			if (this._bottomClosed) {
 
-				uvs[index] = 0.5*this._scaleU; // central vertex
-				uvs[index + 1] = 0.5*this._scaleV;
+				uvs[index] = 0.5 * this._scaleU; // central vertex
+				uvs[index + 1] = 0.5 * this._scaleV;
 
 				index += stride;
 
 				for (i = 0; i <= this._pSegmentsW; ++i) {
 
-					revolutionAngle = i*revolutionAngleDelta;
-					x = 0.5 + 0.5*Math.cos(revolutionAngle);
-					y = 0.5 + 0.5*Math.sin(revolutionAngle);
+					revolutionAngle = i * revolutionAngleDelta;
+					x = 0.5 + 0.5 * Math.cos(revolutionAngle);
+					y = 0.5 + 0.5 * Math.sin(revolutionAngle);
 
-					uvs[index] = x*this._scaleU; // revolution vertex
-					uvs[index + 1] = y*this._scaleV;
+					uvs[index] = x * this._scaleU; // revolution vertex
+					uvs[index + 1] = y * this._scaleV;
 
 					index += stride;
 				}
@@ -662,8 +639,8 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase
 				for (j = 0; j <= this._pSegmentsH; ++j) {
 					for (i = 0; i <= this._pSegmentsW; ++i) {
 						// revolution vertex
-						uvs[index] = ( i/this._pSegmentsW )*this._scaleU;
-						uvs[index + 1] = ( j/this._pSegmentsH )*this._scaleV;
+						uvs[index] = (i / this._pSegmentsW) * this._scaleU;
+						uvs[index + 1] = (j / this._pSegmentsH) * this._scaleV;
 
 						index += stride;
 					}

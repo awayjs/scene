@@ -24,22 +24,20 @@
  * <p>The default formatting for each property is also described in each
  * property description.</p>
  */
-export class BitmapFontChar
-{
+export class BitmapFontChar {
 
-	public id:string;
-	public x:number;
-	public y:number;
-	public width:number;
-	public height:number;
-	public x_offset:number;
-	public y_offset:number;
-	public x_advance:number;
-	public page:number;
-	public channel:number;
+	public id: string;
+	public x: number;
+	public y: number;
+	public width: number;
+	public height: number;
+	public x_offset: number;
+	public y_offset: number;
+	public x_advance: number;
+	public page: number;
+	public channel: number;
 
-	constructor(id:string, x:number,y:number, width:number,  height:number, xoff:number, yoff:number, xadv:number, page:number, channel: number)
-	{
+	constructor(id: string, x: number,y: number, width: number,  height: number, xoff: number, yoff: number, xadv: number, page: number, channel: number) {
 		this.id = id;
 		this.x = x;
 		this.y = y;

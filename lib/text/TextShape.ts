@@ -1,19 +1,17 @@
-import {Shape, TriangleElements} from "@awayjs/graphics";
+import { Shape, TriangleElements } from '@awayjs/graphics';
 
-import {MaterialBase} from "@awayjs/materials";
+import { MaterialBase } from '@awayjs/materials';
 
-import {TextFormat} from "./TextFormat";
+import { TextFormat } from './TextFormat';
 
-export class TextShape
-{
+export class TextShape {
 
-	public verts:number[];
-	public format:TextFormat;
-	public shape:Shape;
-	public fntMaterial:MaterialBase;
-	public elements:TriangleElements;
-	constructor()
-	{
-		this.verts=[];
+	public verts: number[];
+	public format: TextFormat;
+	public shape: Shape;
+	public fntMaterial: MaterialBase;
+	public elements: TriangleElements;
+	constructor() {
+		this.verts = [];
 	}
 }

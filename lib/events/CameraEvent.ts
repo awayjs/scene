@@ -1,25 +1,22 @@
-import {EventBase} from "@awayjs/core";
+import { EventBase } from '@awayjs/core';
 
-import {Camera} from "../display/Camera";
+import { Camera } from '../display/Camera';
 
 /**
  * @class away.events.CameraEvent
  */
-export class CameraEvent extends EventBase
-{
-	public static PROJECTION_CHANGED:string = "projectionChanged";
+export class CameraEvent extends EventBase {
+	public static PROJECTION_CHANGED: string = 'projectionChanged';
 
-	private _camera:Camera;
+	private _camera: Camera;
 
-	constructor(type:string, camera:Camera)
-	{
+	constructor(type: string, camera: Camera) {
 		super(type);
 
 		this._camera = camera;
 	}
 
-	public get camera():Camera
-	{
+	public get camera(): Camera {
 		return this._camera;
 	}
 
@@ -27,8 +24,7 @@ export class CameraEvent extends EventBase
 	 * Clones the event.
 	 * @return An exact duplicate of the current object.
 	 */
-	public clone():CameraEvent
-	{
+	public clone(): CameraEvent {
 		return new CameraEvent(this.type, this._camera);
 	}
 }

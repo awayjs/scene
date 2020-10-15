@@ -2,8 +2,7 @@
  * The AntiAliasType class provides values for anti-aliasing in the
  * away.text.TextField class.
  */
-export class AntiAliasType
-{
+export class AntiAliasType {
 	/**
 	 * Sets anti-aliasing to advanced anti-aliasing. Advanced anti-aliasing
 	 * allows font faces to be rendered at very high quality at small sizes. It
@@ -13,7 +12,7 @@ export class AntiAliasType
 	 * in the TextField class. Use the syntax
 	 * <code>AntiAliasType.ADVANCED</code>.
 	 */
-	public static ADVANCED:string = "advanced";
+	public static ADVANCED: string = 'advanced';
 
 	/**
 	 * Sets anti-aliasing to the anti-aliasing that is used in Flash Player 7 and
@@ -22,5 +21,5 @@ export class AntiAliasType
 	 * property in the TextField class. Use the syntax
 	 * <code>AntiAliasType.NORMAL</code>.
 	 */
-	public static NORMAL:string = "normal";
+	public static NORMAL: string = 'normal';
 }

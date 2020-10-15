@@ -1,32 +1,32 @@
-import {Box, ColorUtils, Matrix, Matrix3D, ColorTransform, Rectangle, Point, Vector3D, AssetEvent} from "@awayjs/core";
+import { Box, ColorUtils, Matrix, Matrix3D, ColorTransform, Rectangle, Point, Vector3D, AssetEvent } from '@awayjs/core';
 
-import {ImageSampler, AttributesBuffer, AttributesView, Float2Attributes} from "@awayjs/stage";
+import { ImageSampler, AttributesBuffer, AttributesView, Float2Attributes } from '@awayjs/stage';
 
 import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
 
-import {Style} from "@awayjs/renderer";
+import { Style } from '@awayjs/renderer';
 
-import {MaterialBase} from "@awayjs/materials";
+import { MaterialBase } from '@awayjs/materials';
 
-import {Graphics, Shape, TriangleElements, GraphicsFactoryHelper, MaterialManager} from "@awayjs/graphics";
+import { Graphics, Shape, TriangleElements, GraphicsFactoryHelper, MaterialManager } from '@awayjs/graphics';
 
-import {HierarchicalProperties} from "../base/HierarchicalProperties";
-import {TesselatedFontTable} from "../text/TesselatedFontTable";
-import {AntiAliasType} from "../text/AntiAliasType";
-import {GridFitType} from "../text/GridFitType";
-import {TextFieldAutoSize} from "../text/TextFieldAutoSize";
-import {TextFieldType} from "../text/TextFieldType";
-import {TextFormat} from "../text/TextFormat";
-import {TextInteractionMode} from "../text/TextInteractionMode";
-import {TextLineMetrics} from "../text/TextLineMetrics";
-import {KeyboardEvent} from "../events/KeyboardEvent";
-import {TextfieldEvent} from "../events/TextfieldEvent";
+import { HierarchicalProperties } from '../base/HierarchicalProperties';
+import { TesselatedFontTable } from '../text/TesselatedFontTable';
+import { AntiAliasType } from '../text/AntiAliasType';
+import { GridFitType } from '../text/GridFitType';
+import { TextFieldAutoSize } from '../text/TextFieldAutoSize';
+import { TextFieldType } from '../text/TextFieldType';
+import { TextFormat } from '../text/TextFormat';
+import { TextInteractionMode } from '../text/TextInteractionMode';
+import { TextLineMetrics } from '../text/TextLineMetrics';
+import { KeyboardEvent } from '../events/KeyboardEvent';
+import { TextfieldEvent } from '../events/TextfieldEvent';
 
-import {DisplayObject} from "./DisplayObject";
-import {DisplayObjectContainer} from "./DisplayObjectContainer";
-import {Sprite} from "./Sprite";
-import {TextSprite} from "./TextSprite";
-import {TextShape} from "../text/TextShape";
+import { DisplayObject } from './DisplayObject';
+import { DisplayObjectContainer } from './DisplayObjectContainer';
+import { Sprite } from './Sprite';
+import { TextSprite } from './TextSprite';
+import { TextShape } from '../text/TextShape';
 import { ITextfieldAdapter } from '../adapters/ITextfieldAdapter';
 import { HTMLTextProcessor } from '../text/HTMLTextProcessor';
 import { TextFormatAlign } from '../text/TextFormatAlign';
@@ -128,163 +128,158 @@ const MNEMOS = [
  *                                  to SELECTION mode using context menu
  *                                  options
  */
-export class TextField extends DisplayObjectContainer
-{
-	private _isEntity:boolean = false;
-	private _onGraphicsInvalidateDelegate:(event:AssetEvent) => void;
-	
-	private static _textFields:Array<TextField> = [];
+export class TextField extends DisplayObjectContainer {
+	private _isEntity: boolean = false;
+	private _onGraphicsInvalidateDelegate: (event: AssetEvent) => void;
 
-	public static assetType:string = "[asset TextField]";
+	private static _textFields: Array<TextField> = [];
 
-	public static getNewTextField():TextField
-	{
-		return (TextField._textFields.length)? TextField._textFields.pop() : new TextField()
+	public static assetType: string = '[asset TextField]';
+
+	public static getNewTextField(): TextField {
+		return (TextField._textFields.length) ? TextField._textFields.pop() : new TextField();
 	}
-	public static clearPool()
-	{
-		TextField._textFields=[];
+
+	public static clearPool() {
+		TextField._textFields = [];
 	}
-    private static _onChangedEvent=new TextfieldEvent(TextfieldEvent.CHANGED);
 
+	private static _onChangedEvent=new TextfieldEvent(TextfieldEvent.CHANGED);
 
-	public textOffsetX:number=0;
-	public textOffsetY:number=0;
-	private _width:number;
-	private _height:number;
-	private _graphics:Graphics;
-	private _bottomScrollV:number;
-	private _caretIndex:number;
-	private _maxScrollH:number;
-	private _maxScrollV:number;
-	private _numLines:number;
-	private _selectionBeginIndex:number=0;
-    private _selectionEndIndex:number=0;
-    private _biggestLine:number=0;
-    
-	private _iText:string = "";
-	private _text:string = "";
-	private _textInteractionMode:TextInteractionMode;
+	public textOffsetX: number=0;
+	public textOffsetY: number=0;
+	private _width: number;
+	private _height: number;
+	private _graphics: Graphics;
+	private _bottomScrollV: number;
+	private _caretIndex: number;
+	private _maxScrollH: number;
+	private _maxScrollV: number;
+	private _numLines: number;
+	private _selectionBeginIndex: number=0;
+	private _selectionEndIndex: number=0;
+	private _biggestLine: number=0;
 
-	private _textWidth:number;
-	private _textHeight:number;
+	private _iText: string = '';
+	private _text: string = '';
+	private _textInteractionMode: TextInteractionMode;
 
-	private _charBoundaries:Rectangle;
-	private _firstCharInParagraph:number;
-	private _imageReference:DisplayObject
-	private _lineMetrics:TextLineMetrics;
-	private _paragraphLength:number;
+	private _textWidth: number;
+	private _textHeight: number;
 
+	private _charBoundaries: Rectangle;
+	private _firstCharInParagraph: number;
+	private _imageReference: DisplayObject
+	private _lineMetrics: TextLineMetrics;
+	private _paragraphLength: number;
 
-    public _textFormat:TextFormat;
-    public _newTextFormat:TextFormat;
-	public _textFormats:TextFormat[];
-	public _textFormatsIdx:number[];
+	public _textFormat: TextFormat;
+	public _newTextFormat: TextFormat;
+	public _textFormats: TextFormat[];
+	public _textFormatsIdx: number[];
 
-	public textShapes:StringMap<TextShape>;
-	
-	private inMaskMode:boolean=false;
-	private maskChild:Sprite;// holds the mask for the textfield
-	private textChild:TextSprite;// holds the graphic-content for this textfield
-	private targetGraphics:Graphics;
+	public textShapes: StringMap<TextShape>;
 
-	private cursorShape:Shape;
-	private bgShapeSelect:Shape;
+	private inMaskMode: boolean=false;
+	private maskChild: Sprite;// holds the mask for the textfield
+	private textChild: TextSprite;// holds the graphic-content for this textfield
+	private targetGraphics: Graphics;
 
-	private cursorIntervalID:number = -1;
+	private cursorShape: Shape;
+	private bgShapeSelect: Shape;
 
-	public cursorBlinking:boolean = false;
-	public showSelection:boolean = false;
-	
-	public _textDirty:Boolean=false; 	// if text is dirty, the text-content or the text-size has changed, and we need to recalculate word-width
-	public _positionsDirty:Boolean=false;	// if formatting is dirty, we need to recalculate text-positions / size
-	public _glyphsDirty:Boolean=false;	// if glyphs are dirty, we need to recollect the glyphdata and build the text-graphics. this should ony be done max once a frame
-    public _shapesDirty:Boolean=false;
+	private cursorIntervalID: number = -1;
 
-	public chars_codes:number[]=[];	// stores charcode per char
-	public chars_width:number[]=[];
-	public tf_per_char:TextFormat[]=[];
+	public cursorBlinking: boolean = false;
+	public showSelection: boolean = false;
 
-	public words:number[]=[];			// stores offset and length and width for each word
+	public _textDirty: Boolean=false; 	// if text is dirty, the text-content or the text-size has changed, and we need to recalculate word-width
+	public _positionsDirty: Boolean=false;	// if formatting is dirty, we need to recalculate text-positions / size
+	public _glyphsDirty: Boolean=false;	// if glyphs are dirty, we need to recollect the glyphdata and build the text-graphics. this should ony be done max once a frame
+	public _shapesDirty: Boolean=false;
 
-	private _textRuns_formats:TextFormat[]=[];	// stores textFormat for each textrun
-	private _textRuns_words:number[]=[];	// stores words-offset, word-count and width for each textrun
-	private _paragraph_textRuns_indices:number[]=[];	// stores textFormat for each textrun
+	public chars_codes: number[]=[];	// stores charcode per char
+	public chars_width: number[]=[];
+	public tf_per_char: TextFormat[]=[];
 
+	public words: number[]=[];			// stores offset and length and width for each word
 
-	private _maxWidthLine:number=0;
+	private _textRuns_formats: TextFormat[]=[];	// stores textFormat for each textrun
+	private _textRuns_words: number[]=[];	// stores words-offset, word-count and width for each textrun
+	private _paragraph_textRuns_indices: number[]=[];	// stores textFormat for each textrun
 
-	private _labelData:any=null;
+	private _maxWidthLine: number=0;
 
-	public html:boolean;
+	private _labelData: any=null;
 
-	private lines_wordStartIndices:number[] = [];
-	private lines_wordEndIndices:number[] = [];
-	private lines_start_y:number[] = [];
-	private lines_start_x:number[] = [];
-	private lines_charIdx_start:number[] = [];
-	private lines_charIdx_end:number[] = [];
-	private lines_width:number[] = [];
-	private lines_height:number[] = [];
-	private lines_numSpacesPerline:number[] = [];
-	private char_positions_x:number[] = [];
-	private char_positions_y:number[] = [];
+	public html: boolean;
+
+	private lines_wordStartIndices: number[] = [];
+	private lines_wordEndIndices: number[] = [];
+	private lines_start_y: number[] = [];
+	private lines_start_x: number[] = [];
+	private lines_charIdx_start: number[] = [];
+	private lines_charIdx_end: number[] = [];
+	private lines_width: number[] = [];
+	private lines_height: number[] = [];
+	private lines_numSpacesPerline: number[] = [];
+	private char_positions_x: number[] = [];
+	private char_positions_y: number[] = [];
 
 	// keeping track of the original textfield that was used for cloning this one.
-	public sourceTextField:TextField=null;
+	public sourceTextField: TextField=null;
 
-	private _maskWidth:number=0;
-	private _maskHeight:number=0;
-	private _maskTextOffsetX:number=0;
-	private _maskTextOffsetY:number=0;
-	
-	public bgShape:Shape;
-	
-    public isStatic:boolean=false;
-    
-	public updateMaskMode()
-	{
+	private _maskWidth: number=0;
+	private _maskHeight: number=0;
+	private _maskTextOffsetX: number=0;
+	private _maskTextOffsetY: number=0;
+
+	public bgShape: Shape;
+
+	public isStatic: boolean=false;
+
+	public updateMaskMode() {
 		//if(this._textWidth>this._width || this._textHeight>this._height){
-			// mask needed
-			if(this.inMaskMode){	
-				if(this._maskWidth!=this._width || this._maskHeight!=this._height ||
-					this._maskTextOffsetX!=this.textOffsetX || this._maskTextOffsetY!=this.textOffsetY){
-					
-					this._maskWidth=this._width;
-					this._maskHeight=this._height;
-					this._maskTextOffsetX=this.textOffsetX;
-					this._maskTextOffsetY=this.textOffsetY;
-					this.maskChild.graphics.clear();
-					this.maskChild.graphics.beginFill(0xffffff);
-					this.maskChild.graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, this._height);
-					this.maskChild.graphics.endFill();
-				}	
-				this._graphics.clear();
-			}
-			if(!this.inMaskMode){	
-				// 	masking already setup 
-				// 	just make sure the mask has correct size 
-				this.inMaskMode=true;
-				if(!this.maskChild)
-					this.maskChild=new Sprite();		
-				if(!this.textChild)
-					this.textChild=new TextSprite();
-				this.textChild.mouseEnabled = false;
-				this.textChild.parentTextField=this;
-				this.maskChild.mouseEnabled = false;
+		// mask needed
+		if (this.inMaskMode) {
+			if (this._maskWidth != this._width || this._maskHeight != this._height ||
+					this._maskTextOffsetX != this.textOffsetX || this._maskTextOffsetY != this.textOffsetY) {
+
+				this._maskWidth = this._width;
+				this._maskHeight = this._height;
+				this._maskTextOffsetX = this.textOffsetX;
+				this._maskTextOffsetY = this.textOffsetY;
+				this.maskChild.graphics.clear();
 				this.maskChild.graphics.beginFill(0xffffff);
 				this.maskChild.graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, this._height);
 				this.maskChild.graphics.endFill();
-				this.addChild(this.maskChild);
-				this.addChild(this.textChild);
-				this.maskChild.maskMode=true;
-				this.textChild.masks=[this.maskChild];
-	
-				this._graphics.clear();
-				this.targetGraphics=this.textChild.graphics;	
-				return;
-			}			
+			}
+			this._graphics.clear();
+		}
+		if (!this.inMaskMode) {
+			// 	masking already setup
+			// 	just make sure the mask has correct size
+			this.inMaskMode = true;
+			if (!this.maskChild)
+				this.maskChild = new Sprite();
+			if (!this.textChild)
+				this.textChild = new TextSprite();
+			this.textChild.mouseEnabled = false;
+			this.textChild.parentTextField = this;
+			this.maskChild.mouseEnabled = false;
+			this.maskChild.graphics.beginFill(0xffffff);
+			this.maskChild.graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, this._height);
+			this.maskChild.graphics.endFill();
+			this.addChild(this.maskChild);
+			this.addChild(this.textChild);
+			this.maskChild.maskMode = true;
+			this.textChild.masks = [this.maskChild];
+
+			this._graphics.clear();
+			this.targetGraphics = this.textChild.graphics;
 			return;
+		}
+		return;
 		//}
 		// mask not needed
 		/*this.inMaskMode=false;
@@ -294,43 +289,41 @@ export class TextField extends DisplayObjectContainer
 		if(this.numChildren>0)
 			this.removeChildren(0, this.numChildren);*/
 	}
-	public getMouseCursor():string
-	{
+
+	public getMouseCursor(): string {
 		return this.cursorType;
 	}
 
-
-	public get isInFocus():boolean
-	{
+	public get isInFocus(): boolean {
 		return this._isInFocus;
 	}
-	public set isInFocus(value:boolean)
-	{
+
+	public set isInFocus(value: boolean) {
 	}
-	
-	public setFocus(value:boolean, fromMouseDown:boolean=false, sendSoftKeyEvent:boolean=true){
-		
-		if(this._isInFocus==value){
+
+	public setFocus(value: boolean, fromMouseDown: boolean = false, sendSoftKeyEvent: boolean = true) {
+
+		if (this._isInFocus == value) {
 			return;
-        }
-        super.setFocus(value, fromMouseDown, sendSoftKeyEvent);
+		}
+		super.setFocus(value, fromMouseDown, sendSoftKeyEvent);
 
 		this.enableInput(value);
 
-		if(!this._selectable) {
+		if (!this._selectable) {
 			return;
 		}
 
-        if(value){
+		if (value) {
 			this.setSelection(0, this._iText.length);
-			
+
 			// check if a adapter exists
-			if(sendSoftKeyEvent && this.adapter != this){
+			if (sendSoftKeyEvent && this.adapter != this) {
 				// todo: create a ITextFieldAdapter, so we can use selectText() without casting to any
-				(<any>this.adapter).selectTextField(fromMouseDown);
+				(<any> this.adapter).selectTextField(fromMouseDown);
 			}
-        }else{
-            this.setSelection(0, 0);
+		} else {
+			this.setSelection(0, 0);
 		}
 
 		this._glyphsDirty = true;
@@ -338,263 +331,252 @@ export class TextField extends DisplayObjectContainer
 			this._implicitPartition.invalidateEntity(this);
 	}
 
-	private enableInput(enable:boolean=true){
+	private enableInput(enable: boolean = true) {
 
-        if(this.cursorIntervalID>=0){
-            window.clearInterval(this.cursorIntervalID);
-            this.cursorIntervalID=-1;
-        }
-		if(enable && this._isInFocus && this.selectable){
+		if (this.cursorIntervalID >= 0) {
+			window.clearInterval(this.cursorIntervalID);
+			this.cursorIntervalID = -1;
+		}
+		if (enable && this._isInFocus && this.selectable) {
 			this.drawSelectionGraphics();
-			var myThis=this;
-			this.cursorIntervalID=window.setInterval(function(){
-                myThis.cursorBlinking=!myThis.cursorBlinking;
-                if(!myThis.selectable){
-                    myThis.cursorBlinking=true;
-                }                
-                myThis._shapesDirty=true;
-                myThis.invalidate();
+			const myThis = this;
+			this.cursorIntervalID = window.setInterval(function() {
+				myThis.cursorBlinking = !myThis.cursorBlinking;
+				if (!myThis.selectable) {
+					myThis.cursorBlinking = true;
+				}
+				myThis._shapesDirty = true;
+				myThis.invalidate();
 			}, 500);
 		}
 	}
 
-	public findCharIdxForMouse(event):number 
-	{	
-		var myPoint = this.textChild.transform.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
-		var lineIdx = this.getLineIndexAtPoint(myPoint.x, myPoint.y);
-		var charIdx = this.getCharIndexAtPoint(myPoint.x, myPoint.y, lineIdx);
+	public findCharIdxForMouse(event): number {
+		const myPoint = this.textChild.transform.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
+		let lineIdx = this.getLineIndexAtPoint(myPoint.x, myPoint.y);
+		let charIdx = this.getCharIndexAtPoint(myPoint.x, myPoint.y, lineIdx);
 
-		if(lineIdx >= this.lines_start_x.length) 
-		{
+		if (lineIdx >= this.lines_start_x.length) {
 			lineIdx = this.lines_start_x.length - 1;
 		}
 
-		if(lineIdx < 0) {
+		if (lineIdx < 0) {
 			lineIdx = 0;
 		}
 
-
-		if(lineIdx >= 0 && charIdx < 0 && this.lines_start_x[lineIdx] !== undefined){
-			if(myPoint.x <= this.lines_start_x[lineIdx]) {
+		if (lineIdx >= 0 && charIdx < 0 && this.lines_start_x[lineIdx] !== undefined) {
+			if (myPoint.x <= this.lines_start_x[lineIdx]) {
 				charIdx = this.lines_charIdx_start[lineIdx];
-			}
-			else
-			{
+			} else {
 				charIdx = this.lines_charIdx_end[lineIdx];
 			}
 		}
 
-		if(lineIdx < 0 || charIdx < 0){
+		if (lineIdx < 0 || charIdx < 0) {
 			charIdx = 0;
 		}
 
 		return charIdx;
 
-    }
+	}
 
-	private startSelectionByMouseDelegate:(event)=>void;
-	private startSelectionByMouse(event){
-		this._selectionBeginIndex=this.findCharIdxForMouse(event);	
-		this._selectionEndIndex=this._selectionBeginIndex;
-		//console.log("startSelectionByMouse", this._selectionBeginIndex, this._selectionEndIndex);	
-		this._glyphsDirty=true;
-        this.reConstruct();
-        this.cursorBlinking=false;
+	private startSelectionByMouseDelegate: (event) => void;
+	private startSelectionByMouse(event) {
+		this._selectionBeginIndex = this.findCharIdxForMouse(event);
+		this._selectionEndIndex = this._selectionBeginIndex;
+		//console.log("startSelectionByMouse", this._selectionBeginIndex, this._selectionEndIndex);
+		this._glyphsDirty = true;
+		this.reConstruct();
+		this.cursorBlinking = false;
 		this.drawSelectionGraphics();
 	}
-	private stopSelectionByMouseDelegate:(event)=>void;
-	private stopSelectionByMouse(event){
-		this._selectionEndIndex=this.findCharIdxForMouse(event);
+
+	private stopSelectionByMouseDelegate: (event) => void;
+	private stopSelectionByMouse(event) {
+		this._selectionEndIndex = this.findCharIdxForMouse(event);
 		//console.log("stopSelectionByMouse", this._selectionBeginIndex, this._selectionEndIndex);
-		this._glyphsDirty=true;
+		this._glyphsDirty = true;
 		this.reConstruct();
 		this.drawSelectionGraphics();
 
 	}
-	private updateSelectionByMouseDelegate:(event)=>void;
-	private updateSelectionByMouse(event){
-		this._selectionEndIndex=this.findCharIdxForMouse(event);
+
+	private updateSelectionByMouseDelegate: (event) => void;
+	private updateSelectionByMouse(event) {
+		this._selectionEndIndex = this.findCharIdxForMouse(event);
 		//console.log("updateSelectionByMouse", this._selectionBeginIndex, this._selectionEndIndex);
-		this._glyphsDirty=true;
+		this._glyphsDirty = true;
 		this.reConstruct();
 		this.drawSelectionGraphics();
 
 	}
 
-	private drawSelectionGraphics(){
-		if(this._selectionBeginIndex<0){
-			this._selectionBeginIndex=0;
+	private drawSelectionGraphics() {
+		if (this._selectionBeginIndex < 0) {
+			this._selectionBeginIndex = 0;
 		}
 
-		if(this._selectionBeginIndex>this.char_positions_x.length){
-			this._selectionBeginIndex=this.char_positions_x.length;
+		if (this._selectionBeginIndex > this.char_positions_x.length) {
+			this._selectionBeginIndex = this.char_positions_x.length;
 		}
 
-		if(this._selectionEndIndex<0){
-			this._selectionEndIndex=0;
+		if (this._selectionEndIndex < 0) {
+			this._selectionEndIndex = 0;
 		}
 
-		if(this._selectionEndIndex>this.char_positions_x.length){
-			this._selectionEndIndex=this.char_positions_x.length;
-		}	
+		if (this._selectionEndIndex > this.char_positions_x.length) {
+			this._selectionEndIndex = this.char_positions_x.length;
+		}
 
-		if(this._selectionBeginIndex===this._selectionEndIndex) {
+		if (this._selectionBeginIndex === this._selectionEndIndex) {
 			this.showSelection = false;
 			this.drawCursor();
+		} else {
+			this.showSelection = true;
+			this.drawSelectedBG();
 		}
-		else{
-			this.showSelection = true;	
-			this.drawSelectedBG();			
-        }
-        
+
 	}
 
-
-	private scrollToCursor(x, y){
-        // if(!this.textChild){
-        //     return;
-        // }
-        // if(x>this._width){
-        //     this.textChild.x-=10;
-        // }
-        // if(x<Math.abs(this.textChild.x)){
-        //     this.textChild.x=this.textChild.x+x+2;
-        // }
-        // if(this.textChild.x<(this._width-this.textChild.width)){
-        //     this.textChild.x=this._width-this.textChild.width;
-        // }
-        // if(this.textChild.x>0){
-        //     this.textChild.x=0;
-        // }
+	private scrollToCursor(x, y) {
+		// if(!this.textChild){
+		//     return;
+		// }
+		// if(x>this._width){
+		//     this.textChild.x-=10;
+		// }
+		// if(x<Math.abs(this.textChild.x)){
+		//     this.textChild.x=this.textChild.x+x+2;
+		// }
+		// if(this.textChild.x<(this._width-this.textChild.width)){
+		//     this.textChild.x=this._width-this.textChild.width;
+		// }
+		// if(this.textChild.x>0){
+		//     this.textChild.x=0;
+		// }
 	}
 
-	private drawCursor(){
-        this._shapesDirty = true;
+	private drawCursor() {
+		this._shapesDirty = true;
 
-		if(this.cursorBlinking || !this.selectable || this.selectionBeginIndex!==this.selectionEndIndex) {
-            return;
+		if (this.cursorBlinking || !this.selectable || this.selectionBeginIndex !== this.selectionEndIndex) {
+			return;
 		}
 
-		var x:number=0;
-		var y:number=0;
-		var tf:TextFormat=this.newTextFormat;
-		
-		if(this.char_positions_x.length==0){
-			x=this.textOffsetX+(this._width/2)+this._textWidth/2;
-			if (tf.align == "justify") {
+		let x: number = 0;
+		let y: number = 0;
+		let tf: TextFormat = this.newTextFormat;
+
+		if (this.char_positions_x.length == 0) {
+			x = this.textOffsetX + (this._width / 2) + this._textWidth / 2;
+			if (tf.align == 'justify') {
+			} else if (tf.align == 'center') {
+			} else if (tf.align == 'right') {
+				x = this.textOffsetX + this._width - 2;
+			} else if (tf.align == 'left') {
+				x = this.textOffsetX + 4 + this._textWidth;
 			}
-			else if (tf.align == "center") {
-			}
-			else if (tf.align == "right") {
-				x = this.textOffsetX+this._width-2;
-			}
-			else if (tf.align == "left") {
-				x = this.textOffsetX+4+this._textWidth;
-			}
-		}
-		else if(this._selectionBeginIndex==this.char_positions_x.length){
-			x=this.char_positions_x[this._selectionBeginIndex-1]+this.chars_width[this._selectionBeginIndex-1];
-			y=this.char_positions_y[this._selectionBeginIndex-1];
-			tf=this.tf_per_char[this._selectionBeginIndex-1];
-		}
-		else{
-			x=this.char_positions_x[this._selectionBeginIndex];
-			y=this.char_positions_y[this._selectionBeginIndex];
-			tf=this.tf_per_char[this._selectionBeginIndex];
+		} else if (this._selectionBeginIndex == this.char_positions_x.length) {
+			x = this.char_positions_x[this._selectionBeginIndex - 1] + this.chars_width[this._selectionBeginIndex - 1];
+			y = this.char_positions_y[this._selectionBeginIndex - 1];
+			tf = this.tf_per_char[this._selectionBeginIndex - 1];
+		} else {
+			x = this.char_positions_x[this._selectionBeginIndex];
+			y = this.char_positions_y[this._selectionBeginIndex];
+			tf = this.tf_per_char[this._selectionBeginIndex];
 		}
 
 		tf.font_table.initFontSize(tf.size);
-		var height:number= tf.font_table.getLineHeight();
-        var color=this.getTextColorForTextFormat(tf);
-		var cursorScale:number=this.internalScale.x;
-		
-		if(cursorScale<=0) {
-			cursorScale=1;
+		const height: number = tf.font_table.getLineHeight();
+		const color = this.getTextColorForTextFormat(tf);
+		let cursorScale: number = this.internalScale.x;
+
+		if (cursorScale <= 0) {
+			cursorScale = 1;
 		}
 
-		const cursorRect = [x-(0.5*cursorScale),y,cursorScale,height];
+		const cursorRect = [x - (0.5 * cursorScale),y,cursorScale,height];
 
-		if(!this.cursorShape) {
+		if (!this.cursorShape) {
 			this.cursorShape = GraphicsFactoryHelper.drawRectangles(cursorRect,color,1);
 			this.cursorShape.usages++;//TODO: get rid of this memory lea
 		} else {
 			GraphicsFactoryHelper.updateRectanglesShape(this.cursorShape, cursorRect);
 		}
 
-		if(this.cursorShape.style.color !== color){    
-            var alpha=ColorUtils.float32ColorToARGB(color)[0];
-			
-            var obj = MaterialManager.get_material_for_color(color, (alpha / 255) || 1);
-			
-			if(obj.colorPos){
-                this.cursorShape.style = new Style();
-                var sampler:ImageSampler = new ImageSampler();
-                obj.material.animateUVs=true;
-                this.cursorShape.style.color=color;
-                this.cursorShape.style.addSamplerAt(sampler, obj.material.getTextureAt(0));
-                this.cursorShape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
-            }
-        }
-        this.scrollToCursor(x,y);
-		
-    }
-    
-	private drawSelectedBG(){
+		if (this.cursorShape.style.color !== color) {
+			const alpha = ColorUtils.float32ColorToARGB(color)[0];
 
-        this._shapesDirty=true;
+			const obj = MaterialManager.get_material_for_color(color, (alpha / 255) || 1);
 
-		if(this._selectionBeginIndex<0){
-			this._selectionBeginIndex=0;
+			if (obj.colorPos) {
+				this.cursorShape.style = new Style();
+				const sampler: ImageSampler = new ImageSampler();
+				obj.material.animateUVs = true;
+				this.cursorShape.style.color = color;
+				this.cursorShape.style.addSamplerAt(sampler, obj.material.getTextureAt(0));
+				this.cursorShape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
+			}
+		}
+		this.scrollToCursor(x,y);
+
+	}
+
+	private drawSelectedBG() {
+
+		this._shapesDirty = true;
+
+		if (this._selectionBeginIndex < 0) {
+			this._selectionBeginIndex = 0;
 		}
 
-		if(this._selectionBeginIndex>this.char_positions_x.length){
-			this._selectionBeginIndex=this.char_positions_x.length;
-		}	
-
-		var select_start:number=this._selectionBeginIndex;
-		var select_end:number=this._selectionEndIndex;
-
-		if(this._selectionEndIndex<this._selectionBeginIndex){
-			select_start=this._selectionEndIndex;
-			select_end=this._selectionBeginIndex;
+		if (this._selectionBeginIndex > this.char_positions_x.length) {
+			this._selectionBeginIndex = this.char_positions_x.length;
 		}
 
-		var x:number=0;
-		var y:number=0;
-		var oldy:number=-1;
-		var tf:TextFormat=null;
-		var startx:number=-1;
-		var width:number=0;
-		var height:number=0;
-		var rectangles:number[]=[];
+		let select_start: number = this._selectionBeginIndex;
+		let select_end: number = this._selectionEndIndex;
 
-		if(this.char_positions_x.length!=0 && this._selectionEndIndex!=this._selectionBeginIndex){
-			var len:number=(select_end>this.char_positions_x.length)?this.char_positions_x.length:select_end;
+		if (this._selectionEndIndex < this._selectionBeginIndex) {
+			select_start = this._selectionEndIndex;
+			select_end = this._selectionBeginIndex;
+		}
+
+		let x: number = 0;
+		let y: number = 0;
+		let oldy: number = -1;
+		let tf: TextFormat = null;
+		let startx: number = -1;
+		let width: number = 0;
+		let height: number = 0;
+		const rectangles: number[] = [];
+
+		if (this.char_positions_x.length != 0 && this._selectionEndIndex != this._selectionBeginIndex) {
+			const len: number = (select_end > this.char_positions_x.length) ? this.char_positions_x.length : select_end;
 			//console.log(select_start, select_end);
-			for(var i:number=select_start; i<len; i++){
+			for (let i: number = select_start; i < len; i++) {
 
-				if(i==this.char_positions_x.length){
-					x=this.char_positions_x[i-1]+this.chars_width[i-1];
-					y=this.char_positions_y[i-1];
-					tf=this.tf_per_char[i-1];
+				if (i == this.char_positions_x.length) {
+					x = this.char_positions_x[i - 1] + this.chars_width[i - 1];
+					y = this.char_positions_y[i - 1];
+					tf = this.tf_per_char[i - 1];
+				} else {
+					x = this.char_positions_x[i];
+					y = this.char_positions_y[i];
+					tf = this.tf_per_char[i];
 				}
-				else{
-					x=this.char_positions_x[i];
-					y=this.char_positions_y[i];
-					tf=this.tf_per_char[i];
+				if (startx < 0) {
+					startx = x;
 				}
-				if(startx<0){
-					startx=x;
-				}
-				if(oldy>=0 && oldy!=y){
+				if (oldy >= 0 && oldy != y) {
 					// new line
-					rectangles.push(startx, oldy, width, height);		
-					width=0;			
-					startx=x;
+					rectangles.push(startx, oldy, width, height);
+					width = 0;
+					startx = x;
 				}
-				
-				width+=this.chars_width[i];
-				oldy=y;			
+
+				width += this.chars_width[i];
+				oldy = y;
 				tf.font_table.initFontSize(tf.size);
 
 				height = Math.max(height, tf.font_table.getLineHeight());
@@ -604,10 +586,10 @@ export class TextField extends DisplayObjectContainer
 		// 	this.bgShapeSelect.dispose();
 		// 	this.bgShapeSelect=null;
 		// }
-		if(width > 0){
+		if (width > 0) {
 			rectangles.push(startx, oldy, width, height);
-			
-			if(!this.bgShapeSelect) {
+
+			if (!this.bgShapeSelect) {
 				this.bgShapeSelect = GraphicsFactoryHelper.drawRectangles(rectangles,0x0,1);
 				this.bgShapeSelect.usages++; //TODO: get rid of this memory leak
 			} else {
@@ -616,36 +598,34 @@ export class TextField extends DisplayObjectContainer
 
 			return;
 		}
-        
-        this.scrollToCursor(startx+width,oldy+height);
-		
+
+		this.scrollToCursor(startx + width,oldy + height);
 
 	}
-	public drawBG():void
-	{
-        this._graphics.beginFill(this.backgroundColor, (!this._background)? 0 : 1);
-        this._graphics.drawRect(this.textOffsetX, this.textOffsetY, this.width, this.height);
-        this._graphics.endFill();
-    }
-     
-	public drawBorder():void
-	{	
-		var half_thickness_x:number=this.border? 0.25*this.internalScale.x : 0;
-        var half_thickness_y:number=this.border? 0.25*this.internalScale.y : 0;	
+
+	public drawBG(): void {
+		this._graphics.beginFill(this.backgroundColor, (!this._background) ? 0 : 1);
+		this._graphics.drawRect(this.textOffsetX, this.textOffsetY, this.width, this.height);
+		this._graphics.endFill();
+	}
+
+	public drawBorder(): void {
+		const half_thickness_x: number = this.border ? 0.25 * this.internalScale.x : 0;
+		const half_thickness_y: number = this.border ? 0.25 * this.internalScale.y : 0;
 		this._graphics.beginFill(this._borderColor, 1);
-		this._graphics.drawRect(this.textOffsetX,this.textOffsetY, this._width, half_thickness_y*2);
-		this._graphics.drawRect(this.textOffsetX,this.textOffsetY+this._height-half_thickness_y*2, this._width, half_thickness_y*2);
-		this._graphics.drawRect(this.textOffsetX,this.textOffsetY+half_thickness_y*2, half_thickness_x*2, this._height-half_thickness_y*2);
-		this._graphics.drawRect(this.textOffsetX+this._width-half_thickness_x*2,this.textOffsetY+half_thickness_y*2, half_thickness_x*2, this._height-half_thickness_y*2);
-        this._graphics.endFill();        
+		this._graphics.drawRect(this.textOffsetX,this.textOffsetY, this._width, half_thickness_y * 2);
+		this._graphics.drawRect(this.textOffsetX,this.textOffsetY + this._height - half_thickness_y * 2, this._width, half_thickness_y * 2);
+		this._graphics.drawRect(this.textOffsetX,this.textOffsetY + half_thickness_y * 2, half_thickness_x * 2, this._height - half_thickness_y * 2);
+		this._graphics.drawRect(this.textOffsetX + this._width - half_thickness_x * 2,this.textOffsetY + half_thickness_y * 2, half_thickness_x * 2, this._height - half_thickness_y * 2);
+		this._graphics.endFill();
 	}
 
-	public getTextShapeForIdentifierAndFormat(id:string, format:TextFormat) {
-		if(this.textShapes.hasOwnProperty(id)){
+	public getTextShapeForIdentifierAndFormat(id: string, format: TextFormat) {
+		if (this.textShapes.hasOwnProperty(id)) {
 			return this.textShapes[id];
 		}
-		this.textShapes[id]=new TextShape();
-		this.textShapes[id].format=format;
+		this.textShapes[id] = new TextShape();
+		this.textShapes[id].format = format;
 		return this.textShapes[id];
 	}
 
@@ -657,7 +637,7 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @default false
 	 */
-	public alwaysShowSelection:boolean;
+	public alwaysShowSelection: boolean;
 
 	/**
 	 * The type of anti-aliasing used for this text field. Use
@@ -668,7 +648,7 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * <p>To set values for this property, use the following string values:</p>
 	 */
-	public antiAliasType:AntiAliasType;
+	public antiAliasType: AntiAliasType;
 
 	/**
 	 * Controls automatic sizing and alignment of text fields. Acceptable values
@@ -712,40 +692,37 @@ export class TextField extends DisplayObjectContainer
 	 * @throws ArgumentError The <code>autoSize</code> specified is not a member
 	 *                       of flash.text.TextFieldAutoSize.
 	 */
-	private _autoSize:string;
+	private _autoSize: string;
 
-	public get autoSize():string
-	{
+	public get autoSize(): string {
 		return this._autoSize;
 	}
 
-	public set autoSize(value:string)
-	{
+	public set autoSize(value: string) {
 		if (this._autoSize == value)
 			return;
 
-        if(typeof value==="string"){
-            if(value!=TextFieldAutoSize.CENTER &&
-                 value!=TextFieldAutoSize.NONE &&
-                 value!=TextFieldAutoSize.LEFT &&
-                 value!=TextFieldAutoSize.RIGHT){
-                     return;
-                 }
-        }
-        else{
-            if(typeof value==="boolean"){
-                if(value)
-                    value=TextFieldAutoSize.LEFT;
-                else
-                    value=TextFieldAutoSize.NONE;
-            }
-            if(typeof value==="number"){
-                if(value>0)
-                    value=TextFieldAutoSize.LEFT;
-                else
-                    value=TextFieldAutoSize.NONE;
-            }
-        }
+		if (typeof value === 'string') {
+			if (value != TextFieldAutoSize.CENTER &&
+                 value != TextFieldAutoSize.NONE &&
+                 value != TextFieldAutoSize.LEFT &&
+                 value != TextFieldAutoSize.RIGHT) {
+				return;
+			}
+		} else {
+			if (typeof value === 'boolean') {
+				if (value)
+					value = TextFieldAutoSize.LEFT;
+				else
+					value = TextFieldAutoSize.NONE;
+			}
+			if (typeof value === 'number') {
+				if (value > 0)
+					value = TextFieldAutoSize.LEFT;
+				else
+					value = TextFieldAutoSize.NONE;
+			}
+		}
 
 		this._autoSize = value;
 
@@ -755,11 +732,10 @@ export class TextField extends DisplayObjectContainer
 			this.invalidate();
 	}
 
-
-    private _internalScale:Vector3D = new Vector3D(1,1,1);
-    public get internalScale():Vector3D{
-        return this._internalScale;
-    }
+	private _internalScale: Vector3D = new Vector3D(1,1,1);
+	public get internalScale(): Vector3D {
+		return this._internalScale;
+	}
 	// public getInternalScale(view:View = null):Vector3D
 	// {
 	// 	if(this.parent)
@@ -772,28 +748,27 @@ export class TextField extends DisplayObjectContainer
 	// 		this._internalScale.y *= view.focalLength/1000;
 	// 	}
 
-    //     this._internalScale.x=1/this._internalScale.x;
-    //     this._internalScale.y=1/this._internalScale.y;
+	//     this._internalScale.x=1/this._internalScale.x;
+	//     this._internalScale.y=1/this._internalScale.y;
 	// 	return this._internalScale;
 	// }
-	public _iInternalUpdate():void
-	{
+	public _iInternalUpdate(): void {
 		super._iInternalUpdate();
 
 		//if (!this.inMaskMode) {
 
-			this.reConstruct(true);
-			
-			if(this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material ){
-				// only for FNT font-tables
-				// todo: do we still need this ?
+		this.reConstruct(true);
 
-				this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
-				this.transform.colorTransform.color = (this.textColor!=null) ? this.textColor : this._textFormat.color;
-				this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-			}
+		if (this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material) {
+			// only for FNT font-tables
+			// todo: do we still need this ?
+
+			this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
+			this.transform.colorTransform.color = (this.textColor != null) ? this.textColor : this._textFormat.color;
+			this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+		}
 		//}
-        /*
+		/*
 		if (projection) {
 			this._strokeScale.x = (<PerspectiveProjection> projection).hFocalLength/1000;
 			this._strokeScale.y = (<PerspectiveProjection> projection).focalLength/1000;
@@ -802,26 +777,24 @@ export class TextField extends DisplayObjectContainer
 			this._strokeScale.y = 1;
 		}
         this._graphics.updateScale(projection);*/
-        
-        
-		var prevScaleX:number = this._internalScale.x;
-		var prevScaleY:number = this._internalScale.y;
+
+		const prevScaleX: number = this._internalScale.x;
+		const prevScaleY: number = this._internalScale.y;
 		// var scale:Vector3D = this.getInternalScale(view);
 		// if (scale.x == prevScaleX && scale.y == prevScaleY)
-        //      return;
-        // this._internalScale=scale;
-        // this._glyphsDirty=true;
-		
-    }
+		//      return;
+		// this._internalScale=scale;
+		// this._glyphsDirty=true;
+
+	}
 
 	/**
 	 * //TODO
 	 *
 	 * @private
 	 */
-	private _onGraphicsInvalidate(event:AssetEvent):void
-	{
-		var isEntity:boolean = this.isEntity();
+	private _onGraphicsInvalidate(event: AssetEvent): void {
+		const isEntity: boolean = this.isEntity();
 
 		if (this._isEntity != isEntity) {
 			if (!isEntity && this._implicitPartition)
@@ -837,8 +810,7 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @returns {string}
 	 */
-	public get assetType():string
-	{
+	public get assetType(): string {
 		return TextField.assetType;
 	}
 
@@ -851,15 +823,16 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @default false
 	 */
-	private _background:boolean;
-	public get background():boolean{
+	private _background: boolean;
+	public get background(): boolean {
 		return this._background;
 	}
-	public set background(value:boolean){
-        if(this._background==value)
-            return;
-		this._background=value;
-		this._shapesDirty=true;
+
+	public set background(value: boolean) {
+		if (this._background == value)
+			return;
+		this._background = value;
+		this._shapesDirty = true;
 	}
 
 	/**
@@ -869,13 +842,14 @@ export class TextField extends DisplayObjectContainer
 	 * text field has the <code>background</code> property set to
 	 * <code>true</code>.
 	 */
-	private _backgroundColor:number /*int*/;
-	public get backgroundColor():number{
+	private _backgroundColor: number /*int*/;
+	public get backgroundColor(): number {
 		return this._backgroundColor;
 	}
-	public set backgroundColor(value:number){ 
-		this._backgroundColor=value;
-		this._shapesDirty=true;
+
+	public set backgroundColor(value: number) {
+		this._backgroundColor = value;
+		this._shapesDirty = true;
 	}
 
 	/**
@@ -885,15 +859,16 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @default false
 	 */
-	private _border:boolean;
-	public get border():boolean{
+	private _border: boolean;
+	public get border(): boolean {
 		return this._border;
 	}
-	public set border(value:boolean){
-        if(value==this._border)
-            return;
-		this._border=value;
-		this._shapesDirty=true;
+
+	public set border(value: boolean) {
+		if (value == this._border)
+			return;
+		this._border = value;
+		this._shapesDirty = true;
 	}
 
 	/**
@@ -902,15 +877,16 @@ export class TextField extends DisplayObjectContainer
 	 * if there currently is no border, but the color is visible only if the text
 	 * field has the <code>border</code> property set to <code>true</code>.
 	 */
-	private _borderColor:number /*int*/;
-	public get borderColor():number{
+	private _borderColor: number /*int*/;
+	public get borderColor(): number {
 		return this._borderColor;
 	}
-	public set borderColor(value:number){
-        if(value==this.borderColor)
-            return;
-		this._borderColor=value;
-		this._shapesDirty=true;
+
+	public set borderColor(value: number) {
+		if (value == this.borderColor)
+			return;
+		this._borderColor = value;
+		this._shapesDirty = true;
 	}
 
 	/**
@@ -922,15 +898,16 @@ export class TextField extends DisplayObjectContainer
 	 * <p>All the text between the lines indicated by <code>scrollV</code> and
 	 * <code>bottomScrollV</code> is currently visible in the text field.</p>
 	 */
-	public get bottomScrollV():number /*int*/
+	public get bottomScrollV(): number /*int*/
 	{
 		return this._bottomScrollV;
 	}
-	public set bottomScrollV(value:number) /*int*/
+
+	public set bottomScrollV(value: number) /*int*/
 	{
-        if(value==this._bottomScrollV)
-            return;
-		this._bottomScrollV=value;
+		if (value == this._bottomScrollV)
+			return;
+		this._bottomScrollV = value;
 	}
 
 	/**
@@ -942,7 +919,7 @@ export class TextField extends DisplayObjectContainer
 	 * <p>Selection span indexes are zero-based(for example, the first position
 	 * is 0, the second position is 1, and so on).</p>
 	 */
-	public get caretIndex():number /*int*/
+	public get caretIndex(): number /*int*/
 	{
 		return this._caretIndex;
 	}
@@ -962,7 +939,7 @@ export class TextField extends DisplayObjectContainer
 	 * <p>Set the <code>condenseWhite</code> property before setting the
 	 * <code>htmlText</code> property.</p>
 	 */
-	public condenseWhite:boolean;
+	public condenseWhite: boolean;
 
 	/**
 	 * Specifies the format applied to newly inserted text, such as text entered
@@ -991,18 +968,16 @@ export class TextField extends DisplayObjectContainer
 	 * @throws Error This method cannot be used on a text field with a style
 	 *               sheet.
 	 */
-	public _defaultTextFormat:TextFormat;
+	public _defaultTextFormat: TextFormat;
 
-	public get defaultTextFormat():TextFormat
-	{
-		if(this._defaultTextFormat==null){
-			this._defaultTextFormat=new TextFormat();
+	public get defaultTextFormat(): TextFormat {
+		if (this._defaultTextFormat == null) {
+			this._defaultTextFormat = new TextFormat();
 		}
 		return this._defaultTextFormat;
 	}
 
-	public set defaultTextFormat(value:TextFormat)
-	{
+	public set defaultTextFormat(value: TextFormat) {
 		if (this._defaultTextFormat == value)
 			return;
 
@@ -1010,6 +985,7 @@ export class TextField extends DisplayObjectContainer
 
 		this._textDirty = true;
 	}
+
 	/**
 	 * Specifies whether the text field is a password text field. If the value of
 	 * this property is <code>true</code>, the text field is treated as a
@@ -1022,7 +998,7 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @default false
 	 */
-	public displayAsPassword:boolean;
+	public displayAsPassword: boolean;
 
 	/**
 	 * Specifies whether to render by using embedded font outlines. If
@@ -1037,7 +1013,7 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @default false
 	 */
-	public embedFonts:boolean;
+	public embedFonts: boolean;
 
 	/**
 	 * The type of grid fitting used for this text field. This property applies
@@ -1053,21 +1029,19 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @default pixel
 	 */
-	public gridFitType:GridFitType;
+	public gridFitType: GridFitType;
 
 	/**
 	 *
 	 */
-	public get height():number
-	{
+	public get height(): number {
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.reConstruct();
 
 		return this._height;
 	}
 
-	public set height(val:number)
-	{
+	public set height(val: number) {
 		if (this._height == val)
 			return;
 
@@ -1089,43 +1063,41 @@ export class TextField extends DisplayObjectContainer
 	 * <p>Flash Player and AIR also support explicit character codes, such as
 	 * &#38;(ASCII ampersand) and &#x20AC;(Unicode € symbol). </p>
 	 */
-	private _htmlText:string;
-	public get htmlText():string{
+	private _htmlText: string;
+	public get htmlText(): string {
 		return this._htmlText;
-	};
-	public set htmlText(value:string){
-        
-        if(value==this._htmlText)
-            return;
+	}
 
-		this._htmlText=value;
-		var processedText=HTMLTextProcessor.get().processHTML(this, value);
+	public set htmlText(value: string) {
 
-		// 	text might be the same, 
+		if (value == this._htmlText)
+			return;
+
+		this._htmlText = value;
+		const processedText = HTMLTextProcessor.get().processHTML(this, value);
+
+		// 	text might be the same,
 		//	we still need to set textDirty, because formatting might have changed
 		//console.log("html out",  textProps.text);
 		this._labelData = null;
-		this._text=processedText;
+		this._text = processedText;
 		this._iText = processedText;
 		this._textDirty = true;
 		//console.log("set text", value, "on" , this);
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
-        else if (this._implicitPartition)
+		else if (this._implicitPartition)
 			this._implicitPartition.invalidateEntity(this);
-		
-		this.newTextFormat = this._textFormats[this._textFormats.length-1];
-		
 
-	};
-		
-	
+		this.newTextFormat = this._textFormats[this._textFormats.length - 1];
+
+	}
 
 	/**
 	 * The number of characters in a text field. A character such as tab
 	 * (<code>\t</code>) counts as one character.
 	 */
-	public get length():number /*int*/
+	public get length(): number /*int*/
 	{
 		return this._iText.length;
 	}
@@ -1139,23 +1111,23 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @default 0
 	 */
-	public maxChars:number /*int*/;
+	public maxChars: number /*int*/;
 
 	/**
 	 * The maximum value of <code>scrollH</code>.
 	 */
-	public get maxScrollH():number /*int*/
+	public get maxScrollH(): number /*int*/
 	{
-        this.reConstruct();
+		this.reConstruct();
 		return this._maxScrollH;
 	}
 
 	/**
 	 * The maximum value of <code>scrollV</code>.
 	 */
-	public get maxScrollV():number /*int*/
+	public get maxScrollV(): number /*int*/
 	{
-        this.reConstruct();
+		this.reConstruct();
 		return this._maxScrollV;
 	}
 
@@ -1166,7 +1138,7 @@ export class TextField extends DisplayObjectContainer
 	 * useful if you want to prevent mouse wheel scrolling of text fields, or
 	 * implement your own text field scrolling.
 	 */
-	public mouseWheelEnabled:boolean;
+	public mouseWheelEnabled: boolean;
 
 	/**
 	 * Indicates whether field is a multiline text field. If the value is
@@ -1180,14 +1152,14 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @default false
 	 */
-	public multiline:boolean;
+	public multiline: boolean;
 
 	/**
 	 * Defines the number of text lines in a multiline text field. If
 	 * <code>wordWrap</code> property is set to <code>true</code>, the number of
 	 * lines increases when text wraps.
 	 */
-	public get numLines():number /*int*/
+	public get numLines(): number /*int*/
 	{
 		this.reConstruct();
 		return this._numLines;
@@ -1239,58 +1211,58 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @default null
 	 */
-	public _restrict:string;
-	public _restrictRegex:RegExp;
-	public get restrict():string{
+	public _restrict: string;
+	public _restrictRegex: RegExp;
+	public get restrict(): string {
 		return this._restrict;
 	}
-	public set restrict(value:string){
-        if(value==this._restrict)
-            return;
-		this._restrict=value;
-		this._restrictRegex=null;
-		if(typeof value=="undefined")
+
+	public set restrict(value: string) {
+		if (value == this._restrict)
 			return;
-		value=value.toString();
+		this._restrict = value;
+		this._restrictRegex = null;
+		if (typeof value == 'undefined')
+			return;
+		value = value.toString();
 
 		// flash allows something like -9 to be used instaed 0-9. fix this here:
-		if(value.length>=2 && value[0]=="-" && !isNaN(parseInt(value[1])))
-			value="0"+value;
+		if (value.length >= 2 && value[0] == '-' && !isNaN(parseInt(value[1])))
+			value = '0' + value;
 
 		// remove all backslashes. flash does not allow to use backslash as allowed char
-		value=value.replace(/\\/g, "");
+		value = value.replace(/\\/g, '');
 		// remove all ^. flash does not allow to use ^ as allowed char
-		value=value.replace(/\^/g, "");
-		
+		value = value.replace(/\^/g, '');
+
 		// make sure all "-" are escaped if they are not used to define a range
-		value=value.replace(/([^a-zA-Z0-9])\-/g, "$1\\-");
+		value = value.replace(/([^a-zA-Z0-9])\-/g, '$1\\-');
 
 		// escape all special chars so that regex will be valid
 		//todo: should be able to do the following with a single regex:
-		value=value.replace(/\./g, "\\.");
-		value=value.replace(/\</g, "\\<");
-		value=value.replace(/\>/g, "\\>");
-		value=value.replace(/\+/g, "\\+");
-		value=value.replace(/\*/g, "\\*");
-		value=value.replace(/\?/g, "\\?");
-		value=value.replace(/\[/g, "\\[");
-		value=value.replace(/\]/g, "\\]");
-		value=value.replace(/\$/g, "\\$");
-		value=value.replace(/\(/g, "\\(");
-		value=value.replace(/\)/g, "\\)");
-		value=value.replace(/\{/g, "\\{");
-		value=value.replace(/\}/g, "\\}");
-		value=value.replace(/\=/g, "\\=");
-		value=value.replace(/\!/g, "\\!");
-		value=value.replace(/\:/g, "\\:");
-		value=value.replace(/\|/g, "\\|");
-		value=value.replace(/\//g, "\\/");
-		value=value.replace(/\%/g, "\\%");
+		value = value.replace(/\./g, '\\.');
+		value = value.replace(/\</g, '\\<');
+		value = value.replace(/\>/g, '\\>');
+		value = value.replace(/\+/g, '\\+');
+		value = value.replace(/\*/g, '\\*');
+		value = value.replace(/\?/g, '\\?');
+		value = value.replace(/\[/g, '\\[');
+		value = value.replace(/\]/g, '\\]');
+		value = value.replace(/\$/g, '\\$');
+		value = value.replace(/\(/g, '\\(');
+		value = value.replace(/\)/g, '\\)');
+		value = value.replace(/\{/g, '\\{');
+		value = value.replace(/\}/g, '\\}');
+		value = value.replace(/\=/g, '\\=');
+		value = value.replace(/\!/g, '\\!');
+		value = value.replace(/\:/g, '\\:');
+		value = value.replace(/\|/g, '\\|');
+		value = value.replace(/\//g, '\\/');
+		value = value.replace(/\%/g, '\\%');
 
+		this._restrictRegex = new RegExp('[^' + value + ']', 'g');
 
-		this._restrictRegex=new RegExp("[^"+value+"]", "g");
-		
-	};
+	}
 
 	/**
 	 * The current horizontal scrolling position. If the <code>scrollH</code>
@@ -1308,17 +1280,18 @@ export class TextField extends DisplayObjectContainer
 	 * <p><b>Note: </b>The <code>scrollH</code> property is zero-based, not
 	 * 1-based like the <code>scrollV</code> vertical scrolling property.</p>
 	 */
-    private _scrollH:number;
-    
-	public get scrollH():number /*int*/
+	private _scrollH: number;
+
+	public get scrollH(): number /*int*/
 	{
 		return this._scrollH;
 	}
-	public set scrollH(value:number) /*int*/
+
+	public set scrollH(value: number) /*int*/
 	{
-        if(value==this._scrollH)
-            return;
-		this._scrollH=value;
+		if (value == this._scrollH)
+			return;
+		this._scrollH = value;
 	}
 
 	/**
@@ -1335,26 +1308,28 @@ export class TextField extends DisplayObjectContainer
 	 * text rather than a partial line. Even if there are multiple fonts on a
 	 * line, the height of the line adjusts to fit the largest font in use.</p>
 	 */
-	public _scrollV:number;
+	public _scrollV: number;
 
-	public get scrollV():number /*int*/
+	public get scrollV(): number /*int*/
 	{
 		return this._scrollV;
 	}
-	public set scrollV(value:number) /*int*/
+
+	public set scrollV(value: number) /*int*/
 	{
-        if(Math.floor(value)==this._scrollV)
-            return;
-        this._scrollV=Math.floor(value);
-        
-        if(this._scrollV>this._maxScrollV)
-            this._scrollV=this._maxScrollV;
-        
-        if(!this.textChild){
-            return;
-        }
-        this.textChild.y=-this.lines_start_y[this._scrollV];
+		if (Math.floor(value) == this._scrollV)
+			return;
+		this._scrollV = Math.floor(value);
+
+		if (this._scrollV > this._maxScrollV)
+			this._scrollV = this._maxScrollV;
+
+		if (!this.textChild) {
+			return;
+		}
+		this.textChild.y = -this.lines_start_y[this._scrollV];
 	}
+
 	/**
 	 * A Boolean value that indicates whether the text field is selectable. The
 	 * value <code>true</code> indicates that the text is selectable. The
@@ -1373,32 +1348,30 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @default true
 	 */
-	private _selectable:boolean;
-	public get selectable():boolean	{
+	private _selectable: boolean;
+	public get selectable(): boolean	{
 		return this._selectable;
 	}
 
-	public set selectable(value:boolean){
-        if(this.selectable==value){
-            return;
+	public set selectable(value: boolean) {
+		if (this.selectable == value) {
+			return;
 		}
 
 		this._selectable = value;
-        this.mouseEnabled = value;
-		this.cursorType = value ? "text" : "";
+		this.mouseEnabled = value;
+		this.cursorType = value ? 'text' : '';
 
-		if(value){
-            this.addEventListener(MouseEvent.DRAG_START, this.startSelectionByMouseDelegate);
-            this.addEventListener(MouseEvent.DRAG_STOP, this.stopSelectionByMouseDelegate);
-            this.addEventListener(MouseEvent.DRAG_MOVE, this.updateSelectionByMouseDelegate);
-        }
-        else{            
-            this.removeEventListener(MouseEvent.DRAG_START, this.startSelectionByMouseDelegate);
-            this.removeEventListener(MouseEvent.DRAG_STOP, this.stopSelectionByMouseDelegate);
-            this.removeEventListener(MouseEvent.DRAG_MOVE, this.updateSelectionByMouseDelegate);
-        }
+		if (value) {
+			this.addEventListener(MouseEvent.DRAG_START, this.startSelectionByMouseDelegate);
+			this.addEventListener(MouseEvent.DRAG_STOP, this.stopSelectionByMouseDelegate);
+			this.addEventListener(MouseEvent.DRAG_MOVE, this.updateSelectionByMouseDelegate);
+		} else {
+			this.removeEventListener(MouseEvent.DRAG_START, this.startSelectionByMouseDelegate);
+			this.removeEventListener(MouseEvent.DRAG_STOP, this.stopSelectionByMouseDelegate);
+			this.removeEventListener(MouseEvent.DRAG_MOVE, this.updateSelectionByMouseDelegate);
+		}
 	}
-
 
 	/**
 	 * The zero-based character index value of the first character in the current
@@ -1406,7 +1379,7 @@ export class TextField extends DisplayObjectContainer
 	 * 1, and so on. If no text is selected, this property is the value of
 	 * <code>caretIndex</code>.
 	 */
-	public get selectionBeginIndex():number /*int*/
+	public get selectionBeginIndex(): number /*int*/
 	{
 		return this._selectionBeginIndex;
 	}
@@ -1417,7 +1390,7 @@ export class TextField extends DisplayObjectContainer
 	 * 1, and so on. If no text is selected, this property is the value of
 	 * <code>caretIndex</code>.
 	 */
-	public get selectionEndIndex():number /*int*/
+	public get selectionEndIndex(): number /*int*/
 	{
 		return this._selectionEndIndex;
 	}
@@ -1432,7 +1405,7 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @default 0
 	 */
-	public sharpness:number;
+	public sharpness: number;
 
 	/**
 	 * Attaches a style sheet to the text field. For information on creating
@@ -1452,7 +1425,7 @@ export class TextField extends DisplayObjectContainer
 	 * formatting, save the value in a variable before removing the style
 	 * sheet.</p>
 	 */
-	public styleSheet:StyleSheet;
+	public styleSheet: StyleSheet;
 
 	/**
 	 * A string that is the current text in the text field. Lines are separated
@@ -1462,40 +1435,38 @@ export class TextField extends DisplayObjectContainer
 	 * <p>To get the text in HTML form, use the <code>htmlText</code>
 	 * property.</p>
 	 */
-	public get text():string
-	{
+	public get text(): string {
 		return this._text;
 	}
 
-	public set text(value:string)
-	{
-        value = (typeof value === "undefined") ? "" : value.toString();
+	public set text(value: string) {
+		value = (typeof value === 'undefined') ? '' : value.toString();
 
-        value = value.replace(String.fromCharCode(160), " ");
+		value = value.replace(String.fromCharCode(160), ' ');
 
 		if (this._text == value)
 			return;
 
-		this._labelData=null;
-		this._text=value;
- 
-		if(value!="" && ((value.charCodeAt(value.length-1)==13 ) || (value.charCodeAt(value.length-1)==10 ))){
-			value=value.slice(0, value.length-1);
-		}	
-		if(value!="" && (value.length>=3 && value[value.length-1]=="n" && value[value.length-2]=="\\" && value[value.length-3]=="\\")){
-			value=value.slice(0, value.length-3);
+		this._labelData = null;
+		this._text = value;
+
+		if (value != '' && ((value.charCodeAt(value.length - 1) == 13) || (value.charCodeAt(value.length - 1) == 10))) {
+			value = value.slice(0, value.length - 1);
 		}
-		if(value!="" && (value.length>=3 && value[value.length-1]=="n" && value[value.length-2]=="\\")){
-			value=value.slice(0, value.length-2);
+		if (value != '' && (value.length >= 3 && value[value.length - 1] == 'n' && value[value.length - 2] == '\\' && value[value.length - 3] == '\\')) {
+			value = value.slice(0, value.length - 3);
+		}
+		if (value != '' && (value.length >= 3 && value[value.length - 1] == 'n' && value[value.length - 2] == '\\')) {
+			value = value.slice(0, value.length - 2);
 		}
 
-		for(let m of MNEMOS) {
+		for (const m of MNEMOS) {
 			value = value.replace(m.test, m.replace);
 		}
 
 		this._iText = value;
-		this._textFormats=[this.newTextFormat];
-		this._textFormatsIdx=[this._iText.length];
+		this._textFormats = [this.newTextFormat];
+		this._textFormatsIdx = [this._iText.length];
 		this._textDirty = true;
 
 		//console.log("set text", value, "on" , this);
@@ -1503,15 +1474,14 @@ export class TextField extends DisplayObjectContainer
 			this.invalidate();
 
 		else if (this._implicitPartition)
-            this._implicitPartition.invalidateEntity(this);
-            
+			this._implicitPartition.invalidateEntity(this);
+
 	}
 
-	public setLabelData(labelData:any)
-	{
-		this._labelData=labelData;
-        this.isStatic=true;
-		this._iText = "";
+	public setLabelData(labelData: any) {
+		this._labelData = labelData;
+		this.isStatic = true;
+		this._iText = '';
 
 		this._textDirty = false;
 		this._positionsDirty = false;
@@ -1524,33 +1494,30 @@ export class TextField extends DisplayObjectContainer
 
 	}
 
-	public get newTextFormat():TextFormat
-	{
-        // only use the newTextformat if it is available, otherwise fall back to textFormat
-		return this._newTextFormat?this._newTextFormat:this._textFormat?this._textFormat:new TextFormat();
+	public get newTextFormat(): TextFormat {
+		// only use the newTextformat if it is available, otherwise fall back to textFormat
+		return this._newTextFormat ? this._newTextFormat : this._textFormat ? this._textFormat : new TextFormat();
 	}
-	public set newTextFormat(value:TextFormat)
-	{
-        if(value){
-            this._newTextFormat=value.applyToFormat(this._textFormat.clone());
-            return;
-        }
+
+	public set newTextFormat(value: TextFormat) {
+		if (value) {
+			this._newTextFormat = value.applyToFormat(this._textFormat.clone());
+			return;
+		}
 		this._newTextFormat = null;
-    }
-    
-	public get textFormat():TextFormat
-	{
-		if(this._textFormat==null){
-			this._textFormat=new TextFormat();
+	}
+
+	public get textFormat(): TextFormat {
+		if (this._textFormat == null) {
+			this._textFormat = new TextFormat();
 		}
 		return this._textFormat;
 	}
 
-	public set textFormat(value:TextFormat)
-	{
-        if(this._textFormat==value){
-            return;
-        }
+	public set textFormat(value: TextFormat) {
+		if (this._textFormat == value) {
+			return;
+		}
 		this._textDirty = true;
 
 		this._textFormat = value;
@@ -1568,9 +1535,8 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @internal
 	 */
-	public _acceptTraverser(traverser:IEntityTraverser):void
-	{
-		if(!this.maskMode){
+	public _acceptTraverser(traverser: IEntityTraverser): void {
+		if (!this.maskMode) {
 			//if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
 			//	traverser[this.cursorShape.elements.traverseName](this.cursorShape);
 			//}
@@ -1592,16 +1558,14 @@ export class TextField extends DisplayObjectContainer
 	 * <p>Scaling the local coordinate system changes the <code>x</code> and
 	 * <code>y</code> property values, which are defined in whole pixels. </p>
 	 */
-	public get scaleX():number
-	{
+	public get scaleX(): number {
 		return this._transform.scale.x;
 	}
 
-	public set scaleX(val:number)
-	{
-        if(this._transform.scale.x==val){
-            return;
-        }
+	public set scaleX(val: number) {
+		if (this._transform.scale.x == val) {
+			return;
+		}
 		this._setScaleX(val);
 	}
 
@@ -1613,16 +1577,14 @@ export class TextField extends DisplayObjectContainer
 	 * <p>Scaling the local coordinate system changes the <code>x</code> and
 	 * <code>y</code> property values, which are defined in whole pixels. </p>
 	 */
-	public get scaleY():number
-	{
+	public get scaleY(): number {
 		return this._transform.scale.y;
 	}
 
-	public set scaleY(val:number)
-	{
-        if(this._transform.scale.y==val){
-            return;
-        }
+	public set scaleY(val: number) {
+		if (this._transform.scale.y == val) {
+			return;
+		}
 		this._setScaleY(val);
 	}
 
@@ -1635,32 +1597,30 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @default 0(0x000000)
 	 */
-	public _textColor:number /*int*/;
+	public _textColor: number /*int*/;
 
-	public get textColor():number
-	{
+	public get textColor(): number {
 		return this._textColor;
 	}
 
-	public set textColor(value:number)
-	{
-        if(this._textColor==value){
-            return;
-        }
+	public set textColor(value: number) {
+		if (this._textColor == value) {
+			return;
+		}
 		this._textColor = value;
-        //this._textFormat.color=value;
-        if(this._textFormats){
-            var i=this._textFormats.length;
-            while(i>0){
-                i--;
-                if(this._textFormats[i])
-                    this._textFormats[i].color=value;
-            }
-            this._textDirty = true;
-        }
+		//this._textFormat.color=value;
+		if (this._textFormats) {
+			let i = this._textFormats.length;
+			while (i > 0) {
+				i--;
+				if (this._textFormats[i])
+					this._textFormats[i].color = value;
+			}
+			this._textDirty = true;
+		}
 
-		if(this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material){
-			if(!this.transform.colorTransform)
+		if (this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material) {
+			if (!this.transform.colorTransform)
 				this.transform.colorTransform = new ColorTransform();
 
 			this.transform.colorTransform.color = value;
@@ -1673,13 +1633,13 @@ export class TextField extends DisplayObjectContainer
 		}
 	}
 
-	private getTextColorForTextFormat(format:TextFormat)
-	{
-        if(format.hasPropertySet("color")){
-            return format.color;
-        }
-        return this._textColor;
-    }
+	private getTextColorForTextFormat(format: TextFormat) {
+		if (format.hasPropertySet('color')) {
+			return format.color;
+		}
+		return this._textColor;
+	}
+
 	/**
 	 * The interaction mode property, Default value is
 	 * TextInteractionMode.NORMAL. On mobile platforms, the normal mode implies
@@ -1688,16 +1648,14 @@ export class TextField extends DisplayObjectContainer
 	 * Desktop, the normal mode implies that the text is in scrollable as well as
 	 * selection mode.
 	 */
-	public get textInteractionMode():TextInteractionMode
-	{
+	public get textInteractionMode(): TextInteractionMode {
 		return this._textInteractionMode;
 	}
 
 	/**
 	 * The width of the text in pixels.
 	 */
-	public get textWidth():number
-	{
+	public get textWidth(): number {
 		this.reConstruct();
 
 		return this._textWidth;
@@ -1706,8 +1664,7 @@ export class TextField extends DisplayObjectContainer
 	/**
 	 * The width of the text in pixels.
 	 */
-	public get textHeight():number
-	{
+	public get textHeight(): number {
 		this.reConstruct();
 
 		return this._textHeight;
@@ -1725,7 +1682,7 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @default 0
 	 */
-	public thickness:number;
+	public thickness: number;
 
 	/**
 	 * The type of the text field. Either one of the following TextFieldType
@@ -1737,27 +1694,27 @@ export class TextField extends DisplayObjectContainer
 	 * @throws ArgumentError The <code>type</code> specified is not a member of
 	 *                       flash.text.TextFieldType.
 	 */
-	public _type:TextFieldType;
+	public _type: TextFieldType;
 
-	public get type():TextFieldType{
+	public get type(): TextFieldType {
 		return this._type;
 	}
-	public set type(value:TextFieldType){
-		if(this._type==value){
+
+	public set type(value: TextFieldType) {
+		if (this._type == value) {
 			return;
 		}
-		this._type=value;
+		this._type = value;
 		this._textDirty = true;
 
 		if (this._implicitPartition)
 			this._implicitPartition.invalidateEntity(this);
 
-		if(value==TextFieldType.INPUT){
-            //this._selectable=true;
+		if (value == TextFieldType.INPUT) {
+			//this._selectable=true;
 			this.enableInput(true);
 			this.addEventListener(KeyboardEvent.KEYDOWN, this.onKeyDelegate);
-		}
-		else{
+		} else {
 			this.enableInput(false);
 			this.removeEventListener(KeyboardEvent.KEYDOWN, this.onKeyDelegate);
 		}
@@ -1771,7 +1728,7 @@ export class TextField extends DisplayObjectContainer
 	 * copy and paste procedure must have <code>useRichTextClipboard</code> set
 	 * to <code>true</code>. The default value is <code>false</code>.
 	 */
-	public useRichTextClipboard:boolean;
+	public useRichTextClipboard: boolean;
 
 	/**
 	 * A Boolean value that indicates whether the text field has word wrap. If
@@ -1779,20 +1736,18 @@ export class TextField extends DisplayObjectContainer
 	 * has word wrap; if the value is <code>false</code>, the text field does not
 	 * have word wrap. The default value is <code>false</code>.
 	 */
-	public _wordWrap:boolean;
+	public _wordWrap: boolean;
 
-	public get x():number
-	{
-			
-		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap){
+	public get x(): number {
+
+		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap) {
 			this.reConstruct();
 		}
 
 		return this._transform.position.x;
 	}
 
-	public set x(val:number)
-	{
+	public set x(val: number) {
 		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap)
 			this.reConstruct();
 
@@ -1804,22 +1759,19 @@ export class TextField extends DisplayObjectContainer
 		this._transform.invalidatePosition();
 	}
 
-
 	/**
 	 *
 	 */
-	public get width():number
-	{
-		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap){
+	public get width(): number {
+		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap) {
 
 			this.reConstruct();
 		}
 
 		return this._width;
 	}
-	
-	public set width(val:number)
-	{
+
+	public set width(val: number) {
 		if (this._width == val)
 			return;
 
@@ -1827,14 +1779,13 @@ export class TextField extends DisplayObjectContainer
 		//	return;
 
 		this._width = val;
-		
+
 		this._positionsDirty = true;
 
 		this.invalidate();
 	}
 
-	public set wordWrap(val:boolean)
-	{
+	public set wordWrap(val: boolean) {
 		if (this._wordWrap == val)
 			return;
 
@@ -1845,11 +1796,11 @@ export class TextField extends DisplayObjectContainer
 		if (!val)
 			this.invalidate();
 	}
+
 	/**
 	 * The width of the text in pixels.
 	 */
-	public get wordWrap():boolean
-	{
+	public get wordWrap(): boolean {
 		return this._wordWrap;
 	}
 
@@ -1861,45 +1812,43 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * <p>The default size for a text field is 100 x 100 pixels.</p>
 	 */
-	constructor()
-	{
+	constructor() {
 		super();
-		this.onKeyDelegate = (event:any) => this.onKey(event);
-		this.startSelectionByMouseDelegate = (event:any) => this.startSelectionByMouse(event);
-		this.stopSelectionByMouseDelegate = (event:any) => this.stopSelectionByMouse(event);
-		this.updateSelectionByMouseDelegate = (event:any) => this.updateSelectionByMouse(event);
+		this.onKeyDelegate = (event: any) => this.onKey(event);
+		this.startSelectionByMouseDelegate = (event: any) => this.startSelectionByMouse(event);
+		this.stopSelectionByMouseDelegate = (event: any) => this.stopSelectionByMouse(event);
+		this.updateSelectionByMouseDelegate = (event: any) => this.updateSelectionByMouse(event);
 
-		this._onGraphicsInvalidateDelegate = (event:AssetEvent) => this._onGraphicsInvalidate(event);
-        
-		this.cursorIntervalID=-1;
+		this._onGraphicsInvalidateDelegate = (event: AssetEvent) => this._onGraphicsInvalidate(event);
 
-		this._tabEnabled=true;
-		this.cursorType = "";
-		this.textOffsetX=0;
-		this.textOffsetY=0;
-		this.textShapes={};
-		this._textColor=0;
-		this._width=100;
-		this._height=100;
-		this._textWidth=0;
-		this._textHeight=0;
+		this.cursorIntervalID = -1;
+
+		this._tabEnabled = true;
+		this.cursorType = '';
+		this.textOffsetX = 0;
+		this.textOffsetY = 0;
+		this.textShapes = {};
+		this._textColor = 0;
+		this._width = 100;
+		this._height = 100;
+		this._textWidth = 0;
+		this._textHeight = 0;
 		this._type = TextFieldType.DYNAMIC;
 		this._selectable = false;
-		this._numLines=0;
+		this._numLines = 0;
 		this.multiline = false;
-		this._autoSize=TextFieldAutoSize.NONE;
-		this._wordWrap=false;
-		this._background=false;
-		this._backgroundColor=0xffffff;
-		this._border=false;
-		this._borderColor=0x000000;
-		this.html=false;
-		this.maxChars=0;
-		this._selectionBeginIndex=0;
-		this._selectionEndIndex=0;
-		this._scrollH=0;
-		this._scrollV=0;
-
+		this._autoSize = TextFieldAutoSize.NONE;
+		this._wordWrap = false;
+		this._background = false;
+		this._backgroundColor = 0xffffff;
+		this._border = false;
+		this._borderColor = 0x000000;
+		this.html = false;
+		this.maxChars = 0;
+		this._selectionBeginIndex = 0;
+		this._selectionEndIndex = 0;
+		this._scrollH = 0;
+		this._scrollV = 0;
 
 		this._graphics = Graphics.getGraphics(); //unique graphics object for each TextField
 		this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
@@ -1907,13 +1856,11 @@ export class TextField extends DisplayObjectContainer
 		this.mouseEnabled = this._selectable;
 	}
 
-	public isEntity():boolean
-	{
+	public isEntity(): boolean {
 		return true;
 	}
 
-	public clear():void
-	{
+	public clear(): void {
 		super.clear();
 
 	}
@@ -1921,8 +1868,7 @@ export class TextField extends DisplayObjectContainer
 	/**
 	 * @inheritDoc
 	 */
-	public dispose():void
-	{
+	public dispose(): void {
 		this.disposeValues();
 
 		TextField._textFields.push(this);
@@ -1931,32 +1877,31 @@ export class TextField extends DisplayObjectContainer
 	/**
 	 * @inheritDoc
 	 */
-	public disposeValues():void
-	{
+	public disposeValues(): void {
 		super.disposeValues();
 
-		if(this.maskChild) {
+		if (this.maskChild) {
 			this.maskChild.dispose();
 			this.maskChild = null;
 		}
 
-		if(this.textChild) {
+		if (this.textChild) {
 			this.textChild.dispose();
 			this.textChild = null;
 		}
 
-		if(this.cursorShape) {
+		if (this.cursorShape) {
 			this.cursorShape.dispose();
-            this.cursorShape=null;
+			this.cursorShape = null;
 		}
-		
+
 		if (this.bgShapeSelect) {
 			this.bgShapeSelect.dispose();
-			this.bgShapeSelect=null;
+			this.bgShapeSelect = null;
 		}
-		
+
 		if (this._labelData) {
-			this._labelData=null;
+			this._labelData = null;
 		}
 
 		this._clearTextShapes();
@@ -1964,15 +1909,13 @@ export class TextField extends DisplayObjectContainer
 		this._textFormat = null;
 	}
 
-
 	/**
 	 * Reconstructs the Graphics for this Text-field.
 	 */
-	public reConstruct(buildGraphics:boolean=false) {
+	public reConstruct(buildGraphics: boolean = false) {
 
-		if(!this._textDirty && !this._positionsDirty && !this._glyphsDirty && !this._shapesDirty)
+		if (!this._textDirty && !this._positionsDirty && !this._glyphsDirty && !this._shapesDirty)
 			return;
-
 
 		// Step1: init text-data
 
@@ -1988,37 +1931,36 @@ export class TextField extends DisplayObjectContainer
 		// 		char-count,
 		// a whitespace is considered as a word
 
-		if(this._textDirty){
-			this._positionsDirty=true;
+		if (this._textDirty) {
+			this._positionsDirty = true;
 
-
-			this.chars_codes.length=0;
-			this.chars_width.length=0;
+			this.chars_codes.length = 0;
+			this.chars_width.length = 0;
 			this.char_positions_x.length = 0;
 			this.char_positions_y.length = 0;
-			this.tf_per_char.length=0;
-			this.words.length=0;
-			this._textRuns_words.length=0;
-			this._textRuns_formats.length=0;
-			this._paragraph_textRuns_indices.length=0;
-			this.lines_wordStartIndices.length=0;
-			this.lines_wordEndIndices.length=0;
-			this.lines_start_y.length=0;
-			this.lines_start_x.length=0;
-			this.lines_charIdx_start.length=0;
-			this.lines_charIdx_end.length=0;
-			this.lines_width.length=0;
-			this.lines_height.length=0;
-			this.lines_numSpacesPerline.length=0;
+			this.tf_per_char.length = 0;
+			this.words.length = 0;
+			this._textRuns_words.length = 0;
+			this._textRuns_formats.length = 0;
+			this._paragraph_textRuns_indices.length = 0;
+			this.lines_wordStartIndices.length = 0;
+			this.lines_wordEndIndices.length = 0;
+			this.lines_start_y.length = 0;
+			this.lines_start_x.length = 0;
+			this.lines_charIdx_start.length = 0;
+			this.lines_charIdx_end.length = 0;
+			this.lines_width.length = 0;
+			this.lines_height.length = 0;
+			this.lines_numSpacesPerline.length = 0;
 
-            this._maxScrollH=0;
-            this._maxScrollV=0;
+			this._maxScrollH = 0;
+			this._maxScrollV = 0;
 
-			this._maxWidthLine=0;
+			this._maxWidthLine = 0;
 
-			if(this._iText != "" && this._textFormat != null) {
-					//console.log("textlength", this.text.toString().length, this.text.toString());
-					this.buildParagraphs();
+			if (this._iText != '' && this._textFormat != null) {
+				//console.log("textlength", this.text.toString().length, this.text.toString());
+				this.buildParagraphs();
 			}
 
 			//console.log("TextField buildParagraph", this.id, this._iText);
@@ -2027,7 +1969,6 @@ export class TextField extends DisplayObjectContainer
 			//console.log("TextField buildParagraph", this.id, this.multiline);
 
 		}
-
 
 		// 	Step 2: positioning the words
 
@@ -2038,35 +1979,34 @@ export class TextField extends DisplayObjectContainer
 		//	this step also takes care of adjusting the textWidth and textHeight,
 		//	if we have AUTOSIZE!=None
 
-		if(this._positionsDirty){
-			this._glyphsDirty=true;
-			if(this._iText != "" && this._textFormat != null) {
+		if (this._positionsDirty) {
+			this._glyphsDirty = true;
+			if (this._iText != '' && this._textFormat != null) {
 				//console.log("TextField getWordPositions", this.id, this.words);
 				this.getWordPositions();
-			}
-			else{
+			} else {
 				// this is empty text, we need to reset the text-size
 				this._textWidth = 0;
 				this._textHeight = 0;
-				if(this._autoSize!=TextFieldAutoSize.NONE  ){
-					if(!this.wordWrap)
+				if (this._autoSize != TextFieldAutoSize.NONE) {
+					if (!this.wordWrap)
 						this.adjustPositionForAutoSize(0);//(this._width - 4)/2);
-					
-                    this._height = 4;
-                    if(this._type==TextFieldType.INPUT){
-                        this.newTextFormat.font_table.initFontSize(this.newTextFormat.size);
-                        this._height = this.newTextFormat.font_table.getLineHeight()+4; 
-                    }
+
+					this._height = 4;
+					if (this._type == TextFieldType.INPUT) {
+						this.newTextFormat.font_table.initFontSize(this.newTextFormat.size);
+						this._height = this.newTextFormat.font_table.getLineHeight() + 4;
+					}
 				}
-				if(this._type==TextFieldType.INPUT)
+				if (this._type == TextFieldType.INPUT)
 					this.drawSelectionGraphics();
 			}
 			this.updateMaskMode();
 		}
 
-		this._textDirty=false;
-		this._positionsDirty=false;
-		if(!buildGraphics)
+		this._textDirty = false;
+		this._positionsDirty = false;
+		if (!buildGraphics)
 			return;
 
 		// 	Step 3: building the glyphs
@@ -2078,36 +2018,35 @@ export class TextField extends DisplayObjectContainer
 		//	the data for new text-shapes is collected from the font-tables
 		//	and the new text-shapes are created and assigned to the graphics
 
-		if(this._glyphsDirty) {
+		if (this._glyphsDirty) {
 			//console.log("TextField buildGlyphs", this.id, this.words);
-			if(this._labelData){
+			if (this._labelData) {
 				this.buildGlyphsForLabelData();
-			}
-			else{
+			} else {
 				this.buildGlyphs();
 			}
 		}
 
-        this._glyphsDirty=false;
+		this._glyphsDirty = false;
 
-		if(this._labelData) {
+		if (this._labelData) {
 			return;
 		}
 
 		this.buildShapes();
-		this._shapesDirty=false;
+		this._shapesDirty = false;
 
 	}
 
-	public reset(){
-        super.reset();
+	public reset() {
+		super.reset();
 		//if(this.name && typeof this.name !== "number"){
-			// if the textfield has a valid name, it might have been changed by scripts. 
-			// in that case we want to reset it to its original state
-			if(this.sourceTextField){
-				this.sourceTextField.copyTo(this);
-	
-			}
+		// if the textfield has a valid name, it might have been changed by scripts.
+		// in that case we want to reset it to its original state
+		if (this.sourceTextField) {
+			this.sourceTextField.copyTo(this);
+
+		}
 		//}
 		/*if(this.adapter != this){
 			(<any>this.adapter).syncTextFieldValue();
@@ -2122,25 +2061,25 @@ export class TextField extends DisplayObjectContainer
 		let linewidth = 0;
 		let c_start = 0;
 
-		this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length]=this._textRuns_formats.length;
-		
+		this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length] = this._textRuns_formats.length;
+
 		// loop over all textFormats
-		for(let f = 0; f < f_len; f++ ){
+		for (let f = 0; f < f_len; f++) {
 			let word_cnt = 0;
-			let whitespace_cnt=0;
+			let whitespace_cnt = 0;
 			let startNewWord = true;
-            const tf = this._textFormats[f];
- 
+			const tf = this._textFormats[f];
+
 			const maxLineWidth = this._width - (tf.indent + tf.leftMargin + tf.rightMargin);
 
 			tf.font_table.initFontSize(tf.size);
-			const c_end = (f === f_len-1) ? thisText.length : this._textFormatsIdx[f];
-			
-			if(c_end > c_start){
-					
+			const c_end = (f === f_len - 1) ? thisText.length : this._textFormatsIdx[f];
+
+			if (c_end > c_start) {
+
 				// create a new textrun
-				this._textRuns_formats[this._textRuns_formats.length]=tf;
-				this._textRuns_words[this._textRuns_words.length]=this.words.length;
+				this._textRuns_formats[this._textRuns_formats.length] = tf;
+				this._textRuns_words[this._textRuns_words.length] = this.words.length;
 				// loop over all chars for this format
 				//console.log("textrun tf = ", tf);
 				for (let c = c_start; c < c_end; c++) {
@@ -2148,73 +2087,71 @@ export class TextField extends DisplayObjectContainer
 
 					// skip CR, because there are only 2 variation
 					// CRLF or LF
-					if(char_code === CHAR_CODES.CR) {
+					if (char_code === CHAR_CODES.CR) {
 						continue;
 					}
 
 					let next_char_code = thisText.charCodeAt(c + 1);
 
 					// again skip CR
-					if(char_code === CHAR_CODES.BS && next_char_code === CHAR_CODES.R)
-					{
+					if (char_code === CHAR_CODES.BS && next_char_code === CHAR_CODES.R) {
 						c += 1;
 						continue;
 					}
-					
+
 					// \n to LF
-					if(char_code === CHAR_CODES.BS && next_char_code === CHAR_CODES.N)  
-					{
-							c += 1;
-							char_code = CHAR_CODES.LF;
-							next_char_code = thisText.charCodeAt(c + 1)
+					if (char_code === CHAR_CODES.BS && next_char_code === CHAR_CODES.N) {
+						c += 1;
+						char_code = CHAR_CODES.LF;
+						next_char_code = thisText.charCodeAt(c + 1);
 					}
-					
+
 					const isLineBreak = char_code === CHAR_CODES.LF;
 
 					if (isLineBreak) {
-					
-						this._textRuns_words[this._textRuns_words.length]=word_cnt;
-						this._textRuns_words[this._textRuns_words.length]=linewidth;
-						this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
 
-						this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length]=this._textRuns_formats.length;
+						this._textRuns_words[this._textRuns_words.length] = word_cnt;
+						this._textRuns_words[this._textRuns_words.length] = linewidth;
+						this._textRuns_words[this._textRuns_words.length] = whitespace_cnt;
+
+						this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length] = this._textRuns_formats.length;
 						// create a new textrun
-						this._textRuns_formats[this._textRuns_formats.length]=tf;
-						this._textRuns_words[this._textRuns_words.length]=this.words.length;
+						this._textRuns_formats[this._textRuns_formats.length] = tf;
+						this._textRuns_words[this._textRuns_words.length] = this.words.length;
 
 						this.chars_codes[this.chars_codes.length] = 55;
 						this.chars_width[this.chars_width.length] = 0;
 						this.tf_per_char[this.tf_per_char.length] = tf;
-	
-						startNewWord=true; 
-						whitespace_cnt=0;
-						word_cnt=0;
 
-						if(this._maxWidthLine<linewidth){
-							this._maxWidthLine=linewidth;
+						startNewWord = true;
+						whitespace_cnt = 0;
+						word_cnt = 0;
+
+						if (this._maxWidthLine < linewidth) {
+							this._maxWidthLine = linewidth;
 						}
-						linewidth=0;
+						linewidth = 0;
 						continue;
 					}
 
-					this.chars_codes[this.chars_codes.length]=char_code;
-					this.tf_per_char[this.tf_per_char.length]=tf;
-				
+					this.chars_codes[this.chars_codes.length] = char_code;
+					this.tf_per_char[this.tf_per_char.length] = tf;
+
 					let char_width = tf.font_table.getCharWidth(char_code.toString());
-	
+
 					const isSpace = char_code == CHAR_CODES.TAB || char_code == CHAR_CODES.SPACE;
 
 					// if this is a letter, and next char is no whitespace, we add the letterSpacing to the letter-width
 					// todo: we might need to add the letterspacing also if next char is a linebreak ?
-					if(!isSpace && c < c_end - 1) {;						
-						if(next_char_code != CHAR_CODES.TAB && next_char_code != CHAR_CODES.SPACE) {
+					if (!isSpace && c < c_end - 1) {
+						if (next_char_code != CHAR_CODES.TAB && next_char_code != CHAR_CODES.SPACE) {
 							char_width += tf.letterSpacing;
 						}
 					}
 
 					linewidth += char_width;
 					this.chars_width[this.chars_width.length] = char_width;
-					
+
 					// we create a new word if the char is either:
 					// 	- first char of paragraph
 					//	- is a whitespace
@@ -2222,19 +2159,19 @@ export class TextField extends DisplayObjectContainer
 					if (isSpace) {
 						//console.log("add WhiteSpace");
 						whitespace_cnt++;
-						this.words[this.words.length]=this.chars_codes.length-1;	// 	index into chars
-						this.words[this.words.length]=0;							// 	x-position
-						this.words[this.words.length]=0;							// 	y-position
-						this.words[this.words.length]=char_width;					// 	word width
-						this.words[this.words.length]=1;							// 	char count
+						this.words[this.words.length] = this.chars_codes.length - 1;	// 	index into chars
+						this.words[this.words.length] = 0;							// 	x-position
+						this.words[this.words.length] = 0;							// 	y-position
+						this.words[this.words.length] = char_width;					// 	word width
+						this.words[this.words.length] = 1;							// 	char count
 						word_cnt++;
 						// we also make sure to begin a new word for next char (could be whitespace again)
-						startNewWord=true;
+						startNewWord = true;
 					} else {
 						// no whitespace
-						
+
 						if (this.multiline && this._autoSize == TextFieldAutoSize.NONE && this._wordWrap) {
-							if(this.words[this.words.length-2]+char_width>=maxLineWidth){                            
+							if (this.words[this.words.length - 2] + char_width >= maxLineWidth) {
 								/*this._textRuns_words[this._textRuns_words.length]=word_cnt;
 								this._textRuns_words[this._textRuns_words.length]=linewidth;
 								this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
@@ -2243,85 +2180,83 @@ export class TextField extends DisplayObjectContainer
 								// create a new textrun
 								this._textRuns_formats[this._textRuns_formats.length]=tf;
 								this._textRuns_words[this._textRuns_words.length]=this.words.length;*/
-								startNewWord=true;
+								startNewWord = true;
 							}
-							
-						}
 
+						}
 
 						if (startNewWord) {
 							//console.log("startNewWord");
 							// create new word (either this is the first char, or the last char was whitespace)
-							this.words[this.words.length]=this.chars_codes.length-1;	// 	index into chars
-							this.words[this.words.length]=0;							//	x-position
-							this.words[this.words.length]=0;							//	y-position
-							this.words[this.words.length]=char_width;					// 	word width
-							this.words[this.words.length]=1;							// 	char count
+							this.words[this.words.length] = this.chars_codes.length - 1;	// 	index into chars
+							this.words[this.words.length] = 0;							//	x-position
+							this.words[this.words.length] = 0;							//	y-position
+							this.words[this.words.length] = char_width;					// 	word width
+							this.words[this.words.length] = 1;							// 	char count
 							word_cnt++;
-						} else { 
+						} else {
 							// update-char length and width of active word.
-							this.words[this.words.length-2]+=char_width;
-							this.words[this.words.length-1]++;
+							this.words[this.words.length - 2] += char_width;
+							this.words[this.words.length - 1]++;
 						}
 
-						startNewWord=false;
+						startNewWord = false;
 					}
 				}
 
-				this._textRuns_words[this._textRuns_words.length]=word_cnt;
-				this._textRuns_words[this._textRuns_words.length]=linewidth;
-				this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
+				this._textRuns_words[this._textRuns_words.length] = word_cnt;
+				this._textRuns_words[this._textRuns_words.length] = linewidth;
+				this._textRuns_words[this._textRuns_words.length] = whitespace_cnt;
 
-				if(this._maxWidthLine < linewidth){
+				if (this._maxWidthLine < linewidth) {
 					this._maxWidthLine = linewidth;
 				}
 			}
 
-            c_start = c_end;
+			c_start = c_end;
 		}
 
 	}
-	
-	private adjustPositionForAutoSize(newWidth:number){
 
-		var oldSize:number=this._width;
+	private adjustPositionForAutoSize(newWidth: number) {
+
+		const oldSize: number = this._width;
 		this._width = 4 + newWidth;
 
-		if (this._autoSize==TextFieldAutoSize.RIGHT){
-			this._transform.matrix3D._rawData[12] -= this._width-oldSize;
+		if (this._autoSize == TextFieldAutoSize.RIGHT) {
+			this._transform.matrix3D._rawData[12] -= this._width - oldSize;
 			this._transform.invalidatePosition();
-		} else if (this._autoSize==TextFieldAutoSize.CENTER){
-			this._transform.matrix3D._rawData[12] -= (this._width-oldSize)/2;
+		} else if (this._autoSize == TextFieldAutoSize.CENTER) {
+			this._transform.matrix3D._rawData[12] -= (this._width - oldSize) / 2;
 			this._transform.invalidatePosition();
 		}
 	}
-
 
 	private getWordPositions() {
 
 		/*console.log("this._iText", this._iText);
 		console.log("this._width", this._width);
 		console.log("this._height", this._height);*/
-        /*for(var i=0; i<this.chars_codes.length; i++){
+		/*for(var i=0; i<this.chars_codes.length; i++){
             console.log("test: ", this.chars_codes[i], this.chars_width[i]);
         }*/
-		var tr: number = 0;
-		var tr_len: number = this._textRuns_formats.length;
+		let tr: number = 0;
+		let tr_len: number = this._textRuns_formats.length;
 
-		var w: number = 0;
-		var w_len: number = 0;
-		var tr_length: number = 0;
-		var additionalWhiteSpace: number = 0;
-		var format: TextFormat;
-		var text_width: number = 0;
-		var text_height: number = 0;
-		var indent: number = 0;
+		let w: number = 0;
+		let w_len: number = 0;
+		let tr_length: number = 0;
+		let additionalWhiteSpace: number = 0;
+		let format: TextFormat;
+		let text_width: number = 0;
+		const text_height: number = 0;
+		let indent: number = 0;
 		this._numLines = 0;
-		var linecnt: number = 0;
-		var linelength: number = 0;
-		var word_width: number = 0;
+		let linecnt: number = 0;
+		let linelength: number = 0;
+		let word_width: number = 0;
 
-		var offsety: number = this.textOffsetY + 2;
+		let offsety: number = this.textOffsetY + 2;
 
 		//console.log("text old_width", this._width);
 		//console.log("text old_x", this._transform.matrix3D._rawData[12]);
@@ -2330,15 +2265,14 @@ export class TextField extends DisplayObjectContainer
 
 		// if we have autosize enabled, and no wordWrap, we can adjust the textfield width
 		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap && this._textDirty) {
-			var maxSizeComplete:number=this._maxWidthLine + this._textFormat.indent + this._textFormat.leftMargin + this._textFormat.rightMargin;
+			const maxSizeComplete: number = this._maxWidthLine + this._textFormat.indent + this._textFormat.leftMargin + this._textFormat.rightMargin;
 			this.adjustPositionForAutoSize(maxSizeComplete);
-		} 
+		}
 
-		var maxLineWidth: number = this._width - (this._textFormat.indent + this._textFormat.leftMargin + this._textFormat.rightMargin);
+		const maxLineWidth: number = this._width - (this._textFormat.indent + this._textFormat.leftMargin + this._textFormat.rightMargin);
 
-
-		var p:number=0;
-		var p_len:number=this._paragraph_textRuns_indices.length;
+		let p: number = 0;
+		const p_len: number = this._paragraph_textRuns_indices.length;
 		linecnt = 0;
 		this.lines_wordStartIndices.length = 0;
 		this.lines_wordEndIndices.length = 0;
@@ -2350,20 +2284,20 @@ export class TextField extends DisplayObjectContainer
 		this.lines_charIdx_start.length = 0;
 
 		this.lines_charIdx_end.length = 0;
-		var lines_heights:number[]=[];		
-		var lines_formats:TextFormat[]=[];
+		const lines_heights: number[] = [];
+		const lines_formats: TextFormat[] = [];
 		// loop over all paragraphs
 
 		for (p = 0; p < p_len; p++) {
-			tr_len=(p==(p_len-1))? this._textRuns_formats.length : this._paragraph_textRuns_indices[p+1];
+			tr_len = (p == (p_len - 1)) ? this._textRuns_formats.length : this._paragraph_textRuns_indices[p + 1];
 			//console.log("process word positions for paragraph", p, "textruns", this._paragraph_textRuns_indices[p], tr_len);
-			tr_length=0;
-			lines_heights[lines_heights.length]=0;
+			tr_length = 0;
+			lines_heights[lines_heights.length] = 0;
 			for (tr = this._paragraph_textRuns_indices[p]; tr < tr_len; tr++) {
 				format = this._textRuns_formats[tr];
 				format.font_table.initFontSize(format.size);
-				if(lines_heights[lines_heights.length-1]<(format.font_table.getLineHeight()+format.leading)){
-					lines_heights[lines_heights.length-1]=format.font_table.getLineHeight()+format.leading;
+				if (lines_heights[lines_heights.length - 1] < (format.font_table.getLineHeight() + format.leading)) {
+					lines_heights[lines_heights.length - 1] = format.font_table.getLineHeight() + format.leading;
 				}
 
 				//console.log("process word positions for textrun", tr, "textruns",  this._textRuns_words);
@@ -2372,14 +2306,13 @@ export class TextField extends DisplayObjectContainer
 				//console.log(this._textFieldWidth, tr_length, maxLineWidth);
 			}
 
-
 			this.lines_wordStartIndices[this.lines_wordStartIndices.length] = this._textRuns_words[(this._paragraph_textRuns_indices[p] * 4)];
 			this.lines_wordEndIndices[this.lines_wordEndIndices.length] = w_len;
 			this.lines_width[this.lines_width.length] = 0;
 			this.lines_numSpacesPerline[this.lines_numSpacesPerline.length] = 0;
-			var lineHeightCnt:number=0;
-			this.lines_height[this.lines_height.length]=lines_heights[lineHeightCnt];
-			lines_formats[linecnt]=format;
+			let lineHeightCnt: number = 0;
+			this.lines_height[this.lines_height.length] = lines_heights[lineHeightCnt];
+			lines_formats[linecnt] = format;
 
 			var line_width: number = 0;
 			for (tr = this._paragraph_textRuns_indices[p]; tr < tr_len; tr++) {
@@ -2397,38 +2330,36 @@ export class TextField extends DisplayObjectContainer
 						linelength += word_width;
 						this.lines_wordEndIndices[linecnt] = w + 5;
 						this.lines_width[linecnt] += word_width;
-						lines_formats[linecnt]=format;
+						lines_formats[linecnt] = format;
 						if (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9) {
 							this.lines_numSpacesPerline[linecnt] += 1;
 						}
 					}
-				}
-				else {
+				} else {
 					//console.log("split lines");
 					word_width = 0;
 					indent = 0;
 					for (w = this._textRuns_words[(tr * 4)]; w < w_len; w += 5) {
 						word_width = this.words[w + 3];
-						var isSpace:boolean=false;
+						let isSpace: boolean = false;
 						if (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9) {
 							this.lines_numSpacesPerline[linecnt] += 1;
-							isSpace=true;
+							isSpace = true;
 						}
-                        // (1.5* format.font_table.getCharWidth("32")) is to replicate flash behavior
-                        //console.log(String.fromCharCode(this.chars_codes[this.words[w]]), maxLineWidth, this.lines_width[linecnt], word_width);
-						if (isSpace || (this.lines_width[linecnt] +word_width)<= (maxLineWidth - indent -(1* format.font_table.getCharWidth("32"))) || this.lines_width[linecnt] == 0) {
+						// (1.5* format.font_table.getCharWidth("32")) is to replicate flash behavior
+						//console.log(String.fromCharCode(this.chars_codes[this.words[w]]), maxLineWidth, this.lines_width[linecnt], word_width);
+						if (isSpace || (this.lines_width[linecnt] + word_width) <= (maxLineWidth - indent - (1 * format.font_table.getCharWidth('32'))) || this.lines_width[linecnt] == 0) {
 							this.lines_wordEndIndices[linecnt] = w + 5;
 							this.lines_width[linecnt] += word_width;
-							lines_formats[linecnt]=format;
-						}
-						else {
+							lines_formats[linecnt] = format;
+						} else {
 							linecnt++;
 							this.lines_wordStartIndices[linecnt] = w;
 							this.lines_wordEndIndices[linecnt] = w + 5;
 							this.lines_width[linecnt] = word_width;
 							this.lines_numSpacesPerline[linecnt] = 0;
-							this.lines_height[this.lines_height.length]=lines_heights[lineHeightCnt];
-							lines_formats[linecnt]=format;
+							this.lines_height[this.lines_height.length] = lines_heights[lineHeightCnt];
+							lines_formats[linecnt] = format;
 							indent = format.indent;
 						}
 					}
@@ -2439,17 +2370,17 @@ export class TextField extends DisplayObjectContainer
 			lineHeightCnt++;
 			linecnt++;
 		}
-		var offsetx: number = this.textOffsetX;
-		var start_idx: number;
-		var numSpaces: number;
-		var lineHeight: number;
-		var end_idx: number;
-		var lineSpaceLeft: number;
-		var l: number;
-		var l_cnt: number = this.lines_wordStartIndices.length;
+		let offsetx: number = this.textOffsetX;
+		let start_idx: number;
+		let numSpaces: number;
+		let lineHeight: number;
+		let end_idx: number;
+		let lineSpaceLeft: number;
+		let l: number;
+		const l_cnt: number = this.lines_wordStartIndices.length;
 
-		var charCnt:number=0;
-		this._biggestLine=0;
+		let charCnt: number = 0;
+		this._biggestLine = 0;
 		this._numLines = l_cnt;
 		for (l = 0; l < l_cnt; l++) {
 			linelength = this.lines_width[l];
@@ -2477,61 +2408,58 @@ export class TextField extends DisplayObjectContainer
 					// only first line has indent
 					offsetx -= format.indent;
 				}
-			}
-			else if (format.align == TextFormatAlign.CENTER) {
-				if(lineSpaceLeft>0)
+			} else if (format.align == TextFormatAlign.CENTER) {
+				if (lineSpaceLeft > 0)
 					offsetx += lineSpaceLeft / 2;
-				else{
+				else {
 					offsetx += 2;
 				}
-			}
-			else if (format.align == TextFormatAlign.RIGHT) {
-				if(lineSpaceLeft>0)
-					offsetx += lineSpaceLeft-2;
-				else{
+			} else if (format.align == TextFormatAlign.RIGHT) {
+				if (lineSpaceLeft > 0)
+					offsetx += lineSpaceLeft - 2;
+				else {
 					offsetx += 2;
 				}
-			}
-			else if (format.align == TextFormatAlign.LEFT) {
+			} else if (format.align == TextFormatAlign.LEFT) {
 				offsetx += 2;
 			}
-			
-			var c_len:number=0;
-			var c:number=0;
-			var char_pos:number=offsetx;
-			this.lines_start_x[l]=offsetx;
-			this.lines_start_y[l]=offsety;
+
+			let c_len: number = 0;
+			var c: number = 0;
+			let char_pos: number = offsetx;
+			this.lines_start_x[l] = offsetx;
+			this.lines_start_y[l] = offsety;
 			this.lines_charIdx_start[l] = charCnt;
 			var line_width = 0;//format.leftMargin + format.indent + format.rightMargin;
 			for (w = start_idx; w < end_idx; w += 5) {
 				this.words[w + 1] = offsetx;
-				char_pos=0;
-                start_idx = this.words[w];
-                c_len = start_idx + this.words[w+4];
-                var tf= this.tf_per_char[start_idx];
-                tf.font_table.initFontSize(tf.size);
-                //console.log("lineHeight", lineHeight);
-                //console.log("lineHeight", tf.font_table.getLineHeight()+tf.leading);
-                var diff=(lineHeight)-(tf.font_table.getLineHeight()+tf.leading);
-                diff=((diff>0)?diff-2:0);
-				this.words[w + 2] = offsety+diff;
+				char_pos = 0;
+				start_idx = this.words[w];
+				c_len = start_idx + this.words[w + 4];
+				const tf = this.tf_per_char[start_idx];
+				tf.font_table.initFontSize(tf.size);
+				//console.log("lineHeight", lineHeight);
+				//console.log("lineHeight", tf.font_table.getLineHeight()+tf.leading);
+				let diff = (lineHeight) - (tf.font_table.getLineHeight() + tf.leading);
+				diff = ((diff > 0) ? diff - 2 : 0);
+				this.words[w + 2] = offsety + diff;
 				for (c = start_idx; c < c_len; c++) {
-                    this.char_positions_x[this.char_positions_x.length]=offsetx+char_pos;
-                    this.char_positions_y[this.char_positions_y.length]=offsety+diff;
-					char_pos+=this.chars_width[c];
+					this.char_positions_x[this.char_positions_x.length] = offsetx + char_pos;
+					this.char_positions_y[this.char_positions_y.length] = offsety + diff;
+					char_pos += this.chars_width[c];
 					charCnt++;
 				}
-                //console.log("word_width", char_pos, "word:'"+wordstr+"'");
+				//console.log("word_width", char_pos, "word:'"+wordstr+"'");
 				offsetx += char_pos;//this.words[w + 3];
 				line_width += char_pos;//this.words[w + 3];
 				//console.log("word offset: x",offsetx ,String.fromCharCode(this.chars_codes[this.words[w]]));
 				//if (format.align == "justify" && (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9)) {
-					// this is whitepace, we need to add extra space for justified text
-					//offsetx += additionalWhiteSpace;
-					//line_width += additionalWhiteSpace;
+				// this is whitepace, we need to add extra space for justified text
+				//offsetx += additionalWhiteSpace;
+				//line_width += additionalWhiteSpace;
 				//}
 			}
-			this.lines_charIdx_end[l]=charCnt;
+			this.lines_charIdx_end[l] = charCnt;
 			//console.log("line_width",line_width);
 			offsety += lineHeight;
 
@@ -2540,156 +2468,148 @@ export class TextField extends DisplayObjectContainer
 				offsety+=1.5;
 			}*/
 
-
 			if (line_width > text_width) {
-                this._biggestLine=l;
+				this._biggestLine = l;
 				text_width = line_width;
 			}
 		}
 
-		this._textWidth=text_width;
-		this._textHeight=offsety;
-
+		this._textWidth = text_width;
+		this._textHeight = offsety;
 
 		// if autosize is enabled, we adjust the textFieldHeight
-		if(this.autoSize!=TextFieldAutoSize.NONE)
-			this._height=this._textHeight+4;
+		if (this.autoSize != TextFieldAutoSize.NONE)
+			this._height = this._textHeight + 4;
 
-        if(this._textWidth>this._width){
+		if (this._textWidth > this._width) {
 
-            // get the max-scroll horizontal value 
-			start_idx = this.lines_charIdx_start[this._biggestLine]; 
+			// get the max-scroll horizontal value
+			start_idx = this.lines_charIdx_start[this._biggestLine];
 			c = this.lines_charIdx_end[this._biggestLine];
-            var maxCnt=0;
+			var maxCnt = 0;
 			while (c > start_idx) {
-                c--;
-                maxCnt+=this.chars_width[c];
-                if(maxCnt>this._width){
-                    this._maxScrollH=c;
-                    break;
-                }
-            }
-        }
-        if(this._textHeight>this._height){
-            // get the max-scroll vertical value 
-            var l_len:number=this.lines_height.length;
-            var maxCnt=4;
-            while(l_len>0){
-                l_len--;
-                maxCnt+=this.lines_height[l_len];
-                if(maxCnt>this._height){
-                    this._maxScrollV=l_len+1;
-                    break;
-                }
-            }
-            
-        }
+				c--;
+				maxCnt += this.chars_width[c];
+				if (maxCnt > this._width) {
+					this._maxScrollH = c;
+					break;
+				}
+			}
+		}
+		if (this._textHeight > this._height) {
+			// get the max-scroll vertical value
+			let l_len: number = this.lines_height.length;
+			var maxCnt = 4;
+			while (l_len > 0) {
+				l_len--;
+				maxCnt += this.lines_height[l_len];
+				if (maxCnt > this._height) {
+					this._maxScrollV = l_len + 1;
+					break;
+				}
+			}
+
+		}
 		this.updateMaskMode();
 
 	}
-	public staticMatrix:any;
+
+	public staticMatrix: any;
 	private buildGlyphsForLabelData() {
 
 		this._clearTextShapes();
 
-		var height:number=null;
-		var formats:TextFormat[]=[];
-		var glyphdata:number[][]=[];
-		var advance:number[][]=[];
-		var positions:number[]=[];
-		var xpos = (this.staticMatrix.tx/20);
-		var ypos = (this.staticMatrix.ty/20);
-		var record:any;
-		var lastMoveY=0;
+		const height: number = null;
+		const formats: TextFormat[] = [];
+		const glyphdata: number[][] = [];
+		const advance: number[][] = [];
+		const positions: number[] = [];
+		let xpos = (this.staticMatrix.tx / 20);
+		let ypos = (this.staticMatrix.ty / 20);
+		let record: any;
+		let lastMoveY = 0;
 
-		for(var r=0; r<this._labelData.records.length;r++){
-			formats[r]=new TextFormat()
-			glyphdata[r]=[];
-			advance[r]=[];
-			record=this._labelData.records[r];
-			if(record.font_table){
-				formats[r].font_table=record.font_table;
+		for (let r = 0; r < this._labelData.records.length;r++) {
+			formats[r] = new TextFormat();
+			glyphdata[r] = [];
+			advance[r] = [];
+			record = this._labelData.records[r];
+			if (record.font_table) {
+				formats[r].font_table = record.font_table;
+			} else if (r > 0) {
+				formats[r].font_table = formats[r - 1].font_table;
+			} else {
+				console.log('error - no font for label');
 			}
-			else if (r>0){
-				formats[r].font_table=formats[r-1].font_table;
+			if (record.fontHeight) {
+				formats[r].size = record.fontHeight / 20;
+			} else if (r > 0) {
+				formats[r].size = formats[r - 1].size;
 			}
-			else{
-				console.log("error - no font for label");
-			}
-			if(record.fontHeight){
-				formats[r].size=record.fontHeight/20;
-			}
-			else if (r>0){
-				formats[r].size=formats[r-1].size;
-			}
-			if(record.color){
+			if (record.color) {
 				//textProps.color =  this.rgbaToArgb((<any>myChild.attributes).color.nodeValue);
-				formats[r].color=ColorUtils.f32_RGBA_To_f32_ARGB(record.color);
-			}
-			else if (r>0){
-				formats[r].color=formats[r-1].color;
+				formats[r].color = ColorUtils.f32_RGBA_To_f32_ARGB(record.color);
+			} else if (r > 0) {
+				formats[r].color = formats[r - 1].color;
 			}
 			//positions.push(this.textOffsetX+(record.moveX? record.moveX/20:0));
 			//positions.push(this.textOffsetY+(record.moveY? record.moveY/20:0));
 			//moveY=(record.moveY? record.moveY/20:0)-moveY;
-			if(record.moveY!=null){
-                ypos += (record.moveY / 20) - lastMoveY;
-                lastMoveY=ypos;
-			}
-			else{
+			if (record.moveY != null) {
+				ypos += (record.moveY / 20) - lastMoveY;
+				lastMoveY = ypos;
+			} else {
 				//ypos+=this.staticMatrix.ty/20;
 			}
 			//ypos=this.textOffsetY+(record.moveY? record.moveY/20:0);
-			if(record.moveX!=null) {
+			if (record.moveX != null) {
 				xpos = (this.staticMatrix.tx / 20) + (record.moveX / 20);
 			}
 			positions.push(xpos);
 			positions.push(ypos);
-			
+
 			//console.log(-3+this.textOffsetX+((record.moveX? record.moveX/20:0)));
 			//console.log(-7+this.textOffsetY+((record.moveY? record.moveY/20:0)));
 			//var text="";
 			//moveY=(record.moveY? record.moveY/20:0)-moveY;
-			for(var e=0; e<record.entries.length;e++){
-				glyphdata[r][e]=record.entries[e].glyphIndex;
-				advance[r][e]=record.entries[e].advance/20;
-				xpos+=record.entries[e].advance/20;
+			for (let e = 0; e < record.entries.length;e++) {
+				glyphdata[r][e] = record.entries[e].glyphIndex;
+				advance[r][e] = record.entries[e].advance / 20;
+				xpos += record.entries[e].advance / 20;
 				//text+=String.fromCharCode(parseInt((<TesselatedFontTable>formats[r].font_table).getStringForIdx(record.entries[e].glyphIndex)));
 			}
 			//console.log("\nrecord.entries.length: ", formats[r].font_table, record, record.entries.length);
 			//console.log("textOffsetX ", this.textOffsetX, "textOffsetY ", this.textOffsetY, "moveX ", record.moveX, "moveY ", record.moveY, " staticMtx", this.staticMatrix);
 
-
 		}
 
-
-		var textShape:TextShape;
+		let textShape: TextShape;
 		// process all textRuns
-		var tr:number=0;
-		var tr_len:number=formats.length;
-		var lineSize:Point;
-		var text_width:number=0;
-		var text_height:number=0;
+		let tr: number = 0;
+		const tr_len: number = formats.length;
+		let lineSize: Point;
+		let text_width: number = 0;
+		let text_height: number = 0;
 		for (tr = 0; tr < tr_len; tr++) {
 			formats[tr].font_table.initFontSize(formats[tr].size);
-			lineSize=(<TesselatedFontTable>formats[tr].font_table).buildTextLineFromIndices(this, formats[tr], positions[tr*2], positions[tr*2+1], glyphdata[tr], advance[tr]);
-			text_height+=lineSize.y;
-			text_width=(lineSize.x>text_width)?lineSize.x:text_width;
+			lineSize = (<TesselatedFontTable>formats[tr].font_table).buildTextLineFromIndices(this, formats[tr], positions[tr * 2], positions[tr * 2 + 1], glyphdata[tr], advance[tr]);
+			text_height += lineSize.y;
+			text_width = (lineSize.x > text_width) ? lineSize.x : text_width;
 		}
 
-		this._textWidth=text_width;
-		this._textHeight=text_height;
+		this._textWidth = text_width;
+		this._textHeight = text_height;
 		//this._width=text_width+4;
 		//this._height=text_height+4;
 
-		this.targetGraphics=this._graphics;
+		this.targetGraphics = this._graphics;
 		this.targetGraphics.clear();
 
 		this.drawBG();
 
-		if(this.border || (!this._background && this._type != TextFieldType.INPUT))
+		if (this.border || (!this._background && this._type != TextFieldType.INPUT))
 			this.drawBorder();
-		
+
 		/*
 		this._graphics.clear();
 		this._graphics.beginFill(0xff0000, 1);//this.background?1:0);
@@ -2697,14 +2617,13 @@ export class TextField extends DisplayObjectContainer
 		this._graphics.endFill();
 		*/
 
-
-		for(var key in this.textShapes) {
+		for (const key in this.textShapes) {
 			textShape = this.textShapes[key];
 
-			var attr_length:number = 2;//(tess_fontTable.usesCurves)?3:2;
-			var attributesView:AttributesView = new AttributesView(Float32Array, attr_length);
+			const attr_length: number = 2;//(tess_fontTable.usesCurves)?3:2;
+			const attributesView: AttributesView = new AttributesView(Float32Array, attr_length);
 			attributesView.set(textShape.verts);
-			var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
+			const vertexBuffer: AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
 			attributesView.dispose();
 
 			textShape.elements = new TriangleElements(vertexBuffer);
@@ -2712,29 +2631,28 @@ export class TextField extends DisplayObjectContainer
 			//if(tess_fontTable.usesCurves){
 			//	this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
 			//}
-			textShape.shape = <Shape>this.targetGraphics.addShape(Shape.getShape(textShape.elements));
+			textShape.shape = <Shape> this.targetGraphics.addShape(Shape.getShape(textShape.elements));
 			textShape.shape.usages++;
-			var sampler:ImageSampler = new ImageSampler();
+			const sampler: ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
-			if (textShape.format.material && this._textColor==0) {
+			if (textShape.format.material && this._textColor == 0) {
 				textShape.shape.material = this._textFormat.material;
 				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
 				(<MaterialBase> textShape.shape.material).animateUVs = true;
 				textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
-			}
-			else {
+			} else {
 
-                var color=this.getTextColorForTextFormat(textShape.format);
-				var alpha=ColorUtils.float32ColorToARGB(color)[0];
-				if(alpha==0){
-					alpha=255;
+				const color = this.getTextColorForTextFormat(textShape.format);
+				let alpha = ColorUtils.float32ColorToARGB(color)[0];
+				if (alpha == 0) {
+					alpha = 255;
 				}
-				var obj=MaterialManager.get_material_for_color(color, alpha/255);
+				const obj = MaterialManager.get_material_for_color(color, alpha / 255);
 
 				textShape.shape.material = obj.material;
-				if(obj.colorPos){
+				if (obj.colorPos) {
 					textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-                    (<MaterialBase> textShape.shape.material).animateUVs=true;
+					(<MaterialBase> textShape.shape.material).animateUVs = true;
 					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
 				}
 				/*
@@ -2748,114 +2666,109 @@ export class TextField extends DisplayObjectContainer
 		}
 	}
 
-	private buildGlyphs():void
-	{
+	private buildGlyphs(): void {
 		this._clearTextShapes();
-		
+
 		const tr_formats = this._textRuns_formats;
 		const tr_words = this._textRuns_words;
 		const tr_len = tr_formats.length;
-		
+
 		for (let tr = 0; tr < tr_len; tr++) {
 			tr_formats[tr].font_table.initFontSize(tr_formats[tr].size);
-		//	console.log( this._textRuns_formats[tr],  this._textRuns_words[tr*4],  this._textRuns_words[(tr*4)+1]);
-			tr_formats[tr].font_table.fillTextRun(this, tr_formats[tr], tr_words[(tr*4)], tr_words[(tr*4)+1]);
+			//	console.log( this._textRuns_formats[tr],  this._textRuns_words[tr*4],  this._textRuns_words[(tr*4)+1]);
+			tr_formats[tr].font_table.fillTextRun(this, tr_formats[tr], tr_words[(tr * 4)], tr_words[(tr * 4) + 1]);
 		}
 
-		let textShape:TextShape;
+		let textShape: TextShape;
 
-		for(var key in this.textShapes) {
+		for (const key in this.textShapes) {
 			textShape = this.textShapes[key];
-			
-			var color=this.getTextColorForTextFormat(textShape.format);
-			var alpha=ColorUtils.float32ColorToARGB(color)[0];
-			
-			if(alpha==0){
-				alpha=255;
+
+			const color = this.getTextColorForTextFormat(textShape.format);
+			let alpha = ColorUtils.float32ColorToARGB(color)[0];
+
+			if (alpha == 0) {
+				alpha = 255;
 			}
 
 			// this textShapeshape is for FNT font
-			var attr_length:number = textShape.fntMaterial?4:2;
-			var attributesView:AttributesView = new AttributesView(Float32Array, attr_length);
+			const attr_length: number = textShape.fntMaterial ? 4 : 2;
+			const attributesView: AttributesView = new AttributesView(Float32Array, attr_length);
 			attributesView.set(textShape.verts);
-			var vertexBuffer:AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
+			const vertexBuffer: AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
 			attributesView.dispose();
 
 			textShape.elements = new TriangleElements(vertexBuffer);
 			textShape.elements.setPositions(new Float2Attributes(vertexBuffer));
-			
-			if(textShape.fntMaterial) {
+
+			if (textShape.fntMaterial) {
 				textShape.elements.setUVs(new Float2Attributes(vertexBuffer));
 			}
 
 			textShape.shape = Shape.getShape(textShape.elements);
 			textShape.shape.usages++;
 
-			var sampler:ImageSampler = new ImageSampler(false, true, true);
+			const sampler: ImageSampler = new ImageSampler(false, true, true);
 			textShape.shape.style = new Style();
 
-			if(textShape.fntMaterial){
+			if (textShape.fntMaterial) {
 				// 	used by FNT fonts
-				textShape.shape.material=textShape.fntMaterial;
+				textShape.shape.material = textShape.fntMaterial;
 				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
 				//(<MaterialBase> textShape.shape.material).colorTransform=new ColorTransform();
-				//(<MaterialBase> textShape.shape.material).colorTransform.color=color;					
-			}
-			else if (textShape.format.material && this._textColor==0) {
-				// 	used for textfields loaded from awd. 
+				//(<MaterialBase> textShape.shape.material).colorTransform.color=color;
+			} else if (textShape.format.material && this._textColor == 0) {
+				// 	used for textfields loaded from awd.
 				//	the material on the format uses textureAtlas from awd
 				textShape.shape.material = this._textFormat.material;
 				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
 				(<MaterialBase> textShape.shape.material).animateUVs = true;
 				textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
-			}
-			else {
-				// 	used by runtime textureatlas. 
-				//	(standart for dynamic created text and text loaded from swf)					
-				var obj=MaterialManager.get_material_for_color(color, alpha/255);	
+			} else {
+				// 	used by runtime textureatlas.
+				//	(standart for dynamic created text and text loaded from swf)
+				const obj = MaterialManager.get_material_for_color(color, alpha / 255);
 				textShape.shape.material = obj.material;
-				if(obj.colorPos){
+				if (obj.colorPos) {
 					textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-					(<MaterialBase> textShape.shape.material).animateUVs=true;
+					(<MaterialBase> textShape.shape.material).animateUVs = true;
 					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
 				}
-			}	
-        }
-    }
-    
-    private buildShapes(){
-		if(!this.targetGraphics){
-			this.targetGraphics=this._graphics;
+			}
 		}
-		else{
+	}
+
+	private buildShapes() {
+		if (!this.targetGraphics) {
+			this.targetGraphics = this._graphics;
+		} else {
 			this._graphics.clear();
 		}
 		this.targetGraphics.clear();
 
 		this.drawBG();
 
-		if(this._border || !this._background) {
+		if (this._border || !this._background) {
 			this.drawBorder();
 		}
 
 		this.drawSelectionGraphics();
 
-        if(this.bgShapeSelect && this.isInFocus && this.showSelection){
-            this.targetGraphics.addShape(this.bgShapeSelect);
-        }
-		
-		var textShape:TextShape;
-		
-		for(var key in this.textShapes) {
-			textShape = this.textShapes[key];
-            <Shape>this.targetGraphics.addShape(textShape.shape);
+		if (this.bgShapeSelect && this.isInFocus && this.showSelection) {
+			this.targetGraphics.addShape(this.bgShapeSelect);
 		}
-		
-        if(this.type===TextFieldType.INPUT && this.isInFocus && this.cursorShape && !this.cursorBlinking){
-            this.targetGraphics.addShape(this.cursorShape);
-        }
-    }
 
+		let textShape: TextShape;
+
+		for (const key in this.textShapes) {
+			textShape = this.textShapes[key];
+            <Shape> this.targetGraphics.addShape(textShape.shape);
+		}
+
+		if (this.type === TextFieldType.INPUT && this.isInFocus && this.cursorShape && !this.cursorBlinking) {
+			this.targetGraphics.addShape(this.cursorShape);
+		}
+	}
 
 	/**
 	 * Appends the string specified by the <code>newText</code> parameter to the
@@ -2866,9 +2779,9 @@ export class TextField extends DisplayObjectContainer
 	 *
 	 * @param newText The string to append to the existing text.
 	 */
-	public appendText(newText:string) {
+	public appendText(newText: string) {
 		// append zero lenght text
-		if(!newText.length) {
+		if (!newText.length) {
 			return;
 		}
 
@@ -2884,9 +2797,8 @@ export class TextField extends DisplayObjectContainer
 	 * *tells the Textfield that a paragraph is defined completly.
 	 * e.g. the textfield will start a new line for future added text.
 	 */
-	public closeParagraph():void
-	{
-		this._iText+="\n";
+	public closeParagraph(): void {
+		this._iText += '\n';
 		this._textDirty = true;
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
@@ -2903,10 +2815,9 @@ export class TextField extends DisplayObjectContainer
 	 * @return A rectangle with <code>x</code> and <code>y</code> minimum and
 	 *         maximum values defining the bounding box of the character.
 	 */
-	public getCharBoundaries(charIndex:number):Rectangle
-	{
+	public getCharBoundaries(charIndex: number): Rectangle {
 
-		console.log("Textfield.getCharBoundaries() not implemented");
+		console.log('Textfield.getCharBoundaries() not implemented');
 		return this._charBoundaries;
 	}
 
@@ -2920,27 +2831,23 @@ export class TextField extends DisplayObjectContainer
 	 *         first position is 0, the second position is 1, and so on). Returns
 	 *         -1 if the point is not over any character.
 	 */
-	public getCharIndexAtPoint(x:number, y:number, lineIdx:number=-1):number /*int*/
+	public getCharIndexAtPoint(x: number, y: number, lineIdx: number = -1): number /*int*/
 	{
-		if(lineIdx < 0){
+		if (lineIdx < 0) {
 			lineIdx = this.getLineIndexAtPoint(x, y);
 		}
-		
+
 		const startIdx = this.lines_charIdx_start[lineIdx];
 		const endIdx = this.lines_charIdx_end[lineIdx];
-		
-		for(let i = startIdx; i < endIdx; i++)
-		{
-			if(x>=this.char_positions_x[i]){
-				if(x<=this.char_positions_x[i] + this.chars_width[i] / 2)
-				{
+
+		for (let i = startIdx; i < endIdx; i++) {
+			if (x >= this.char_positions_x[i]) {
+				if (x <= this.char_positions_x[i] + this.chars_width[i] / 2) {
 					return i;
-				}
-				else if(x<=this.char_positions_x[i] + this.chars_width[i])
-				{
+				} else if (x <= this.char_positions_x[i] + this.chars_width[i]) {
 					return i + 1;
 				}
-			} 
+			}
 		}
 
 		return -1;
@@ -2957,9 +2864,9 @@ export class TextField extends DisplayObjectContainer
 	 *         paragraph.
 	 * @throws RangeError The character index specified is out of range.
 	 */
-	public getFirstCharInParagraph(charIndex:number /*int*/):number /*int*/
+	public getFirstCharInParagraph(charIndex: number /*int*/): number /*int*/
 	{
-		console.log("Textfield.getFirstCharInParagraph() not implemented");
+		console.log('Textfield.getFirstCharInParagraph() not implemented');
 		return this._firstCharInParagraph;
 	}
 
@@ -2983,9 +2890,8 @@ export class TextField extends DisplayObjectContainer
 	 *         matching <code>id</code> exists, the method returns
 	 *         <code>null</code>.
 	 */
-	public getImageReference(id:string):DisplayObject
-	{
-		console.log("TextField.getImageReference() not implemented");
+	public getImageReference(id: string): DisplayObject {
+		console.log('TextField.getImageReference() not implemented');
 		return this._imageReference;
 	}
 
@@ -2999,16 +2905,16 @@ export class TextField extends DisplayObjectContainer
 	 *         line is 0, the second line is 1, and so on). Returns -1 if the
 	 *         point is not over any line.
 	 */
-	public getLineIndexAtPoint(x:number, y:number):number /*int*/
+	public getLineIndexAtPoint(x: number, y: number): number /*int*/
 	{
-		var len:number=this.lines_start_y.length;
-		for(var i:number=0;i<len-1; i++){
-			if(y>=this.lines_start_y[i] && y<=this.lines_start_y[i+1])
+		const len: number = this.lines_start_y.length;
+		for (let i: number = 0;i < len - 1; i++) {
+			if (y >= this.lines_start_y[i] && y <= this.lines_start_y[i + 1])
 				return i;
 		}
 		// no line found. it must be the last
-		if(y>=this.lines_start_y[len-1])
-			return len-1;
+		if (y >= this.lines_start_y[len - 1])
+			return len - 1;
 		return 0;
 	}
 
@@ -3022,12 +2928,12 @@ export class TextField extends DisplayObjectContainer
 	 * @return The zero-based index value of the line.
 	 * @throws RangeError The character index specified is out of range.
 	 */
-	public getLineIndexOfChar(charIndex:number /*int*/):number /*int*/
+	public getLineIndexOfChar(charIndex: number /*int*/): number /*int*/
 	{
-		
-		var len:number=this.lines_charIdx_start.length-1;
-		for(var i:number;i<len; i++){
-			if(charIndex>=this.lines_charIdx_start[i] && charIndex<=this.lines_charIdx_end[i+1])
+
+		const len: number = this.lines_charIdx_start.length - 1;
+		for (var i: number;i < len; i++) {
+			if (charIndex >= this.lines_charIdx_start[i] && charIndex <= this.lines_charIdx_end[i + 1])
 				return i;
 		}
 		// no line found. it must be the last
@@ -3041,13 +2947,13 @@ export class TextField extends DisplayObjectContainer
 	 * @return The number of characters in the line.
 	 * @throws RangeError The line number specified is out of range.
 	 */
-	public getLineLength(lineIndex:number /*int*/):number /*int*/
+	public getLineLength(lineIndex: number /*int*/): number /*int*/
 	{
-		if(this.lines_width.length==0){
+		if (this.lines_width.length == 0) {
 			return 0;
 		}
-		if(lineIndex>=this.lines_width.length)
-			return this.lines_width[this.lines_width.length-1];
+		if (lineIndex >= this.lines_width.length)
+			return this.lines_width[this.lines_width.length - 1];
 		return this.lines_width[lineIndex];
 	}
 
@@ -3058,16 +2964,15 @@ export class TextField extends DisplayObjectContainer
 	 * @return A TextLineMetrics object.
 	 * @throws RangeError The line number specified is out of range.
 	 */
-	public getLineMetrics(lineIndex:number /*int*/):TextLineMetrics
-	{
-		var newLineMetrics = new TextLineMetrics();
+	public getLineMetrics(lineIndex: number /*int*/): TextLineMetrics {
+		const newLineMetrics = new TextLineMetrics();
 
-		if(!this.lines_width.length){
+		if (!this.lines_width.length) {
 			return newLineMetrics;
 		}
 
 		// should throw error!
-		if(lineIndex >= this.lines_width.length) {
+		if (lineIndex >= this.lines_width.length) {
 			lineIndex = this.lines_width.length - 1;
 		}
 
@@ -3091,13 +2996,13 @@ export class TextField extends DisplayObjectContainer
 	 * @return The zero-based index value of the first character in the line.
 	 * @throws RangeError The line number specified is out of range.
 	 */
-	public getLineOffset(lineIndex:number /*int*/):number /*int*/
+	public getLineOffset(lineIndex: number /*int*/): number /*int*/
 	{
-		if(this.lines_charIdx_start.length==0){
+		if (this.lines_charIdx_start.length == 0) {
 			return 0;
 		}
-		if(lineIndex>=this.lines_charIdx_start.length)
-			return this.lines_charIdx_start[this.lines_charIdx_start.length-1];
+		if (lineIndex >= this.lines_charIdx_start.length)
+			return this.lines_charIdx_start[this.lines_charIdx_start.length - 1];
 		return this.lines_charIdx_start[lineIndex];
 	}
 
@@ -3110,15 +3015,14 @@ export class TextField extends DisplayObjectContainer
 	 * @return The text string contained in the specified line.
 	 * @throws RangeError The line number specified is out of range.
 	 */
-	public getLineText(lineIndex:number /*int*/):string
-	{
-		if(this.lines_charIdx_start.length==0){
-			return "";
+	public getLineText(lineIndex: number /*int*/): string {
+		if (this.lines_charIdx_start.length == 0) {
+			return '';
 		}
-		if(lineIndex>=this.lines_width.length)
-			lineIndex=this.lines_width.length-1;
-		
-		return this._iText.slice(this.lines_charIdx_start[lineIndex], this.lines_charIdx_end[lineIndex]);	
+		if (lineIndex >= this.lines_width.length)
+			lineIndex = this.lines_width.length - 1;
+
+		return this._iText.slice(this.lines_charIdx_start[lineIndex], this.lines_charIdx_end[lineIndex]);
 	}
 
 	/**
@@ -3133,7 +3037,7 @@ export class TextField extends DisplayObjectContainer
 	 * @return Returns the number of characters in the paragraph.
 	 * @throws RangeError The character index specified is out of range.
 	 */
-	public getParagraphLength(charIndex:number /*int*/):number /*int*/
+	public getParagraphLength(charIndex: number /*int*/): number /*int*/
 	{
 		return this._paragraphLength;
 	}
@@ -3156,10 +3060,9 @@ export class TextField extends DisplayObjectContainer
 	 * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
 	 *                    specified is out of range.
 	 */
-	public getTextFormat(beginIndex:number /*int*/ = -1, endIndex:number /*int*/ = -1):TextFormat
-	{
-        if(beginIndex>=0 || endIndex>=0)
-		    console.warn("Textfield.getTextFormat() not correctly implemented for multi-formatted text");
+	public getTextFormat(beginIndex: number /*int*/ = -1, endIndex: number /*int*/ = -1): TextFormat {
+		if (beginIndex >= 0 || endIndex >= 0)
+		    console.warn('Textfield.getTextFormat() not correctly implemented for multi-formatted text');
 		return this._textFormat;
 	}
 
@@ -3180,27 +3083,26 @@ export class TextField extends DisplayObjectContainer
 	 * @throws Error This method cannot be used on a text field with a style
 	 *               sheet.
 	 */
-	public replaceSelectedText(value:string):void
-	{
-		var selectionStart:number=this._selectionBeginIndex;
-		var selectionEnd:number=this._selectionEndIndex;
-		if(selectionEnd!=selectionStart){
-			if(selectionEnd<selectionStart){
-				selectionStart=this._selectionEndIndex;
-				selectionEnd=this._selectionBeginIndex;
+	public replaceSelectedText(value: string): void {
+		let selectionStart: number = this._selectionBeginIndex;
+		let selectionEnd: number = this._selectionEndIndex;
+		if (selectionEnd != selectionStart) {
+			if (selectionEnd < selectionStart) {
+				selectionStart = this._selectionEndIndex;
+				selectionEnd = this._selectionBeginIndex;
 			}
-			var textBeforeCursor:string=this._iText.slice(0, selectionStart-1);
-			var textAfterCursor:string=this._iText.slice(selectionEnd, this._iText.length);
+			var textBeforeCursor: string = this._iText.slice(0, selectionStart - 1);
+			var textAfterCursor: string = this._iText.slice(selectionEnd, this._iText.length);
 			this.text = textBeforeCursor + value + textAfterCursor;
-			this._selectionBeginIndex=selectionStart;
-			this._selectionEndIndex=this._selectionBeginIndex+value.length;
+			this._selectionBeginIndex = selectionStart;
+			this._selectionEndIndex = this._selectionBeginIndex + value.length;
 			return;
 		}
-		var textBeforeCursor:string=this._iText.slice(0, selectionStart);
-		var textAfterCursor:string=this._iText.slice(selectionEnd, this._iText.length);
+		var textBeforeCursor: string = this._iText.slice(0, selectionStart);
+		var textAfterCursor: string = this._iText.slice(selectionEnd, this._iText.length);
 		this.text = textBeforeCursor + value + textAfterCursor;
-		this._selectionBeginIndex=selectionStart+1;
-		this._selectionEndIndex=this._selectionBeginIndex;
+		this._selectionBeginIndex = selectionStart + 1;
+		this._selectionEndIndex = this._selectionBeginIndex;
 
 	}
 
@@ -3222,13 +3124,12 @@ export class TextField extends DisplayObjectContainer
 	 * @throws Error This method cannot be used on a text field with a style
 	 *               sheet.
 	 */
-	public replaceText(beginIndex:number /*int*/, endIndex:number /*int*/, newText:string):void
-	{
+	public replaceText(beginIndex: number /*int*/, endIndex: number /*int*/, newText: string): void {
 
-		var textBeforeCursor:string=this._iText.slice(0, beginIndex-1);
-		var textAfterCursor:string=this._iText.slice(endIndex, this._iText.length);
+		const textBeforeCursor: string = this._iText.slice(0, beginIndex - 1);
+		const textAfterCursor: string = this._iText.slice(endIndex, this._iText.length);
 		this.text = textBeforeCursor + newText + textAfterCursor;
-		this._selectionEndIndex=this._selectionBeginIndex+newText.length;
+		this._selectionEndIndex = this._selectionBeginIndex + newText.length;
 	}
 
 	/**
@@ -3244,16 +3145,14 @@ export class TextField extends DisplayObjectContainer
 	 * @param endIndex   The zero-based index value of the last character in the
 	 *                   selection.
 	 */
-	public setSelection(beginIndex:number /*int*/, endIndex:number /*int*/):void
-	{
-		if(this._selectionBeginIndex==beginIndex && this._selectionBeginIndex==endIndex)
+	public setSelection(beginIndex: number /*int*/, endIndex: number /*int*/): void {
+		if (this._selectionBeginIndex == beginIndex && this._selectionBeginIndex == endIndex)
 			return;
-		this._selectionBeginIndex=beginIndex;
-		this._selectionEndIndex=endIndex;
-		this._glyphsDirty=true;
+		this._selectionBeginIndex = beginIndex;
+		this._selectionEndIndex = endIndex;
+		this._glyphsDirty = true;
 		this.reConstruct();
 		this.drawSelectionGraphics();
-
 
 	}
 
@@ -3302,33 +3201,32 @@ export class TextField extends DisplayObjectContainer
 	 * @throws RangeError The <code>beginIndex</code> or <code>endIndex</code>
 	 *                    specified is out of range.
 	 */
-	public setTextFormat(format:TextFormat, beginIndex:number /*int*/ = -1, endIndex:number /*int*/ = -1):void
-	{
-        if(this._textDirty){
-            this.reConstruct();
-        }
-        /**
+	public setTextFormat(format: TextFormat, beginIndex: number /*int*/ = -1, endIndex: number /*int*/ = -1): void {
+		if (this._textDirty) {
+			this.reConstruct();
+		}
+		/**
          *  this should only effect existing text
          *  if no text exist, this function does nothing
-         * 
-         *  this means that we only want to act on the existing textFormats list, 
+         *
+         *  this means that we only want to act on the existing textFormats list,
          *  never on the textFormat property directly
          * */
-        //console.log("setTextFormat", this.chars_codes.length, format, this._iText);
-        if(this.chars_codes.length==0 || !format)
-            return;
+		//console.log("setTextFormat", this.chars_codes.length, format, this._iText);
+		if (this.chars_codes.length == 0 || !format)
+			return;
 
-        if((beginIndex==-1 && endIndex==-1)
-            || (beginIndex==0 && endIndex==-1)
-			|| ((beginIndex==-1 || beginIndex==0)
-				&& endIndex >= this.chars_codes.length)){
+		if ((beginIndex == -1 && endIndex == -1)
+            || (beginIndex == 0 && endIndex == -1)
+			|| ((beginIndex == -1 || beginIndex == 0)
+				&& endIndex >= this.chars_codes.length)) {
 
 			const len = this._textFormats.length;
-			let mutated = false;
-		
+			const mutated = false;
+
 			// easy: apply the format to all formats in the list
-            for(let i = 0; i < len; i++){
-				let f = this._textFormats[i] = this._textFormats[i].clone();
+			for (let i = 0; i < len; i++) {
+				const f = this._textFormats[i] = this._textFormats[i].clone();
 
 				// check that we really update text format
 				const initial = f.updateID;
@@ -3337,7 +3235,7 @@ export class TextField extends DisplayObjectContainer
 				//mutated = mutated || (initial !== f.updateID);
 			}
 
-			if(mutated) {
+			if (mutated) {
 				this._textDirty = true;
 			}
 			return;
@@ -3348,85 +3246,83 @@ export class TextField extends DisplayObjectContainer
 
 		//console.log("\n\nadd format", this.id, this._iText, beginIndex, endIndex, format.color);
 		//console.log("this._textFormats", this._textFormats, this._textFormatsIdx);
-		
-		var i = 0;
 
-        /**
+		let i = 0;
+
+		/**
          * _textformatsIdx list should always be ordered numeric
          * todo: should this be verified here, or is it already taken care of ?
          */
-		var newFormatsTextFormats:TextFormat[]=[];
-		var newFormatsTextFormatsIdx:number[]=[];
-		var oldStartIdx:number=0;
-		var oldEndIdx:number=-1;
-        var oldFormat:TextFormat;
-        var formatLen=this._textFormats.length;
-		var charLen=this.chars_codes.length;
+		const newFormatsTextFormats: TextFormat[] = [];
+		const newFormatsTextFormatsIdx: number[] = [];
+		let oldStartIdx: number = 0;
+		let oldEndIdx: number = -1;
+		let oldFormat: TextFormat;
+		const formatLen = this._textFormats.length;
+		const charLen = this.chars_codes.length;
 
-        if(beginIndex == -1) beginIndex = 0;
-		if(endIndex == -1) endIndex = charLen;
-		
-        if(endIndex < beginIndex){
-            var tmp = endIndex;
-            endIndex = beginIndex;
-            beginIndex = tmp;
+		if (beginIndex == -1) beginIndex = 0;
+		if (endIndex == -1) endIndex = charLen;
+
+		if (endIndex < beginIndex) {
+			const tmp = endIndex;
+			endIndex = beginIndex;
+			beginIndex = tmp;
 		}
 
-        if(endIndex == beginIndex) endIndex++;
+		if (endIndex == beginIndex) endIndex++;
 
-        //console.log("check formats");
-		for(let i=0; i < formatLen; i++){
-			if(i > 0) oldStartIdx = oldEndIdx;
+		//console.log("check formats");
+		for (let i = 0; i < formatLen; i++) {
+			if (i > 0) oldStartIdx = oldEndIdx;
 
-            oldEndIdx=this._textFormatsIdx[i];
-			oldFormat=this._textFormats[i];
+			oldEndIdx = this._textFormatsIdx[i];
+			oldFormat = this._textFormats[i];
 			//console.log("oldFormat", oldStartIdx, oldEndIdx);
 
-            //console.log("check formats", oldStartIdx, oldEndIdx, beginIndex, endIndex);
-            if(oldStartIdx<=beginIndex && oldEndIdx>beginIndex){
-                // we have a interset in the range.
-                //console.log("intersects");
-                // we have a bit of text that should remain the original format
-                if(oldStartIdx<beginIndex){
+			//console.log("check formats", oldStartIdx, oldEndIdx, beginIndex, endIndex);
+			if (oldStartIdx <= beginIndex && oldEndIdx > beginIndex) {
+				// we have a interset in the range.
+				//console.log("intersects");
+				// we have a bit of text that should remain the original format
+				if (oldStartIdx < beginIndex) {
 					newFormatsTextFormats.push(oldFormat);
 					newFormatsTextFormatsIdx.push(beginIndex);
-                    //console.log("add old format", beginIndex);
+					//console.log("add old format", beginIndex);
 			    }
 
-                while(oldEndIdx<endIndex){
-                    //console.log("add new merged format", oldEndIdx);
-                    var newFormat=this._textFormats[i].clone();
-                    format.applyToFormat(newFormat)
+				while (oldEndIdx < endIndex) {
+					//console.log("add new merged format", oldEndIdx);
+					var newFormat = this._textFormats[i].clone();
+					format.applyToFormat(newFormat);
 					newFormatsTextFormats.push(newFormat);
-                    newFormatsTextFormatsIdx.push(oldEndIdx);
-                    i++;
-                    if(i<formatLen){
-                        oldEndIdx=this._textFormatsIdx[i];
-                        oldFormat=this._textFormats[i];
+					newFormatsTextFormatsIdx.push(oldEndIdx);
+					i++;
+					if (i < formatLen) {
+						oldEndIdx = this._textFormatsIdx[i];
+						oldFormat = this._textFormats[i];
+					} else {
+						oldEndIdx = endIndex + 1;
+					}
 				}
-				else{
-                        oldEndIdx=endIndex+1;
-                    }
-				}
-                if(oldEndIdx==endIndex){                    
-                    //console.log("add new format rest", endIndex);
-                    var newFormat=oldFormat.clone();
-                    format.applyToFormat(newFormat)
-					newFormatsTextFormats.push(newFormat);
-					newFormatsTextFormatsIdx.push(endIndex);
-				}
-                if(oldEndIdx>endIndex){
-                    //console.log("add new format rest", endIndex);
-                    var newFormat=oldFormat.clone();
-                    format.applyToFormat(newFormat)
+				if (oldEndIdx == endIndex) {
+					//console.log("add new format rest", endIndex);
+					var newFormat = oldFormat.clone();
+					format.applyToFormat(newFormat);
 					newFormatsTextFormats.push(newFormat);
 					newFormatsTextFormatsIdx.push(endIndex);
-                    //console.log("add old format rest", oldEndIdx);
+				}
+				if (oldEndIdx > endIndex) {
+					//console.log("add new format rest", endIndex);
+					var newFormat = oldFormat.clone();
+					format.applyToFormat(newFormat);
+					newFormatsTextFormats.push(newFormat);
+					newFormatsTextFormatsIdx.push(endIndex);
+					//console.log("add old format rest", oldEndIdx);
 					newFormatsTextFormats.push(oldFormat);
 					newFormatsTextFormatsIdx.push(oldEndIdx);
 				}
-			}
-			else{
+			} else {
 				//console.log("outside of new range. just add it", oldStartIdx, oldEndIdx);
 				// outside of new range. just add it
 				newFormatsTextFormats.push(this._textFormats[i]);
@@ -3435,16 +3331,15 @@ export class TextField extends DisplayObjectContainer
 			}
 		}
 
-
 		//console.log("new formats");
-		this._textFormats.length=0;
-		this._textFormatsIdx.length=0;
-		for(i=0; i<newFormatsTextFormats.length;i++){
+		this._textFormats.length = 0;
+		this._textFormatsIdx.length = 0;
+		for (i = 0; i < newFormatsTextFormats.length;i++) {
 			//console.log("new formats ", newFormatsTextFormatsIdx[i], newFormatsTextFormats[i]);
-			this._textFormats[i]=newFormatsTextFormats[i];
-			this._textFormatsIdx[i]=newFormatsTextFormatsIdx[i];
+			this._textFormats[i] = newFormatsTextFormats[i];
+			this._textFormatsIdx[i] = newFormatsTextFormatsIdx[i];
 		}
-		this._textDirty=true;
+		this._textDirty = true;
 	}
 
 	/**
@@ -3476,242 +3371,229 @@ export class TextField extends DisplayObjectContainer
 	 * @throws ArgumentError The <code>fontStyle</code> specified is not a member
 	 *                       of <code>flash.text.FontStyle</code>.
 	 */
-	public static isFontCompatible(fontName:string, fontStyle:string):boolean
-	{
+	public static isFontCompatible(fontName: string, fontStyle: string): boolean {
 		return false;
 	}
-	public onKeyDelegate:(e:any) => void;
-	public onKey(e:any){
-		var keyEvent:KeyboardEvent=<KeyboardEvent>e;
+
+	public onKeyDelegate: (e: any) => void;
+	public onKey(e: any) {
+		const keyEvent: KeyboardEvent = <KeyboardEvent>e;
 		this.addChar(keyEvent.char, keyEvent.isShift, keyEvent.isCTRL, keyEvent.isAlt);
 
 		//console.log("textfield.onKey this.text", this.text);
 	}
-	public addCharCode(charCode:number){
+
+	public addCharCode(charCode: number) {
 		this.addChar(String.fromCharCode(charCode));
-		
+
 	}
-	private deleteSelectedText(deleteMode:string="Backspace"){
-		
-		if(this.text.length==0)
+
+	private deleteSelectedText(deleteMode: string = 'Backspace') {
+
+		if (this.text.length == 0)
 			return;
-		
-		if(this._selectionBeginIndex!=this._selectionEndIndex){
-			var textBeforeCursor:string=(this._selectionBeginIndex!=0)?this._iText.slice(0, this._selectionBeginIndex):"";
-			var textAfterCursor:string=(this._selectionEndIndex<this._iText.length)?this._iText.slice(this._selectionEndIndex, this._iText.length):"";
+
+		if (this._selectionBeginIndex != this._selectionEndIndex) {
+			var textBeforeCursor: string = (this._selectionBeginIndex != 0) ? this._iText.slice(0, this._selectionBeginIndex) : '';
+			var textAfterCursor: string = (this._selectionEndIndex < this._iText.length) ? this._iText.slice(this._selectionEndIndex, this._iText.length) : '';
 			this.text = textBeforeCursor + textAfterCursor;
-			this._selectionEndIndex=this._selectionBeginIndex;
+			this._selectionEndIndex = this._selectionBeginIndex;
 			return;
 		}
-		if(deleteMode=="Backspace"){
-			if(this._selectionBeginIndex==0){
+		if (deleteMode == 'Backspace') {
+			if (this._selectionBeginIndex == 0) {
 				return;
 			}
-			var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex-1);
-			var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
+			var textBeforeCursor: string = this._iText.slice(0, this._selectionBeginIndex - 1);
+			var textAfterCursor: string = this._iText.slice(this._selectionEndIndex, this._iText.length);
 			this.text = textBeforeCursor + textAfterCursor;
-			this._selectionBeginIndex-=1;
-			this._selectionEndIndex=this._selectionBeginIndex;
-		}
-		else if(deleteMode=="Delete"){
-			var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
-			var textAfterCursor:string=this._iText.slice(this._selectionEndIndex+1, this._iText.length);
+			this._selectionBeginIndex -= 1;
+			this._selectionEndIndex = this._selectionBeginIndex;
+		} else if (deleteMode == 'Delete') {
+			var textBeforeCursor: string = this._iText.slice(0, this._selectionBeginIndex);
+			var textAfterCursor: string = this._iText.slice(this._selectionEndIndex + 1, this._iText.length);
 			this.text = textBeforeCursor + textAfterCursor;
-			this._selectionEndIndex=this._selectionBeginIndex;
+			this._selectionEndIndex = this._selectionBeginIndex;
 		}
-
 
 	}
-	public addChar(char:string, isShift:boolean=false, isCTRL:boolean=false, isAlt:boolean=false){
 
-        //console.log("addChar")
-		var oldText=this._iText;
-		if(!this._selectionBeginIndex){
-			this._selectionBeginIndex=0;
+	public addChar(char: string, isShift: boolean = false, isCTRL: boolean = false, isAlt: boolean = false) {
+
+		//console.log("addChar")
+		const oldText = this._iText;
+		if (!this._selectionBeginIndex) {
+			this._selectionBeginIndex = 0;
 		}
-		if(!this._selectionEndIndex){
-			this._selectionEndIndex=0;
+		if (!this._selectionEndIndex) {
+			this._selectionEndIndex = 0;
 		}
-		if(this._selectionEndIndex<this._selectionBeginIndex){
-			var tmpStart:number=this._selectionEndIndex;
-			this._selectionEndIndex=this._selectionBeginIndex;
-			this._selectionBeginIndex=tmpStart;
+		if (this._selectionEndIndex < this._selectionBeginIndex) {
+			const tmpStart: number = this._selectionEndIndex;
+			this._selectionEndIndex = this._selectionBeginIndex;
+			this._selectionBeginIndex = tmpStart;
 		}
 		//console.log("textfield.onKey char", String.fromCharCode(keyEvent.charCode));
 		// todo: correctly implement text-cursor, and delete / add from its position
-		if(char=="Backspace" || char=="Delete"){
+		if (char == 'Backspace' || char == 'Delete') {
 			this.deleteSelectedText(char);
-		}
-		else if(char=="ArrowRight"){
-			if(!isShift && this._selectionEndIndex!=this._selectionBeginIndex){
-				if(this._selectionEndIndex>this._selectionBeginIndex)
-					this._selectionBeginIndex=this._selectionEndIndex;
+		} else if (char == 'ArrowRight') {
+			if (!isShift && this._selectionEndIndex != this._selectionBeginIndex) {
+				if (this._selectionEndIndex > this._selectionBeginIndex)
+					this._selectionBeginIndex = this._selectionEndIndex;
 				else
-					this._selectionEndIndex=this._selectionBeginIndex;
-			}
-			else{
-				if(this._selectionEndIndex>this._selectionBeginIndex){
-					this._selectionEndIndex+=1;
-					if(!isShift)
-						this._selectionBeginIndex=this._selectionEndIndex;
-				}
-				else {
-					this._selectionBeginIndex+=1;
-					if(!isShift)
-						this._selectionEndIndex=this._selectionBeginIndex;
+					this._selectionEndIndex = this._selectionBeginIndex;
+			} else {
+				if (this._selectionEndIndex > this._selectionBeginIndex) {
+					this._selectionEndIndex += 1;
+					if (!isShift)
+						this._selectionBeginIndex = this._selectionEndIndex;
+				} else {
+					this._selectionBeginIndex += 1;
+					if (!isShift)
+						this._selectionEndIndex = this._selectionBeginIndex;
 
 				}
 			}
 			//this._selectionEndIndex=this._selectionBeginIndex;
-		}
-		else if(char=="ArrowLeft"){
-			if(!isShift && this._selectionEndIndex!=this._selectionBeginIndex){
-				if(this._selectionEndIndex>this._selectionBeginIndex)
-					this._selectionEndIndex=this._selectionBeginIndex;
+		} else if (char == 'ArrowLeft') {
+			if (!isShift && this._selectionEndIndex != this._selectionBeginIndex) {
+				if (this._selectionEndIndex > this._selectionBeginIndex)
+					this._selectionEndIndex = this._selectionBeginIndex;
 				else
-					this._selectionBeginIndex=this._selectionEndIndex;
-			}
-			else{
-				if(this._selectionEndIndex>this._selectionBeginIndex){
-					this._selectionBeginIndex-=1;
-					if(!isShift)
-						this._selectionEndIndex=this._selectionBeginIndex;
-				}
-				else {
-					this._selectionEndIndex-=1;
-					if(!isShift)
-						this._selectionBeginIndex=this._selectionEndIndex;
+					this._selectionBeginIndex = this._selectionEndIndex;
+			} else {
+				if (this._selectionEndIndex > this._selectionBeginIndex) {
+					this._selectionBeginIndex -= 1;
+					if (!isShift)
+						this._selectionEndIndex = this._selectionBeginIndex;
+				} else {
+					this._selectionEndIndex -= 1;
+					if (!isShift)
+						this._selectionBeginIndex = this._selectionEndIndex;
 
 				}
 			}
 			//this._selectionEndIndex=this._selectionBeginIndex;
-		}
-		else if(char=="Enter" && this.multiline){
-            this._insertNewText("\n");
-        }
-		
-		else if (char.length==1){
-			if(this._restrictRegex){
-				var chartest1=char.replace(this._restrictRegex, "");
-				if(chartest1.length<char.length){
-                    var chartest2=char.toUpperCase().replace(this._restrictRegex, "");
-                    var chartest3=char.toLowerCase().replace(this._restrictRegex, "");
-                    char=chartest2;
-                    if(chartest2.length<chartest3.length){
-                        char=chartest3;
-                    }
-                    if(chartest1.length>char.length){
-                        char=chartest1;
-                    }
-                }
-				if(char=="")
-                    return;                
-            }
-            if(this.newTextFormat.font_table){
+		} else if (char == 'Enter' && this.multiline) {
+			this._insertNewText('\n');
+		} else if (char.length == 1) {
+			if (this._restrictRegex) {
+				const chartest1 = char.replace(this._restrictRegex, '');
+				if (chartest1.length < char.length) {
+					const chartest2 = char.toUpperCase().replace(this._restrictRegex, '');
+					const chartest3 = char.toLowerCase().replace(this._restrictRegex, '');
+					char = chartest2;
+					if (chartest2.length < chartest3.length) {
+						char = chartest3;
+					}
+					if (chartest1.length > char.length) {
+						char = chartest1;
+					}
+				}
+				if (char == '')
+					return;
+			}
+			if (this.newTextFormat.font_table) {
 
-				let table = this.newTextFormat.font_table;
-				let symbol = char.charCodeAt(0).toString();
+				const table = this.newTextFormat.font_table;
+				const symbol = char.charCodeAt(0).toString();
 				let exist = false;
 
 				exist = (exist || table.hasChar(symbol));
 				exist = (exist || table.hasChar(symbol.toLowerCase()));
 				exist = (exist || table.hasChar(symbol.toUpperCase()));
 
-				if(!exist) {
+				if (!exist) {
 
 					console.log('Char not found', symbol);
 					return;
 				}
-            }
-            this._insertNewText(char);
-		}
-		else if (char.length > 1){
-			console.log("invalid keyboard input: ", char);
+			}
+			this._insertNewText(char);
+		} else if (char.length > 1) {
+			console.log('invalid keyboard input: ', char);
 		}
 
-		this._glyphsDirty=true;
+		this._glyphsDirty = true;
 		this.reConstruct();
 		this.drawSelectionGraphics();
 		this.invalidate();
-		
-		if(oldText!==this._iText){
-            this.dispatchEvent(TextField._onChangedEvent);
+
+		if (oldText !== this._iText) {
+			this.dispatchEvent(TextField._onChangedEvent);
 		}
 
-		if (char && char.length>0 && this.adapter!=this){
-            var charCode:number;
-            switch(char){
-                case "Backspace":
+		if (char && char.length > 0 && this.adapter != this) {
+			let charCode: number;
+			switch (char) {
+				case 'Backspace':
 					charCode = 8;
 					break;
-				case "Delete":
+				case 'Delete':
 					charCode = 46;
 					break;
-				case "ArrowRight":
+				case 'ArrowRight':
 					charCode = 39;
 					break;
-				case "ArrowLeft":
+				case 'ArrowLeft':
 					charCode = 37;
 					break;
-				case ".":
+				case '.':
 					charCode = 189;
 					break;
 				default:
 					charCode = char.charCodeAt(0);
 					break;
-            }
-            //console.log("dispatchKeyEvent");
-			(<ITextfieldAdapter>this.adapter).dispatchKeyEvent(charCode, isShift, isCTRL, isAlt);
+			}
+			//console.log("dispatchKeyEvent");
+			(<ITextfieldAdapter> this.adapter).dispatchKeyEvent(charCode, isShift, isCTRL, isAlt);
 		}
-    }
-    private _insertNewText(newText:string){
+	}
 
-        if(this._selectionBeginIndex!=this._selectionEndIndex){
-            var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
-            var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
-            if(this.maxChars>0 && (textBeforeCursor.length+textAfterCursor.length+newText.length)>this.maxChars){
-                var maxNewChars:number=this.maxChars-textBeforeCursor.length+textAfterCursor.length;
-                if(maxNewChars>0){
-                    newText=newText.slice(0, maxNewChars);
-                }
-            }
-            this.text = textBeforeCursor + newText + textAfterCursor;
-            this._selectionBeginIndex+=1;
-            this._selectionEndIndex=this._selectionBeginIndex;
-        }
-        else{
-            if(this.maxChars>0 && this._iText.length>=this.maxChars){
+	private _insertNewText(newText: string) {
 
-            }
-            else{
-                var textBeforeCursor:string=this._iText.slice(0, this._selectionBeginIndex);
-                var textAfterCursor:string=this._iText.slice(this._selectionEndIndex, this._iText.length);
-                this.text = textBeforeCursor+newText+textAfterCursor;
-                this._selectionBeginIndex+=1;
-                this._selectionEndIndex=this._selectionBeginIndex;				
-            }
-        }
-    }
-	public clone():TextField
-	{
-		var newInstance:TextField = TextField.getNewTextField();
+		if (this._selectionBeginIndex != this._selectionEndIndex) {
+			var textBeforeCursor: string = this._iText.slice(0, this._selectionBeginIndex);
+			var textAfterCursor: string = this._iText.slice(this._selectionEndIndex, this._iText.length);
+			if (this.maxChars > 0 && (textBeforeCursor.length + textAfterCursor.length + newText.length) > this.maxChars) {
+				const maxNewChars: number = this.maxChars - textBeforeCursor.length + textAfterCursor.length;
+				if (maxNewChars > 0) {
+					newText = newText.slice(0, maxNewChars);
+				}
+			}
+			this.text = textBeforeCursor + newText + textAfterCursor;
+			this._selectionBeginIndex += 1;
+			this._selectionEndIndex = this._selectionBeginIndex;
+		} else {
+			if (this.maxChars > 0 && this._iText.length >= this.maxChars) {
+
+			} else {
+				var textBeforeCursor: string = this._iText.slice(0, this._selectionBeginIndex);
+				var textAfterCursor: string = this._iText.slice(this._selectionEndIndex, this._iText.length);
+				this.text = textBeforeCursor + newText + textAfterCursor;
+				this._selectionBeginIndex += 1;
+				this._selectionEndIndex = this._selectionBeginIndex;
+			}
+		}
+	}
+
+	public clone(): TextField {
+		const newInstance: TextField = TextField.getNewTextField();
 
 		this.copyTo(newInstance);
 
 		return newInstance;
 	}
 
-
-
-	public copyTo(newInstance:TextField):void
-	{
+	public copyTo(newInstance: TextField): void {
 		super.copyTo(newInstance);
-		newInstance.autoSize=this.autoSize;
+		newInstance.autoSize = this.autoSize;
 		newInstance.type = this._type;
 		newInstance.html = this.html;
 		newInstance.width = this._width;
 		newInstance.height = this._height;
-		if(this._textFormat)
+		if (this._textFormat)
 			newInstance.textFormat = this._textFormat.clone();
 		newInstance.textColor = this._textColor;
 		newInstance.border = this._border;
@@ -3725,35 +3607,33 @@ export class TextField extends DisplayObjectContainer
 		newInstance.multiline = this.multiline;
 		newInstance.wordWrap = this.wordWrap;
 		newInstance.maxChars = this.maxChars;
-		newInstance.sourceTextField=this;
+		newInstance.sourceTextField = this;
 
-		if(newInstance.html){
-            newInstance.htmlText = this.htmlText;
-		}
-		else{
+		if (newInstance.html) {
+			newInstance.htmlText = this.htmlText;
+		} else {
 			newInstance.text = this.text;
 		}
-		if(this._labelData){
+		if (this._labelData) {
 			newInstance.setLabelData(this._labelData);
 		}
 	}
 
-	private _clearTextShapes():void
-	{
+	private _clearTextShapes(): void {
 		if (this.targetGraphics)
 			this.targetGraphics.clear();
 
-		var textShape:TextShape;
-		for(var key in this.textShapes) {
+		let textShape: TextShape;
+		for (const key in this.textShapes) {
 			textShape = this.textShapes[key];
 			textShape.shape.dispose();
 			textShape.shape = null;
 			textShape.elements = null;
-			textShape.verts.length=0;
+			textShape.verts.length = 0;
 			delete this.textShapes[key];
 		}
 	}
-	
+
 }
 
 PartitionBase.registerAbstraction(EntityNode, TextField);

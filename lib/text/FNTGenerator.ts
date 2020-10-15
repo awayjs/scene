@@ -1,108 +1,102 @@
 import { Font } from './Font';
 import { TesselatedFontTable } from './TesselatedFontTable';
-import {ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Transform, Vector3D} from "@awayjs/core";
+import { ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Transform, Vector3D } from '@awayjs/core';
 
-import {Stage, ImageSampler, BitmapImage2D, _Stage_BitmapImage2D, BlendMode} from "@awayjs/stage";
+import { Stage, ImageSampler, BitmapImage2D, _Stage_BitmapImage2D, BlendMode } from '@awayjs/stage';
 
-import {DefaultRenderer, RenderGroup, RendererType} from "@awayjs/renderer";
+import { DefaultRenderer, RenderGroup, RendererType } from '@awayjs/renderer';
 
-import { MethodMaterial} from '@awayjs/materials';
-import {DisplayObject} from "../display/DisplayObject";
-import {DisplayObjectContainer} from "../display/DisplayObjectContainer";
+import { MethodMaterial } from '@awayjs/materials';
+import { DisplayObject } from '../display/DisplayObject';
+import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 import { SceneGraphPartition } from '../partition/SceneGraphPartition';
 
-import {Scene} from "../Scene";
+import { Scene } from '../Scene';
 import { View, PickGroup } from '@awayjs/view';
 import { Sprite } from '../display/Sprite';
 import { Shape } from '@awayjs/graphics';
 
-export class FNTGenerator
-{
-    private _root:DisplayObjectContainer;
-	private _renderer:DefaultRenderer;
-	private _stage:Stage;
+export class FNTGenerator {
+	private _root: DisplayObjectContainer;
+	private _renderer: DefaultRenderer;
+	private _stage: Stage;
 
-	constructor(stage)
-	{
-        this._stage = stage;
+	constructor(stage) {
+		this._stage = stage;
 
 		//create the projection
-		var projection = new PerspectiveProjection();
+		const projection = new PerspectiveProjection();
 		projection.coordinateSystem = CoordinateSystem.RIGHT_HANDED;
 		projection.originX = -1;
 		projection.originY = 1;
 
-        //create the view
-        this._root = new DisplayObjectContainer()
-        this._renderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, stage, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(this._root));
-        this._root.partition = this._renderer.partition;
+		//create the view
+		this._root = new DisplayObjectContainer();
+		this._renderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, stage, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(this._root));
+		this._root.partition = this._renderer.partition;
 
-        //setup the projection
-        this._renderer.view.projection = projection;
-        this._renderer.view.projection.transform = new Transform();
+		//setup the projection
+		this._renderer.view.projection = projection;
+		this._renderer.view.projection.transform = new Transform();
 		this._renderer.view.projection.transform.moveTo(0, 0, -1000);
 		this._renderer.view.projection.transform.lookAt(new Vector3D());
-        
-        
 
 		this._renderer.renderableSorter = null;//new RenderableSort2D();
 
-    }
+	}
 
-    public generate(font:Font, maxSize:number, fontSize:number, padding:number):any
-    {
-            let outputBitmap:BitmapImage2D;
-            var outputBitmaps:BitmapImage2D[]=[];
-            var mipSize:number;
-            var pixelRatio:number = this._renderer.view.stage.context.pixelRatio;
+	public generate(font: Font, maxSize: number, fontSize: number, padding: number): any {
+		let outputBitmap: BitmapImage2D;
+		const outputBitmaps: BitmapImage2D[] = [];
+		let mipSize: number;
+		const pixelRatio: number = this._renderer.view.stage.context.pixelRatio;
 
-            for(var i:number=0; i<font.font_styles.length; i++) {
+		for (let i: number = 0; i < font.font_styles.length; i++) {
 
-                var shapes:Shape[] = (<TesselatedFontTable>font.font_styles[i]).generateFNTTextures(padding, fontSize, maxSize);
+			const shapes: Shape[] = (<TesselatedFontTable>font.font_styles[i]).generateFNTTextures(padding, fontSize, maxSize);
 
-                for(var s = 0; s < shapes.length; s++) {
+			for (let s = 0; s < shapes.length; s++) {
 
-                    mipSize = maxSize;
+				mipSize = maxSize;
 
-                    var fntRenderSprite:Sprite=new Sprite();
-                    fntRenderSprite.graphics.addShape(shapes[s]);
-                    this._root.removeChildren(0, this._root.numChildren);
-                    this._root.addChild(fntRenderSprite);
-                    
-                    // fntRenderSprite.x = -maxSize/2;
-                    // fntRenderSprite.y = -maxSize/2;
-                    this._renderer.view.projection.scale = 1000/maxSize;
+				const fntRenderSprite: Sprite = new Sprite();
+				fntRenderSprite.graphics.addShape(shapes[s]);
+				this._root.removeChildren(0, this._root.numChildren);
+				this._root.addChild(fntRenderSprite);
 
-                    var mipmapSelector = 0;
-                    var bitmapSize = (this._stage.glVersion == 1)? maxSize*2 : maxSize;
-                    outputBitmap = new BitmapImage2D(bitmapSize, bitmapSize, true, 0, true);
+				// fntRenderSprite.x = -maxSize/2;
+				// fntRenderSprite.y = -maxSize/2;
+				this._renderer.view.projection.scale = 1000 / maxSize;
 
-                    outputBitmaps.push(outputBitmap);
-                    (<TesselatedFontTable>font.font_styles[i]).addFNTChannel(outputBitmap);
+				let mipmapSelector = 0;
+				const bitmapSize = (this._stage.glVersion == 1) ? maxSize * 2 : maxSize;
+				outputBitmap = new BitmapImage2D(bitmapSize, bitmapSize, true, 0, true);
 
-                    while(mipSize >= 1) {
+				outputBitmaps.push(outputBitmap);
+				(<TesselatedFontTable>font.font_styles[i]).addFNTChannel(outputBitmap);
 
-                        this._renderer.view.backgroundAlpha = 0;//1;
-                        this._renderer.view.backgroundColor = 0;//ColorUtils.ARGBtoFloat32(1, (mipSize/maxSize)*255, 0,0);
-                    
-                        this._renderer.view.target = outputBitmap;
-                        this._renderer.render(true, 0, mipmapSelector);
-                        //this._scene.view.stage.context.configureBackBuffer(mipSize/2, mipSize/2, 0, true);
+				while (mipSize >= 1) {
 
-                        //mipmapped framebuffers are not possible with WebGL1
-                        if (this._stage.glVersion == 1)
-                            break;
+					this._renderer.view.backgroundAlpha = 0;//1;
+					this._renderer.view.backgroundColor = 0;//ColorUtils.ARGBtoFloat32(1, (mipSize/maxSize)*255, 0,0);
 
-                        //outputBitmaps.push(mipBitmap);
-                        mipSize *= 0.5;
-                        mipmapSelector++;
-                    }
-                }
-                //this._bitmapFontTable.addMaterial(mat);
-            }
+					this._renderer.view.target = outputBitmap;
+					this._renderer.render(true, 0, mipmapSelector);
+					//this._scene.view.stage.context.configureBackBuffer(mipSize/2, mipSize/2, 0, true);
 
+					//mipmapped framebuffers are not possible with WebGL1
+					if (this._stage.glVersion == 1)
+						break;
 
-            return outputBitmaps;
-    }
+					//outputBitmaps.push(mipBitmap);
+					mipSize *= 0.5;
+					mipmapSelector++;
+				}
+			}
+			//this._bitmapFontTable.addMaterial(mat);
+		}
+
+		return outputBitmaps;
+	}
 
 }

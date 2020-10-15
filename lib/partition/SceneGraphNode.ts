@@ -1,21 +1,19 @@
-import {IPartitionTraverser, NodeBase, EntityNode} from "@awayjs/view";
+import { IPartitionTraverser, NodeBase, EntityNode } from '@awayjs/view';
 import { DisplayObject } from '../display/DisplayObject';
 
 /**
  * Maintains scenegraph heirarchy when collecting nodes
  */
-export class SceneGraphNode extends NodeBase
-{
-	private _numNodes:number = 0;
-	private _pChildNodes:Array<EntityNode> = new Array<EntityNode>();
-	private _childDepths:Array<number> = new Array<number>();
+export class SceneGraphNode extends NodeBase {
+	private _numNodes: number = 0;
+	private _pChildNodes: Array<EntityNode> = new Array<EntityNode>();
+	private _childDepths: Array<number> = new Array<number>();
 
 	/**
 	 *
 	 * @param traverser
 	 */
-	public acceptTraverser(traverser:IPartitionTraverser):void
-	{
+	public acceptTraverser(traverser: IPartitionTraverser): void {
 		if (this._partition.root == this._entity)
 			this._partition.updateEntities();
 
@@ -26,7 +24,7 @@ export class SceneGraphNode extends NodeBase
 		if (!traverser.enterNode(this))
 			return;
 
-		var i:number;
+		let i: number;
 		for (i = this._numNodes - 1; i >= 0; i--)
 			this._pChildNodes[i].acceptTraverser(traverser);
 	}
@@ -36,13 +34,12 @@ export class SceneGraphNode extends NodeBase
 	 * @param node
 	 * @internal
 	 */
-	public iAddNode(node:EntityNode):void
-	{
+	public iAddNode(node: EntityNode): void {
 		node.parent = this;
 
-		var depth:number = (this._entity != node.entity) ? (<DisplayObject> node.entity)._depthID : -16384;
-		var len:number = this._childDepths.length;
-		var index:number = len;
+		const depth: number = (this._entity != node.entity) ? (<DisplayObject> node.entity)._depthID : -16384;
+		const len: number = this._childDepths.length;
+		let index: number = len;
 
 		while (index--)
 			if (this._childDepths[index] < depth)
@@ -60,8 +57,7 @@ export class SceneGraphNode extends NodeBase
 		this._numNodes++;
 	}
 
-	public isVisible():boolean
-	{
+	public isVisible(): boolean {
 		return this._entity._iIsVisible();
 	}
 
@@ -70,9 +66,8 @@ export class SceneGraphNode extends NodeBase
 	 * @param node
 	 * @internal
 	 */
-	public iRemoveNode(node:EntityNode):void
-	{
-		var index:number = this._pChildNodes.indexOf(node);
+	public iRemoveNode(node: EntityNode): void {
+		const index: number = this._pChildNodes.indexOf(node);
 
 		this._pChildNodes.splice(index, 1);
 		this._childDepths.splice(index, 1);

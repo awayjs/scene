@@ -1,9 +1,7 @@
-import {ErrorBase} from "@awayjs/core";
+import { ErrorBase } from '@awayjs/core';
 
-export class CastError extends ErrorBase
-{
-	constructor(message:string)
-	{
+export class CastError extends ErrorBase {
+	constructor(message: string) {
 		super(message);
 	}
 }
