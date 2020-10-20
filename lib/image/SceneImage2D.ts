@@ -675,6 +675,8 @@ export class SceneImage2D extends BitmapImage2D {
 			root.transform.moveTo(0, this.rect.height,0);
 		}
 
+		root.transform.colorTransform = colorTransform;
+
 		//render
 		renderer.render();
 	}
@@ -739,6 +741,7 @@ export class SceneImage2D extends BitmapImage2D {
 		renderer.view.width = this.width;
 		renderer.view.height = this.height;
 
+		root.transform.colorTransform = colorTransform;
 		root.removeChildren(0, root.numChildren);
 		root.addChild(source);
 
