@@ -1,6 +1,22 @@
-import { ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D, Transform } from '@awayjs/core';
+import {
+	ColorTransform,
+	Matrix,
+	Rectangle,
+	Point,
+	PerspectiveProjection,
+	CoordinateSystem,
+	Vector3D,
+	Transform
+} from '@awayjs/core';
 
-import { Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode, ContextWebGL, ContextGLBlendFactor, ContextGLTriangleFace } from '@awayjs/stage';
+import { Stage,
+	BitmapImage2D,
+	_Stage_BitmapImage2D,
+	BlendMode,
+	ContextWebGL,
+	ContextGLBlendFactor,
+	ContextGLTriangleFace
+} from '@awayjs/stage';
 
 import { DefaultRenderer, RenderGroup, RendererType, Style } from '@awayjs/renderer';
 
@@ -28,12 +44,9 @@ export class SceneImage2D extends BitmapImage2D {
 	private static _pool: SceneImage2D[] = [];
 
 	public static getImage(
-		width: number,
-		height: number,
-		transparent: boolean = true,
-		fillColor: number = 0xffffffff,
-		powerOfTwo: boolean = true,
-		stage: Stage = null) {
+		width: number, height: number, transparent: boolean = true,
+		fillColor: number = 0xffffffff, powerOfTwo: boolean = true, stage: Stage = null) {
+
 		let index = -1;
 		for (let i = 0; i < this._pool.length; i++) {
 			const e = this._pool[i];
@@ -248,7 +261,10 @@ export class SceneImage2D extends BitmapImage2D {
 	 *                    bitmap image area. The default value is
 	 *                    0xFFFFFFFF(solid white).
 	 */
-	constructor(width: number, height: number, transparent: boolean = true, fillColor: number = 0xffffffff, powerOfTwo: boolean = true, stage: Stage = null) {
+	constructor(
+		width: number, height: number, transparent: boolean = true,
+		fillColor: number = 0xffffffff, powerOfTwo: boolean = true, stage: Stage = null) {
+
 		super(width, height, transparent, fillColor, powerOfTwo, stage);
 	}
 
@@ -261,7 +277,11 @@ export class SceneImage2D extends BitmapImage2D {
 
 		//create the view
 		SceneImage2D._root = new DisplayObjectContainer();
-		SceneImage2D._renderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, this._stage, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(SceneImage2D._root));
+		SceneImage2D._renderer = <DefaultRenderer> RenderGroup.getInstance(
+			new View(projection, this._stage, null, null, null, true),
+			RendererType.DEFAULT)
+			.getRenderer(new SceneGraphPartition(SceneImage2D._root));
+
 		SceneImage2D._root.partition = SceneImage2D._renderer.partition;
 
 		//setup the projection
@@ -285,7 +305,11 @@ export class SceneImage2D extends BitmapImage2D {
 
 		//create the view
 		SceneImage2D._billboardRoot = new DisplayObjectContainer();
-		SceneImage2D._billboardRenderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, this._stage, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(SceneImage2D._billboardRoot));
+		SceneImage2D._billboardRenderer = <DefaultRenderer> RenderGroup.getInstance(
+			new View(projection,this._stage, null, null, null, true),
+			RendererType.DEFAULT)
+			.getRenderer(new SceneGraphPartition(SceneImage2D._billboardRoot));
+
 		SceneImage2D._billboardRoot.partition = SceneImage2D._billboardRenderer.partition;
 
 		//setup the projection
@@ -437,7 +461,10 @@ export class SceneImage2D extends BitmapImage2D {
 	 *                         channel, set the value to <code>false</code>.
 	 * @throws TypeError The sourceBitmapImage2D, sourceRect, destPoint are null.
 	 */
-	public copyPixels(source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point, alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?: boolean): void {
+	public copyPixels(
+		source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point,
+		alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?: boolean): void {
+
 		this.dropAllReferences();
 		this.unmarkToUnload();
 
@@ -465,7 +492,10 @@ export class SceneImage2D extends BitmapImage2D {
 		this.pushDirtyRegion(new Rectangle(destPoint.x, destPoint.y, sourceRect.width, sourceRect.height));
 	}
 
-	public threshold(source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point, operation: string, threshold: number, color: number, mask: number, copySource: boolean): void {
+	public threshold(
+		source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point,
+		operation: string, threshold: number, color: number, mask: number, copySource: boolean): void {
+
 		this.dropAllReferences();
 		this.unmarkToUnload();
 
@@ -513,25 +543,6 @@ export class SceneImage2D extends BitmapImage2D {
 
 		return result & 0x00ffffff;
 	}
-
-	// /**
-	//  *
-	//  * @returns {ImageData}
-	//  */
-	// public getImageData():ImageData
-	// {
-	// 	if (this._imageDataDirty) {
-	// 		this._imageDataDirty = false;
-	// 		SceneImage2D._renderer.view.clear(false, true);
-	// 		var gl:WebGLRenderingContext | WebGL2RenderingContext = (<ContextWebGL> this._stage.context)._gl;
-	// 		var dummy:BitmapImage2D = new BitmapImage2D(this._rect.width, this._rect.height, true, 0x0, false);
-	// 		gl.readPixels(0, 0, this._rect.width, this._rect.height, gl.RGBA, gl.UNSIGNED_BYTE, dummy.getImageData().data);
-	// 		super.draw(dummy);
-	// 		this._stage.setRenderTarget(null, true);
-	// 	}
-
-	// 	return super.getImageData();
-	// }
 
 	/**
 	 * Draws the <code>source</code> display object onto the bitmap image, using
@@ -605,9 +616,14 @@ export class SceneImage2D extends BitmapImage2D {
 	 *                       restriction does not apply to AIR content in the
 	 *                       application security sandbox.
 	 */
+
+	/* eslint-disable */
 	public draw(source: DisplayObject, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean);
 	public draw(source: BitmapImage2D, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean);
-	public draw(source: any, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean): void {
+	public draw(source: any, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean): void 
+	{
+	/* eslint-enable */
+
 		this.dropAllReferences();
 		this.unmarkToUnload();
 
@@ -639,7 +655,9 @@ export class SceneImage2D extends BitmapImage2D {
 		return BlendMode.LAYER;
 	}
 
-	private _drawAsBitmap(source: BitmapImage2D, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean) {
+	private _drawAsBitmap(
+		source: BitmapImage2D, matrix?: Matrix, colorTransform?: ColorTransform,
+		blendMode?: string, clipRect?: Rectangle, smoothing?: boolean) {
 
 		if (!SceneImage2D._billboardRenderer)
 			this.createBillboardRenderer();
@@ -681,7 +699,9 @@ export class SceneImage2D extends BitmapImage2D {
 		renderer.render();
 	}
 
-	private _drawAsDisplay(source: DisplayObject, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean) {
+	private _drawAsDisplay(
+		source: DisplayObject, matrix?: Matrix, colorTransform?: ColorTransform,
+		blendMode?: string, clipRect?: Rectangle, smoothing?: boolean) {
 
 		if (!SceneImage2D._renderer)
 			this.createRenderer();

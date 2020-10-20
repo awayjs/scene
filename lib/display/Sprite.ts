@@ -1,4 +1,4 @@
-﻿import { AssetEvent, Vector3D, ArgumentError } from '@awayjs/core';
+﻿import { AssetEvent, Vector3D } from '@awayjs/core';
 
 import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
 
