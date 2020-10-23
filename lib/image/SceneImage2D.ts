@@ -398,6 +398,19 @@ export class SceneImage2D extends BitmapImage2D {
 	 * @throws TypeError The rect is null.
 	 */
 	public fillRect(rect: Rectangle, color: number): void {
+
+		if (this._locked && (rect.width | 0) === this.width && (rect.height | 0) === this.height) {
+			/*
+			* Use a legacy fillRect based on buffer data,
+			* kill all existed data inside buffer.
+			* This is faster that run a renderer because only put color to locked buffer
+			*/
+			super.fillRect(rect, color);
+			this.resetDirty();
+
+			return;
+		}
+
 		this.dropAllReferences();
 
 		if (!SceneImage2D._renderer)
