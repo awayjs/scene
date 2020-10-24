@@ -677,6 +677,12 @@ export class Timeline {
 			if (audioProps) {
 				if (audioProps.cmd == 15) {// start sound
 					const child: WaveAudio = audioProps.sound;
+
+					if (!child) {
+						console.warn('[Timeline] Missed sound to start!', audioProps);
+						return;
+					}
+
 					if (audioProps.props.loopCount > 0) {
 						child.loopsToPlay = audioProps.props.loopCount;
 					} else {
