@@ -288,6 +288,16 @@ export class _Render_Billboard extends _Render_RenderableBase {
 		return <_Stage_ElementsBase> this._stage.getAbstraction(elements);
 	}
 
+	public executeRender(
+		enableDepthAndStencil: boolean = true,
+		surfaceSelector: number = 0, mipmapSelector: number = 0, maskConfig: number = 0): void {
+
+		// disable cull, because for render to texture it is bugged
+		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
+
+		super.executeRender(enableDepthAndStencil, surfaceSelector, mipmapSelector, maskConfig);
+	}
+
 	protected _getRenderMaterial(): _Render_MaterialBase {
 		return this.renderGroup.getRenderElements(this.stageElements.elements).getAbstraction((<Billboard> this._asset).material || MaterialUtils.getDefaultColorMaterial());
 	}
