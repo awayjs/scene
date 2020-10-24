@@ -1,11 +1,7 @@
-import { Rectangle, Matrix3D, Box, Vector3D, Sphere } from '@awayjs/core';
-
-import { ImageSampler, Image2D, ImageUtils } from '@awayjs/stage';
-
 import { PickingCollision, PartitionBase, PickEntity, _Pick_PickableBase, EntityNode } from '@awayjs/view';
-
 import { RenderableEvent, MaterialEvent, IMaterial, ITexture, StyleEvent } from '@awayjs/renderer';
-
+import { Rectangle, Matrix3D, Box, Vector3D, Sphere } from '@awayjs/core';
+import { ImageSampler, Image2D, ImageUtils, ContextGLTriangleFace } from '@awayjs/stage';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 
 /**
@@ -43,8 +39,12 @@ import { DisplayObjectContainer } from './DisplayObjectContainer';
  * contains the Billboard object.</p>
  */
 
-// todo: billboard needed to extend on DisplayObjectContainer in order for as3web/away3d adapters to compile without errors
-// (in away3d Sprite3D extends on ObjectContainer3D)
+/**
+* @todo billboard needed to extend on DisplayObjectContainer in order
+* for as3web/away3d adapters to compile without errors
+* (in away3d Sprite3D extends on ObjectContainer3D)
+*/
+
 export class Billboard extends DisplayObjectContainer {
 	private static _billboards: Array<Billboard> = new Array<Billboard>();
 
@@ -58,7 +58,9 @@ export class Billboard extends DisplayObjectContainer {
 
 	private _onInvalidateTextureDelegate: (event: MaterialEvent) => void;
 
-	public static getNewBillboard(material: IMaterial, pixelSnapping: string = 'auto', smoothing: boolean = false): Billboard {
+	public static getNewBillboard(
+		material: IMaterial, pixelSnapping: string = 'auto', smoothing: boolean = false): Billboard {
+
 		if (Billboard._billboards.length) {
 			const billboard: Billboard = Billboard._billboards.pop();
 			billboard.material = material;
@@ -192,11 +194,20 @@ export class Billboard extends DisplayObjectContainer {
 
 	private _updateDimensions(): void {
 		const texture: ITexture = this.material.getTextureAt(0);
-
-		const image: Image2D = texture ? <Image2D> ((this._style ? this._style.getImageAt(texture) : null) || (this.material.style ? this.material.style.getImageAt(texture) : null) || texture.getImageAt(0)) : null;
+		const image = texture ?
+			<Image2D> (
+				this._style?.getImageAt(texture)
+				|| this.material.style?.getImageAt(texture)
+				|| texture.getImageAt(0))
+			: null;
 
 		if (image) {
-			const sampler: ImageSampler = <ImageSampler> ((this._style ? this._style.getSamplerAt(texture) : null) || (this.material.style ? this.material.style.getSamplerAt(texture) : null) || texture.getSamplerAt(0) || ImageUtils.getDefaultSampler());
+			const sampler: ImageSampler = <ImageSampler> (
+					this._style?.getSamplerAt(texture)
+					|| this.material.style?.getSamplerAt(texture)
+					|| texture.getSamplerAt(0)
+					|| ImageUtils.getDefaultSampler());
+
 			if (sampler.imageRect) {
 				this._billboardWidth = sampler.imageRect.width * image.width;
 				this._billboardHeight = sampler.imageRect.height * image.height;
@@ -243,7 +254,14 @@ import { AssetEvent } from '@awayjs/core';
 
 import { AttributesBuffer } from '@awayjs/stage';
 
-import { MaterialUtils, _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase, RenderEntity, Style } from '@awayjs/renderer';
+import {
+	MaterialUtils,
+	_Stage_ElementsBase,
+	_Render_MaterialBase,
+	_Render_RenderableBase,
+	RenderEntity,
+	Style
+} from '@awayjs/renderer';
 
 import { TriangleElements } from '@awayjs/graphics';
 import { IEntityTraverser } from '@awayjs/view';
@@ -276,13 +294,22 @@ export class _Render_Billboard extends _Render_RenderableBase {
 			elements = _Render_Billboard._samplerElements[id] = new TriangleElements(new AttributesBuffer(11, 4));
 			elements.autoDeriveNormals = false;
 			elements.autoDeriveTangents = false;
-			elements.setIndices(Array<number>(0, 1, 2, 0, 2, 3));
-			elements.setPositions(Array<number>(-billboardRect.x, height - billboardRect.y, 0, width - billboardRect.x, height - billboardRect.y, 0, width - billboardRect.x, -billboardRect.y, 0, -billboardRect.x, -billboardRect.y, 0));
-			elements.setNormals(Array<number>(1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0));
-			elements.setTangents(Array<number>(0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1));
-			elements.setUVs(Array<number>(0, 1, 1, 1, 1, 0, 0, 0));
+			elements.setIndices([0, 1, 2, 0, 2, 3]);
+			elements.setPositions(
+				[-billboardRect.x, height - billboardRect.y, 0,
+					width - billboardRect.x, height - billboardRect.y, 0,
+					width - billboardRect.x, -billboardRect.y, 0,
+					-billboardRect.x, -billboardRect.y, 0]);
+
+			elements.setNormals([1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]);
+			elements.setTangents([0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1]);
+			elements.setUVs([0, 1, 1, 1, 1, 0, 0, 0]);
 		} else {
-			elements.setPositions(Array<number>(-billboardRect.x, height - billboardRect.y, 0, width - billboardRect.x, height - billboardRect.y, 0, width - billboardRect.x, -billboardRect.y, 0, -billboardRect.x, -billboardRect.y, 0));
+			elements.setPositions(
+				[-billboardRect.x, height - billboardRect.y, 0,
+					width - billboardRect.x, height - billboardRect.y, 0,
+					width - billboardRect.x, -billboardRect.y, 0,
+					-billboardRect.x, -billboardRect.y, 0]);
 		}
 
 		return <_Stage_ElementsBase> this._stage.getAbstraction(elements);
@@ -299,7 +326,10 @@ export class _Render_Billboard extends _Render_RenderableBase {
 	}
 
 	protected _getRenderMaterial(): _Render_MaterialBase {
-		return this.renderGroup.getRenderElements(this.stageElements.elements).getAbstraction((<Billboard> this._asset).material || MaterialUtils.getDefaultColorMaterial());
+		return this.renderGroup.getRenderElements(this.stageElements.elements)
+			.getAbstraction(
+				(<Billboard> this._asset).material
+				|| MaterialUtils.getDefaultColorMaterial());
 	}
 
 	protected _getStyle(): Style {
@@ -345,25 +375,37 @@ export class _Pick_Billboard extends _Pick_PickableBase {
 		return true;
 	}
 
-	public getBoxBounds(matrix3D: Matrix3D = null, strokeFlag: boolean = true, cache: Box = null, target: Box = null): Box {
+	public getBoxBounds(
+		matrix3D: Matrix3D = null, strokeFlag: boolean = true, cache: Box = null, target: Box = null): Box {
+
 		if (this._billboardBoxDirty) {
 			this._billboardBoxDirty = false;
 
 			const billboardRect: Rectangle = (<Billboard> this._asset).billboardRect;
-			this._billboardBox = new Box(billboardRect.x, billboardRect.y, 0, billboardRect.width, billboardRect.height, 0);
+			this._billboardBox = new Box(
+				billboardRect.x, billboardRect.y, 0,
+				billboardRect.width, billboardRect.height, 0);
 		}
 
-		return (matrix3D ? matrix3D.transformBox(this._billboardBox) : this._billboardBox).union(target, target || cache);
+		return (
+			matrix3D
+				? matrix3D.transformBox(this._billboardBox)
+				: this._billboardBox).union(target, target || cache);
 	}
 
-	public getSphereBounds(center: Vector3D, matrix3D: Matrix3D = null, strokeFlag: boolean = true, cache: Sphere = null, target: Sphere = null): Sphere {
+	public getSphereBounds(
+		center: Vector3D, matrix3D: Matrix3D = null, strokeFlag: boolean = true,
+		cache: Sphere = null, target: Sphere = null): Sphere {
+
 		//TODO
 		return target;
 	}
 
 	public testCollision(collision: PickingCollision, closestFlag: boolean): boolean {
 		const rayEntryDistance: number = -collision.rayPosition.z / collision.rayDirection.z;
-		const position: Vector3D = new Vector3D(collision.rayPosition.x + rayEntryDistance * collision.rayDirection.x, collision.rayPosition.y + rayEntryDistance * collision.rayDirection.y);
+		const position: Vector3D = new Vector3D(
+			collision.rayPosition.x + rayEntryDistance * collision.rayDirection.x,
+			collision.rayPosition.y + rayEntryDistance * collision.rayDirection.y);
 
 		collision.traversable = this._asset;
 		collision.rayEntryDistance = rayEntryDistance;
