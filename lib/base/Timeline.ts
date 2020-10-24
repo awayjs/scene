@@ -1,17 +1,10 @@
-import { WaveAudio, ColorTransform, IAsset, Matrix3D, Matrix } from '@awayjs/core';
-
-import { Style } from '@awayjs/renderer';
-
+import { WaveAudio, ColorTransform, IAsset, Matrix3D } from '@awayjs/core';
 import { Graphics } from '@awayjs/graphics';
-
 import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
 import { IMovieClipAdapter } from '../adapters/IMovieClipAdapter';
 import { HierarchicalProperties } from '../base/HierarchicalProperties';
-import { Billboard } from '../display/Billboard';
 import { MovieClip } from '../display/MovieClip';
 import { Sprite } from '../display/Sprite';
-import { TextField } from '../display/TextField';
-import { TextFieldType } from '../text/TextFieldType';
 import { MorphSprite } from '../display/MorphSprite';
 import { DisplayObject } from '../display/DisplayObject';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
@@ -115,22 +108,22 @@ export class Timeline {
 		this.keyframe_to_frameidx = {};
 
 		//cache functions
-		this._functions[TimelineActionType.UPDATE_MTX] = (child, target_mc, i)=>this.update_mtx_all(child, target_mc, i);
-		this._functions[TimelineActionType.UPDATE_CMTX] = (child, target_mc, i)=>this.update_colortransform(child, target_mc, i);
-		this._functions[TimelineActionType.UPDATE_MASKS] = (child, target_mc, i)=>this.update_masks(child, target_mc, i);
-		this._functions[TimelineActionType.UPDATE_NAME] = (child, target_mc, i)=>this.update_name(child, target_mc, i);
-		this._functions[TimelineActionType.UPDATE_BUTTON_NAME] = (child, target_mc, i)=>this.update_button_name(child, target_mc, i);
-		this._functions[TimelineActionType.UPDATE_VISIBLE] = (child, target_mc, i)=>this.update_visibility(child, target_mc, i);
-		this._functions[TimelineActionType.UPDATE_BLENDMODE] = (child, target_mc, i)=>this.update_blendmode(child, target_mc, i);
-		this._functions[TimelineActionType.UPDATE_RENDERMODE] = (child, target_mc, i)=>this.update_rendermode(child, target_mc, i);
-		this._functions[TimelineActionType.UPDATE_FILTERS] = (child, target_mc, i)=>this.update_filters(child, target_mc, i);
-		this._functions[TimelineActionType.UPDATE_SCALE_ROT] = (child, target_mc, i)=>this.update_mtx_scale_rot(child, target_mc, i);
-		this._functions[TimelineActionType.UPDATE_POS] = (child, target_mc, i)=>this.update_mtx_pos(child, target_mc, i);
-		this._functions[TimelineActionType.ENABLE_MASKMODE] = (child, target_mc, i)=>this.enable_maskmode(child, target_mc, i);
-		this._functions[TimelineActionType.REMOVE_MASK] = (child, target_mc, i)=>this.remove_masks(child, target_mc, i);
-		this._functions[TimelineActionType.SWAP_GRAPHICS] = (child, target_mc, i)=>this.swap_graphics(child, target_mc, i);
-		this._functions[TimelineActionType.SET_RATIO] = (child, target_mc, i)=>this.set_ratio(child, target_mc, i);
-		this._functions[TimelineActionType.START_AUDIO] = (child, target_mc, i)=>this.start_audio(child, target_mc, i);
+		this._functions[TimelineActionType.UPDATE_MTX] =  this.update_mtx_all.bind(this);
+		this._functions[TimelineActionType.UPDATE_CMTX] =  this.update_colortransform.bind(this);
+		this._functions[TimelineActionType.UPDATE_MASKS] =  this.update_masks.bind(this);
+		this._functions[TimelineActionType.UPDATE_NAME] =  this.update_name.bind(this);
+		this._functions[TimelineActionType.UPDATE_BUTTON_NAME] =  this.update_button_name.bind(this);
+		this._functions[TimelineActionType.UPDATE_VISIBLE] =  this.update_visibility.bind(this);
+		this._functions[TimelineActionType.UPDATE_BLENDMODE] =  this.update_blendmode.bind(this);
+		this._functions[TimelineActionType.UPDATE_RENDERMODE] =  this.update_rendermode.bind(this);
+		this._functions[TimelineActionType.UPDATE_FILTERS] =  this.update_filters.bind(this);
+		this._functions[TimelineActionType.UPDATE_SCALE_ROT] =  this.update_mtx_scale_rot.bind(this);
+		this._functions[TimelineActionType.UPDATE_POS] =  this.update_mtx_pos.bind(this);
+		this._functions[TimelineActionType.ENABLE_MASKMODE] =  this.enable_maskmode.bind(this);
+		this._functions[TimelineActionType.REMOVE_MASK] =  this.remove_masks.bind(this);
+		this._functions[TimelineActionType.SWAP_GRAPHICS] =  this.swap_graphics.bind(this);
+		this._functions[TimelineActionType.SET_RATIO] =  this.set_ratio.bind(this);
+		this._functions[TimelineActionType.START_AUDIO] =  this.start_audio.bind(this);
 
 	}
 
@@ -188,23 +181,7 @@ export class Timeline {
 		if (this.script_mc_id >= 0 && target_mc.id != this.script_mc_id)
 			return;
 		this.script_mc_id = target_mc.id;
-		/*
-		// disable for now. but keep in mind to find a nicer way to allow debuggibgn for framescripts
-		if(FrameScriptManager.frameScriptDebug){
-			// todo: this is only for as2_as_js scripts
-			// if we are in debug mode, we try to extract the function name from the first line of framescript code,
-			// and check if this function is available on the object that is set as frameScriptDebug
-			// try to get the functions name (it should be the first line as comment)
-			var functionname = value.split(/[\r\n]+/g)[0].split("//")[1];
-			if(FrameScriptManager.frameScriptDebug[functionname]){
-				this._framescripts[frame_idx] = FrameScriptManager.frameScriptDebug[functionname];
-				this._framescripts_translated[frame_idx]=true;
-				return;
-			}
-			else{
-				throw new Error("Framescript could not be found on FrameScriptManager.frameScriptDebug.\n the Object set as FrameScriptmanager.frameScriptDebug should contain a function with the name '"+functionname+"' !!!");
-			}
-		}*/
+
 		if (!this._framescripts[frame_idx]) {
 			this._framescripts[frame_idx] = [];
 		}
@@ -217,8 +194,9 @@ export class Timeline {
 	}
 
 	public get_deferred_script(target_mc: MovieClip, frame_idx: number): void {
-	/*	if(this.avm1framescripts[frame_idx]!=null){
-			//(<IMovieClipAdapter>target_mc.adapter).callFrameScript(this.avm1framescripts_translated[target_mc.currentFrameIndex]);
+		/*	if(this.avm1framescripts[frame_idx]!=null){
+			(<IMovieClipAdapter>target_mc.adapter)
+				.callFrameScript(this.avm1framescripts_translated[target_mc.currentFrameIndex]);
 			MovieClip.avm1ScriptQueue.push(target_mc);
 			MovieClip.avm1ScriptQueueScripts.push(this.avm1framescripts_translated[frame_idx]);
 
@@ -230,7 +208,9 @@ export class Timeline {
 		if ((<any>target_mc.adapter).clearPropsDic) {
 			// in avm2 script might not yet exists, because its created by constructor
 			// to handle this for now, while keeping our original order of scripts
-			// we queue the frame_idx, and when exeucting the script we check if its a number and try to get the script again
+			// we queue the frame_idx, and when exeucting the script we
+			// check if its a number and try to get the script again
+
 			if (scriptPass1)
 				FrameScriptManager.add_script_to_queue(target_mc, frame_idx);
 			else
@@ -240,7 +220,9 @@ export class Timeline {
 		}
 		if (this._framescripts[frame_idx] != null) {
 			if (this._framescripts_translated[frame_idx] == null) {
-				this._framescripts[frame_idx] = (<IMovieClipAdapter>target_mc.adapter).addScript(this._framescripts[frame_idx], frame_idx);
+				this._framescripts[frame_idx] =
+					(<IMovieClipAdapter>target_mc.adapter).addScript(this._framescripts[frame_idx], frame_idx);
+
 				this._framescripts_translated[frame_idx] = true;
 			}
 			//console.log("add framescript", target_mc, target_mc.name, keyframe_idx, scriptPass1 );
@@ -256,7 +238,8 @@ export class Timeline {
 
 		if (frame_idx >= 0 && this._framescripts[frame_idx] != null) {
 			if (this._framescripts_translated[frame_idx] == null) {
-				this._framescripts[frame_idx] = (<IMovieClipAdapter>target_mc.adapter).addScript(this._framescripts[frame_idx], frame_idx);
+				this._framescripts[frame_idx] =
+					(<IMovieClipAdapter>target_mc.adapter).addScript(this._framescripts[frame_idx], frame_idx);
 				this._framescripts_translated[frame_idx] = true;
 			}
 			return this._framescripts[frame_idx];
@@ -306,7 +289,11 @@ export class Timeline {
 		child.instanceID = id;
 		// todo: refactor so the addedOnFrame can be set in nicer way
 		child.addedOnFrame = parseInt(id.split('#')[1]);
-		if (placeObjectTag && ((<any>placeObjectTag).variableName || (placeObjectTag.events && placeObjectTag.events.length > 0))) {
+
+		if (placeObjectTag
+				&& ((<any>placeObjectTag).variableName
+				|| (placeObjectTag.events && placeObjectTag.events.length > 0))) {
+
 			(<any>child.adapter).placeObjectTag = placeObjectTag;
 			(<any>child.adapter).initEvents = this.potentialPrototypesInitEventsMap[id];
 		}
@@ -356,9 +343,12 @@ export class Timeline {
 	public getCurrentLabel(target_mc: MovieClip): string {
 		let label: string = null;
 		let lastLabelframeIdx: number = -1;
+
 		for (const key in this._labels) {
-			if (this._labels[key].keyFrameIndex > lastLabelframeIdx && this._labels[key].keyFrameIndex <= target_mc.constructedKeyFrameIndex) {
-				lastLabelframeIdx = this._labels[key].keyFrameIndex;
+			const keyIndex = this._labels[key].keyFrameIndex;
+
+			if (keyIndex > lastLabelframeIdx && keyIndex <= target_mc.constructedKeyFrameIndex) {
+				lastLabelframeIdx = keyIndex;
 				label = this._labels[key].name;
 			}
 		}
@@ -377,19 +367,29 @@ export class Timeline {
 
 	public getScriptForLabel(target_mc: MovieClip, label: string): any {
 		const key_frame_index: number = this._labels[label.toLowerCase()].keyFrameIndex;
+
 		if (key_frame_index < 0)
 			return null;
+
 		const frameIdx: number = this.keyframe_firstframes[key_frame_index];
+
 		if (frameIdx >= 0 && this._framescripts[frameIdx] != null) {
 			if (this._framescripts_translated[frameIdx] == null) {
-				this._framescripts[frameIdx] = (<IMovieClipAdapter>target_mc.adapter).addScript(this._framescripts[frameIdx], frameIdx);
+
+				this._framescripts[frameIdx] =
+					(<IMovieClipAdapter>target_mc.adapter).addScript(this._framescripts[frameIdx], frameIdx);
+
 				this._framescripts_translated[frameIdx] = true;
 			}
 			return this._framescripts[frameIdx];
 		}
 	}
 
-	public gotoFrame(target_mc: MovieClip, frame_idx: number, queue_script: boolean = true, queue_pass2: boolean = false, forceReconstruct: boolean = false): void {
+	public gotoFrame(
+		target_mc: MovieClip, frame_idx: number,
+		queue_script: boolean = true, queue_pass2: boolean = false,
+		forceReconstruct: boolean = false): void {
+
 		const current_keyframe_idx: number = target_mc.constructedKeyFrameIndex;
 		const target_keyframe_idx: number = this.keyframe_indices[frame_idx];
 
@@ -405,7 +405,8 @@ export class Timeline {
 		let i: number;
 		let child: DisplayObject;
 
-		if (current_keyframe_idx + 1 == target_keyframe_idx) { // target_keyframe_idx is the next keyframe. we can just use constructnext for this
+		// target_keyframe_idx is the next keyframe. we can just use constructnext for this
+		if (current_keyframe_idx + 1 == target_keyframe_idx) {
 			this.constructNextFrame(target_mc, queue_script, true);
 			return;
 		}
@@ -424,7 +425,8 @@ export class Timeline {
 		// in case we jump back or we jump a gap, we want to start constructing at BreakFrame
 		const start_construct_idx: number = (jump_forward && !jump_gap) ? current_keyframe_idx + 1 : break_frame_idx;
 
-		if (jump_gap) { // if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
+		// if we jump a gap forward, we just can remove all childs from mc. all script blockage will be gone
+		if (jump_gap) {
 			for (i = target_mc.numChildren - 1; i >= 0; i--) {
 				if (target_mc._children[i]._depthID < 0)
 					target_mc.removeChildAt(i);
@@ -435,21 +437,30 @@ export class Timeline {
 
 		}
 
-		//if we jump back, we want to reset all objects (but not the timelines of the mcs)
-		// in other cases, we want to collect the current objects to compare state of targetframe with state of currentframe
+		// if we jump back, we want to reset all objects (but not the timelines of the mcs)
+		// in other cases, we want to collect the current objects
+		// to compare state of targetframe with state of currentframe
+
 		let depth_sessionIDs: Object = {};
 		const new_depth_sessionIDs: Object = {};
 		if (jump_forward) {
 			const depth_sessionIDs2 = {};
 			depth_sessionIDs = target_mc.getSessionIDDepths();
-			for (var key in depth_sessionIDs) {
+
+			for (const key in depth_sessionIDs) {
 				depth_sessionIDs2[key] = { id:depth_sessionIDs[key], instanceID:'oldID' };
 			}
 			depth_sessionIDs = depth_sessionIDs2;
 		}
 
 		//pass1: only apply add/remove commands into depth_sessionIDs.
-		this.pass1(target_mc, start_construct_idx, target_keyframe_idx, depth_sessionIDs, new_depth_sessionIDs, queue_pass2);
+		this.pass1(
+			target_mc,
+			start_construct_idx,
+			target_keyframe_idx,
+			depth_sessionIDs,
+			new_depth_sessionIDs,
+			queue_pass2);
 
 		// check what childs are alive on both frames.
 		// child-instances that are not alive anymore get removed and unregistered
@@ -467,11 +478,13 @@ export class Timeline {
 					// child-instance was not changed by timeline
 					// if we jump back we still want to reset the childs-properties
 					if (!jump_forward) {
+						const adapter = <IDisplayObjectAdapter>child._adapter;
+
 						if (child._adapter) {
-							if (!(<IDisplayObjectAdapter> child.adapter).isColorTransformByScript()) {
+							if (!adapter.isColorTransformByScript()) {
 								child.transform.clearColorTransform();
 							}
-							if (!(<IDisplayObjectAdapter> child.adapter).isBlockedByScript() && !(<any>child).noTimelineUpdate) {
+							if (!adapter.isBlockedByScript() && !(<any>child).noTimelineUpdate) {
 								child.transform.clearMatrix3D();
 								//this.name="";
 								child.masks = null;
@@ -501,11 +514,14 @@ export class Timeline {
 		// for as3, the adapter should to be recloned, so that it can do a clean constructor
 		// framescripts for this child should not be executed (// todo: double check)
 		target_mc.preventScript = true;
-		for (var key in depth_sessionIDs) {
+		for (const key in depth_sessionIDs) {
 			if (!new_depth_sessionIDs[key] && depth_sessionIDs[key].instanceID != 'oldID') {
-				child = <DisplayObject>target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, false);
+				child = <DisplayObject>target_mc.getPotentialChildInstance(
+					depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, false);
+
 				if (child._sessionID <= -1) {
-					child = <DisplayObject>target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, true);
+					child = <DisplayObject>target_mc.getPotentialChildInstance(
+						depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, true);
 					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key].id);
 				}
 			}
@@ -519,11 +535,14 @@ export class Timeline {
 		// add the children that have been placed on the target frame
 		// only reclone if it did not exists on the mc already
 		// for this childs, we queue the framescripts
-		for (var key in depth_sessionIDs) {
+		for (const key in depth_sessionIDs) {
 			if (new_depth_sessionIDs[key] && depth_sessionIDs[key].instanceID != 'oldID') {
-				child = <DisplayObject>target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, false);
+				child = <DisplayObject>target_mc.getPotentialChildInstance(
+					depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, false);
+
 				if (child._sessionID <= -1) {
-					child = <DisplayObject>target_mc.getPotentialChildInstance(depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, true);
+					child = <DisplayObject>target_mc.getPotentialChildInstance(
+						depth_sessionIDs[key].id, depth_sessionIDs[key].instanceID, true);
 					target_mc._addTimelineChildAt(child, Number(key), depth_sessionIDs[key].id);
 				}
 			}
@@ -537,11 +556,16 @@ export class Timeline {
 		target_mc.finalizeTimelineConstruction();
 	}
 
-	public pass1(target_mc: MovieClip, start_construct_idx: number, target_keyframe_idx: number, depth_sessionIDs: Object, new_depth_sessionIDs: Object, queue_pass2: boolean): void {
+	public pass1(
+		target_mc: MovieClip, start_construct_idx: number,
+		target_keyframe_idx: number, depth_sessionIDs: Object,
+		new_depth_sessionIDs: Object, queue_pass2: boolean): void {
+
 		let i: number;
 		let k: number;
 
-		this._update_indices.length = 0;// store a list of updatecommand_indices, so we dont have to read frame_recipe again
+		// store a list of updatecommand_indices, so we dont have to read frame_recipe again
+		this._update_indices.length = 0;
 		this._update_frames.length = 0;
 		let update_cnt = 0;
 		let start_index: number;
@@ -563,10 +587,16 @@ export class Timeline {
 				end_index = start_index + this.command_length_stream[frame_command_idx++];
 				if (queue_pass2) {
 					for (i = end_index - 1; i >= start_index; i--)
-						depth_sessionIDs[this.add_child_stream[i * 2 + 1] - 16383] = { id:this.add_child_stream[i * 2], instanceID:this.add_child_stream[i * 2] + '#' + this.keyframe_firstframes[k] };
+						depth_sessionIDs[this.add_child_stream[i * 2 + 1] - 16383] = {
+							id: this.add_child_stream[i * 2],
+							instanceID:this.add_child_stream[i * 2] + '#' + this.keyframe_firstframes[k]
+						};
 				} else {
 					for (i = start_index; i < end_index; i++)
-						depth_sessionIDs[this.add_child_stream[i * 2 + 1] - 16383] = { id:this.add_child_stream[i * 2], instanceID:this.add_child_stream[i * 2] + '#' + this.keyframe_firstframes[k] };
+						depth_sessionIDs [this.add_child_stream[i * 2 + 1] - 16383] = {
+							id: this.add_child_stream[i * 2],
+							instanceID: this.add_child_stream[i * 2] + '#' + this.keyframe_firstframes[k]
+						};
 				}
 				if (k == target_keyframe_idx) {
 					if (queue_pass2) {
@@ -643,12 +673,14 @@ export class Timeline {
 	public remove_childs_continous(sourceMovieClip: MovieClip, frame_command_idx: number): void {
 		const start_index: number = this.command_index_stream[frame_command_idx];
 		const end_index: number = start_index + this.command_length_stream[frame_command_idx];
-		let depth: number;
+
 		for (let i: number = start_index; i < end_index; i++) {
-			depth = this.remove_child_stream[i] - 16383;
+			const depth = this.remove_child_stream[i] - 16383;
 			const idx: number = sourceMovieClip.getDepthIndexInternal(depth);
-			if (idx >= 0)
-			    sourceMovieClip.removeChildAt(idx);
+
+			if (idx >= 0) {
+				sourceMovieClip.removeChildAt(idx);
+			}
 		}
 	}
 
@@ -661,19 +693,29 @@ export class Timeline {
 		for (let i: number = start_index; i < end_index; i++) {
 			idx = i * 2;
 			if (typeof this.add_child_stream[idx] === 'undefined') {
-				console.log('ERROR in timeline. could not find child-id in child_stream for idx', idx, this.add_child_stream);
+				console.log(
+					'ERROR in timeline. could not find child-id in child_stream for idx', idx, this.add_child_stream);
 				continue;
 			}
-			const childAsset: IAsset = sourceMovieClip.getPotentialChildInstance(this.add_child_stream[idx], this.add_child_stream[idx] + '#' + sourceMovieClip.currentFrameIndex, true);
-			sourceMovieClip._addTimelineChildAt(<DisplayObject>childAsset, this.add_child_stream[idx + 1] - 16383, this.add_child_stream[idx]);//this.add_child_stream[idx]);
+			const childAsset: IAsset = sourceMovieClip.getPotentialChildInstance(
+				this.add_child_stream[idx],
+				this.add_child_stream[idx] + '#' + sourceMovieClip.currentFrameIndex,
+				true);
+
+			sourceMovieClip._addTimelineChildAt(
+				<DisplayObject>childAsset,
+				this.add_child_stream[idx + 1] - 16383,
+				this.add_child_stream[idx]);//this.add_child_stream[idx]);
 		}
 	}
 
 	public start_sounds(target_mc: MovieClip, frame_command_idx: number): void {
 		const start_index: number = this.command_index_stream[frame_command_idx];
 		const end_index: number = start_index + this.command_length_stream[frame_command_idx];
+
 		for (let i: number = start_index; i < end_index; i++) {
 			const audioProps: any = this.audioPool[this.add_sounds_stream[i]];
+
 			if (audioProps) {
 				if (audioProps.cmd == 15) {// start sound
 					const child: WaveAudio = audioProps.sound;
@@ -688,6 +730,7 @@ export class Timeline {
 					} else {
 						child.loopsToPlay = 0;
 					}
+
 					target_mc.startSound(audioProps.id, child, child.loopsToPlay);
 				} else if (audioProps.cmd == 16) {// stop sound
 					target_mc.stopSound(audioProps.id);
@@ -747,7 +790,9 @@ export class Timeline {
 			return;
 
 		i *= 8;
-		const new_ct: ColorTransform = child.transform.colorTransform || (child.transform.colorTransform = new ColorTransform());
+		const new_ct: ColorTransform =
+			child.transform.colorTransform || (child.transform.colorTransform = new ColorTransform());
+
 		new_ct._rawData[0] = this.properties_stream_f32_ct[i++];
 		new_ct._rawData[1] = this.properties_stream_f32_ct[i++];
 		new_ct._rawData[2] = this.properties_stream_f32_ct[i++];
@@ -789,7 +834,11 @@ export class Timeline {
 
 	public update_button_name(target: DisplayObject, sourceMovieClip: MovieClip, i: number): void {
 		target.name = this.properties_stream_strings[i];
-		// todo: creating the buttonlistenrs later should also be done, but for icycle i dont think this will cause problems
+		/**
+		 * @todo creating the buttonlistenrs later should also be done
+		 * but for icycle i dont think this will cause problems
+		 */
+
 		(<MovieClip> target).addButtonListeners();
 		(<IMovieClipAdapter> sourceMovieClip.adapter).registerScriptObject(target);
 	}
@@ -840,13 +889,14 @@ export class Timeline {
 	public update_filters(child: DisplayObject, target_mc: MovieClip, i: number): void {
 		const startFilter: number = this.properties_stream_int[i++];
 		const numFilter: number = this.properties_stream_int[i++];
+		const adapter = <IDisplayObjectAdapter>child.adapter;
 
-		if (numFilter == 0) {
-			(<IDisplayObjectAdapter>child.adapter).updateFilters(null);
+		if (numFilter === 0) {
+			adapter.updateFilters(null);
 			return;
 		}
-		(<IDisplayObjectAdapter>child.adapter).updateFilters(this.properties_stream_filters.slice(startFilter, startFilter + numFilter));
 
+		adapter.updateFilters(this.properties_stream_filters.slice(startFilter, startFilter + numFilter));
 	}
 
 	public swap_graphics(child: DisplayObject, target_mc: MovieClip, i: number): void {
