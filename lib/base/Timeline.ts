@@ -72,7 +72,8 @@ export class Timeline {
 	public property_index_stream: ArrayBufferView;
 	public property_type_stream: ArrayBufferView;
 
-	public properties_stream_int: ArrayBufferView;		// lists of ints used for property values. for now, only mask_ids are using ints
+	// lists of ints used for property values. for now, only mask_ids are using ints
+	public properties_stream_int: ArrayBufferView;
 
 	// property_values_stream:
 	public properties_stream_f32_mtx_all: ArrayBufferView;	// list of floats
