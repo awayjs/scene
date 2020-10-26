@@ -99,9 +99,10 @@ export class FrameScriptManager {
 		//console.log("add_script_to_queue", mc.name);
 		const queue = FrameScriptManager.get_queue();
 		// whenever we queue scripts of new objects, we first inject the lists of pass2
-		let i = queue.queued_mcs_pass2.length;
-		while (i > 0) {
-			i--;
+
+		const len = queue.queued_mcs_pass2.length;
+		let i = 0;
+		for (i = 0;i < len; i++) {
 			queue.queued_mcs.push(queue.queued_mcs_pass2[i]);
 			queue.queued_scripts.push(queue.queued_scripts_pass2[i]);
 		}
@@ -215,7 +216,7 @@ export class FrameScriptManager {
 		}
 
 		// if mc was created by timeline, instanceID != ""
-		if ((<any>mc).just_added_to_timeline && mc.instanceID != '' && mcadapter && (<any>mcadapter).dispatchStaticEvent) {
+		if ((<any>mc).just_added_to_timeline && mc._sessionID >= 0 && mcadapter && (<any>mcadapter).dispatchStaticEvent) {
 
 			(<any>mcadapter).dispatchStaticEvent('added', mcadapter);
 			(<any>mc).just_added_to_timeline = false;
@@ -305,11 +306,11 @@ export class FrameScriptManager {
 		queue.queued_mcs.length = 0;
 		queue.queued_scripts.length = 0;
 
-		let i = queue.queued_mcs_pass2.length;
-		while (i > 0) {
-			i--;
-			queues_tmp.push(queue.queued_mcs_pass2[i]);
-			queues_scripts_tmp.push(queue.queued_scripts_pass2[i]);
+		const len = queue.queued_mcs_pass2.length;
+		let i = 0;
+		for (i = 0;i < len; i++) {
+			queue.queued_mcs.push(queue.queued_mcs_pass2[i]);
+			queue.queued_scripts.push(queue.queued_scripts_pass2[i]);
 		}
 		queue.queued_mcs_pass2.length = 0;
 		queue.queued_scripts_pass2.length = 0;
