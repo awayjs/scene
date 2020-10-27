@@ -309,8 +309,8 @@ export class FrameScriptManager {
 		const len = queue.queued_mcs_pass2.length;
 		let i = 0;
 		for (i = 0;i < len; i++) {
-			queue.queued_mcs.push(queue.queued_mcs_pass2[i]);
-			queue.queued_scripts.push(queue.queued_scripts_pass2[i]);
+			queues_tmp.push(queue.queued_mcs_pass2[i]);
+			queues_scripts_tmp.push(queue.queued_scripts_pass2[i]);
 		}
 		queue.queued_mcs_pass2.length = 0;
 		queue.queued_scripts_pass2.length = 0;
