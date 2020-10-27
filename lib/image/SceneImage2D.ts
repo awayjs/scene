@@ -147,6 +147,11 @@ export class SceneImage2D extends BitmapImage2D {
 
 		this._stage.setRenderTarget(null);
 		this.resetDirty();
+
+		// we store pixel buffer already as PMA.
+		// we should prevent unpuck what already is PMA
+		this._unpackPMA = false;
+
 		return true;
 	}
 
