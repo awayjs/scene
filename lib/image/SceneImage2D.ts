@@ -799,6 +799,8 @@ export class SceneImage2D extends BitmapImage2D {
 
 		source.transform.colorTransform = TMP_COLOR_MATRIX;
 
+		root.removeChild(source);
+
 		if (oldParent) {
 			(<DisplayObjectContainer>oldParent.adapter).returnChildAfterDraw(source);
 		}
