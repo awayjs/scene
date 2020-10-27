@@ -157,17 +157,6 @@ export class DisplayObjectContainer extends DisplayObject {
 		this.tabChildren = false;
 	}
 
-	public setChildrenDepthsFromIndex(firstIdx: number) {
-		const len = this._children.length;
-		for (let i = firstIdx; i < len; i++) {
-			if (this._children[i]._depthID != i) {
-				this._children[i]._depthID = i;
-				this._children[i]._setParent(null);
-				this._children[i]._setParent(this);
-			}
-		}
-	}
-
 	public getChildForDraw(child: DisplayObject): DisplayObject {
 		child._setParent(null);
 		return child;
@@ -247,7 +236,7 @@ export class DisplayObjectContainer extends DisplayObject {
 			child.parent.removeChild(child);
 		}
 		this._children.splice(index, 0, child);
-		this.setChildrenDepthsFromIndex(index);
+		child._setParent(this);
 		return child;
 	}
 
@@ -277,7 +266,6 @@ export class DisplayObjectContainer extends DisplayObject {
 		for (let i: number = 0; i < len; ++i) {
 			const newChild = (<any> this._children[i].adapter).clone().adaptee;
 			newInstance.addChild(newChild);
-
 		}
 	}
 
@@ -303,7 +291,6 @@ export class DisplayObjectContainer extends DisplayObject {
 	public disposeValues(): void {
 		for (let i: number = this._children.length - 1; i >= 0; i--)
 			this.removeChild(this._children[i]);
-
 		super.disposeValues();
 	}
 
@@ -326,10 +313,9 @@ export class DisplayObjectContainer extends DisplayObject {
 	}
 
 	/**
-	 * Returns the child display object that exists with the specified name. If
-	 * more that one child display object has the specified name, the method
-	 * returns the first object in the child list.
-	 *
+	 * Returns the child display object that exists with the specified name.
+	 * If more that one child display object has the specified name,
+	 * the method returns the first object in the child list.	 *
 	 * <p>The <code>getChildAt()</code> method is faster than the
 	 * <code>getChildByName()</code> method. The <code>getChildAt()</code> method
 	 * accesses a child from a cached array, whereas the
@@ -353,8 +339,7 @@ export class DisplayObjectContainer extends DisplayObject {
 	 *
 	 * @param child The DisplayObject instance to identify.
 	 * @return The index position of the child display object to identify.
-	 * @throws ArgumentError Throws if the child parameter is not a child of this
-	 *                       object.
+	 * @throws ArgumentError Throws if the child parameter is not a child of this object.
 	 */
 	public getChildIndex(child: DisplayObject): number {
 		const childIndex: number = this._children.indexOf(child);
@@ -381,7 +366,7 @@ export class DisplayObjectContainer extends DisplayObject {
 	 *
 	 * @param point The point under which to look.
 	 * @return An array of objects that lie under the specified point and are
-	 *         children(or grandchildren, and so on) of this
+	 *         children (or grandchildren, and so on) of this
 	 *         DisplayObjectContainer instance.
 	 */
 	public getObjectsUnderPoint(point: Point): Array<DisplayObject> {
@@ -465,7 +450,6 @@ export class DisplayObjectContainer extends DisplayObject {
 		if (endIndex > this._children.length)
 			throw new RangeError('endIndex is out of range of the child list');
 
-		//var oldChilds:DisplayObject[]=this._children.slice();
 		for (let i: number = endIndex - 1;i >= beginIndex; i--)
 			this.removeChildAtInternal(i);
 	}
@@ -509,7 +493,8 @@ export class DisplayObjectContainer extends DisplayObject {
 		this._children.splice(original_idx, 1);
 		this._children.splice(index, 0, child);
 
-		this.setChildrenDepthsFromIndex(Math.min(original_idx, index));
+		child._setParent(null);
+		child._setParent(this);
 
 		if (child._sessionID >= 0 && (<any> this)._sessionID_childs) {
 			delete (<any> this)._sessionID_childs[child._sessionID];
@@ -550,19 +535,21 @@ export class DisplayObjectContainer extends DisplayObject {
 
 		[this._children[index2], this._children[index1]] = [this._children[index1], this._children[index2]];
 
-		this.setChildrenDepthsFromIndex(Math.min(index1, index2));
-
+		this._children[index1]._setParent(null);
+		this._children[index1]._setParent(this);
+		this._children[index2]._setParent(null);
+		this._children[index2]._setParent(this);
 		// dirty code to check if this is a movieclip, and if so handle the sessionID_childs:
 		if ((<any> this)._sessionID_childs) {
 			if (this._children[index1]._sessionID >= 0) {
 				delete (<any> this)._sessionID_childs[this._children[index1]._sessionID];
 				this._children[index1]._sessionID == -1;
-				this._children[index1]._as3DepthID == -1;
+				this._children[index1]._avmDepthID == -1;
 			}
 			if (this._children[index2]._sessionID >= 0) {
 				delete (<any> this)._sessionID_childs[this._children[index2]._sessionID];
 				this._children[index2]._sessionID == -1;
-				this._children[index1]._as3DepthID == -1;
+				this._children[index1]._avmDepthID == -1;
 			}
 		}
 
@@ -604,8 +591,6 @@ export class DisplayObjectContainer extends DisplayObject {
 	protected removeChildAtInternal(index: number): DisplayObject {
 		const child: DisplayObject = this._children.splice(index, 1)[0];
 
-		this.setChildrenDepthsFromIndex(index);
-		child._depthID = -16384;
 		child._setParent(null);
 
 		return child;

@@ -1,8 +1,10 @@
-import { Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Point, Rectangle, Vector3D, AssetBase, EventBase, Loader } from '@awayjs/core';
+import { Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D,
+	Rectangle, Vector3D, AssetBase, EventBase, Loader } from '@awayjs/core';
 
 import { BlendMode } from '@awayjs/stage';
 
-import { PartitionBase, BoundingBox, BoundingSphere, BoundingVolumeType, BasicPartition, PickGroup, IEntityTraverser, IPickingEntity, IPartitionEntity } from '@awayjs/view';
+import { PartitionBase, BoundingBox, BoundingSphere, BoundingVolumeType, BasicPartition,
+	PickGroup, IEntityTraverser, IPickingEntity, IPartitionEntity } from '@awayjs/view';
 
 import { IAnimator, IMaterial, Style, StyleEvent, IRenderEntity, RenderableEvent } from '@awayjs/renderer';
 
@@ -21,7 +23,6 @@ import { PrimitiveCubePrefab } from '../prefabs/PrimitiveCubePrefab';
 import { PrimitiveSpherePrefab } from '../prefabs/PrimitiveSpherePrefab';
 import { PrimitivePrefabBase } from '../prefabs/PrimitivePrefabBase';
 import { IFilter } from '../adapters/IFilter';
-import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
 
 /**
  * The DisplayObject class is the base class for all objects that can be
@@ -180,8 +181,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	private _concatenatedMatrix3D: Matrix3D = new Matrix3D();
 	private _tempTransform: Matrix3D;
 	public _sessionID: number = -1;
-	public _depthID: number = -16384;
-	public _as3DepthID: number = -1;
+	public _avmDepthID: number = -1;
 
 	public pickObjectFromTimeline: boolean;
 
@@ -1478,7 +1478,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		this._isInFocus = false;
 		this._tabEnabled = false;
 		this._tabIndex = -1;
-		this._as3DepthID = -1;
+		this._avmDepthID = -1;
 		//global debug bounding boxes:
 		//this._boundsVisible=true;
 		this._onInvalidatePropertiesDelegate = (event: StyleEvent) => this._onInvalidateProperties(event);
