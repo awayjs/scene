@@ -32,18 +32,12 @@ import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
  * <i>ActionScript 3.0 Developer's Guide</i>.</p>
  */
 
-function sortByDepth(a: DisplayObject, b: DisplayObject) {
-	 return a._depthID - b._depthID;
-}
-
 export class DisplayObjectContainer extends DisplayObject {
 	public static assetType: string = '[asset DisplayObjectContainer]';
 
 	private _mouseChildren: boolean = true;
-	private _depth_childs: Object = {};
-	private _nextHighestDepth: number = 0;
-	private _nextHighestDepthDirty: boolean;
 	public _children: Array<DisplayObject> = new Array<DisplayObject>();
+
 	public doingSwap: boolean = false;
 
 	/**
@@ -163,6 +157,16 @@ export class DisplayObjectContainer extends DisplayObject {
 		this.tabChildren = false;
 	}
 
+	public getChildForDraw(child: DisplayObject): DisplayObject {
+		child._setParent(null);
+		return child;
+	}
+
+	public returnChildAfterDraw(child: DisplayObject): DisplayObject {
+		child._setParent(this);
+		return child;
+	}
+
 	/**
 	 * Adds a child DisplayObject instance to this DisplayObjectContainer
 	 * instance. The child is added to the front(top) of all other children in
@@ -197,51 +201,6 @@ export class DisplayObjectContainer extends DisplayObject {
 		return this.addChildAt(child, this._children.length);
 	}
 
-	public addChildAtDepth(child: DisplayObject, depth: number, replace: boolean = true): DisplayObject {
-		if (child == null)
-			throw new ArgumentError('Parameter child cannot be null.');
-
-		//if child already has a parent, remove it.
-		if (child.parent)
-			child.parent.removeChildAtInternal(child.parent.getChildIndex(child));
-
-		if (this.isSlice9ScaledMC && child.assetType == '[asset Sprite]') {
-			child.isSlice9ScaledSprite = true;
-		}
-
-		const index = this.getDepthIndexInternal(depth);
-
-		if (index != -1) {
-			if (replace) {
-				this.removeChildAt(index);
-			} else {
-				//move depth of existing child up by 1
-				this.addChildAtDepth(this._children[index], depth + 1, false);
-			}
-		}
-
-		if (this._nextHighestDepth < depth + 1)
-			this._nextHighestDepth = depth + 1;
-
-		this._depth_childs[depth] = child;
-		this._children.push(child);
-
-		child._depthID = depth;
-
-		child._setParent(this);
-
-		this._children.sort(sortByDepth);
-
-		if (!this.doingSwap) {
-			if (child.adapter != child) {
-				// initAdapter is only used for avm1 to queue constructors / init-actions
-				// for avm2 this is handled via FrameScriptManager.execute_as3_constructors_recursiv
-				(<IDisplayObjectAdapter>child.adapter).initAdapter();
-			}
-		}
-		return child;
-	}
-
 	/**
 	 * Adds a child DisplayObject instance to this DisplayObjectContainer
 	 * instance. The child is added at the index position specified. An index of
@@ -272,7 +231,13 @@ export class DisplayObjectContainer extends DisplayObject {
 	 *              list.
 	 */
 	public addChildAt(child: DisplayObject, index: number): DisplayObject {
-		return this.addChildAtDepth(child, (index < this._children.length) ? this._children[index]._depthID : this.getNextHighestDepth(), false);
+		//console.log("[DisplayObjectContainer]", this.name, "addChildAt", child, index);
+		if (child.parent) {
+			child.parent.removeChild(child);
+		}
+		this._children.splice(index, 0, child);
+		child._setParent(this);
+		return child;
 	}
 
 	public addChildren(...childarray: Array<DisplayObject>): void {
@@ -301,7 +266,6 @@ export class DisplayObjectContainer extends DisplayObject {
 		for (let i: number = 0; i < len; ++i) {
 			const newChild = (<any> this._children[i].adapter).clone().adaptee;
 			newInstance.addChild(newChild);
-
 		}
 	}
 
@@ -327,12 +291,7 @@ export class DisplayObjectContainer extends DisplayObject {
 	public disposeValues(): void {
 		for (let i: number = this._children.length - 1; i >= 0; i--)
 			this.removeChild(this._children[i]);
-
 		super.disposeValues();
-	}
-
-	public getChildAtDepth(depth: number): DisplayObject {
-		return this._depth_childs[depth];
 	}
 
 	/**
@@ -354,10 +313,9 @@ export class DisplayObjectContainer extends DisplayObject {
 	}
 
 	/**
-	 * Returns the child display object that exists with the specified name. If
-	 * more that one child display object has the specified name, the method
-	 * returns the first object in the child list.
-	 *
+	 * Returns the child display object that exists with the specified name.
+	 * If more that one child display object has the specified name,
+	 * the method returns the first object in the child list.	 *
 	 * <p>The <code>getChildAt()</code> method is faster than the
 	 * <code>getChildByName()</code> method. The <code>getChildAt()</code> method
 	 * accesses a child from a cached array, whereas the
@@ -381,8 +339,7 @@ export class DisplayObjectContainer extends DisplayObject {
 	 *
 	 * @param child The DisplayObject instance to identify.
 	 * @return The index position of the child display object to identify.
-	 * @throws ArgumentError Throws if the child parameter is not a child of this
-	 *                       object.
+	 * @throws ArgumentError Throws if the child parameter is not a child of this object.
 	 */
 	public getChildIndex(child: DisplayObject): number {
 		const childIndex: number = this._children.indexOf(child);
@@ -391,13 +348,6 @@ export class DisplayObjectContainer extends DisplayObject {
 			throw new ArgumentError('Child parameter is not a child of the caller');
 
 		return childIndex;
-	}
-
-	public getNextHighestDepth(): number {
-		if (this._nextHighestDepthDirty)
-			this._updateNextHighestDepth();
-
-		return this._nextHighestDepth;
 	}
 
 	/**
@@ -416,7 +366,7 @@ export class DisplayObjectContainer extends DisplayObject {
 	 *
 	 * @param point The point under which to look.
 	 * @return An array of objects that lie under the specified point and are
-	 *         children(or grandchildren, and so on) of this
+	 *         children (or grandchildren, and so on) of this
 	 *         DisplayObjectContainer instance.
 	 */
 	public getObjectsUnderPoint(point: Point): Array<DisplayObject> {
@@ -451,10 +401,6 @@ export class DisplayObjectContainer extends DisplayObject {
 		return child;
 	}
 
-	public removeChildAtDepth(depth: number): DisplayObject {
-		return this.removeChildAt(this.getDepthIndexInternal(depth));
-	}
-
 	/**
 	 * Removes a child DisplayObject from the specified <code>index</code>
 	 * position in the child list of the DisplayObjectContainer. The
@@ -478,11 +424,7 @@ export class DisplayObjectContainer extends DisplayObject {
 	 *                       call the <code>Security.allowDomain()</code> method.
 	 */
 	public removeChildAt(index: number): DisplayObject {
-		const child: DisplayObject = this.removeChildAtInternal(index);
-
-		child._setParent(null);
-
-		return child;
+		return this.removeChildAtInternal(index);
 	}
 
 	/**
@@ -508,9 +450,8 @@ export class DisplayObjectContainer extends DisplayObject {
 		if (endIndex > this._children.length)
 			throw new RangeError('endIndex is out of range of the child list');
 
-		//var oldChilds:DisplayObject[]=this._children.slice();
 		for (let i: number = endIndex - 1;i >= beginIndex; i--)
-			this.removeChildAtInternal(i)._setParent(null);
+			this.removeChildAtInternal(i);
 	}
 
 	/**
@@ -542,7 +483,23 @@ export class DisplayObjectContainer extends DisplayObject {
 	 *                       list.
 	 */
 	public setChildIndex(child: DisplayObject, index: number): void {
-		//TODO
+		const original_idx = this.getChildIndex(child);
+		if (original_idx < 0)
+			throw new ArgumentError('Parameter child must be child of this object');
+
+		if (index > this._children.length)
+			throw new RangeError('Parameter index is out of range of the child list');
+
+		this._children.splice(original_idx, 1);
+		this._children.splice(index, 0, child);
+
+		child._setParent(null);
+		child._setParent(this);
+
+		if (child._sessionID >= 0 && (<any> this)._sessionID_childs) {
+			delete (<any> this)._sessionID_childs[child._sessionID];
+			child._sessionID = -1;
+		}
 	}
 
 	/**
@@ -571,11 +528,31 @@ export class DisplayObjectContainer extends DisplayObject {
 	 * @throws RangeError If either index does not exist in the child list.
 	 */
 	public swapChildrenAt(index1: number, index2: number): void {
-		const depth: number = this._children[index2]._depthID;
-		const child: DisplayObject = this._children[index1];
+		if (index1 == index2)
+			return;
+		if (index1 >= this._children.length || index2 >= this._children.length)
+			throw ('[scene/DisplayobjectContainer] - swapChildrenAt - Range Error');
 
-		this.addChildAtDepth(this._children[index2], this._children[index1]._depthID);
-		this.addChildAtDepth(child, depth);
+		[this._children[index2], this._children[index1]] = [this._children[index1], this._children[index2]];
+
+		this._children[index1]._setParent(null);
+		this._children[index1]._setParent(this);
+		this._children[index2]._setParent(null);
+		this._children[index2]._setParent(this);
+		// dirty code to check if this is a movieclip, and if so handle the sessionID_childs:
+		if ((<any> this)._sessionID_childs) {
+			if (this._children[index1]._sessionID >= 0) {
+				delete (<any> this)._sessionID_childs[this._children[index1]._sessionID];
+				this._children[index1]._sessionID == -1;
+				this._children[index1]._avmDepthID == -1;
+			}
+			if (this._children[index2]._sessionID >= 0) {
+				delete (<any> this)._sessionID_childs[this._children[index2]._sessionID];
+				this._children[index2]._sessionID == -1;
+				this._children[index1]._avmDepthID == -1;
+			}
+		}
+
 	}
 
 	/**
@@ -611,37 +588,12 @@ export class DisplayObjectContainer extends DisplayObject {
 	 *
 	 * @param child
 	 */
-	public removeChildAtInternal(index: number): DisplayObject {
+	protected removeChildAtInternal(index: number): DisplayObject {
 		const child: DisplayObject = this._children.splice(index, 1)[0];
 
-		//update next highest depth
-		if (this._nextHighestDepth == child._depthID + 1)
-			this._nextHighestDepthDirty = true;
-
-		delete this._depth_childs[child._depthID];
-
-		child._depthID = -16384;
+		child._setParent(null);
 
 		return child;
-	}
-
-	public getDepthIndexInternal(depth: number): number {
-		if (!this._depth_childs[depth])
-			return -1;
-
-		return this._children.indexOf(this._depth_childs[depth]);
-	}
-
-	private _updateNextHighestDepth(): void {
-		this._nextHighestDepthDirty = false;
-
-		this._nextHighestDepth = 0;
-		const len: number = this._children.length;
-		for (let i: number = 0; i < len; i++)
-			if (this._nextHighestDepth < this._children[i]._depthID)
-				this._nextHighestDepth = this._children[i]._depthID;
-
-		this._nextHighestDepth += 1;
 	}
 
 	public _updateMaskMode(): void {

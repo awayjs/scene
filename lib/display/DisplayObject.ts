@@ -1,8 +1,10 @@
-import { Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D, Rectangle, Vector3D, AssetBase, EventBase, Loader } from '@awayjs/core';
+import { Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D,
+	Rectangle, Vector3D, AssetBase, EventBase, Loader } from '@awayjs/core';
 
 import { BlendMode } from '@awayjs/stage';
 
-import { PartitionBase, BoundingBox, BoundingSphere, BoundingVolumeType, BasicPartition, PickGroup, IEntityTraverser, IPickingEntity, IPartitionEntity } from '@awayjs/view';
+import { PartitionBase, BoundingBox, BoundingSphere, BoundingVolumeType, BasicPartition,
+	PickGroup, IEntityTraverser, IPickingEntity, IPartitionEntity } from '@awayjs/view';
 
 import { IAnimator, IMaterial, Style, StyleEvent, IRenderEntity, RenderableEvent } from '@awayjs/renderer';
 
@@ -179,7 +181,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	private _concatenatedMatrix3D: Matrix3D = new Matrix3D();
 	private _tempTransform: Matrix3D;
 	public _sessionID: number = -1;
-	public _depthID: number = -16384;
+	public _avmDepthID: number = -1;
 
 	public pickObjectFromTimeline: boolean;
 
@@ -230,8 +232,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 	public isSlice9ScaledMC: boolean=false;
 	public isSlice9ScaledSprite: boolean=false;
-	public instanceID: string='';
-	public addedOnFrame: number=0;
 	public avm1Symbol: any;
 	public isAVMScene: boolean=false;
 
@@ -465,8 +465,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	public castsShadows: boolean = true;
 
 	/**
-	 * Defines the rotation of the 3d object as a <code>Vector3D</code>
-	 * object containing euler angles for rotation around x, y and z axis.
+	 * Defines the rotation of the 3d object as a <code>Vector3D</code> object containing euler angles for rotation around x, y and z axis.
 	 */
 	public get eulers(): Vector3D {
 		if (!this._eulers)
@@ -1479,6 +1478,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		this._isInFocus = false;
 		this._tabEnabled = false;
 		this._tabIndex = -1;
+		this._avmDepthID = -1;
 		//global debug bounding boxes:
 		//this._boundsVisible=true;
 		this._onInvalidatePropertiesDelegate = (event: StyleEvent) => this._onInvalidateProperties(event);
@@ -1963,7 +1963,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 					this.masks = [];
 				this.masks.push(this._scrollRectSprite);
 			}
-			//this._scrollRectSprite.graphics._acceptTraverser(traverser);
 		}
 	}
 
@@ -2117,6 +2116,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 	public clear(): void {
 		super.clear();
+
+		let i: number;
+
 		this._pImplicitColorTransform = null;
 		this._maskOwners = null;
 	}

@@ -1,7 +1,5 @@
 import { Image2D, IGraphicsFactory } from '@awayjs/stage';
-
 import { IMaterial } from '@awayjs/renderer';
-
 import { Timeline } from '../base/Timeline';
 import { Billboard } from '../display/Billboard';
 import { TextField } from '../display/TextField';
@@ -10,6 +8,7 @@ import { Sprite } from '../display/Sprite';
 import { PrefabBase } from '../prefabs/PrefabBase';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 import { Graphics } from '@awayjs/graphics';
+import { IFrameScript } from '../base/IFrameScript';
 
 export interface ISceneGraphFactory extends IGraphicsFactory
 {
@@ -25,4 +24,6 @@ export interface ISceneGraphFactory extends IGraphicsFactory
 
 	createMaterial(image?: Image2D, alpha?: number, symbol?: any): IMaterial;
 	createMaterial(color?: number, alpha?: number, symbol?: any): IMaterial;
+
+	createFrameScripts(scripts: IFrameScript[], frameIdx: number, objName: string, objID: number): IFrameScript[];
 }

@@ -7,7 +7,6 @@ import { DisplayObject } from '../display/DisplayObject';
 export class SceneGraphNode extends NodeBase {
 	private _numNodes: number = 0;
 	private _pChildNodes: Array<EntityNode> = new Array<EntityNode>();
-	private _childDepths: Array<number> = new Array<number>();
 
 	/**
 	 *
@@ -37,22 +36,27 @@ export class SceneGraphNode extends NodeBase {
 	public iAddNode(node: EntityNode): void {
 		node.parent = this;
 
-		const depth: number = (this._entity != node.entity) ? (<DisplayObject> node.entity)._depthID : -16384;
-		const len: number = this._childDepths.length;
-		let index: number = len;
-
-		while (index--)
-			if (this._childDepths[index] < depth)
-				break;
-
-		index++;
-
-		if (index < len) {
-			this._pChildNodes.splice(index, 0, node);
-			this._childDepths.splice(index, 0, depth);
+		let index = -1;
+		if (this._entity == node.entity) {
+			// this is the node for the graphics object of a Sprite / MC, not a child
+			// always have it at first index
+			index = 0;
 		} else {
+			// get child index
+			index = (<DisplayObject> node.entity).parent.getChildIndex(<DisplayObject> node.entity);
+		}
+
+		if (this._pChildNodes.length > 0 && this._pChildNodes[0].entity == this.entity) {
+			// if first child-node was added for this.entity, we must increment index by 1
+			index++;
+		}
+
+		if (index == -1) {
+			console.warn('[SceneGraphNode] - iAddNode - index should never be -1');
+		} else if (index > this._pChildNodes.length) {
 			this._pChildNodes.push(node);
-			this._childDepths.push(depth);
+		} else {
+			this._pChildNodes.splice(index, 0, node);
 		}
 		this._numNodes++;
 	}
@@ -67,10 +71,7 @@ export class SceneGraphNode extends NodeBase {
 	 * @internal
 	 */
 	public iRemoveNode(node: EntityNode): void {
-		const index: number = this._pChildNodes.indexOf(node);
-
-		this._pChildNodes.splice(index, 1);
-		this._childDepths.splice(index, 1);
+		this._pChildNodes.splice(this._pChildNodes.indexOf(node), 1);
 		this._numNodes--;
 	}
 }

@@ -14,6 +14,7 @@ import { PrefabBase } from '../prefabs/PrefabBase';
 
 import { ISceneGraphFactory } from './ISceneGraphFactory';
 import { Graphics } from '@awayjs/graphics';
+import { IFrameScript } from '../base/IFrameScript';
 
 export class DefaultSceneGraphFactory extends DefaultGraphicsFactory implements ISceneGraphFactory {
 
@@ -44,5 +45,9 @@ export class DefaultSceneGraphFactory extends DefaultGraphicsFactory implements 
 	createMaterial(color?: number, alpha?: number): MethodMaterial;
 	createMaterial(imageColor?: any, alpha?: number, symbol: any = null): MethodMaterial {
 		return new MethodMaterial(imageColor, alpha);
+	}
+
+	createFrameScripts(scripts: IFrameScript[], frameIdx: number, objName: string, objID: number): IFrameScript[] {
+		throw ('[DefaultSceneGraphFactory] - createFrameScripts should be overwritten by AVM');
 	}
 }

@@ -1,18 +1,12 @@
-import { AssetEvent, IAsset, WaveAudio, AudioManager, IAssetAdapter } from '@awayjs/core';
-
+import { WaveAudio } from '@awayjs/core';
 import { PartitionBase, EntityNode } from '@awayjs/view';
-
 import { Graphics } from '@awayjs/graphics';
-
 import { IMovieClipAdapter } from '../adapters/IMovieClipAdapter';
-import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
 import { Timeline } from '../base/Timeline';
 import { MouseEvent } from '../events/MouseEvent';
 import { FrameScriptManager } from '../managers/FrameScriptManager';
-
 import { DisplayObject } from './DisplayObject';
 import { Sprite } from './Sprite';
-import { TextField } from './TextField';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 import { LoaderContainer } from './LoaderContainer';
 
@@ -70,11 +64,11 @@ export class MovieClip extends Sprite {
 	private _isPlaying: boolean = true;// false if paused or stopped
 
 	private _skipAdvance: boolean;
+
 	private _isInit: boolean = true;
 
-	private _potentialInstances: any = {};
-	private _depth_sessionIDs: Object = {};
-	private _sessionID_childs: Object = {};
+	public _sessionID_childs: NumberMap<DisplayObject> = {};
+
 	private _sounds: Object = {};
 
 	public _useHandCursor: boolean;
@@ -277,6 +271,10 @@ export class MovieClip extends Sprite {
         */
 	}
 
+	public queueFrameScripts(timeline: Timeline, frame_idx: number, scriptPass1: boolean) {
+		console.warn('[MovieClip] - queueFrameScripts should only be called on AVM-Adapters');
+	}
+
 	public registerScriptObject(child: DisplayObject): void {
 		this[child.name] = child;
 
@@ -300,26 +298,26 @@ export class MovieClip extends Sprite {
 	public disposeValues(): void {
 		super.disposeValues();
 
-		this._potentialInstances = {};
-		this._depth_sessionIDs = {};
 		this._sessionID_childs = {};
 
 		this._timeline = null;
 	}
 
+	/* this was used for old Icycle-project text-translation
 	public reset_textclones(): void {
 		if (this.timeline) {
 			//var len:number = this._potentialInstances.length;
-			for (const key in this._potentialInstances) {
+			for (var key in this._potentialInstances) {
 				if (this._potentialInstances[key] != null) {
 					if (this._potentialInstances[key].isAsset(TextField)) {
-						(<TextField> this._potentialInstances[key]).text = (<TextField> this.timeline.getPotentialChildPrototype(parseInt(key))).text;
-					} else if (this._potentialInstances[key].isAsset(MovieClip))
-						(<MovieClip> this._potentialInstances[key]).reset_textclones();
+						(<TextField>this._potentialInstances[key]).text = (<TextField>this.timeline.getPotentialChildPrototype(parseInt(key))).text;
+					}
+					else if (this._potentialInstances[key].isAsset(MovieClip))
+						(<MovieClip>this._potentialInstances[key]).reset_textclones();
 				}
 			}
 		}
-	}
+	}*/
 
 	public get useHandCursor(): boolean {
 		return this._useHandCursor;
@@ -389,6 +387,9 @@ export class MovieClip extends Sprite {
 		if (resetSelf)
 			super.reset();
 
+		if (this.id == 4115)
+			console.warn('reset', this.id);
+
 		this.resetStreamStopped();
 
 		// time only is relevant for the root mc, as it is the only one that executes the update function
@@ -421,10 +422,6 @@ export class MovieClip extends Sprite {
 		this._skipAdvance = true;
 		//FrameScriptManager.execute_queue();
 
-	}
-
-	public resetSessionIDs(): void {
-		this._depth_sessionIDs = {};
 	}
 
 	/*
@@ -492,89 +489,44 @@ export class MovieClip extends Sprite {
 		this.removeEventListener(MouseEvent.DRAG_OUT, this._onDragOut);
 	}
 
-	public getChildAtSessionID(sessionID: number): DisplayObject {
-		return this._sessionID_childs[sessionID];
-	}
-
-	public getSessionIDDepths(): Object {
-		return this._depth_sessionIDs;
-	}
-
 	public swapChildrenAt(index1: number, index2: number): void {
-		const depth: number = this._children[index2]._depthID;
-		const child: DisplayObject = this._children[index1];
-
-		this.doingSwap = true;
-		this.addChildAtDepth(this._children[index2], this._children[index1]._depthID);
-		this.addChildAtDepth(child, depth);
-		this._depth_sessionIDs[depth] = child._sessionID;
-		this._depth_sessionIDs[this._children[index1]._depthID] = this._children[index2]._sessionID;
-		this.doingSwap = false;
+		console.warn('[scene/MovieClip] - swapChildrenAt - not implemented');
 	}
 
 	public swapDepths(child: DisplayObject, depth: number) {
-
-		const existingChild: DisplayObject = this.getChildAtDepth(depth);
-		const currentDepth: number = child._depthID;
-		if (currentDepth == depth) {
-			return;
-		}
-		delete this._depth_sessionIDs[currentDepth];
-		this._depth_sessionIDs[depth] = child._sessionID;
-		this.doingSwap = true;
-		super.removeChildAtDepth(currentDepth);
-		if (existingChild) {
-			super.removeChildAtDepth(depth);
-			super.addChildAtDepth(existingChild, currentDepth);
-		}
-		super.addChildAtDepth(child, depth);
-		this.doingSwap = false;
-
+		console.warn('[scene/MovieClip] - swapDepths - not implemented');
 	}
 
-	public _addTimelineChildAt(child: DisplayObject, depth: number, sessionID: number): DisplayObject {
-		this._depth_sessionIDs[depth] = child._sessionID = sessionID;
-		(<any>child).addedByTimeline = true;
-
-		if (child.adapter != child && (<any>child.adapter).deleteOwnProperties) {
-			(<any>child.adapter).deleteOwnProperties();
-		}
-		if (!this.doingSwap) {
-			child.reset();// this takes care of transform and visibility
-		}
-		(<any>child).just_added_to_timeline = true;
-		const returnObj = this.addChildAtDepth(child, depth);
-		this._sessionID_childs[sessionID] = child;
-		//console.log(this.name, this.id, "addchild at ", depth, child.id)
-		return returnObj;
+	public getTimelineChildAtSessionID(sessionID: number): DisplayObject {
+		return this._sessionID_childs[sessionID];
 	}
 
-	public finalizeTimelineConstruction() {
+	// should only be called from timeline when navigating frames
+	public constructFrame(timeline: Timeline, start_construct_idx: number, target_keyframe_idx: number, jump_forward: boolean,
+		frame_idx: number, queue_pass2: boolean, queue_script: boolean) {
+		console.warn('[scene/MovieClip] - constructFrame not implemented');
+	}
 
+	public addTimelineChildAtDepth(child: DisplayObject, depth: number, sessionID: number): DisplayObject {
+		console.warn('[scene/MovieClip] - addTimelineChildAtDepth not implemented');
+		return null;
+	}
+
+	public removeTimelineChildAtDepth(depth: number): void {
+		console.warn('[scene/MovieClip] - removeTimelineChildAtDepth not implemented');
 	}
 
 	public removeChildAtInternal(index: number): DisplayObject {
 		const child: DisplayObject = this._children[index];
+		if (child._adapter)
+			(<IMovieClipAdapter>child.adapter).freeFromScript();
 
-		if (!this.doingSwap) {
-			if (child._adapter)
-				(<IMovieClipAdapter>child.adapter).freeFromScript();
-
-			(<IMovieClipAdapter> this.adapter).unregisterScriptObject(child);
-		}
-
-		//check to make sure _depth_sessionIDs wasn't modified with a new child
-		//if (this._depth_sessionIDs[child._depthID] == child._sessionID)
-		//delete this._depth_sessionIDs[child._depthID];
+		(<IMovieClipAdapter> this.adapter).unregisterScriptObject(child);
 
 		delete this._sessionID_childs[child._sessionID];
 
-		if (!this.doingSwap) {
-			child._sessionID = -1;
-		} else {
-			child._sessionID = -2;
+		child._sessionID = -1;
 
-		}
 		if (child.adapter && (<any>child.adapter).dispatchStaticEvent) {
 			(<any>child.adapter).dispatchStaticEvent('removed', child.adapter);
 		}
@@ -602,14 +554,6 @@ export class MovieClip extends Sprite {
 	 */
 	public update(dt: number = 0): void {
 		this.advanceFrame();
-	}
-
-	public getPotentialChildInstance(id: number, instanceID: string, forceClone: boolean = false): IAsset {
-		if (!this._potentialInstances[id] || this._potentialInstances[id]._sessionID == -2 ||
-			(this._potentialInstances[id].cloneForEveryInstance && forceClone))
-			this._potentialInstances[id] = this._timeline.getPotentialChildInstance(id, instanceID);
-		this._timeline.initChildInstance(<DisplayObject> this._potentialInstances[id], instanceID);
-		return this._potentialInstances[id];
 	}
 
 	/**
@@ -724,8 +668,9 @@ export class MovieClip extends Sprite {
 	public clear(): void {
 		//clear out potential instances
 		this.resetStreamStopped();
-		for (const key in this._potentialInstances) {
-			const instance: IAsset = this._potentialInstances[key];
+		/* check memory disposal with new approach of child-instancing
+		for (var key in this._potentialInstances) {
+			var instance: IAsset = this._potentialInstances[key];
 
 			//only dispose instances that are not used in script ie. do not have an instance name
 			if (instance && !instance.name) {
@@ -736,6 +681,7 @@ export class MovieClip extends Sprite {
 				delete this._potentialInstances[key];
 			}
 		}
+		*/
 
 		super.clear();
 	}

@@ -1,17 +1,27 @@
 import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
+import { Timeline } from '../base/Timeline';
 import { DisplayObject } from '../display/DisplayObject';
+import { IFrameScript } from '../base/IFrameScript';
 
 export interface IMovieClipAdapter extends IDisplayObjectAdapter
 {
-	// todo:better typings for different rypes of scripts
-	// as2_as_js scripts use addScript(source:string):Function;
-	// avm1 scripts use addScript(source:anny):any;
-	addScript(source: any, frameIdx: number): any;
-
-	// todo: better type for script. for avm1 its a object, for as2_as_js its a string
-	executeScript(script: any): void;
+	executeScript(script: IFrameScript[]): void;
 
 	registerScriptObject(child: DisplayObject): void;
 
 	unregisterScriptObject(child: DisplayObject): void;
+
+	addTimelineChildAtDepth(child: DisplayObject, depth: number): void;
+
+	removeTimelineChildAt(value: number): void;
+
+	queueFrameScripts(timeline: Timeline, frame_idx: number, scriptPass1: boolean);
+
+	getChildForDraw(value: DisplayObject): DisplayObject;
+
+	returnChildAfterDraw(value: DisplayObject);
+
+	constructFrame(timeline: Timeline, start_construct_idx: number,
+		target_keyframe_idx: number, jump_forward: boolean,
+		frame_idx: number, queue_pass2: boolean, queue_script: boolean);
 }

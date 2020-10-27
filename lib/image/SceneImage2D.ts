@@ -1,22 +1,6 @@
-import {
-	ColorTransform,
-	Matrix,
-	Rectangle,
-	Point,
-	PerspectiveProjection,
-	CoordinateSystem,
-	Vector3D,
-	Transform
-} from '@awayjs/core';
+import { ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Vector3D, Transform } from '@awayjs/core';
 
-import { Stage,
-	BitmapImage2D,
-	_Stage_BitmapImage2D,
-	BlendMode,
-	ContextWebGL,
-	ContextGLBlendFactor,
-	ContextGLTriangleFace
-} from '@awayjs/stage';
+import { Stage, BitmapImage2D, _Stage_BitmapImage2D, BlendMode, ContextWebGL, ContextGLBlendFactor, ContextGLTriangleFace } from '@awayjs/stage';
 
 import { DefaultRenderer, RenderGroup, RendererType, Style } from '@awayjs/renderer';
 
@@ -44,9 +28,12 @@ export class SceneImage2D extends BitmapImage2D {
 	private static _pool: SceneImage2D[] = [];
 
 	public static getImage(
-		width: number, height: number, transparent: boolean = true,
-		fillColor: number = 0xffffffff, powerOfTwo: boolean = true, stage: Stage = null) {
-
+		width: number,
+		height: number,
+		transparent: boolean = true,
+		fillColor: number = 0xffffffff,
+		powerOfTwo: boolean = true,
+		stage: Stage = null) {
 		let index = -1;
 		for (let i = 0; i < this._pool.length; i++) {
 			const e = this._pool[i];
@@ -131,12 +118,12 @@ export class SceneImage2D extends BitmapImage2D {
 	protected syncData(): boolean {
 		this.applySymbol();
 
+		const internalData = this._data;
+
 		// update data from pixels from GPU
 		if (!this._imageDataDirty) {
 			return false;
 		}
-
-		const internalData = this._data || (this._data = new Uint8ClampedArray(this.width * this.height * 4));
 
 		this._stage.setRenderTarget(this, false);
 
@@ -231,6 +218,60 @@ export class SceneImage2D extends BitmapImage2D {
 	}
 
 	/**
+	 * Test image dirty status under point
+	 */
+	private getImageDirtyUnderPoint(x: number, y: number) {
+		if (!this._imageDataDirty) {
+			return false;
+		}
+
+		const point = TMP_POINT;
+		point.setTo(x, y);
+
+		// original containsPoint is inclusive, we should test exclusive
+		for (const rect of this._updateRegions) {
+
+			const rx = rect._rawData[0];
+			const ry = rect._rawData[1];
+			const width = rect._rawData[2];
+			const hegit = rect._rawData[3];
+
+			if (x >= rx && x < rx + width) {
+				if (y >= ry && y < ry + hegit) {
+					return false;
+				}
+			}
+		}
+
+		// if point out of max dirty area - return false
+		{
+			const mr = this._maxDirtyArea._rawData;
+
+			if (!(x >= mr[0] && x < mr[0] + mr[2])) {
+				return false;
+			}
+			if (!(y >= mr[1] && y < mr[1] + mr[3])) {
+				return false;
+			}
+		}
+
+		for (const rect of this._dirtyRegions) {
+			const rx = rect._rawData[0];
+			const ry = rect._rawData[1];
+			const width = rect._rawData[2];
+			const hegit = rect._rawData[3];
+
+			if (x >= rx && x < rx + width) {
+				if (y >= ry && y < ry + hegit) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 *
 	 * @returns {string}
 	 */
@@ -266,10 +307,7 @@ export class SceneImage2D extends BitmapImage2D {
 	 *                    bitmap image area. The default value is
 	 *                    0xFFFFFFFF(solid white).
 	 */
-	constructor(
-		width: number, height: number, transparent: boolean = true,
-		fillColor: number = 0xffffffff, powerOfTwo: boolean = true, stage: Stage = null) {
-
+	constructor(width: number, height: number, transparent: boolean = true, fillColor: number = 0xffffffff, powerOfTwo: boolean = true, stage: Stage = null) {
 		super(width, height, transparent, fillColor, powerOfTwo, stage);
 	}
 
@@ -282,11 +320,7 @@ export class SceneImage2D extends BitmapImage2D {
 
 		//create the view
 		SceneImage2D._root = new DisplayObjectContainer();
-		SceneImage2D._renderer = <DefaultRenderer> RenderGroup.getInstance(
-			new View(projection, this._stage, null, null, null, true),
-			RendererType.DEFAULT)
-			.getRenderer(new SceneGraphPartition(SceneImage2D._root));
-
+		SceneImage2D._renderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, this._stage, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(SceneImage2D._root));
 		SceneImage2D._root.partition = SceneImage2D._renderer.partition;
 
 		//setup the projection
@@ -310,11 +344,7 @@ export class SceneImage2D extends BitmapImage2D {
 
 		//create the view
 		SceneImage2D._billboardRoot = new DisplayObjectContainer();
-		SceneImage2D._billboardRenderer = <DefaultRenderer> RenderGroup.getInstance(
-			new View(projection,this._stage, null, null, null, true),
-			RendererType.DEFAULT)
-			.getRenderer(new SceneGraphPartition(SceneImage2D._billboardRoot));
-
+		SceneImage2D._billboardRenderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, this._stage, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(SceneImage2D._billboardRoot));
 		SceneImage2D._billboardRoot.partition = SceneImage2D._billboardRenderer.partition;
 
 		//setup the projection
@@ -358,17 +388,15 @@ export class SceneImage2D extends BitmapImage2D {
 	 *
 	 */
 	public dispose(): void {
-		this.dropAllReferences();
-		this.unmarkToUnload();
-		this.unuseWeakRef();
-
 		this._dirtyRegions = null;
 		this._updateRegions = null;
 		this._maxDirtyArea = null;
 
+		this.unuseWeakRef();
+
 		// drop buffer, because is big
-		this._data = null;
-		this._locked = false;
+		(<any> this)._data = null;
+		(<any> this)._locked = null;
 
 		if (!SceneImage2D.tryStoreImage(this, false)) {
 			super.dispose();
@@ -377,18 +405,12 @@ export class SceneImage2D extends BitmapImage2D {
 		//todo
 	}
 
-	public unload() {
-		this.syncData();
-		super.unload();
-	}
-
-	protected deepClone(from: BitmapImage2D) {
-		this.copyPixels(from, this._rect, new Point(0,0));
-	}
-
+	/**
+	 * @inheritdoc
+	 */
 	public clone(): SceneImage2D {
 		const clone = SceneImage2D.getImage(this.width, this.height, this.transparent, null, false, this._stage);
-		this.addNestedReference(clone);
+		//clone.copyPixels(this, this.rect, new Point(0,0));
 
 		return clone;
 	}
@@ -403,21 +425,6 @@ export class SceneImage2D extends BitmapImage2D {
 	 * @throws TypeError The rect is null.
 	 */
 	public fillRect(rect: Rectangle, color: number): void {
-
-		if (this._locked && (rect.width | 0) === this.width && (rect.height | 0) === this.height) {
-			/*
-			* Use a legacy fillRect based on buffer data,
-			* kill all existed data inside buffer.
-			* This is faster that run a renderer because only put color to locked buffer
-			*/
-			super.fillRect(rect, color);
-			this.resetDirty();
-
-			return;
-		}
-
-		this.dropAllReferences();
-
 		if (!SceneImage2D._renderer)
 			this.createRenderer();
 
@@ -479,13 +486,7 @@ export class SceneImage2D extends BitmapImage2D {
 	 *                         channel, set the value to <code>false</code>.
 	 * @throws TypeError The sourceBitmapImage2D, sourceRect, destPoint are null.
 	 */
-	public copyPixels(
-		source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point,
-		alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?: boolean): void {
-
-		this.dropAllReferences();
-		this.unmarkToUnload();
-
+	public copyPixels(source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point, alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?: boolean): void {
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
 
@@ -510,13 +511,7 @@ export class SceneImage2D extends BitmapImage2D {
 		this.pushDirtyRegion(new Rectangle(destPoint.x, destPoint.y, sourceRect.width, sourceRect.height));
 	}
 
-	public threshold(
-		source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point,
-		operation: string, threshold: number, color: number, mask: number, copySource: boolean): void {
-
-		this.dropAllReferences();
-		this.unmarkToUnload();
-
+	public threshold(source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point, operation: string, threshold: number, color: number, mask: number, copySource: boolean): void {
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ZERO);
 		this._stage.threshold(source, this, sourceRect, destPoint, operation, threshold, color, mask, copySource);
@@ -526,9 +521,6 @@ export class SceneImage2D extends BitmapImage2D {
 	}
 
 	public colorTransform(rect: Rectangle, colorTransform: ColorTransform): void {
-		this.dropAllReferences();
-		this.unmarkToUnload();
-
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ZERO);
 
@@ -561,6 +553,25 @@ export class SceneImage2D extends BitmapImage2D {
 
 		return result & 0x00ffffff;
 	}
+
+	// /**
+	//  *
+	//  * @returns {ImageData}
+	//  */
+	// public getImageData():ImageData
+	// {
+	// 	if (this._imageDataDirty) {
+	// 		this._imageDataDirty = false;
+	// 		SceneImage2D._renderer.view.clear(false, true);
+	// 		var gl:WebGLRenderingContext | WebGL2RenderingContext = (<ContextWebGL> this._stage.context)._gl;
+	// 		var dummy:BitmapImage2D = new BitmapImage2D(this._rect.width, this._rect.height, true, 0x0, false);
+	// 		gl.readPixels(0, 0, this._rect.width, this._rect.height, gl.RGBA, gl.UNSIGNED_BYTE, dummy.getImageData().data);
+	// 		super.draw(dummy);
+	// 		this._stage.setRenderTarget(null, true);
+	// 	}
+
+	// 	return super.getImageData();
+	// }
 
 	/**
 	 * Draws the <code>source</code> display object onto the bitmap image, using
@@ -634,17 +645,9 @@ export class SceneImage2D extends BitmapImage2D {
 	 *                       restriction does not apply to AIR content in the
 	 *                       application security sandbox.
 	 */
-
-	/* eslint-disable */
 	public draw(source: DisplayObject, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean);
 	public draw(source: BitmapImage2D, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean);
-	public draw(source: any, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean): void 
-	{
-	/* eslint-enable */
-
-		this.dropAllReferences();
-		this.unmarkToUnload();
-
+	public draw(source: any, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean): void {
 		if (source instanceof DisplayObject) {
 			this._drawAsDisplay(source, matrix, colorTransform, blendMode, clipRect, smoothing);
 		} else {
@@ -673,9 +676,7 @@ export class SceneImage2D extends BitmapImage2D {
 		return BlendMode.LAYER;
 	}
 
-	private _drawAsBitmap(
-		source: BitmapImage2D, matrix?: Matrix, colorTransform?: ColorTransform,
-		blendMode?: string, clipRect?: Rectangle, smoothing?: boolean) {
+	private _drawAsBitmap(source: BitmapImage2D, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean) {
 
 		if (!SceneImage2D._billboardRenderer)
 			this.createBillboardRenderer();
@@ -711,15 +712,11 @@ export class SceneImage2D extends BitmapImage2D {
 			root.transform.moveTo(0, this.rect.height,0);
 		}
 
-		root.transform.colorTransform = colorTransform;
-
 		//render
 		renderer.render();
 	}
 
-	private _drawAsDisplay(
-		source: DisplayObject, matrix?: Matrix, colorTransform?: ColorTransform,
-		blendMode?: string, clipRect?: Rectangle, smoothing?: boolean) {
+	private _drawAsDisplay(source: DisplayObject, matrix?: Matrix, colorTransform?: ColorTransform, blendMode?: string, clipRect?: Rectangle, smoothing?: boolean) {
 
 		if (!SceneImage2D._renderer)
 			this.createRenderer();
@@ -728,10 +725,11 @@ export class SceneImage2D extends BitmapImage2D {
 		const renderer = SceneImage2D._renderer;
 
 		const oldParent = source.parent;
-		const depth = source._depthID;
-		const index = oldParent ? oldParent.getChildIndex(source) : 0;
-		const oldVisible = source.visible;
 
+		if (oldParent)
+			(<DisplayObjectContainer>oldParent.adapter).getChildForDraw(source);
+
+		const oldVisible = source.visible;
 		const sTrans = source.transform;
 
 		// clone TRS separatenly, because matrix saving/restoring is bugged, ex
@@ -779,7 +777,6 @@ export class SceneImage2D extends BitmapImage2D {
 		renderer.view.width = this.width;
 		renderer.view.height = this.height;
 
-		root.transform.colorTransform = colorTransform;
 		root.removeChildren(0, root.numChildren);
 		root.addChild(source);
 
@@ -807,15 +804,10 @@ export class SceneImage2D extends BitmapImage2D {
 
 		source.transform.colorTransform = TMP_COLOR_MATRIX;
 
+		root.removeChild(source);
+
 		if (oldParent) {
-			if (oldParent.adapter && oldParent.adapter != oldParent &&
-				source.adapter && source.adapter != source && (<any>oldParent.adapter).addChildAt) {
-				(<any>oldParent.adapter).addChildAt(source.adapter, index);
-
-			} else {
-				oldParent.addChildAtDepth(source, depth, true);
-			}
-
+			(<DisplayObjectContainer>oldParent.adapter).returnChildAfterDraw(source);
 		}
 
 		//SceneImage2D.scene.dispose();
