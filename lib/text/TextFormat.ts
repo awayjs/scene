@@ -673,6 +673,21 @@ export class TextFormat extends AssetBase {
 	}
 
 	/**
+	 * Merge this format with other format by this rules:
+	 * if both formats have same property-valu8e, property value persists
+	 * if both formats have different property-value, property-value becomes null
+	 * Used by Textfield.getTextFormat
+	 * @param format
+	 */
+	public mergeFormat(format: TextFormat) {
+		for (const field of PUBLIC_FIELDS) {
+			if (this['_' + field] !== format[field]) {
+				this['_' + field] = null;
+			}
+		}
+	}
+
+	/**
 	 *
 	 */
 	public get assetType(): string {

@@ -3061,9 +3061,26 @@ export class TextField extends DisplayObjectContainer {
 	 *                    specified is out of range.
 	 */
 	public getTextFormat(beginIndex: number /*int*/ = -1, endIndex: number /*int*/ = -1): TextFormat {
-		if (beginIndex >= 0 || endIndex >= 0)
-		    console.warn('Textfield.getTextFormat() not correctly implemented for multi-formatted text');
-		return this._textFormat;
+		if (!this.tf_per_char || !this.tf_per_char.length) {
+			if (this._textFormat)
+				return this._textFormat.clone();
+			return new TextFormat();
+		}
+		if (beginIndex < 0)
+			beginIndex = 0;
+		if (endIndex > this.tf_per_char.length) {
+			endIndex = this.tf_per_char.length;
+		}
+		const newTextFormat = this.tf_per_char[beginIndex].clone();
+		let lastFormat = this.tf_per_char[beginIndex];
+		for (let i = beginIndex + 1; i < endIndex; i++) {
+			if (this.tf_per_char[i] == lastFormat) {
+				continue;
+			}
+			newTextFormat.mergeFormat(this.tf_per_char[i]);
+			lastFormat = this.tf_per_char[i];
+		}
+		return newTextFormat;
 	}
 
 	/**
