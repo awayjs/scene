@@ -313,8 +313,14 @@ export class Scene {
 		if (this.beforeRenderCallback)
 			this.beforeRenderCallback();
 
+		const stage = this._view.stage;
+
+		stage.onRenderBegin && stage.onRenderBegin();
+
 		//render the contents of the scene
 		this.renderer.render();
+
+		stage.onRenderEnd && stage.onRenderEnd();
 	}
 
 	/**
