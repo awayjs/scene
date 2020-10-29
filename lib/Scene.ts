@@ -1,6 +1,14 @@
 import { Vector3D, getTimer } from '@awayjs/core';
 
-import { View, PickingCollision, BasicPartition, PartitionBase, TabPicker, RaycastPicker, PickGroup } from '@awayjs/view';
+import {
+	View,
+	PickingCollision,
+	BasicPartition,
+	PartitionBase,
+	TabPicker,
+	RaycastPicker,
+	PickGroup,
+} from '@awayjs/view';
 import { RendererBase, RenderGroup, RendererType } from '@awayjs/renderer';
 
 import { TouchPoint } from './base/TouchPoint';
@@ -15,17 +23,18 @@ import { MethodMaterial, ImageTexture2D } from '@awayjs/materials';
 export class Scene {
 
 	/*
-	 *************************************************************************************************************************
+	 ***************************************************************************
 	 * Development Notes
-	 *************************************************************************************************************************
+	 ***************************************************************************
 	 *
-	 * ShareContext     - this is not being used at the moment integration with other frameworks is not yet implemented or tested
-	 *                    and ( _localPos / _globalPos ) position of view are the same for the moment
+	 * ShareContext - this is not being used at the moment integration with other
+	 * frameworks is not yet implemented or tested
+	 * and ( _localPos / _globalPos ) position of view are the same for the moment
 	 *
-	 * Background
-	 *                  - this is currently not being included in our tests and is currently disabled
+	 * Background - this is currently not being included in our tests and
+	 * is currently disabled
 	 *
-	 ******************clear********************************************************************************************************
+	 ***************************************************************************
 	 */
 
 	private _rendererType: RendererType;
@@ -116,7 +125,9 @@ export class Scene {
 	 * public _pTouch3DManager:away.managers.Touch3DManager;
 	 *
 	 */
-	constructor(partition: PartitionBase = null, camera: Camera = null, view: View = null, rendererType: RendererType = null) {
+	constructor(
+		partition: PartitionBase = null, camera: Camera = null, view: View = null, rendererType: RendererType = null) {
+
 		this._onProjectionChangedDelegate = (event: CameraEvent) => this._onProjectionChanged(event);
 
 		this._rendererType = rendererType || RendererType.DEFAULT;
@@ -158,11 +169,23 @@ export class Scene {
 	}
 
 	public getLocalMouseX(entity: DisplayObject): number {
-		return entity.transform.inverseConcatenatedMatrix3D.transformVector(this._renderer.view.unproject(this._mouseX, this._mouseY, 1000)).x;
+		return entity
+			.transform
+			.inverseConcatenatedMatrix3D
+			.transformVector(
+				this._renderer.view.unproject(
+					this._mouseX, this._mouseY, 1000))
+			.x;
 	}
 
 	public getLocalMouseY(entity: DisplayObject): number {
-		return entity.transform.inverseConcatenatedMatrix3D.transformVector(this._renderer.view.unproject(this._mouseX, this._mouseY, 1000)).y;
+		return entity
+			.transform
+			.inverseConcatenatedMatrix3D
+			.transformVector(
+				this._renderer.view.unproject(
+					this._mouseX, this._mouseY, 1000))
+			.y;
 	}
 
 	public getLocalTouchPoints(entity: DisplayObject): Array<TouchPoint> {
@@ -171,7 +194,13 @@ export class Scene {
 
 		const len: number = this._touchPoints.length;
 		for (let i: number = 0; i < len; i++) {
-			localPosition = entity.transform.inverseConcatenatedMatrix3D.transformVector(this._renderer.view.unproject(this._touchPoints[i].x, this._touchPoints[i].y, 1000));
+			localPosition = entity
+				.transform
+				.inverseConcatenatedMatrix3D
+				.transformVector(
+					this._renderer.view.unproject(
+						this._touchPoints[i].x, this._touchPoints[i].y, 1000));
+
 			localTouchPoints.push(new TouchPoint(localPosition.x, localPosition.y, this._touchPoints[i].id));
 		}
 
