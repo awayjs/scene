@@ -6,7 +6,8 @@ import {
 	PerspectiveProjection,
 	CoordinateSystem,
 	Vector3D,
-	Transform
+	Transform,
+	ColorUtils
 } from '@awayjs/core';
 
 import { Stage,
@@ -403,11 +404,13 @@ export class SceneImage2D extends BitmapImage2D {
 	 */
 	public fillRect(rect: Rectangle, color: number): void {
 
-		if (this._locked && (rect.width | 0) === this.width && (rect.height | 0) === this.height) {
+		if ((this._locked || !this.wasUpload)
+			&& (rect.width | 0) === this.width
+			&& (rect.height | 0) === this.height) {
 			/*
 			* Use a legacy fillRect based on buffer data,
 			* kill all existed data inside buffer.
-			* This is faster that run a renderer because only put color to locked buffer
+			* This is faster that run a renderer because only put color to locked or not uploaded buffer
 			*/
 			super.fillRect(rect, color);
 			this.resetDirty();
@@ -424,8 +427,15 @@ export class SceneImage2D extends BitmapImage2D {
 		SceneImage2D._renderer.view.target = this;
 		SceneImage2D._renderer.view.projection.scale = 1000 / this.rect.height;
 
-		const alpha = this._transparent ? (color >> 24 & 0xff) / 255 : 1;
-		const rgb = color & 0xffffff;
+		const argb = ColorUtils.float32ColorToARGB(color);
+		const alpha = this._transparent ? argb[0] / 255 : 1;
+
+		// WE SHOULD PMA ALWAYS, BECAUSE A DATA IS PMA
+		const rgb = ColorUtils.ARGBtoFloat32(
+			0,
+			argb[1] * alpha | 0,
+			argb[2] * alpha | 0,
+			argb[3] * alpha | 0);
 
 		//make sure we are setup on view
 		SceneImage2D._renderer.view.x = rect.x;
