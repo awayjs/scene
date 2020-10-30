@@ -25,7 +25,7 @@ import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 import { SceneGraphPartition } from '../partition/SceneGraphPartition';
 
 import { View } from '@awayjs/view';
-import { MethodMaterial } from '@awayjs/materials';
+import { MaterialBase, MethodMaterial } from '@awayjs/materials';
 import { Billboard } from '../display/Billboard';
 
 // empty matrix for transfrorm reset
@@ -328,7 +328,6 @@ export class SceneImage2D extends BitmapImage2D {
 		SceneImage2D._billboardRenderer.renderableSorter = null;//new RenderableSort2D();
 
 		const mat: MethodMaterial = new MethodMaterial(new BitmapImage2D(128, 128, true, 0x0));
-		//mat.colorTransform = new ColorTransform(argb[1]/255, argb[2]/255, argb[3]/255);
 		mat.bothSides = true;
 		mat.alphaBlending = true;
 
@@ -690,6 +689,7 @@ export class SceneImage2D extends BitmapImage2D {
 
 		billboard.material.style.image = source;
 		billboard.material.blendMode = this._mapBlendMode(blendMode);
+		(<MaterialBase> billboard.material).useColorTransform = !!colorTransform;
 
 		if (matrix) {
 			const m = root.transform.matrix3D;
