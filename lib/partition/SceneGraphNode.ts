@@ -1,12 +1,13 @@
 import { IPartitionTraverser, NodeBase, EntityNode } from '@awayjs/view';
 import { DisplayObject } from '../display/DisplayObject';
+import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 
 /**
  * Maintains scenegraph heirarchy when collecting nodes
  */
 export class SceneGraphNode extends NodeBase {
-	private _numNodes: number = 0;
-	private _pChildNodes: Array<EntityNode> = new Array<EntityNode>();
+	private _enitityIDsToNodes: NumberMap<EntityNode> = {};
+	private _graphicsNode: EntityNode;
 
 	/**
 	 *
@@ -24,8 +25,13 @@ export class SceneGraphNode extends NodeBase {
 			return;
 
 		let i: number;
-		for (i = this._numNodes - 1; i >= 0; i--)
-			this._pChildNodes[i].acceptTraverser(traverser);
+		const len = (<DisplayObjectContainer> this._entity)._children.length;
+		for (i = len - 1; i >= 0; i--)
+			this._enitityIDsToNodes[(<DisplayObjectContainer> this._entity)._children[i].id].acceptTraverser(traverser);
+
+		if (this._graphicsNode) {
+			this._graphicsNode.acceptTraverser(traverser);
+		}
 	}
 
 	/**
@@ -35,30 +41,11 @@ export class SceneGraphNode extends NodeBase {
 	 */
 	public iAddNode(node: EntityNode): void {
 		node.parent = this;
-
-		let index = -1;
 		if (this._entity == node.entity) {
-			// this is the node for the graphics object of a Sprite / MC, not a child
-			// always have it at first index
-			index = 0;
+			this._graphicsNode = node;
 		} else {
-			// get child index
-			index = (<DisplayObject> node.entity).parent.getChildIndex(<DisplayObject> node.entity);
+			this._enitityIDsToNodes[node.entity.id] = node;
 		}
-
-		if (this._pChildNodes.length > 0 && this._pChildNodes[0].entity == this.entity) {
-			// if first child-node was added for this.entity, we must increment index by 1
-			index++;
-		}
-
-		if (index == -1) {
-			console.warn('[SceneGraphNode] - iAddNode - index should never be -1');
-		} else if (index > this._pChildNodes.length) {
-			this._pChildNodes.push(node);
-		} else {
-			this._pChildNodes.splice(index, 0, node);
-		}
-		this._numNodes++;
 	}
 
 	public isVisible(): boolean {
@@ -71,7 +58,10 @@ export class SceneGraphNode extends NodeBase {
 	 * @internal
 	 */
 	public iRemoveNode(node: EntityNode): void {
-		this._pChildNodes.splice(this._pChildNodes.indexOf(node), 1);
-		this._numNodes--;
+		if (this._graphicsNode == node) {
+			this._graphicsNode = null;
+		} else {
+			delete this._enitityIDsToNodes[node.entity.id];
+		}
 	}
 }
