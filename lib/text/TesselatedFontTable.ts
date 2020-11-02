@@ -2,7 +2,7 @@ import { Matrix, AssetBase, Point, Rectangle, ColorTransform, ColorUtils } from 
 
 import { ImageSampler, AttributesBuffer, Float2Attributes, AttributesView, BitmapImage2D } from '@awayjs/stage';
 
-import { Graphics, GraphicsPath, Shape, TriangleElements, GraphicsFactoryStrokes, GraphicsFactoryFills, JointStyle, CapsStyle, DrawMode, GraphicsStrokeStyle, GraphicsFactoryHelper, MaterialManager } from '@awayjs/graphics';
+import { GraphicsPath, Shape, TriangleElements, GraphicsFactoryFills, DrawMode, GraphicsFactoryHelper, MaterialManager } from '@awayjs/graphics';
 
 import { Style } from '@awayjs/renderer';
 import { MaterialBase, MethodMaterial } from '@awayjs/materials';
@@ -35,7 +35,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 	public static assetType: string = '[asset TesselatedFontTable]';
 	public static DEFAULT_SPACE = 14;
 
-	public vertical_glyph_offset: number;
 	public font: any;
 
 	/*internal*/ _font_chars_dic: StringMap<TesselatedFontChar>;
@@ -82,7 +81,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		this._usesCurves = false;
 		this._glyphIdxToChar = {};
 		this._fnt_channels = [];
-		this.vertical_glyph_offset = 0;
 
 		// default size
 		this._font_em_size = 32;
@@ -636,12 +634,11 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		let charGlyph: TesselatedFontChar;
 		let char_vertices: AttributesBuffer;
 		const c: number = 0;
-		const c_len: number = 0;
+		const amount_of_chars_in_word: number = 0;
 		const startIdx: number = 0;
 		let buffer: Float32Array;
 		let v: number;
 		let size_multiply: number;
-		const hack_x_mirror: boolean = false;
 
 		let idx: number = 0;
 		let i: number = 0;
@@ -701,39 +698,48 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		const fntSelectedTextShapesByChannel: any = {};
 		//var currentFNTTextShapeMap:any;
 
-		var argb: number[] = ColorUtils.float32ColorToARGB(format.color);
-		var mat: MethodMaterial = new MethodMaterial(this._fnt_channels[0]);
-		mat.colorTransform = new ColorTransform(argb[1] / 255, argb[2] / 255, argb[3] / 255);
-		mat.bothSides = true;
-		mat.alphaBlending = true;
-		mat.useColorTransform = true;
-		mat.style.sampler = new ImageSampler(false, true, true);
+		var argb: number[];
+		var mat: MethodMaterial;
+		if (useFNT) {
+			argb = ColorUtils.float32ColorToARGB(format.color);
+			mat = new MethodMaterial(this._fnt_channels[0]);
+			mat.colorTransform = new ColorTransform(argb[1] / 255, argb[2] / 255, argb[3] / 255);
+			mat.bothSides = true;
+			mat.alphaBlending = true;
+			mat.useColorTransform = true;
+			mat.style.sampler = new ImageSampler(false, true, true);
+		}
 		textShape.fntMaterial = useFNT ? mat : null;
 		fntTextShapesByChannel[format.color.toString() + useFNT.toString() + '0'] = textShape;
-		const newFormat: TextFormat = format.clone();
-		newFormat.color = 0xffffff;
-		const textShapeSelected: TextShape = tf.getTextShapeForIdentifierAndFormat(useFNT.toString() + '0', newFormat);
-		fntSelectedTextShapesByChannel[useFNT.toString() + '0'] = textShapeSelected;
-		var mat: MethodMaterial = new MethodMaterial(this._fnt_channels[0]);
-		mat.bothSides = true;
-		mat.alphaBlending = true;
-		mat.useColorTransform = true;
-		mat.style.sampler = new ImageSampler(false, true, true);
-		textShapeSelected.fntMaterial = useFNT ? mat : null;
+		let textShapeSelected: TextShape;
+		let newFormat: TextFormat;
+		if (tf.selectable) {
+			newFormat = format.clone();
+			newFormat.color = 0xffffff;
+
+			textShapeSelected = tf.getTextShapeForIdentifierAndFormat(useFNT.toString() + '0', newFormat);
+			fntSelectedTextShapesByChannel[useFNT.toString() + '0'] = textShapeSelected;
+			mat = new MethodMaterial(this._fnt_channels[0]);
+			mat.bothSides = true;
+			mat.alphaBlending = true;
+			mat.useColorTransform = true;
+			mat.style.sampler = new ImageSampler(false, true, true);
+			textShapeSelected.fntMaterial = useFNT ? mat : null;
+		}
+
 		let currentTextShape: TextShape = null;
 		let charGlyph: TesselatedFontChar;
 		let w: number = 0;
-		const w_len: number = startWord + (wordCnt * 5);
+		const w_len: number = wordCnt * 5;
 		let char_vertices: AttributesBuffer;
 		let c: number = 0;
-		let c_len: number = 0;
+		let amount_of_chars_in_word: number = 0;
 		let x: number = 0;
 		let y: number = 0;
 		let startIdx: number = 0;
 		let buffer: Float32Array;
 		let v: number;
 		let size_multiply: number;
-		let hack_x_mirror: boolean = false;
 		let select_start: number = tf.selectionBeginIndex;
 		let select_end: number = tf.selectionEndIndex;
 		if (tf.selectionEndIndex < tf.selectionBeginIndex) {
@@ -741,12 +747,12 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			select_end = tf.selectionBeginIndex;
 		}
 		let start_x: number = 0;
-		if (newFormat.underline && (startWord + 1) < tf.words.length) {
+		if (tf.selectable && newFormat.underline && (startWord + 1) < tf.words.length) {
 			start_x = tf.words[startWord + 1];
 		}
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
-		for (w = startWord; w < w_len; w += 5) {
+		for (w = startWord * 5; w < w_len; w += 5) {
 			startIdx = tf.words[w];
 			x = tf.words[w + 1];
 			y = tf.words[w + 2];
@@ -760,13 +766,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 				y -= 2;
 			}
 			//y=tf.words[w+2]+(this.ascent-this.get_font_em_size())*this._size_multiply; // enable for icycle
-			c_len = startIdx + tf.words[w + 4];
-			for (c = startIdx; c < c_len; c++) {
-				hack_x_mirror = false;
-				if (tf.chars_codes[c] == 40) {
-					//tf.chars_codes[c]=41;
-					//hack_x_mirror=true;
-				}
+			amount_of_chars_in_word = startIdx + tf.words[w + 4];
+			for (c = startIdx; c < amount_of_chars_in_word; c++) {
 				currentTextShape = (tf.isInFocus && c >= select_start && c < select_end) ? textShapeSelected : textShape;
 				if (tf.chars_codes[c] != 32 && tf.chars_codes[c] != 9) {
 					charGlyph = this.getChar(tf.chars_codes[c].toString());
@@ -838,16 +839,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 									currentTextShape.verts[currentTextShape.verts.length] = buffer[v * 3 + 2];
 								}
 							} else {
-								if (hack_x_mirror) {
-									for (v = 0; v < char_vertices.count; v++) {
-										currentTextShape.verts[currentTextShape.verts.length] = ((charGlyph.char_width - buffer[v * 2]) * size_multiply) + x;
-										currentTextShape.verts[currentTextShape.verts.length] = ((buffer[v * 2 + 1] - this.vertical_glyph_offset) * size_multiply) + y;
-									}
-								} else {
-									for (v = 0; v < char_vertices.count; v++) {
-										currentTextShape.verts[currentTextShape.verts.length] = ((buffer[v * 2]) * size_multiply) + x;
-										currentTextShape.verts[currentTextShape.verts.length] = ((buffer[v * 2 + 1] - this.vertical_glyph_offset) * size_multiply) + y;
-									}
+								for (v = 0; v < char_vertices.count; v++) {
+									currentTextShape.verts[currentTextShape.verts.length] = ((buffer[v * 2]) * size_multiply) + x;
+									currentTextShape.verts[currentTextShape.verts.length] = ((buffer[v * 2 + 1]) * size_multiply) + y;
 								}
 							}
 
@@ -864,7 +858,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			const half_thickness: number = 0.25 * tf.internalScale.y;
 			const topY: number = y + this.getUnderLineHeight() + half_thickness;
 			const bottomY: number = y + this.getUnderLineHeight() - half_thickness;
-			if (newFormat.underline && (startWord + 1) < tf.words.length) {
+			if (tf.selectable && newFormat.underline && (startWord + 1) < tf.words.length) {
 				currentTextShape.verts[currentTextShape.verts.length] = start_x;
 				currentTextShape.verts[currentTextShape.verts.length] = bottomY;
 				currentTextShape.verts[currentTextShape.verts.length] = start_x;
