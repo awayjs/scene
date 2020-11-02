@@ -404,9 +404,7 @@ export class HTMLTextProcessor {
 				this.readHTMLTextPropertiesRecursive(target_tf, myChild.childNodes[k], textProps, childFormat);
 			}
 		} else {
-			// if nodeValue exists, we add it to the text
-			if ((<any>myChild).nodeValue) {
-				// if a nodes content contains only line-breaks or whitespace, flash seem to ignore it
+			// if a nodes content contains only line-breaks or whitespace, flash seem to ignore it
 			const testContent: string = (<any>myChild).text.replace(/[\s\r\n]/gi, '');
 			if (testContent != '') {
 				textProps.text += (<any>myChild).text.replace('\n', '\\n');
