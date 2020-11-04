@@ -205,6 +205,10 @@ export class TextField extends DisplayObjectContainer {
 	public tf_per_char: TextFormat[]=[];
 	public tf_per_char_prev: TextFormat[]=[];
 
+	// we use that for text appending to save verts count before last word verts are added to textShape.
+	// Then on text append we clear last word verts because the word may be wrapped to next line
+	public last_word_vertices_count: number = 0;
+
 	public words: number[]=[];			// stores offset and length and width for each word
 
 	private _textRuns_formats: TextFormat[]=[];	// stores textFormat for each textrun
@@ -1940,7 +1944,9 @@ export class TextField extends DisplayObjectContainer {
 
 			this.chars_codes_prev = Array.from(this.chars_codes);
 			this.tf_per_char_prev = Array.from(this.tf_per_char);
-			this._textRuns_words_amount_prev = this._textRuns_words[1] ? this._textRuns_words[1] : 0;
+			// we do not use last word since last word may changed.
+			// For example "Hello w" and "Hello world" both have 3 words but the last word actually changed
+			this._textRuns_words_amount_prev = this._textRuns_words[1] - 1 ? this._textRuns_words[1] - 1 : 0;
 
 			this.chars_codes.length = 0;
 			this.chars_width.length = 0;
@@ -2027,7 +2033,6 @@ export class TextField extends DisplayObjectContainer {
 		//	and the new text-shapes are created and assigned to the graphics
 
 		if (this.chars_codes_prev.length > this.chars_codes.length) {
-			console.log('mismatch3! new text is smaller'); // @todo rm comment
 			this._textShapesDirty = true;
 		}
 
@@ -2240,7 +2245,6 @@ export class TextField extends DisplayObjectContainer {
 				this.chars_codes_prev[c] &&
 				(this.chars_codes_prev[c] != char_code
 				|| (<any> this.tf_per_char_prev[c])._style_name != (<any>tf)._style_name)) {
-				console.log(`mismatch2! prev ${this.chars_codes_prev[c]} != ${char_code}`);
 				this._textShapesDirty = true;
 				c = -1; // stop the for loop
 			} else {
@@ -2264,7 +2268,6 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	private getWordPositions() {
-		// debugger;
 		/*console.log("this._iText", this._iText);
 		console.log("this._width", this._width);
 		console.log("this._height", this._height);*/
@@ -2703,24 +2706,21 @@ export class TextField extends DisplayObjectContainer {
 		const tr_words = this._textRuns_words;
 		const tr_len = tr_formats.length;
 
-		for (let tr = 0; tr < tr_len; tr++) {
-			tr_formats[tr].font_table.initFontSize(tr_formats[tr].size);
-			let w = this._textRuns_words_amount_prev;
-
-			if (w == tr_words[(tr * 4) + 1]) w--;
-
-			tr_formats[tr].font_table.fillTextRun(this, tr_formats[tr], w > 0 ? w - 1 : 0, tr_words[(tr * 4) + 1]); // @todo
-		}
-
 		if (this._textShapesDirty) {
 			try {
 				this._clearTextShapes();
-				console.log('CLEAR!');
 
 			} catch (error) {
 				console.warn(error); // @todo
 			}
 
+		}
+
+		for (let tr = 0; tr < tr_len; tr++) {
+			tr_formats[tr].font_table.initFontSize(tr_formats[tr].size);
+			const w = this._textRuns_words_amount_prev;
+
+			tr_formats[tr].font_table.fillTextRun(this, tr_formats[tr], w > 0 ? w : 0, tr_words[(tr * 4) + 1]); // @todo
 		}
 
 		let textShape: TextShape;
@@ -3665,6 +3665,8 @@ export class TextField extends DisplayObjectContainer {
 
 	private _clearTextShapes(): void {
 		this._textShapesDirty = false;
+
+		this.last_word_vertices_count = 0;
 
 		if (this.targetGraphics)
 			this.targetGraphics.clear();

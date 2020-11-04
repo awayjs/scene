@@ -713,19 +713,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		fntTextShapesByChannel[format.color.toString() + useFNT.toString() + '0'] = textShape;
 		let textShapeSelected: TextShape;
 		let newFormat: TextFormat;
-		if (tf.selectable) {
-			newFormat = format.clone();
-			newFormat.color = 0xffffff;
-
-			textShapeSelected = tf.getTextShapeForIdentifierAndFormat(useFNT.toString() + '0', newFormat);
-			fntSelectedTextShapesByChannel[useFNT.toString() + '0'] = textShapeSelected;
-			mat = new MethodMaterial(this._fnt_channels[0]);
-			mat.bothSides = true;
-			mat.alphaBlending = true;
-			mat.useColorTransform = true;
-			mat.style.sampler = new ImageSampler(false, true, true);
-			textShapeSelected.fntMaterial = useFNT ? mat : null;
-		}
 
 		let currentTextShape: TextShape = null;
 		let charGlyph: TesselatedFontChar;
@@ -742,17 +729,40 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		let size_multiply: number;
 		let select_start: number = tf.selectionBeginIndex;
 		let select_end: number = tf.selectionEndIndex;
-		if (tf.selectionEndIndex < tf.selectionBeginIndex) {
-			select_start = tf.selectionEndIndex;
-			select_end = tf.selectionBeginIndex;
-		}
 		let start_x: number = 0;
-		if (tf.selectable && newFormat.underline && (startWord + 1) < tf.words.length) {
-			start_x = tf.words[startWord + 1];
+		if (tf.selectable) {
+			newFormat = format.clone();
+			newFormat.color = 0xffffff;
+
+			textShapeSelected = tf.getTextShapeForIdentifierAndFormat(useFNT.toString() + '0', newFormat);
+			fntSelectedTextShapesByChannel[useFNT.toString() + '0'] = textShapeSelected;
+			mat = new MethodMaterial(this._fnt_channels[0]);
+			mat.bothSides = true;
+			mat.alphaBlending = true;
+			mat.useColorTransform = true;
+			mat.style.sampler = new ImageSampler(false, true, true);
+			textShapeSelected.fntMaterial = useFNT ? mat : null;
+
+			if (newFormat.underline && (startWord + 1) < tf.words.length) {
+				start_x = tf.words[startWord + 1];
+			}
+
+			if (tf.selectionEndIndex < tf.selectionBeginIndex) {
+				select_start = tf.selectionEndIndex;
+				select_end = tf.selectionBeginIndex;
+			}
 		}
+
+		// drop verts to the state of previous word because prev word may be wrapped
+		textShape.verts.length = tf.last_word_vertices_count; // @todo this not supports selectable text for now
+
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
 		for (w = startWord * 5; w < w_len; w += 5) {
+			if (w == w_len - 5) {
+				// last word in current text. Lets save length of textShape.vets BEFORE the last word verts applied.
+				tf.last_word_vertices_count = textShape.verts.length;
+			}
 			startIdx = tf.words[w];
 			x = tf.words[w + 1];
 			y = tf.words[w + 2];
@@ -875,7 +885,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 		}
 		buffer = null;
-
 	}
 
 	public createPointGlyph_9679(): TesselatedFontChar {
