@@ -2246,9 +2246,9 @@ export class TextField extends DisplayObjectContainer {
 				(this.chars_codes_prev[c] != char_code
 				|| (<any> this.tf_per_char_prev[c])._style_name != (<any>tf)._style_name)) {
 				this._textShapesDirty = true;
-				c = -1; // stop the for loop
+				break;
 			} else {
-				c = -1; // stop the for loop
+				break;
 			}
 		}
 	}
@@ -2706,21 +2706,13 @@ export class TextField extends DisplayObjectContainer {
 		const tr_words = this._textRuns_words;
 		const tr_len = tr_formats.length;
 
-		if (this._textShapesDirty) {
-			try {
-				this._clearTextShapes();
-
-			} catch (error) {
-				console.warn(error); // @todo
-			}
-
-		}
+		if (this._textShapesDirty) this._clearTextShapes();
 
 		for (let tr = 0; tr < tr_len; tr++) {
 			tr_formats[tr].font_table.initFontSize(tr_formats[tr].size);
 			const w = this._textRuns_words_amount_prev;
 
-			tr_formats[tr].font_table.fillTextRun(this, tr_formats[tr], w > 0 ? w : 0, tr_words[(tr * 4) + 1]); // @todo
+			tr_formats[tr].font_table.fillTextRun(this, tr_formats[tr], w > 0 ? w : 0, tr_words[(tr * 4) + 1]);
 		}
 
 		let textShape: TextShape;
