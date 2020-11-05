@@ -3,6 +3,7 @@ import { TextFormat } from './TextFormat';
 import { ColorUtils } from '@awayjs/core';
 import { TextFormatAlign } from './TextFormatAlign';
 import { TextFieldAutoSize } from './TextFieldAutoSize';
+import { parse } from 'node-html-parser';
 
 export class HTMLTextProcessor {
 	private static instance: HTMLTextProcessor;
@@ -250,18 +251,10 @@ export class HTMLTextProcessor {
 		target_tf._textFormats = [target_tf._textFormat];
 		//target_tf._textFormat.size=16;
 		target_tf._textFormatsIdx = [0];
-		const parser = new DOMParser();
-		const doc = parser.parseFromString('<p>' + input + '</p>', 'application/xml');
+		const doc = parse(input);
 		if (doc && doc.firstChild) {
 			textProps.multiline = doc.firstChild.childNodes.length > 0;
-			let startNode: any = doc;
-			if (doc.firstChild.childNodes.length > 0) {
-				if (doc.firstChild.childNodes[0].nodeName == 'parsererror') {
-					startNode = doc.firstChild.childNodes[1];
-					//console.log("html errored",  doc.firstChild);
-				}
-			}
-			this.readHTMLTextPropertiesRecursive(target_tf, startNode, textProps, target_tf._textFormat);
+			this.readHTMLTextPropertiesRecursive(target_tf, doc, textProps, target_tf._textFormat);
 		}
 		if (textProps.text != '' && ((textProps.text.charCodeAt(textProps.text.length - 1) == 13) || (textProps.text.charCodeAt(textProps.text.length - 1) == 10))) {
 			textProps.text = textProps.text.slice(0, textProps.text.length - 1);
@@ -288,42 +281,42 @@ export class HTMLTextProcessor {
 		const newProps_names: string[] = [];
 		if (myChild.attributes) {
 			if ((<any>myChild.attributes).size || (<any>myChild.attributes).SIZE) {
-				var value = (<any>myChild.attributes).size ? (<any>myChild.attributes).size.nodeValue : (<any>myChild.attributes).SIZE.nodeValue;
+				var value = (<any>myChild.attributes).size ? (<any>myChild.attributes).size : (<any>myChild.attributes).SIZE;
 				value = value.replace(/[^0-9.]/g, '');
 				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = 'size';
 			}
 			if ((<any>myChild.attributes).color || (<any>myChild.attributes).COLOR) {
-				var value = (<any>myChild.attributes).color ? (<any>myChild.attributes).color.nodeValue : (<any>myChild.attributes).COLOR.nodeValue;
+				var value = (<any>myChild.attributes).color ? (<any>myChild.attributes).color : (<any>myChild.attributes).COLOR;
 				value = value.replace('#', '0x');
 				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = 'color';
 			}
 			if ((<any>myChild.attributes).indent || (<any>myChild.attributes).INDENT) {
-				var value = (<any>myChild.attributes).indent ? (<any>myChild.attributes).indent.nodeValue : (<any>myChild.attributes).INDENT.nodeValue;
+				var value = (<any>myChild.attributes).indent ? (<any>myChild.attributes).indent : (<any>myChild.attributes).INDENT;
 				value = value.replace(/[^0-9.]/g, '');
 				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = 'indent';
 			}
 			if ((<any>myChild.attributes).leftMargin || (<any>myChild.attributes).LEFTMARGIN) {
-				var value = (<any>myChild.attributes).leftMargin ? (<any>myChild.attributes).leftMargin.nodeValue : (<any>myChild.attributes).LEFTMARGIN.nodeValue;
+				var value = (<any>myChild.attributes).leftMargin ? (<any>myChild.attributes).leftMargin : (<any>myChild.attributes).LEFTMARGIN;
 				value = value.replace(/[^0-9.]/g, '');
 				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = 'leftMargin';
 			}
 			if ((<any>myChild.attributes).rightMargin || (<any>myChild.attributes).RIGHTMARGIN) {
-				var value = (<any>myChild.attributes).rightMargin ? (<any>myChild.attributes).rightMargin.nodeValue : (<any>myChild.attributes).RIGHTMARGIN.nodeValue;
+				var value = (<any>myChild.attributes).rightMargin ? (<any>myChild.attributes).rightMargin : (<any>myChild.attributes).RIGHTMARGIN;
 				value = value.replace(/[^0-9.]/g, '');
 				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = 'rightMargin';
 			}
 			if ((<any>myChild.attributes).align || (<any>myChild.attributes).ALIGN) {
-				var value = (<any>myChild.attributes).align ? (<any>myChild.attributes).align.nodeValue : (<any>myChild.attributes).ALIGN.nodeValue;
+				var value = (<any>myChild.attributes).align ? (<any>myChild.attributes).align : (<any>myChild.attributes).ALIGN;
 				newProps_values[newProps_values.length] = value;
 				newProps_names[newProps_names.length] = 'align';
 			}
 			if ((<any>myChild.attributes).face || (<any>myChild.attributes).FACE) {
-				var value = (<any>myChild.attributes).face ? (<any>myChild.attributes).face.nodeValue : (<any>myChild.attributes).FACE.nodeValue;
+				var value = (<any>myChild.attributes).face ? (<any>myChild.attributes).face : (<any>myChild.attributes).FACE;
 				newProps_values[newProps_values.length] = value;
 				newProps_names[newProps_names.length] = 'font_name';
 			}
@@ -411,16 +404,10 @@ export class HTMLTextProcessor {
 				this.readHTMLTextPropertiesRecursive(target_tf, myChild.childNodes[k], textProps, childFormat);
 			}
 		} else {
-			// if nodeValue exists, we add it to the text
-			if ((<any>myChild).nodeValue) {
-				// if a nodes content contains only line-breaks or whitespace, flash seem to ignore it
-				const testContent: string = (<any>myChild).nodeValue.replace(/[\s\r\n]/gi, '');
-				if (testContent != '') {
-					//if(!myChild.tagName){
-					//	textProps.text+="\\n";
-					//}
-					textProps.text += (<any>myChild).nodeValue.replace('\n', '\\n');
-				}
+			// if a nodes content contains only line-breaks or whitespace, flash seem to ignore it
+			const testContent: string = (<any>myChild).text.replace(/[\s\r\n]/gi, '');
+			if (testContent != '') {
+				textProps.text += (<any>myChild).text.replace('\n', '\\n');
 			}
 		}
 		if (myChild.tagName == 'li' || myChild.tagName == 'p') {

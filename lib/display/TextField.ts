@@ -1,4 +1,4 @@
-import { Box, ColorUtils, Matrix, Matrix3D, ColorTransform, Rectangle, Point, Vector3D, AssetEvent } from '@awayjs/core';
+import { ColorUtils, Matrix, ColorTransform, Rectangle, Point, Vector3D, AssetEvent } from '@awayjs/core';
 
 import { ImageSampler, AttributesBuffer, AttributesView, Float2Attributes } from '@awayjs/stage';
 
@@ -197,15 +197,23 @@ export class TextField extends DisplayObjectContainer {
 	public _positionsDirty: Boolean=false;	// if formatting is dirty, we need to recalculate text-positions / size
 	public _glyphsDirty: Boolean=false;	// if glyphs are dirty, we need to recollect the glyphdata and build the text-graphics. this should ony be done max once a frame
 	public _shapesDirty: Boolean=false;
+	public _textShapesDirty: Boolean=false; // if that is true this._clearTextShapes() will be called on next buildGlyphs() run
 
 	public chars_codes: number[]=[];	// stores charcode per char
+	private chars_codes_prev: number[]=[]; // char codes from prev run. We need that to check if new text == prev text + some delta (text was appended)
 	public chars_width: number[]=[];
 	public tf_per_char: TextFormat[]=[];
+	public tf_per_char_prev: TextFormat[]=[];
+
+	// we use that for text appending to save verts count before last word verts are added to textShape.
+	// Then on text append we clear last word verts because the word may be wrapped to next line
+	public last_word_vertices_count: number = 0;
 
 	public words: number[]=[];			// stores offset and length and width for each word
 
 	private _textRuns_formats: TextFormat[]=[];	// stores textFormat for each textrun
 	private _textRuns_words: number[]=[];	// stores words-offset, word-count and width for each textrun
+	private _textRuns_words_amount_prev: number;
 	private _paragraph_textRuns_indices: number[]=[];	// stores textFormat for each textrun
 
 	private _maxWidthLine: number=0;
@@ -1934,6 +1942,12 @@ export class TextField extends DisplayObjectContainer {
 		if (this._textDirty) {
 			this._positionsDirty = true;
 
+			this.chars_codes_prev = Array.from(this.chars_codes);
+			this.tf_per_char_prev = Array.from(this.tf_per_char);
+			// we do not use last word since last word may changed.
+			// For example "Hello w" and "Hello world" both have 3 words but the last word actually changed
+			this._textRuns_words_amount_prev = this._textRuns_words[1] - 1 ? this._textRuns_words[1] - 1 : 0;
+
 			this.chars_codes.length = 0;
 			this.chars_width.length = 0;
 			this.char_positions_x.length = 0;
@@ -2018,6 +2032,10 @@ export class TextField extends DisplayObjectContainer {
 		//	the data for new text-shapes is collected from the font-tables
 		//	and the new text-shapes are created and assigned to the graphics
 
+		if (this.chars_codes_prev.length > this.chars_codes.length) {
+			this._textShapesDirty = true;
+		}
+
 		if (this._glyphsDirty) {
 			//console.log("TextField buildGlyphs", this.id, this.words);
 			if (this._labelData) {
@@ -2073,7 +2091,7 @@ export class TextField extends DisplayObjectContainer {
 			const maxLineWidth = this._width - (tf.indent + tf.leftMargin + tf.rightMargin);
 
 			tf.font_table.initFontSize(tf.size);
-			const c_end = (f === f_len - 1) ? thisText.length : this._textFormatsIdx[f];
+			const c_end = (f === f_len - 1) ? thisText.length : this._textFormatsIdx[f]; // if that is last format then it goes till the end of text
 
 			if (c_end > c_start) {
 
@@ -2216,6 +2234,23 @@ export class TextField extends DisplayObjectContainer {
 			c_start = c_end;
 		}
 
+		// run through all the chars to check if new text is just old text with some data appended
+		if (this._textShapesDirty) return;
+		for (let c = this.chars_codes.length - 1; c >= 0; c--) {
+			const char_code = this.chars_codes[c];
+			const tf = this.tf_per_char_prev[c];
+
+			if (!this._textShapesDirty &&
+				// this.chars_codes_prev.length <= this.chars_codes.length &&
+				this.chars_codes_prev[c] &&
+				(this.chars_codes_prev[c] != char_code
+				|| (<any> this.tf_per_char_prev[c])._style_name != (<any>tf)._style_name)) {
+				this._textShapesDirty = true;
+				break;
+			} else {
+				break;
+			}
+		}
 	}
 
 	private adjustPositionForAutoSize(newWidth: number) {
@@ -2233,7 +2268,6 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	private getWordPositions() {
-
 		/*console.log("this._iText", this._iText);
 		console.log("this._width", this._width);
 		console.log("this._height", this._height);*/
@@ -2667,16 +2701,18 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	private buildGlyphs(): void {
-		this._clearTextShapes();
 
 		const tr_formats = this._textRuns_formats;
 		const tr_words = this._textRuns_words;
 		const tr_len = tr_formats.length;
 
+		if (this._textShapesDirty) this._clearTextShapes();
+
 		for (let tr = 0; tr < tr_len; tr++) {
 			tr_formats[tr].font_table.initFontSize(tr_formats[tr].size);
-			//	console.log( this._textRuns_formats[tr],  this._textRuns_words[tr*4],  this._textRuns_words[(tr*4)+1]);
-			tr_formats[tr].font_table.fillTextRun(this, tr_formats[tr], tr_words[(tr * 4)], tr_words[(tr * 4) + 1]);
+			const w = this._textRuns_words_amount_prev;
+
+			tr_formats[tr].font_table.fillTextRun(this, tr_formats[tr], w > 0 ? w : 0, tr_words[(tr * 4) + 1]);
 		}
 
 		let textShape: TextShape;
@@ -3637,13 +3673,17 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	private _clearTextShapes(): void {
+		this._textShapesDirty = false;
+
+		this.last_word_vertices_count = 0;
+
 		if (this.targetGraphics)
 			this.targetGraphics.clear();
 
 		let textShape: TextShape;
 		for (const key in this.textShapes) {
 			textShape = this.textShapes[key];
-			textShape.shape.dispose();
+			if (textShape.shape) textShape.shape.dispose();
 			textShape.shape = null;
 			textShape.elements = null;
 			textShape.verts.length = 0;
