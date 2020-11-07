@@ -1,12 +1,39 @@
-import { Transform, TransformEvent, Box, ColorTransform, Sphere, MathConsts, Matrix3D,
-	Rectangle, Vector3D, AssetBase, EventBase, Loader } from '@awayjs/core';
+import {
+	Transform,
+	TransformEvent,
+	ColorTransform,
+	Sphere,
+	MathConsts,
+	Matrix3D,
+	Rectangle,
+	Vector3D,
+	AssetBase,
+	EventBase,
+	Loader,
+} from '@awayjs/core';
 
 import { BlendMode } from '@awayjs/stage';
 
-import { PartitionBase, BoundingBox, BoundingSphere, BoundingVolumeType, BasicPartition,
-	PickGroup, IEntityTraverser, IPickingEntity, IPartitionEntity } from '@awayjs/view';
+import {
+	PartitionBase,
+	BoundingBox,
+	BoundingSphere,
+	BoundingVolumeType,
+	BasicPartition,
+	PickGroup,
+	IEntityTraverser,
+	IPickingEntity,
+	IPartitionEntity,
+} from '@awayjs/view';
 
-import { IAnimator, IMaterial, Style, StyleEvent, IRenderEntity, RenderableEvent } from '@awayjs/renderer';
+import {
+	IAnimator,
+	IMaterial,
+	Style,
+	StyleEvent,
+	IRenderEntity,
+	RenderableEvent,
+} from '@awayjs/renderer';
 
 import { ElementsType } from '@awayjs/graphics';
 
@@ -465,7 +492,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	public castsShadows: boolean = true;
 
 	/**
-	 * Defines the rotation of the 3d object as a <code>Vector3D</code> object containing euler angles for rotation around x, y and z axis.
+	 * Defines the rotation of the 3d object as a <code>Vector3D</code>
+	 * object containing euler angles for rotation around x, y and z axis.
 	 */
 	public get eulers(): Vector3D {
 		if (!this._eulers)
@@ -821,7 +849,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 */
 	public get registrationPoint(): Vector3D {
 		if (this._registrationMatrix3D)
-			return new Vector3D(-this._registrationMatrix3D._rawData[12] * this.scaleX, -this._registrationMatrix3D._rawData[13] * this.scaleY, -this._registrationMatrix3D._rawData[14] * this.scaleZ);
+			return new Vector3D(
+				-this._registrationMatrix3D._rawData[12] * this.scaleX,
+				-this._registrationMatrix3D._rawData[13] * this.scaleY,
+				-this._registrationMatrix3D._rawData[14] * this.scaleZ);
 
 		return null;
 	}
@@ -856,7 +887,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 */
 	public get registrationScale(): Vector3D {
 		if (this._registrationMatrix3D)
-			return new Vector3D(this._registrationMatrix3D._rawData[0], this._registrationMatrix3D._rawData[5], this._registrationMatrix3D._rawData[10]);
+			return new Vector3D(
+				this._registrationMatrix3D._rawData[0],
+				this._registrationMatrix3D._rawData[5],
+				this._registrationMatrix3D._rawData[10]);
 
 		return null;
 	}
@@ -1151,8 +1185,16 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 				this._scenePosition.x = -this._registrationMatrix3D._rawData[12];
 				this._scenePosition.y = -this._registrationMatrix3D._rawData[13];
 				this._scenePosition.z = -this._registrationMatrix3D._rawData[14];
-				this._scenePosition = this._transform.concatenatedMatrix3D.transformVector(this._scenePosition, this._scenePosition);
-				//this._scenePosition.decrementBy(new Vector3D(this._registrationPoint.x*this._scaleX, this._registrationPoint.y*this._scaleY, this._registrationPoint.z*this._scaleZ));
+				this._scenePosition = this._transform.concatenatedMatrix3D.transformVector(
+					this._scenePosition,
+					this._scenePosition);
+				/*
+				this._scenePosition.decrementBy(
+					new Vector3D(
+						this._registrationPoint.x*this._scaleX,
+						this._registrationPoint.y*this._scaleY,
+						this._registrationPoint.z*this._scaleZ));
+				*/
 			} else {
 				this._transform.concatenatedMatrix3D.copyColumnTo(3, this._scenePosition);
 			}
@@ -1487,9 +1529,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		this._transform = new Transform(null, this._concatenatedMatrix3D);
 
 		//setup transform listeners
-		this._transform.addEventListener(TransformEvent.INVALIDATE_MATRIX3D, (event: TransformEvent) => this._onInvalidateMatrix3D(event));
-		this._transform.addEventListener(TransformEvent.UPDATE_CONCATENATED_MATRIX3D, (event: TransformEvent) => this._onUpdateConcatenatedMatrix3D(event));
-		this._transform.addEventListener(TransformEvent.INVALIDATE_COLOR_TRANSFORM, (event: TransformEvent) => this._onInvalidateColorTransform(event));
+		this._transform.addEventListener(
+			TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3D.bind(this));
+		this._transform.addEventListener(
+			TransformEvent.UPDATE_CONCATENATED_MATRIX3D, this._onUpdateConcatenatedMatrix3D.bind(this));
+		this._transform.addEventListener(
+			TransformEvent.INVALIDATE_COLOR_TRANSFORM, this._onInvalidateColorTransform.bind(this));
 
 		//bounding volume dictonary
 
@@ -1601,10 +1646,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	}
 
 	/**
-	 * Rotates the 3d object around to face a point defined relative to the local coordinates of the parent <code>ObjectContainer3D</code>.
+	 * Rotates the 3d object around to face a point defined relative
+	 * to the local coordinates of the parent <code>ObjectContainer3D</code>.
 	 *
 	 * @param    target        The vector defining the point to be looked at
-	 * @param    upAxis        An optional vector used to define the desired up orientation of the 3d object after rotation has occurred
+	 * @param    upAxis        An optional vector used to define the desired
+	 * up orientation of the 3d object after rotation has occurred
 	 */
 	public lookAt(scenePosition: Vector3D, upAxis: Vector3D = null): void {
 		this.transform.lookAt(scenePosition, upAxis);
@@ -1689,7 +1736,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 				this._orientationMatrix.prepend(this._registrationMatrix3D);
 
 				if (this.alignmentMode != AlignmentMode.REGISTRATION_POINT)
-					this._orientationMatrix.appendTranslation(-this._registrationMatrix3D._rawData[12] * this._transform.scale.x, -this._registrationMatrix3D._rawData[13] * this._transform.scale.y, -this._registrationMatrix3D._rawData[14] * this._transform.scale.z);
+					this._orientationMatrix.appendTranslation(
+						-this._registrationMatrix3D._rawData[12] * this._transform.scale.x,
+						-this._registrationMatrix3D._rawData[13] * this._transform.scale.y,
+						-this._registrationMatrix3D._rawData[14] * this._transform.scale.z);
 			}
 
 			return this._orientationMatrix;
@@ -1738,11 +1788,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 * @internal
 	 */
 	public _setParent(parent: DisplayObjectContainer): void {
-		// if (!parent && this._partition) //if there is a new parent, the addChild(partition) will remove from the previous partition
+		//if there is a new parent, the addChild(partition) will remove from the previous partition
+		// if (!parent && this._partition)
 		// 	this._parent._implicitPartition.removeChild(this._partition);
 
 		if (this._partition) {
-			if (!parent && (this._parent && this._parent._implicitPartition)) {//if there is a new parent, the addChild(partition) will remove from the previous partition
+			//if there is a new parent, the addChild(partition) will remove from the previous partition
+			if (!parent && (this._parent && this._parent._implicitPartition)) {
 				this._parent._implicitPartition.removeChild(this._partition);
 
 				this.clear();
@@ -1775,8 +1827,15 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 			if (this._implicitPartition && this.isEntity())
 				this._implicitPartition.invalidateEntity(this);
 
-			if (this._listenToSceneTransformChanged)
-				this.queueDispatch(this._sceneTransformChanged || (this._sceneTransformChanged = new DisplayObjectEvent(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this)));
+			if (this._listenToSceneTransformChanged) {
+				if (!this._sceneTransformChanged) {
+					this._sceneTransformChanged = new DisplayObjectEvent(
+						DisplayObjectEvent.SCENETRANSFORM_CHANGED,
+						this);
+				}
+
+				this.queueDispatch(this._sceneTransformChanged);
+			}
 		}
 
 		return false;
@@ -1838,8 +1897,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (this._registrationMatrix3D) {
 
 			this._concatenatedMatrix3D.prepend(this._registrationMatrix3D);
-			if (this.alignmentMode != AlignmentMode.REGISTRATION_POINT)
-				this._concatenatedMatrix3D.appendTranslation(-this._registrationMatrix3D._rawData[12] * this._transform.scale.x, -this._registrationMatrix3D._rawData[13] * this._transform.scale.y, -this._registrationMatrix3D._rawData[14] * this._transform.scale.z);
+
+			if (this.alignmentMode != AlignmentMode.REGISTRATION_POINT) {
+				this._concatenatedMatrix3D.appendTranslation(
+					-this._registrationMatrix3D._rawData[12] * this._transform.scale.x,
+					-this._registrationMatrix3D._rawData[13] * this._transform.scale.y,
+					-this._registrationMatrix3D._rawData[14] * this._transform.scale.z);
+			}
 		}
 
 		if (this._parent) { // && this._partition == this._parent.partition{
@@ -2020,25 +2084,39 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	}
 
 	public _updateMouseEnabled(): void {
-		this._implicitMouseEnabled = (this._parent) ? this._parent.mouseChildren && this._parent._implicitMouseEnabled : true;
+		this._implicitMouseEnabled = (this._parent)
+			? this._parent.mouseChildren && this._parent._implicitMouseEnabled
+			: true;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.MOUSE_ENABLED;
 	}
 
 	private _updateVisible(): void {
-		this._implicitVisibility = (this._parent) ? this._explicitVisibility && this._parent._iIsVisible() : this._explicitVisibility;
+		this._implicitVisibility = (this._parent)
+			? this._explicitVisibility && this._parent._iIsVisible()
+			: this._explicitVisibility;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.VISIBLE;
 	}
 
 	private _updateMaskId(): void {
-		this._implicitMaskId = (this._explicitMaskId != -1) ? this._explicitMaskId : (this._parent && this._parent.maskId != -1) ? this._parent.maskId : -1;
+		this._implicitMaskId = (this._explicitMaskId != -1)
+			? this._explicitMaskId
+			: (this._parent && this._parent.maskId != -1)
+				? this._parent.maskId
+				: -1;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.MASK_ID;
 	}
 
 	private _updateMaskOwners(): void {
-		this._maskOwners = (this._parent && this._parent.maskOwners && this.maskId == -1) ? this._explicitMasks ? this._parent.maskOwners.concat([this]) : this._parent.maskOwners.concat() : (this._explicitMasks != null) ? [this] : null;
+		this._maskOwners = (this._parent && this._parent.maskOwners && this.maskId == -1)
+			? this._explicitMasks
+				? this._parent.maskOwners.concat([this])
+				: this._parent.maskOwners.concat()
+			: (this._explicitMasks != null)
+				? [this]
+				: null;
 
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.MASKS;
 	}
@@ -2065,7 +2143,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 	private _updateBoundsPrefab(pickGroup: PickGroup): void {
 		if (this._boundsPrefab instanceof PrimitiveCubePrefab) {
-			const box: Box = (<BoundingBox> pickGroup.getBoundsPicker(this.partition).getBoundingVolume(null, this._defaultBoundingVolume)).getBox();
+			const picker = pickGroup.getBoundsPicker(this.partition);
+			const box = (<BoundingBox> picker.getBoundingVolume(null, this._defaultBoundingVolume)).getBox();
 
 			//TODO: if box is null, no prefab should be visible
 			if (box == null)
@@ -2075,17 +2154,28 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 			this._boundsPrefab.height = box.height;
 			this._boundsPrefab.depth = box.depth;
 
-			this._boundsPrimitive.registrationPoint = new Vector3D(-(box.x + box.width / 2) * this._boundsPrimitive.transform.scale.x, -(box.y + box.height / 2) * this._boundsPrimitive.transform.scale.y, -(box.z + box.depth / 2) * this._boundsPrimitive.transform.scale.z);
+			this._boundsPrimitive.registrationPoint = new Vector3D(
+				-(box.x + box.width / 2) * this._boundsPrimitive.transform.scale.x,
+				-(box.y + box.height / 2) * this._boundsPrimitive.transform.scale.y,
+				-(box.z + box.depth / 2) * this._boundsPrimitive.transform.scale.z);
 
 		} else if (this._boundsPrefab instanceof PrimitiveSpherePrefab) {
-			const sphere: Sphere = (<BoundingSphere> pickGroup.getBoundsPicker(this.partition).getBoundingVolume(null, this._defaultBoundingVolume)).getSphere();
-			console.log(sphere);
+
+			const picker = pickGroup.getBoundsPicker(this.partition);
+			const sphere: Sphere = (<BoundingSphere> picker.getBoundingVolume(
+				null,
+				this._defaultBoundingVolume)).getSphere();
+
+			//console.log(sphere);
 			if (sphere == null)
 				return;
 
 			this._boundsPrefab.radius = sphere.radius;
 
-			this._boundsPrimitive.registrationPoint = new Vector3D(-sphere.x * this._boundsPrimitive.transform.scale.x, -sphere.y * this._boundsPrimitive.transform.scale.y, -sphere.z * this._boundsPrimitive.transform.scale.z);
+			this._boundsPrimitive.registrationPoint = new Vector3D(
+				-sphere.x * this._boundsPrimitive.transform.scale.x,
+				-sphere.y * this._boundsPrimitive.transform.scale.y,
+				-sphere.z * this._boundsPrimitive.transform.scale.z);
 		}
 	}
 
@@ -2116,8 +2206,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 	public clear(): void {
 		super.clear();
-
-		let i: number;
 
 		this._pImplicitColorTransform = null;
 		this._maskOwners = null;
