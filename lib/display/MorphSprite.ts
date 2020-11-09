@@ -295,6 +295,7 @@ export class MorphSprite extends Sprite {
 			 * true - because grpahics can be nested (has reference copy)
 			 * end need update root graphics
 			 */
+			//@ts-ignore
 			destination.buildQueueTags(true);
 		} else {
 			// fallback to legacy
