@@ -288,8 +288,20 @@ export class MorphSprite extends Sprite {
 		}
 
 		this._ratio = lookupRatio;
-		destination.endFill(); //trigger a queue execution if one is needed
-		destination.clear();
+		//@ts-ignore
+		if (destination.buildQueueTags) {
+			/**
+			 * if we use latest API, use buildQueueTags
+			 * true - because grpahics can be nested (has reference copy)
+			 * end need update root graphics
+			 */
+			destination.buildQueueTags(true);
+		} else {
+			// fallback to legacy
+			// trigger a queue execution if one is needed
+			destination.endFill();
+			destination.clear();
+		}
 
 		if (destination.start.length !== destination.end.length) {
 			throw ('Error in morph data - different number of pathes');
@@ -309,7 +321,13 @@ export class MorphSprite extends Sprite {
 			destination.add_queued_path(newPath);
 		}
 
-		destination.endFill();
+		/**
+		 * call internal endFill, because regular endFill not run shape builder
+		 * clear = true is required because otherwithe we will prepend path
+		 */
+		// @ts-ignore
+		destination._endFillInternal(true);
+
 	}
 
 	/**
