@@ -1,8 +1,16 @@
-﻿import { Matrix, ColorUtils, AssetEvent } from '@awayjs/core';
+import { Matrix, ColorUtils, AssetEvent } from '@awayjs/core';
 
 import { PartitionBase, EntityNode } from '@awayjs/view';
 
-import { GraphicsPathCommand, GraphicsFillStyle, GradientFillStyle, BitmapFillStyle, GraphicsStrokeStyle, Graphics, GraphicsPath } from '@awayjs/graphics';
+import {
+	GraphicsPathCommand,
+	GraphicsFillStyle,
+	GradientFillStyle,
+	BitmapFillStyle,
+	GraphicsStrokeStyle,
+	Graphics,
+	GraphicsPath,
+} from '@awayjs/graphics';
 
 import { Sprite } from './Sprite';
 import { IMaterial } from '@awayjs/renderer';
@@ -87,7 +95,11 @@ export class MorphSprite extends Sprite {
 				const clen = startStyle.colors.length;
 
 				for (let c = 0; c < clen; c++) {
-					newColors[newColors.length] = ColorUtils.interpolateFloat32Color(startStyle.colors[c], endStyle.colors[c], ratio);
+					newColors[newColors.length] = ColorUtils.interpolateFloat32Color(
+						startStyle.colors[c],
+						endStyle.colors[c],
+						ratio);
+
 					newAlphas[newAlphas.length] = ratioStart * startStyle.alphas[c] + ratioEnd * endStyle.alphas[c];
 					newRatios[newRatios.length] = ratioStart * startStyle.ratios[c] + ratioEnd * endStyle.ratios[c];
 				}
@@ -134,7 +146,11 @@ export class MorphSprite extends Sprite {
 				newTrans.tx = startTrans.tx * ratioStart + endTrans.tx * ratioEnd;
 				newTrans.ty = startTrans.ty * ratioStart + endTrans.ty * ratioEnd;
 
-				newPath.style = new BitmapFillStyle(startStyle.material, newTrans, startStyle.repeat, startStyle.smooth);
+				newPath.style = new BitmapFillStyle(
+					startStyle.material,
+					newTrans,
+					startStyle.repeat,
+					startStyle.smooth);
 
 				break;
 			}
@@ -201,7 +217,9 @@ export class MorphSprite extends Sprite {
 						startLastY = startData[startDataCnt++];
 						endLastX = endData[endDataCnt++];
 						endLastY = endData[endDataCnt++];
-						newPath.moveTo(ratioStart * startLastX + ratioEnd * endLastX, ratioStart * startLastY + ratioEnd * endLastY);
+						newPath.moveTo(
+							ratioStart * startLastX + ratioEnd * endLastX,
+							ratioStart * startLastY + ratioEnd * endLastY);
 						break;
 					case GraphicsPathCommand.LINE_TO:
 						if (endCmds[c2] == GraphicsPathCommand.LINE_TO) {
@@ -209,11 +227,19 @@ export class MorphSprite extends Sprite {
 							startLastY = startData[startDataCnt++];
 							endLastX = endData[endDataCnt++];
 							endLastY = endData[endDataCnt++];
-							newPath.lineTo(ratioStart * startLastX + ratioEnd * endLastX, ratioStart * startLastY + ratioEnd * endLastY);
+							newPath.lineTo(
+								ratioStart * startLastX + ratioEnd * endLastX,
+								ratioStart * startLastY + ratioEnd * endLastY);
 						} else if (endCmds[c2] == GraphicsPathCommand.CURVE_TO) {
 							const ctrX = startLastX + (startData[startDataCnt++] - startLastX) / 2;
 							const ctrY = startLastY + (startData[startDataCnt++] - startLastY) / 2;
-							newPath.curveTo(ratioStart * ctrX + ratioEnd * endData[endDataCnt++], ratioStart * ctrY + ratioEnd * endData[endDataCnt++], ratioStart * startData[startDataCnt - 2] + ratioEnd * endData[endDataCnt++], ratioStart * startData[startDataCnt - 1] + ratioEnd * endData[endDataCnt++]);
+
+							newPath.curveTo(
+								ratioStart * ctrX + ratioEnd * endData[endDataCnt++],
+								ratioStart * ctrY + ratioEnd * endData[endDataCnt++],
+								ratioStart * startData[startDataCnt - 2] + ratioEnd * endData[endDataCnt++],
+								ratioStart * startData[startDataCnt - 1] + ratioEnd * endData[endDataCnt++]);
+
 							startLastX = startData[startDataCnt - 2];
 							startLastY = startData[startDataCnt - 1];
 							endLastX = endData[endDataCnt - 2];
@@ -224,13 +250,24 @@ export class MorphSprite extends Sprite {
 						if (endCmds[c2] == GraphicsPathCommand.LINE_TO) {
 							const ctrX = endLastX + (endData[endDataCnt++] - endLastX) / 2;
 							const ctrY = endLastY + (endData[endDataCnt++] - endLastY) / 2;
-							newPath.curveTo(ratioStart * startData[startDataCnt++] + ratioEnd * ctrX, ratioStart * startData[startDataCnt++] + ratioEnd * ctrY, ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt - 2], ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt - 1]);
+
+							newPath.curveTo(
+								ratioStart * startData[startDataCnt++] + ratioEnd * ctrX,
+								ratioStart * startData[startDataCnt++] + ratioEnd * ctrY,
+								ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt - 2],
+								ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt - 1]);
+
 							startLastX = startData[startDataCnt - 2];
 							startLastY = startData[startDataCnt - 1];
 							endLastX = endData[endDataCnt - 2];
 							endLastY = endData[endDataCnt - 1];
 						} else if (endCmds[c2] == GraphicsPathCommand.CURVE_TO) {
-							newPath.curveTo(ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++], ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++], ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++], ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++]);
+							newPath.curveTo(
+								ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++],
+								ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++],
+								ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++],
+								ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++]);
+
 							startLastX = startData[startDataCnt - 2];
 							startLastY = startData[startDataCnt - 1];
 							endLastX = endData[endDataCnt - 2];
