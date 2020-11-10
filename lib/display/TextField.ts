@@ -213,8 +213,9 @@ export class TextField extends DisplayObjectContainer {
 
 	private _textRuns_formats: TextFormat[]=[];	// stores textFormat for each textrun
 	private _textRuns_words: number[]=[];	// stores words-offset, word-count and width for each textrun
-	private _textRuns_words_amount_prev: number;
+	public _words_amount_prev: number;
 	private _paragraph_textRuns_indices: number[]=[];	// stores textFormat for each textrun
+	private cleanLastWord = false;
 
 	private _maxWidthLine: number=0;
 
@@ -1942,12 +1943,14 @@ export class TextField extends DisplayObjectContainer {
 		if (this._textDirty) {
 			this._positionsDirty = true;
 
+			this.cleanLastWord = false;
+
 			this.chars_codes_prev = Array.from(this.chars_codes);
 			this.tf_per_char_prev = Array.from(this.tf_per_char);
 			// we do not use last word since last word may changed.
 			// For example "Hello w" and "Hello world" both have 3 words but the last word actually changed
-			this._textRuns_words_amount_prev = this._textRuns_words[1] - 1 ? this._textRuns_words[1] - 1 : 0;
 
+			this._words_amount_prev = this.words.length;
 			this.chars_codes.length = 0;
 			this.chars_width.length = 0;
 			this.char_positions_x.length = 0;
@@ -2032,7 +2035,11 @@ export class TextField extends DisplayObjectContainer {
 		//	the data for new text-shapes is collected from the font-tables
 		//	and the new text-shapes are created and assigned to the graphics
 
-		if (this.chars_codes_prev.length > this.chars_codes.length) {
+		if (this._textShapesDirty) {
+		} else if (this.chars_codes_prev.length == 0) {
+		} else if (this.chars_codes_prev.length > this.chars_codes.length) {
+			this._textShapesDirty = true;
+		} else if (this.chars_codes_prev[0] !== this.chars_codes[0]) {
 			this._textShapesDirty = true;
 		}
 
@@ -2235,12 +2242,18 @@ export class TextField extends DisplayObjectContainer {
 		}
 
 		// run through all the chars to check if new text is just old text with some data appended
-		if (this._textShapesDirty) return;
+		if (this.chars_codes_prev.length == 0) {
+			return;
+		} else if (this.chars_codes_prev[0] !== this.chars_codes[0]) {
+			this._textShapesDirty = true;
+			return;
+		}
+
 		for (let c = this.chars_codes.length - 1; c >= 0; c--) {
 			const char_code = this.chars_codes[c];
 			const tf = this.tf_per_char_prev[c];
 
-			if (!this._textShapesDirty &&
+			if (
 				// this.chars_codes_prev.length <= this.chars_codes.length &&
 				this.chars_codes_prev[c] &&
 				(this.chars_codes_prev[c] != char_code
@@ -2248,8 +2261,11 @@ export class TextField extends DisplayObjectContainer {
 				this._textShapesDirty = true;
 				break;
 			} else {
-				break;
 			}
+		}
+		if (this._wordWrap) {
+			this.cleanLastWord = true;
+			this._words_amount_prev -= 5;
 		}
 	}
 
@@ -2709,10 +2725,14 @@ export class TextField extends DisplayObjectContainer {
 		if (this._textShapesDirty) this._clearTextShapes();
 
 		for (let tr = 0; tr < tr_len; tr++) {
+			if (tr_words[(tr * 4) + 1] == 0) {
+				continue;
+			} else if (tr_words[(tr * 4)] + tr_words[(tr * 4) + 1] * 5 <= this._words_amount_prev) {
+				continue;
+			}
 			tr_formats[tr].font_table.initFontSize(tr_formats[tr].size);
-			const w = this._textRuns_words_amount_prev;
 
-			tr_formats[tr].font_table.fillTextRun(this, tr_formats[tr], w > 0 ? w : 0, tr_words[(tr * 4) + 1]);
+			tr_formats[tr].font_table.fillTextRun(this, tr_formats[tr],  tr_words[(tr * 4)], tr_words[(tr * 4) + 1], tr == tr_len - 1 ? this.cleanLastWord : false); // @todo w
 		}
 
 		let textShape: TextShape;
@@ -3676,6 +3696,10 @@ export class TextField extends DisplayObjectContainer {
 		this._textShapesDirty = false;
 
 		this.last_word_vertices_count = 0;
+		this.tf_per_char_prev.length = 0;
+		this.chars_codes_prev.length = 0;
+		this._words_amount_prev = 0;
+		this.cleanLastWord = false;
 
 		if (this.targetGraphics)
 			this.targetGraphics.clear();

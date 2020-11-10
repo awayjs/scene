@@ -13,7 +13,7 @@ export interface IFontTable extends IAsset
 	hasChar(char_code: string);
 	getCharVertCnt(char_code: string);
 	getLineHeight();
-	fillTextRun(tf: TextField, format: TextFormat, startWord: number, wordCnt: number);
+	fillTextRun(tf: TextField, format: TextFormat, startWord: number, wordCnt: number, cleanLastWord: boolean);
 	dispose();
 
 }

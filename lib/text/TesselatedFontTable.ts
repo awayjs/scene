@@ -689,7 +689,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 	}
 
-	public fillTextRun(tf: TextField, format: TextFormat, startWord: number, wordCnt: number) {
+	public fillTextRun(tf: TextField, format: TextFormat, startWord: number, wordCnt: number, cleanLastWord: false) {
 
 		const useFNT: boolean = this._fntSizeLimit >= 0 && (this._fntSizeLimit == 0 || this._fntSizeLimit >= format.size);
 		const textShape: TextShape = tf.getTextShapeForIdentifierAndFormat(format.color.toString() + useFNT.toString() + '0', format);
@@ -717,7 +717,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		let currentTextShape: TextShape = null;
 		let charGlyph: TesselatedFontChar;
 		let w: number = 0;
-		const w_len: number = wordCnt * 5;
+		const w_len: number = startWord + wordCnt * 5;
 		let char_vertices: AttributesBuffer;
 		let c: number = 0;
 		let amount_of_chars_in_word: number = 0;
@@ -754,11 +754,16 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		}
 
 		// drop verts to the state of previous word because prev word may be wrapped
-		textShape.verts.length = tf.last_word_vertices_count; // @todo this not supports selectable text for now
+		if (cleanLastWord) {
+			textShape.verts.length = tf.last_word_vertices_count || 0; // @todo this not supports selectable text for now
+		}
 
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
-		for (w = startWord * 5; w < w_len; w += 5) {
+		for (w = startWord; w < w_len; w += 5) {
+			if (w < tf._words_amount_prev) {
+				continue;
+			}
 			if (w == w_len - 5) {
 				// last word in current text. Lets save length of textShape.vets BEFORE the last word verts applied.
 				tf.last_word_vertices_count = textShape.verts.length;
