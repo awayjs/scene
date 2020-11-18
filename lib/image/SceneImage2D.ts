@@ -476,7 +476,6 @@ export class SceneImage2D extends BitmapImage2D {
 	public copyPixels(
 		source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point,
 		alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?: boolean): void {
-
 		this.dropAllReferences();
 		this.unmarkToUnload();
 
@@ -513,7 +512,23 @@ export class SceneImage2D extends BitmapImage2D {
 
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ZERO);
-		this._stage.threshold(source, this, sourceRect, destPoint, operation, threshold, color, mask, copySource);
+
+		const renderToSelf = source === this;
+
+		if (!renderToSelf) {
+			this._stage.threshold(source, this, sourceRect, destPoint, operation, threshold, color, mask, copySource);
+		} else {
+			const tmp = SceneImage2D.getTemp(source.width, source.height, this._stage);
+
+			TMP_POINT.setTo(0,0);
+			TMP_RECT.setTo(0,0, sourceRect.width, sourceRect.height);
+
+			this._stage.threshold(source, tmp, sourceRect, TMP_POINT, operation, threshold, color, mask, copySource);
+			this._stage.copyPixels(tmp, this, TMP_RECT, destPoint, null, null, false);
+
+			// push temp back
+			SceneImage2D.tryStoreImage(tmp, true);
+		}
 
 		this.pushDirtyRegion(new Rectangle(destPoint.x, destPoint.y, sourceRect.width, sourceRect.height));
 		this._imageDataDirty = true;
