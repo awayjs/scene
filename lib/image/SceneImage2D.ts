@@ -415,13 +415,26 @@ export class SceneImage2D extends BitmapImage2D {
 		const argb = ColorUtils.float32ColorToARGB(color);
 		const alpha = this._transparent ? argb[0] / 255 : 1;
 
+		/*
 		// WE SHOULD PMA ALWAYS, BECAUSE A DATA IS PMA
 		const rgb = ColorUtils.ARGBtoFloat32(
 			0,
 			argb[1] * alpha | 0,
 			argb[2] * alpha | 0,
 			argb[3] * alpha | 0);
+		*/
+		this._stage.setRenderTarget(this, true);
+		this._stage.setScissor(rect);
+		this._stage.clear(
+			argb[1] * alpha | 0,
+			argb[2] * alpha | 0,
+			argb[3] * alpha | 0,
+			argb[0]
+		);
 
+		this._stage.setScissor(null);
+
+		/*
 		//make sure we are setup on view
 		SceneImage2D._renderer.view.x = rect.x;
 		SceneImage2D._renderer.view.y = rect.y;
@@ -430,6 +443,7 @@ export class SceneImage2D extends BitmapImage2D {
 		SceneImage2D._renderer.view.backgroundAlpha = alpha;
 		SceneImage2D._renderer.view.backgroundColor = rgb;
 		SceneImage2D._renderer.view.clear(true, true);
+		*/
 
 		this.pushDirtyRegion(rect);
 	}
