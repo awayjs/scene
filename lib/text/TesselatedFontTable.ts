@@ -634,7 +634,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		let charGlyph: TesselatedFontChar;
 		let char_vertices: AttributesBuffer;
 		const c: number = 0;
-		const amount_of_chars_in_word: number = 0;
+		const amount_of_chars_in_text: number = 0;
 		const startIdx: number = 0;
 		let buffer: Float32Array;
 		let v: number;
@@ -720,7 +720,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		const w_len: number = startWord + wordCnt * 5;
 		let char_vertices: AttributesBuffer;
 		let c: number = 0;
-		let amount_of_chars_in_word: number = 0;
+		let amount_of_chars_in_text: number = 0;
 		let x: number = 0;
 		let y: number = 0;
 		let startIdx: number = 0;
@@ -781,8 +781,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 				y -= 2;
 			}
 			//y=tf.words[w+2]+(this.ascent-this.get_font_em_size())*this._size_multiply; // enable for icycle
-			amount_of_chars_in_word = startIdx + tf.words[w + 4];
-			for (c = startIdx; c < amount_of_chars_in_word; c++) {
+			amount_of_chars_in_text = startIdx + tf.words[w + 4];
+			for (c = startIdx; c < amount_of_chars_in_text; c++) {
 				currentTextShape = (tf.isInFocus && c >= select_start && c < select_end) ? textShapeSelected : textShape;
 				if (tf.chars_codes[c] != 32 && tf.chars_codes[c] != 9) {
 					charGlyph = this.getChar(tf.chars_codes[c].toString());

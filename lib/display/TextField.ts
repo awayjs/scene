@@ -3275,6 +3275,7 @@ export class TextField extends DisplayObjectContainer {
 	 *                    specified is out of range.
 	 */
 	public setTextFormat(format: TextFormat, beginIndex: number /*int*/ = -1, endIndex: number /*int*/ = -1): void {
+		this._textShapesDirty = true;
 		if (this._textDirty) {
 			this.reConstruct();
 		}
