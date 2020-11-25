@@ -110,7 +110,7 @@ export class DefaultFontManager {
 
 		if (font) {
 			return font;
-		} else if (this._namespaces.length > 1 && !namespace) {
+		} else if (this._namespaces.length > 0 && !namespace) {
 			// lookup over all NS
 			for (const ns of this._namespaces) {
 				if (this._registered_fonts[ns][fontName]) {
