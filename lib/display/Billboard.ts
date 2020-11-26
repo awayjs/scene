@@ -326,7 +326,7 @@ export class _Render_Billboard extends _Render_RenderableBase {
 	}
 
 	protected _getRenderMaterial(): _Render_MaterialBase {
-		let material:IMaterial = (<Billboard> this._asset).material || MaterialUtils.getDefaultColorMaterial();
+		const material: IMaterial = (<Billboard> this._asset).material || MaterialUtils.getDefaultColorMaterial();
 		return <_Render_MaterialBase> material.getAbstraction(this.renderGroup.getRenderElements(this.stageElements.elements), this.renderGroup.rendererPool.materialClassPool[material.assetType]);
 	}
 

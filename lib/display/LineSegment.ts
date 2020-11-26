@@ -141,7 +141,7 @@ export class _Render_LineSegment extends _Render_RenderableBase {
 	}
 
 	protected _getRenderMaterial(): _Render_MaterialBase {
-		let material:IMaterial = (<LineSegment> this._asset).material || MaterialUtils.getDefaultColorMaterial();
+		const material: IMaterial = (<LineSegment> this._asset).material || MaterialUtils.getDefaultColorMaterial();
 		return <_Render_MaterialBase> material.getAbstraction(this.renderGroup.getRenderElements(this.stageElements.elements), this.renderGroup.rendererPool.materialClassPool[material.assetType]);
 	}
 
