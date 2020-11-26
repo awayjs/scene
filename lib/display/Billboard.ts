@@ -1,7 +1,7 @@
 import { PickingCollision, PartitionBase, PickEntity, _Pick_PickableBase, EntityNode } from '@awayjs/view';
 import { RenderableEvent, MaterialEvent, IMaterial, ITexture, StyleEvent } from '@awayjs/renderer';
 import { Rectangle, Matrix3D, Box, Vector3D, Sphere } from '@awayjs/core';
-import { ImageSampler, Image2D, ImageUtils, ContextGLTriangleFace } from '@awayjs/stage';
+import { ImageSampler, Image2D, ImageUtils, ContextGLTriangleFace, Stage } from '@awayjs/stage';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 
 /**
@@ -312,7 +312,7 @@ export class _Render_Billboard extends _Render_RenderableBase {
 					-billboardRect.x, -billboardRect.y, 0]);
 		}
 
-		return <_Stage_ElementsBase> this._stage.getAbstraction(elements);
+		return <_Stage_ElementsBase> elements.getAbstraction(this._stage, Stage.abstractionClassPool[elements.assetType]);
 	}
 
 	public executeRender(
@@ -326,10 +326,8 @@ export class _Render_Billboard extends _Render_RenderableBase {
 	}
 
 	protected _getRenderMaterial(): _Render_MaterialBase {
-		return this.renderGroup.getRenderElements(this.stageElements.elements)
-			.getAbstraction(
-				(<Billboard> this._asset).material
-				|| MaterialUtils.getDefaultColorMaterial());
+		let material:IMaterial = (<Billboard> this._asset).material || MaterialUtils.getDefaultColorMaterial();
+		return <_Render_MaterialBase> material.getAbstraction(this.renderGroup.getRenderElements(this.stageElements.elements), this.renderGroup.rendererPool.materialClassPool[material.assetType]);
 	}
 
 	protected _getStyle(): Style {

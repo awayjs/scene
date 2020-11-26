@@ -1,6 +1,6 @@
 import { Vector3D } from '@awayjs/core';
 
-import { PickingCollision, PickGroup } from '@awayjs/view';
+import { PickingCollision, PickGroup, PickEntity } from '@awayjs/view';
 
 import { TouchPoint } from '../base/TouchPoint';
 import { DisplayObject } from '../display/DisplayObject';
@@ -460,7 +460,7 @@ export class MouseManager {
 				}
 
 				if (this._mouseDragEntity)
-					this.setupAndDispatchEvent(this._dragStart, event, this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision);
+					this.setupAndDispatchEvent(this._dragStart, event, (<PickEntity> this._mouseDragEntity.getAbstraction(this._pickGroup, PickEntity)).pickingCollision);
 
 			} else if (event.type == MouseEvent.MOUSE_UP) {
 
@@ -480,9 +480,9 @@ export class MouseManager {
 					// no avm1dragging is in process, but current collision is not the same as collision that appeared on mouse-down,
 					// need to dispatch a MOUSE_UP_OUTSIDE on _mouseDragEntity
 					if ((<any> this._mouseDragPickerEntity).buttonEnabled)
-						this.setupAndDispatchEvent(this._mouseOut, event, this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision);
+						this.setupAndDispatchEvent(this._mouseOut, event, (<PickEntity> this._mouseDragEntity.getAbstraction(this._pickGroup, PickEntity)).pickingCollision);
 					if (!this._eventBubbling) {
-						this.setupAndDispatchEvent(this._mouseUpOutside, event, this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision);
+						this.setupAndDispatchEvent(this._mouseUpOutside, event, (<PickEntity> this._mouseDragEntity.getAbstraction(this._pickGroup, PickEntity)).pickingCollision);
 					}
 				} else if (this._mouseDragging && this._mouseDragPickerEntity && this._mouseDragPickerEntity == dispatcher) {
 					// no avm1dragging is in process, but current collision is not the same as collision that appeared on mouse-down,
@@ -495,7 +495,7 @@ export class MouseManager {
 					this.setupAndDispatchEvent(this._mouseOver, event, this._iCollision);
 
 				if (this._isTouch && upEntity)
-					this.setupAndDispatchEvent(this._mouseOut, this._mouseMoveEvent, this._pickGroup.getAbstraction(upEntity).pickingCollision);
+					this.setupAndDispatchEvent(this._mouseOut, this._mouseMoveEvent, (<PickEntity> upEntity.getAbstraction(this._pickGroup, PickEntity)).pickingCollision);
 
 				if (upPickerEntity) {
 					//console.log("onRelease", upPickerEntity)
@@ -506,7 +506,7 @@ export class MouseManager {
 					this._stage.dispatchEvent(event);
 
 				if (upEntity)
-					this.setupAndDispatchEvent(this._dragStop, event, this._pickGroup.getAbstraction(upEntity).pickingCollision);
+					this.setupAndDispatchEvent(this._dragStop, event, (<PickEntity> upEntity.getAbstraction(this._pickGroup, PickEntity)).pickingCollision);
 
 				this._mouseDragPickerEntity = null;
 				this._mouseDragEntity = null;
@@ -527,7 +527,7 @@ export class MouseManager {
 				}
 
 				if (this._mouseDragEntity)
-					this.setupAndDispatchEvent(this._dragMove, event, this._pickGroup.getAbstraction(this._mouseDragEntity).pickingCollision);
+					this.setupAndDispatchEvent(this._dragMove, event, (<PickEntity> this._mouseDragEntity.getAbstraction(this._pickGroup, PickEntity)).pickingCollision);
 			} else {
 				// MouseEvent.MOUSE_OVER / MouseEvent.MOUSE_OUT / MouseEvent.DRAG_OVER / MouseEvent.DRAG_OUT
 				this.dispatchEvent(event, dispatcher);

@@ -102,6 +102,8 @@ import { AssetEvent } from '@awayjs/core';
 import { LineElements } from '@awayjs/graphics';
 
 import { _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase, RenderEntity, MaterialUtils, Style } from '@awayjs/renderer';
+import { MaterialBase } from '@awayjs/materials';
+import { Stage } from '@awayjs/stage';
 
 /**
  * @class away.pool._Render_LineSegment
@@ -135,11 +137,12 @@ export class _Render_LineSegment extends _Render_RenderableBase {
 		elements.setPositions(positions);
 		elements.setThickness(thickness);
 
-		return <_Stage_ElementsBase> this._stage.getAbstraction(elements);
+		return <_Stage_ElementsBase> elements.getAbstraction(this._stage, Stage.abstractionClassPool[elements.assetType]);
 	}
 
 	protected _getRenderMaterial(): _Render_MaterialBase {
-		return this.renderGroup.getRenderElements(this.stageElements.elements).getAbstraction((<LineSegment> this._asset).material || MaterialUtils.getDefaultColorMaterial());
+		let material:IMaterial = (<LineSegment> this._asset).material || MaterialUtils.getDefaultColorMaterial();
+		return <_Render_MaterialBase> material.getAbstraction(this.renderGroup.getRenderElements(this.stageElements.elements), this.renderGroup.rendererPool.materialClassPool[material.assetType]);
 	}
 
 	protected _getStyle(): Style {
