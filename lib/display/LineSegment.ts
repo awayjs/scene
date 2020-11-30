@@ -137,12 +137,12 @@ export class _Render_LineSegment extends _Render_RenderableBase {
 		elements.setPositions(positions);
 		elements.setThickness(thickness);
 
-		return <_Stage_ElementsBase> elements.getAbstraction(this._stage, Stage.abstractionClassPool[elements.assetType]);
+		return elements.getAbstraction<_Stage_ElementsBase>(this._stage);
 	}
 
 	protected _getRenderMaterial(): _Render_MaterialBase {
 		const material: IMaterial = (<LineSegment> this._asset).material || MaterialUtils.getDefaultColorMaterial();
-		return <_Render_MaterialBase> material.getAbstraction(this.renderGroup.getRenderElements(this.stageElements.elements), this.renderGroup.rendererPool.materialClassPool[material.assetType]);
+		return material.getAbstraction<_Render_MaterialBase>(this.renderGroup.getRenderElements(this.stageElements.elements));
 	}
 
 	protected _getStyle(): Style {

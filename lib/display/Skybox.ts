@@ -234,7 +234,7 @@ export class _Render_SkyboxMaterial extends _Render_MaterialPassBase {
 
 		this._shader = new ShaderBase(renderElements, this, this, this._stage);
 
-		this._texture = <_Shader_TextureBase> this._skybox.texture.getAbstraction(this._shader, ShaderBase.abstractionClassPool[this._skybox.texture.assetType]);
+		this._texture = this._skybox.texture.getAbstraction<_Shader_TextureBase>(this._shader);
 
 		this._pAddPass(this);
 	}
@@ -316,11 +316,11 @@ export class _Render_Skybox extends _Render_RenderableBase {
 			elements.setPositions(Array<number>(-1, 1, -1, 1, 1, -1, 1, 1, 1, -1, 1, 1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1));
 		}
 
-		return <_Stage_SkyboxElements> elements.getAbstraction(this._stage, _Stage_SkyboxElements);
+		return elements.getAbstraction<_Stage_SkyboxElements>(this._stage);
 	}
 
 	protected _getRenderMaterial(): _Render_SkyboxMaterial {
-		return <_Render_SkyboxMaterial> this._asset.getAbstraction(this.renderGroup.getRenderElements(this.stageElements.elements), _Render_SkyboxMaterial);
+		return this._asset.getAbstraction<_Render_SkyboxMaterial>(this.renderGroup.getRenderElements(this.stageElements.elements));
 	}
 
 	protected _getStyle(): Style {

@@ -263,7 +263,7 @@ import {
 	Style
 } from '@awayjs/renderer';
 
-import { TriangleElements } from '@awayjs/graphics';
+import { TriangleElements, _Stage_TriangleElements } from '@awayjs/graphics';
 import { IEntityTraverser } from '@awayjs/view';
 
 /**
@@ -312,7 +312,7 @@ export class _Render_Billboard extends _Render_RenderableBase {
 					-billboardRect.x, -billboardRect.y, 0]);
 		}
 
-		return <_Stage_ElementsBase> elements.getAbstraction(this._stage, Stage.abstractionClassPool[elements.assetType]);
+		return elements.getAbstraction<_Stage_TriangleElements>(this._stage);
 	}
 
 	public executeRender(
@@ -327,7 +327,7 @@ export class _Render_Billboard extends _Render_RenderableBase {
 
 	protected _getRenderMaterial(): _Render_MaterialBase {
 		const material: IMaterial = (<Billboard> this._asset).material || MaterialUtils.getDefaultColorMaterial();
-		return <_Render_MaterialBase> material.getAbstraction(this.renderGroup.getRenderElements(this.stageElements.elements), this.renderGroup.rendererPool.materialClassPool[material.assetType]);
+		return material.getAbstraction<_Render_MaterialBase>(this.renderGroup.getRenderElements(this.stageElements.elements));
 	}
 
 	protected _getStyle(): Style {
