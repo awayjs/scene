@@ -33,6 +33,7 @@ export { SimpleButton } from './lib/display/SimpleButton';
 export { Skybox, _Render_Skybox, _Render_SkyboxMaterial } from './lib/display/Skybox';
 export { Sprite } from './lib/display/Sprite';
 export { TextField } from './lib/display/TextField';
+export { TextSprite } from './lib/display/TextSprite';
 
 export { CastError } from './lib/errors/CastError';
 
