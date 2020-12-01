@@ -117,7 +117,7 @@ export class DefaultFontManager {
 		this._registered_fonts || (this._registered_fonts = {});
 		this._registered_fonts[ns] || (this._registered_fonts[ns] = {});
 
-		let font: Font = this._registered_fonts[ns][fontName];
+		const font: Font = this._registered_fonts[ns][fontName];
 
 		if (font) {
 			return font;

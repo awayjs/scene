@@ -1980,7 +1980,6 @@ export class TextField extends DisplayObjectContainer {
 			if (!this._textFormat && this._textFormats.length > 0)
 				this._textFormat = this._textFormats[0];
 
-
 			if (this._iText != '' && this._textFormat != null) {
 				//console.log("textlength", this.text.toString().length, this.text.toString());
 				this.buildParagraphs();
