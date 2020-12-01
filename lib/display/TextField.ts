@@ -1975,6 +1975,12 @@ export class TextField extends DisplayObjectContainer {
 
 			this._maxWidthLine = 0;
 
+			// sometimes needed for TLFTextfields
+			// todo: cleanup usage of _textFormats vs _textFormats
+			if (!this._textFormat && this._textFormats.length > 0)
+				this._textFormat = this._textFormats[0];
+
+
 			if (this._iText != '' && this._textFormat != null) {
 				//console.log("textlength", this.text.toString().length, this.text.toString());
 				this.buildParagraphs();
