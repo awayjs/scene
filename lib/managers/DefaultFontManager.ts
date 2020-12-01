@@ -1,9 +1,12 @@
 import { TesselatedFontTable } from '../text/TesselatedFontTable';
 import { Font } from '../text/Font';
 import { AssetBase } from '@awayjs/core';
+import { FontStyleName } from '../text/FontStyleName';
+import { IFontTable } from '../text/IFontTable';
 export class DefaultFontManager {
 	private static _default_font: Font;
 	private static _registered_fonts: any = {};
+	private static _registered_fonts_by_className: any = {};
 	private static _namespaces: string[] = [];
 
 	public static shared_fonts_ns: string;
@@ -93,10 +96,18 @@ export class DefaultFontManager {
 		return font;
 	}
 
+	public static registerFontForClassName(font: Font, className: string) {
+		this._registered_fonts_by_className[className] = font;
+	}
+
 	public static getFont(fontName: string, namespace: string = undefined): Font {
 		//console.warn("get font", fontName, DefaultFontManager._registered_fonts);
 		if (!fontName) {
 			return this.getDefaultFont();
+		}
+		// hack for dynamic fonts: first check if reguested font-name is a classname that was registered
+		if (this._registered_fonts_by_className[fontName]) {
+			return this._registered_fonts_by_className[fontName];
 		}
 
 		const ns = namespace || AssetBase.DEFAULT_NAMESPACE;
@@ -117,15 +128,14 @@ export class DefaultFontManager {
 					return this._registered_fonts[ns][fontName];
 				}
 			}
-		} else if (this.shared_fonts_ns) {
-			font = this._registered_fonts[this.shared_fonts_ns][fontName];
-
-			if (font) {
-				return font;
-			}
 		}
-
 		return this.getDefaultFont();
+	}
+
+	public static getFontTable(fontName: string, namespace: string = undefined): IFontTable {
+		if (!fontName) {
+			return this.getDefaultFont().get_font_table(FontStyleName.STANDART);
+		}
 	}
 
 	private static setDefaultFont(font: Font = null): void {

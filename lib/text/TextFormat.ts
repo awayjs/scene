@@ -411,7 +411,8 @@ export class TextFormat extends AssetBase {
 		const newFont = DefaultFontManager.getFont(value);
 		if (newFont) {
 			this._font = newFont;
-			this.font_table = <TesselatedFontTable>newFont.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+			this.font_table = <TesselatedFontTable>
+				newFont.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
 			if (!this.font_table) {
 				console.log('could not find font-table on font', value, this._font);
 			}
