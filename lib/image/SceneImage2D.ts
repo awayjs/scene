@@ -129,31 +129,48 @@ export class SceneImage2D extends BitmapImage2D {
 	// legacy
 	private _imageDataDirty: boolean;
 
-	protected syncData(): boolean {
+	private _asyncRead: Promise<boolean>;
+
+	protected syncData(async = false): boolean | Promise<boolean> {
+
+		if (async && this._asyncRead) {
+			return this._asyncRead;
+		}
+
+		if (!async && this._asyncRead) {
+			throw '[SceneImage2D] Synced read not allowed while async read is requested!';
+		}
+
 		this.applySymbol();
 
 		// update data from pixels from GPU
 		if (!this._imageDataDirty) {
-			return false;
+			return async ? Promise.resolve(false) : false;
 		}
 
-		const internalData = this._data || (this._data = new Uint8ClampedArray(this.width * this.height * 4));
+		const context = <ContextWebGL> this._stage.context;
+		//const internalData = this.getDataInternal();
 
 		this._stage.setRenderTarget(this, false);
-
-		const gl = (this._stage.context as ContextWebGL)._gl;
-
-		// copy to self data, update it
-		gl.readPixels(0, 0, this.rect.width, this.rect.height, gl.RGBA, gl.UNSIGNED_BYTE, internalData);
-
+		this._asyncRead = context.drawToBitmapImage2D(this, false, async);
 		this._stage.setRenderTarget(null);
-		this.resetDirty();
 
-		// we store pixel buffer already as PMA.
-		// we should prevent unpuck what already is PMA
-		this._unpackPMA = false;
+		if (!async) {
+			this.resetDirty();
 
-		return true;
+			// we store pixel buffer already as PMA.
+			// we should prevent unpack what already is PMA
+			this._unpackPMA = false;
+			return true;
+		}
+
+		return this._asyncRead.then((_status: boolean) => {
+			this.resetDirty();
+			this._unpackPMA = false;
+			this._asyncRead = null;
+
+			return true;
+		});
 	}
 
 	public get data(): Uint8ClampedArray {
@@ -378,7 +395,15 @@ export class SceneImage2D extends BitmapImage2D {
 	}
 
 	public unload() {
-		this.syncData();
+		// query asynce unload
+		const t = this.syncData(true);
+
+		// strict quard
+		if (typeof t !== 'boolean') {
+			t.then(() => super.unload());
+			return;
+		}
+
 		super.unload();
 	}
 
