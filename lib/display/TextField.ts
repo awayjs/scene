@@ -1,13 +1,8 @@
 import { ColorUtils, Matrix, ColorTransform, Rectangle, Point, Vector3D, AssetEvent } from '@awayjs/core';
-
 import { ImageSampler, AttributesBuffer, AttributesView, Float2Attributes } from '@awayjs/stage';
-
 import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
-
 import { Style } from '@awayjs/renderer';
-
 import { MaterialBase } from '@awayjs/materials';
-
 import { Graphics, Shape, TriangleElements, GraphicsFactoryHelper, MaterialManager } from '@awayjs/graphics';
 
 import { HierarchicalProperties } from '../base/HierarchicalProperties';
@@ -146,8 +141,8 @@ export class TextField extends DisplayObjectContainer {
 
 	private static _onChangedEvent=new TextfieldEvent(TextfieldEvent.CHANGED);
 
-	public textOffsetX: number=0;
-	public textOffsetY: number=0;
+	public textOffsetX: number = 0;
+	public textOffsetY: number = 0;
 	private _width: number;
 	private _height: number;
 	private _graphics: Graphics;
@@ -156,8 +151,8 @@ export class TextField extends DisplayObjectContainer {
 	private _maxScrollH: number;
 	private _maxScrollV: number;
 	private _numLines: number;
-	private _selectionBeginIndex: number=0;
-	private _selectionEndIndex: number=0;
+	private _selectionBeginIndex: number = 0;
+	private _selectionEndIndex: number = 0;
 	private _biggestLine: number=0;
 
 	private _iText: string = '';
@@ -180,9 +175,9 @@ export class TextField extends DisplayObjectContainer {
 
 	public textShapes: StringMap<TextShape>;
 
-	private inMaskMode: boolean=false;
-	private maskChild: Sprite;// holds the mask for the textfield
-	private textChild: TextSprite;// holds the graphic-content for this textfield
+	private inMaskMode: boolean = false;
+	private maskChild: Sprite;
+	private textChild: TextSprite;
 	private targetGraphics: Graphics;
 
 	private cursorShape: Shape;
@@ -193,17 +188,17 @@ export class TextField extends DisplayObjectContainer {
 	public cursorBlinking: boolean = false;
 	public showSelection: boolean = false;
 
-	public _textDirty: Boolean=false; 	// if text is dirty, the text-content or the text-size has changed, and we need to recalculate word-width
-	public _positionsDirty: Boolean=false;	// if formatting is dirty, we need to recalculate text-positions / size
-	public _glyphsDirty: Boolean=false;	// if glyphs are dirty, we need to recollect the glyphdata and build the text-graphics. this should ony be done max once a frame
-	public _shapesDirty: Boolean=false;
-	public _textShapesDirty: Boolean=false; // if that is true this._clearTextShapes() will be called on next buildGlyphs() run
+	public _textDirty: Boolean = false;
+	public _positionsDirty: Boolean = false;
+	public _glyphsDirty: Boolean = false;
+	public _shapesDirty: Boolean = false;
+	public _textShapesDirty: Boolean = false;
 
-	public chars_codes: number[]=[];	// stores charcode per char
-	private chars_codes_prev: number[]=[]; // char codes from prev run. We need that to check if new text == prev text + some delta (text was appended)
-	public chars_width: number[]=[];
-	public tf_per_char: TextFormat[]=[];
-	public tf_per_char_prev: TextFormat[]=[];
+	public chars_codes: number[] = [];
+	private chars_codes_prev: number[] = [];
+	public chars_width: number[] = [];
+	public tf_per_char: TextFormat[] = [];
+	public tf_per_char_prev: TextFormat[] = [];
 
 	// we use that for text appending to save verts count before last word verts are added to textShape.
 	// Then on text append we clear last word verts because the word may be wrapped to next line
@@ -479,7 +474,9 @@ export class TextField extends DisplayObjectContainer {
 		if (this.char_positions_x.length == 0) {
 			x = this.textOffsetX + (this._width / 2) + this._textWidth / 2;
 			if (tf.align == 'justify') {
+				// do nothing
 			} else if (tf.align == 'center') {
+				// do nothing
 			} else if (tf.align == 'right') {
 				x = this.textOffsetX + this._width - 2;
 			} else if (tf.align == 'left') {
@@ -622,10 +619,16 @@ export class TextField extends DisplayObjectContainer {
 		const half_thickness_x: number = this.border ? 0.25 * this.internalScale.x : 0;
 		const half_thickness_y: number = this.border ? 0.25 * this.internalScale.y : 0;
 		this._graphics.beginFill(this._borderColor, 1);
-		this._graphics.drawRect(this.textOffsetX,this.textOffsetY, this._width, half_thickness_y * 2);
-		this._graphics.drawRect(this.textOffsetX,this.textOffsetY + this._height - half_thickness_y * 2, this._width, half_thickness_y * 2);
-		this._graphics.drawRect(this.textOffsetX,this.textOffsetY + half_thickness_y * 2, half_thickness_x * 2, this._height - half_thickness_y * 2);
-		this._graphics.drawRect(this.textOffsetX + this._width - half_thickness_x * 2,this.textOffsetY + half_thickness_y * 2, half_thickness_x * 2, this._height - half_thickness_y * 2);
+		this._graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, half_thickness_y * 2);
+		this._graphics.drawRect(
+			this.textOffsetX, this.textOffsetY + this._height - half_thickness_y * 2,
+			this._width, half_thickness_y * 2);
+		this._graphics.drawRect(
+			this.textOffsetX, this.textOffsetY + half_thickness_y * 2,
+			half_thickness_x * 2, this._height - half_thickness_y * 2);
+		this._graphics.drawRect(
+			this.textOffsetX + this._width - half_thickness_x * 2,
+			this.textOffsetY + half_thickness_y * 2, half_thickness_x * 2, this._height - half_thickness_y * 2);
 		this._graphics.endFill();
 	}
 
@@ -768,7 +771,9 @@ export class TextField extends DisplayObjectContainer {
 
 		this.reConstruct(true);
 
-		if (this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material) {
+		if (this._textFormat
+			&& !this._textFormat.font_table.isAsset(TesselatedFontTable)
+			&& !this._textFormat.material) {
 			// only for FNT font-tables
 			// todo: do we still need this ?
 
@@ -787,8 +792,8 @@ export class TextField extends DisplayObjectContainer {
 		}
         this._graphics.updateScale(projection);*/
 
-		const prevScaleX: number = this._internalScale.x;
-		const prevScaleY: number = this._internalScale.y;
+		//const prevScaleX: number = this._internalScale.x;
+		//const prevScaleY: number = this._internalScale.y;
 		// var scale:Vector3D = this.getInternalScale(view);
 		// if (scale.x == prevScaleX && scale.y == prevScaleY)
 		//      return;
@@ -907,13 +912,11 @@ export class TextField extends DisplayObjectContainer {
 	 * <p>All the text between the lines indicated by <code>scrollV</code> and
 	 * <code>bottomScrollV</code> is currently visible in the text field.</p>
 	 */
-	public get bottomScrollV(): number /*int*/
-	{
+	public get bottomScrollV(): number /*int*/ {
 		return this._bottomScrollV;
 	}
 
-	public set bottomScrollV(value: number) /*int*/
-	{
+	public set bottomScrollV(value: number) /*int*/ {
 		if (value == this._bottomScrollV)
 			return;
 		this._bottomScrollV = value;
@@ -928,8 +931,7 @@ export class TextField extends DisplayObjectContainer {
 	 * <p>Selection span indexes are zero-based(for example, the first position
 	 * is 0, the second position is 1, and so on).</p>
 	 */
-	public get caretIndex(): number /*int*/
-	{
+	public get caretIndex(): number /*int*/ {
 		return this._caretIndex;
 	}
 
@@ -1106,8 +1108,7 @@ export class TextField extends DisplayObjectContainer {
 	 * The number of characters in a text field. A character such as tab
 	 * (<code>\t</code>) counts as one character.
 	 */
-	public get length(): number /*int*/
-	{
+	public get length(): number /*int*/	{
 		return this._iText.length;
 	}
 
@@ -1125,8 +1126,7 @@ export class TextField extends DisplayObjectContainer {
 	/**
 	 * The maximum value of <code>scrollH</code>.
 	 */
-	public get maxScrollH(): number /*int*/
-	{
+	public get maxScrollH(): number /*int*/	{
 		this.reConstruct();
 		return this._maxScrollH;
 	}
@@ -1134,8 +1134,7 @@ export class TextField extends DisplayObjectContainer {
 	/**
 	 * The maximum value of <code>scrollV</code>.
 	 */
-	public get maxScrollV(): number /*int*/
-	{
+	public get maxScrollV(): number /*int*/	{
 		this.reConstruct();
 		return this._maxScrollV;
 	}
@@ -1168,8 +1167,7 @@ export class TextField extends DisplayObjectContainer {
 	 * <code>wordWrap</code> property is set to <code>true</code>, the number of
 	 * lines increases when text wraps.
 	 */
-	public get numLines(): number /*int*/
-	{
+	public get numLines(): number /*int*/ {
 		this.reConstruct();
 		return this._numLines;
 	}
@@ -1291,13 +1289,11 @@ export class TextField extends DisplayObjectContainer {
 	 */
 	private _scrollH: number;
 
-	public get scrollH(): number /*int*/
-	{
+	public get scrollH(): number /*int*/ {
 		return this._scrollH;
 	}
 
-	public set scrollH(value: number) /*int*/
-	{
+	public set scrollH(value: number) /*int*/ {
 		if (value == this._scrollH)
 			return;
 		this._scrollH = value;
@@ -1319,13 +1315,11 @@ export class TextField extends DisplayObjectContainer {
 	 */
 	public _scrollV: number;
 
-	public get scrollV(): number /*int*/
-	{
+	public get scrollV(): number /*int*/ {
 		return this._scrollV;
 	}
 
-	public set scrollV(value: number) /*int*/
-	{
+	public set scrollV(value: number) /*int*/ {
 		if (Math.floor(value) == this._scrollV)
 			return;
 		this._scrollV = Math.floor(value);
@@ -1388,8 +1382,7 @@ export class TextField extends DisplayObjectContainer {
 	 * 1, and so on. If no text is selected, this property is the value of
 	 * <code>caretIndex</code>.
 	 */
-	public get selectionBeginIndex(): number /*int*/
-	{
+	public get selectionBeginIndex(): number /*int*/ {
 		return this._selectionBeginIndex;
 	}
 
@@ -1399,8 +1392,7 @@ export class TextField extends DisplayObjectContainer {
 	 * 1, and so on. If no text is selected, this property is the value of
 	 * <code>caretIndex</code>.
 	 */
-	public get selectionEndIndex(): number /*int*/
-	{
+	public get selectionEndIndex(): number /*int*/ {
 		return this._selectionEndIndex;
 	}
 
@@ -1462,7 +1454,8 @@ export class TextField extends DisplayObjectContainer {
 		if (value != '' && ((value.charCodeAt(value.length - 1) == 13) || (value.charCodeAt(value.length - 1) == 10))) {
 			value = value.slice(0, value.length - 1);
 		}
-		if (value != '' && (value.length >= 3 && value[value.length - 1] == 'n' && value[value.length - 2] == '\\' && value[value.length - 3] == '\\')) {
+		if (value != '' && (value.length >= 3
+			&& value[value.length - 1] == 'n' && value[value.length - 2] == '\\' && value[value.length - 3] == '\\')) {
 			value = value.slice(0, value.length - 3);
 		}
 		if (value != '' && (value.length >= 3 && value[value.length - 1] == 'n' && value[value.length - 2] == '\\')) {
@@ -1628,7 +1621,10 @@ export class TextField extends DisplayObjectContainer {
 			this._textDirty = true;
 		}
 
-		if (this._textFormat && !this._textFormat.font_table.isAsset(TesselatedFontTable) && !this._textFormat.material) {
+		if (this._textFormat
+			&& !this._textFormat.font_table.isAsset(TesselatedFontTable)
+			&& !this._textFormat.material) {
+
 			if (!this.transform.colorTransform)
 				this.transform.colorTransform = new ColorTransform();
 
@@ -2041,7 +2037,9 @@ export class TextField extends DisplayObjectContainer {
 		//	and the new text-shapes are created and assigned to the graphics
 
 		if (this._textShapesDirty) {
+			// to nothing
 		} else if (this.chars_codes_prev.length == 0) {
+			// to nothing
 		} else if (this.chars_codes_prev.length > this.chars_codes.length) {
 			this._textShapesDirty = true;
 		} else if (this.chars_codes_prev[0] !== this.chars_codes[0]) {
@@ -2103,7 +2101,8 @@ export class TextField extends DisplayObjectContainer {
 			const maxLineWidth = this._width - (tf.indent + tf.leftMargin + tf.rightMargin);
 
 			tf.font_table.initFontSize(tf.size);
-			const c_end = (f === f_len - 1) ? thisText.length : this._textFormatsIdx[f]; // if that is last format then it goes till the end of text
+			// if that is last format then it goes till the end of text:
+			const c_end = (f === f_len - 1) ? thisText.length : this._textFormatsIdx[f];
 
 			if (c_end > c_start) {
 
@@ -2144,7 +2143,8 @@ export class TextField extends DisplayObjectContainer {
 						this._textRuns_words[this._textRuns_words.length] = linewidth;
 						this._textRuns_words[this._textRuns_words.length] = whitespace_cnt;
 
-						this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length] = this._textRuns_formats.length;
+						this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length] =
+							this._textRuns_formats.length;
 						// create a new textrun
 						this._textRuns_formats[this._textRuns_formats.length] = tf;
 						this._textRuns_words[this._textRuns_words.length] = this.words.length;
@@ -2202,14 +2202,6 @@ export class TextField extends DisplayObjectContainer {
 
 						if (this.multiline && this._autoSize == TextFieldAutoSize.NONE && this._wordWrap) {
 							if (this.words[this.words.length - 2] + char_width >= maxLineWidth) {
-								/*this._textRuns_words[this._textRuns_words.length]=word_cnt;
-								this._textRuns_words[this._textRuns_words.length]=linewidth;
-								this._textRuns_words[this._textRuns_words.length]=whitespace_cnt;
-
-								this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length]=this._textRuns_formats.length;
-								// create a new textrun
-								this._textRuns_formats[this._textRuns_formats.length]=tf;
-								this._textRuns_words[this._textRuns_words.length]=this.words.length;*/
 								startNewWord = true;
 							}
 
@@ -2265,7 +2257,6 @@ export class TextField extends DisplayObjectContainer {
 				|| (<any> this.tf_per_char_prev[c])._style_name != (<any>tf)._style_name)) {
 				this._textShapesDirty = true;
 				break;
-			} else {
 			}
 		}
 		if (this._wordWrap) {
@@ -2301,10 +2292,8 @@ export class TextField extends DisplayObjectContainer {
 		let w: number = 0;
 		let w_len: number = 0;
 		let tr_length: number = 0;
-		let additionalWhiteSpace: number = 0;
 		let format: TextFormat;
 		let text_width: number = 0;
-		const text_height: number = 0;
 		let indent: number = 0;
 		this._numLines = 0;
 		let linecnt: number = 0;
@@ -2320,11 +2309,14 @@ export class TextField extends DisplayObjectContainer {
 
 		// if we have autosize enabled, and no wordWrap, we can adjust the textfield width
 		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap && this._textDirty) {
-			const maxSizeComplete: number = this._maxWidthLine + this._textFormat.indent + this._textFormat.leftMargin + this._textFormat.rightMargin;
+			const maxSizeComplete: number =
+				this._maxWidthLine + this._textFormat.indent
+				+ this._textFormat.leftMargin + this._textFormat.rightMargin;
 			this.adjustPositionForAutoSize(maxSizeComplete);
 		}
 
-		const maxLineWidth: number = this._width - (this._textFormat.indent + this._textFormat.leftMargin + this._textFormat.rightMargin);
+		const maxLineWidth: number =
+			this._width - (this._textFormat.indent + this._textFormat.leftMargin + this._textFormat.rightMargin);
 
 		let p: number = 0;
 		const p_len: number = this._paragraph_textRuns_indices.length;
@@ -2345,7 +2337,6 @@ export class TextField extends DisplayObjectContainer {
 
 		for (p = 0; p < p_len; p++) {
 			tr_len = (p == (p_len - 1)) ? this._textRuns_formats.length : this._paragraph_textRuns_indices[p + 1];
-			//console.log("process word positions for paragraph", p, "textruns", this._paragraph_textRuns_indices[p], tr_len);
 			tr_length = 0;
 			lines_heights[lines_heights.length] = 0;
 			for (tr = this._paragraph_textRuns_indices[p]; tr < tr_len; tr++) {
@@ -2361,7 +2352,8 @@ export class TextField extends DisplayObjectContainer {
 				//console.log(this._textFieldWidth, tr_length, maxLineWidth);
 			}
 
-			this.lines_wordStartIndices[this.lines_wordStartIndices.length] = this._textRuns_words[(this._paragraph_textRuns_indices[p] * 4)];
+			this.lines_wordStartIndices[this.lines_wordStartIndices.length]
+				= this._textRuns_words[(this._paragraph_textRuns_indices[p] * 4)];
 			this.lines_wordEndIndices[this.lines_wordEndIndices.length] = w_len;
 			this.lines_width[this.lines_width.length] = 0;
 			this.lines_numSpacesPerline[this.lines_numSpacesPerline.length] = 0;
@@ -2369,7 +2361,6 @@ export class TextField extends DisplayObjectContainer {
 			this.lines_height[this.lines_height.length] = lines_heights[lineHeightCnt];
 			lines_formats[linecnt] = format;
 
-			var line_width: number = 0;
 			for (tr = this._paragraph_textRuns_indices[p]; tr < tr_len; tr++) {
 				format = this._textRuns_formats[tr];
 				format.font_table.initFontSize(format.size);
@@ -2381,7 +2372,6 @@ export class TextField extends DisplayObjectContainer {
 					//console.log("just add to line",(tr * 4) , w_len, this.words, this._textRuns_words);
 					for (w = this._textRuns_words[(tr * 4)]; w < w_len; w += 5) {
 						word_width = this.words[w + 3];
-						//console.log("add word to line", this.words[w + 3], word_width, String.fromCharCode(this.chars_codes[this.words[w]]));
 						linelength += word_width;
 						this.lines_wordEndIndices[linecnt] = w + 5;
 						this.lines_width[linecnt] += word_width;
@@ -2402,8 +2392,9 @@ export class TextField extends DisplayObjectContainer {
 							isSpace = true;
 						}
 						// (1.5* format.font_table.getCharWidth("32")) is to replicate flash behavior
-						//console.log(String.fromCharCode(this.chars_codes[this.words[w]]), maxLineWidth, this.lines_width[linecnt], word_width);
-						if (isSpace || (this.lines_width[linecnt] + word_width) <= (maxLineWidth - indent - (1 * format.font_table.getCharWidth('32'))) || this.lines_width[linecnt] == 0) {
+						if (isSpace
+							|| (this.lines_width[linecnt] + word_width) <= (maxLineWidth - indent - (1 * format.font_table.getCharWidth('32')))
+							|| this.lines_width[linecnt] == 0) {
 							this.lines_wordEndIndices[linecnt] = w + 5;
 							this.lines_width[linecnt] += word_width;
 							lines_formats[linecnt] = format;
@@ -2432,6 +2423,7 @@ export class TextField extends DisplayObjectContainer {
 		let end_idx: number;
 		let lineSpaceLeft: number;
 		let l: number;
+		let c: number = 0;
 		const l_cnt: number = this.lines_wordStartIndices.length;
 
 		let charCnt: number = 0;
@@ -2451,13 +2443,11 @@ export class TextField extends DisplayObjectContainer {
 			/*console.log("lineSpaceLeft", lineSpaceLeft);
 			console.log("maxLineWidth", maxLineWidth);
 			console.log("linelength", linelength);*/
-			additionalWhiteSpace = 0;
 			offsetx = this.textOffsetX + format.leftMargin + format.indent;
 
 			if (format.align == TextFormatAlign.JUSTIFY) {
 				if ((l != l_cnt - 1) && lineSpaceLeft > 0 && numSpaces > 0) {
 					// this is a textline that should be justified
-					additionalWhiteSpace = lineSpaceLeft / numSpaces;
 				}
 				if (l != 0) {
 					// only first line has indent
@@ -2480,12 +2470,11 @@ export class TextField extends DisplayObjectContainer {
 			}
 
 			let c_len: number = 0;
-			var c: number = 0;
 			let char_pos: number = offsetx;
 			this.lines_start_x[l] = offsetx;
 			this.lines_start_y[l] = offsety;
 			this.lines_charIdx_start[l] = charCnt;
-			var line_width = 0;//format.leftMargin + format.indent + format.rightMargin;
+			let line_width = 0;//format.leftMargin + format.indent + format.rightMargin;
 			for (w = start_idx; w < end_idx; w += 5) {
 				this.words[w + 1] = offsetx;
 				char_pos = 0;
@@ -2507,12 +2496,6 @@ export class TextField extends DisplayObjectContainer {
 				//console.log("word_width", char_pos, "word:'"+wordstr+"'");
 				offsetx += char_pos;//this.words[w + 3];
 				line_width += char_pos;//this.words[w + 3];
-				//console.log("word offset: x",offsetx ,String.fromCharCode(this.chars_codes[this.words[w]]));
-				//if (format.align == "justify" && (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9)) {
-				// this is whitepace, we need to add extra space for justified text
-				//offsetx += additionalWhiteSpace;
-				//line_width += additionalWhiteSpace;
-				//}
 			}
 			this.lines_charIdx_end[l] = charCnt;
 			//console.log("line_width",line_width);
@@ -2541,7 +2524,7 @@ export class TextField extends DisplayObjectContainer {
 			// get the max-scroll horizontal value
 			start_idx = this.lines_charIdx_start[this._biggestLine];
 			c = this.lines_charIdx_end[this._biggestLine];
-			var maxCnt = 0;
+			let maxCnt = 0;
 			while (c > start_idx) {
 				c--;
 				maxCnt += this.chars_width[c];
@@ -2554,7 +2537,7 @@ export class TextField extends DisplayObjectContainer {
 		if (this._textHeight > this._height) {
 			// get the max-scroll vertical value
 			let l_len: number = this.lines_height.length;
-			var maxCnt = 4;
+			let maxCnt = 4;
 			while (l_len > 0) {
 				l_len--;
 				maxCnt += this.lines_height[l_len];
@@ -2574,7 +2557,6 @@ export class TextField extends DisplayObjectContainer {
 
 		this._clearTextShapes();
 
-		const height: number = null;
 		const formats: TextFormat[] = [];
 		const glyphdata: number[][] = [];
 		const advance: number[][] = [];
@@ -2623,19 +2605,11 @@ export class TextField extends DisplayObjectContainer {
 			positions.push(xpos);
 			positions.push(ypos);
 
-			//console.log(-3+this.textOffsetX+((record.moveX? record.moveX/20:0)));
-			//console.log(-7+this.textOffsetY+((record.moveY? record.moveY/20:0)));
-			//var text="";
-			//moveY=(record.moveY? record.moveY/20:0)-moveY;
 			for (let e = 0; e < record.entries.length;e++) {
 				glyphdata[r][e] = record.entries[e].glyphIndex;
 				advance[r][e] = record.entries[e].advance / 20;
 				xpos += record.entries[e].advance / 20;
-				//text+=String.fromCharCode(parseInt((<TesselatedFontTable>formats[r].font_table).getStringForIdx(record.entries[e].glyphIndex)));
 			}
-			//console.log("\nrecord.entries.length: ", formats[r].font_table, record, record.entries.length);
-			//console.log("textOffsetX ", this.textOffsetX, "textOffsetY ", this.textOffsetY, "moveX ", record.moveX, "moveY ", record.moveY, " staticMtx", this.staticMatrix);
-
 		}
 
 		let textShape: TextShape;
@@ -2647,7 +2621,8 @@ export class TextField extends DisplayObjectContainer {
 		let text_height: number = 0;
 		for (tr = 0; tr < tr_len; tr++) {
 			formats[tr].font_table.initFontSize(formats[tr].size);
-			lineSize = (<TesselatedFontTable>formats[tr].font_table).buildTextLineFromIndices(this, formats[tr], positions[tr * 2], positions[tr * 2 + 1], glyphdata[tr], advance[tr]);
+			lineSize = (<TesselatedFontTable>formats[tr].font_table).buildTextLineFromIndices(
+				this, formats[tr], positions[tr * 2], positions[tr * 2 + 1], glyphdata[tr], advance[tr]);
 			text_height += lineSize.y;
 			text_width = (lineSize.x > text_width) ? lineSize.x : text_width;
 		}
@@ -2694,7 +2669,8 @@ export class TextField extends DisplayObjectContainer {
 				textShape.shape.material = this._textFormat.material;
 				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
 				(<MaterialBase> textShape.shape.material).animateUVs = true;
-				textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
+				textShape.shape.style.uvMatrix =
+					new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
 			} else {
 
 				const color = this.getTextColorForTextFormat(textShape.format);
@@ -2710,13 +2686,6 @@ export class TextField extends DisplayObjectContainer {
 					(<MaterialBase> textShape.shape.material).animateUVs = true;
 					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
 				}
-				/*
-								(<any>textShape.shape.material).useColorTransform = true;
-								var new_ct:ColorTransform = this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
-								this.transform.colorTransform.color = textShape.format.color;
-								this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-				*/
-
 			}
 		}
 	}
@@ -2737,7 +2706,9 @@ export class TextField extends DisplayObjectContainer {
 			}
 			tr_formats[tr].font_table.initFontSize(tr_formats[tr].size);
 
-			tr_formats[tr].font_table.fillTextRun(this, tr_formats[tr],  tr_words[(tr * 4)], tr_words[(tr * 4) + 1], tr == tr_len - 1 ? this.cleanLastWord : false); // @todo w
+			tr_formats[tr].font_table.fillTextRun(
+				this, tr_formats[tr],  tr_words[(tr * 4)],
+				tr_words[(tr * 4) + 1], tr == tr_len - 1 ? this.cleanLastWord : false); // @todo w
 		}
 
 		let textShape: TextShape;
@@ -2784,7 +2755,8 @@ export class TextField extends DisplayObjectContainer {
 				textShape.shape.material = this._textFormat.material;
 				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
 				(<MaterialBase> textShape.shape.material).animateUVs = true;
-				textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
+				textShape.shape.style.uvMatrix =
+					new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
 			} else {
 				// 	used by runtime textureatlas.
 				//	(standart for dynamic created text and text loaded from swf)
@@ -2892,8 +2864,7 @@ export class TextField extends DisplayObjectContainer {
 	 *         first position is 0, the second position is 1, and so on). Returns
 	 *         -1 if the point is not over any character.
 	 */
-	public getCharIndexAtPoint(x: number, y: number, lineIdx: number = -1): number /*int*/
-	{
+	public getCharIndexAtPoint(x: number, y: number, lineIdx: number = -1): number /*int*/ {
 		if (lineIdx < 0) {
 			lineIdx = this.getLineIndexAtPoint(x, y);
 		}
@@ -2925,8 +2896,7 @@ export class TextField extends DisplayObjectContainer {
 	 *         paragraph.
 	 * @throws RangeError The character index specified is out of range.
 	 */
-	public getFirstCharInParagraph(charIndex: number /*int*/): number /*int*/
-	{
+	public getFirstCharInParagraph(charIndex: number /*int*/): number /*int*/ {
 		console.log('Textfield.getFirstCharInParagraph() not implemented');
 		return this._firstCharInParagraph;
 	}
@@ -2966,8 +2936,7 @@ export class TextField extends DisplayObjectContainer {
 	 *         line is 0, the second line is 1, and so on). Returns -1 if the
 	 *         point is not over any line.
 	 */
-	public getLineIndexAtPoint(x: number, y: number): number /*int*/
-	{
+	public getLineIndexAtPoint(x: number, y: number): number /*int*/ {
 		const len: number = this.lines_start_y.length;
 		for (let i: number = 0;i < len - 1; i++) {
 			if (y >= this.lines_start_y[i] && y <= this.lines_start_y[i + 1])
@@ -2989,11 +2958,10 @@ export class TextField extends DisplayObjectContainer {
 	 * @return The zero-based index value of the line.
 	 * @throws RangeError The character index specified is out of range.
 	 */
-	public getLineIndexOfChar(charIndex: number /*int*/): number /*int*/
-	{
+	public getLineIndexOfChar(charIndex: number /*int*/): number /*int*/ {
 
 		const len: number = this.lines_charIdx_start.length - 1;
-		for (var i: number;i < len; i++) {
+		for (let i: number;i < len; i++) {
 			if (charIndex >= this.lines_charIdx_start[i] && charIndex <= this.lines_charIdx_end[i + 1])
 				return i;
 		}
@@ -3008,8 +2976,7 @@ export class TextField extends DisplayObjectContainer {
 	 * @return The number of characters in the line.
 	 * @throws RangeError The line number specified is out of range.
 	 */
-	public getLineLength(lineIndex: number /*int*/): number /*int*/
-	{
+	public getLineLength(lineIndex: number /*int*/): number /*int*/ {
 		if (this.lines_width.length == 0) {
 			return 0;
 		}
@@ -3057,8 +3024,7 @@ export class TextField extends DisplayObjectContainer {
 	 * @return The zero-based index value of the first character in the line.
 	 * @throws RangeError The line number specified is out of range.
 	 */
-	public getLineOffset(lineIndex: number /*int*/): number /*int*/
-	{
+	public getLineOffset(lineIndex: number /*int*/): number /*int*/ {
 		if (this.lines_charIdx_start.length == 0) {
 			return 0;
 		}
@@ -3098,8 +3064,7 @@ export class TextField extends DisplayObjectContainer {
 	 * @return Returns the number of characters in the paragraph.
 	 * @throws RangeError The character index specified is out of range.
 	 */
-	public getParagraphLength(charIndex: number /*int*/): number /*int*/
-	{
+	public getParagraphLength(charIndex: number /*int*/): number /*int*/ {
 		return this._paragraphLength;
 	}
 
@@ -3169,15 +3134,15 @@ export class TextField extends DisplayObjectContainer {
 				selectionStart = this._selectionEndIndex;
 				selectionEnd = this._selectionBeginIndex;
 			}
-			var textBeforeCursor: string = this._iText.slice(0, selectionStart - 1);
-			var textAfterCursor: string = this._iText.slice(selectionEnd, this._iText.length);
+			const textBeforeCursor: string = this._iText.slice(0, selectionStart - 1);
+			const textAfterCursor: string = this._iText.slice(selectionEnd, this._iText.length);
 			this.text = textBeforeCursor + value + textAfterCursor;
 			this._selectionBeginIndex = selectionStart;
 			this._selectionEndIndex = this._selectionBeginIndex + value.length;
 			return;
 		}
-		var textBeforeCursor: string = this._iText.slice(0, selectionStart);
-		var textAfterCursor: string = this._iText.slice(selectionEnd, this._iText.length);
+		const textBeforeCursor: string = this._iText.slice(0, selectionStart);
+		const textAfterCursor: string = this._iText.slice(selectionEnd, this._iText.length);
 		this.text = textBeforeCursor + value + textAfterCursor;
 		this._selectionBeginIndex = selectionStart + 1;
 		this._selectionEndIndex = this._selectionBeginIndex;
@@ -3301,22 +3266,13 @@ export class TextField extends DisplayObjectContainer {
 				&& endIndex >= this.chars_codes.length)) {
 
 			const len = this._textFormats.length;
-			const mutated = false;
 
 			// easy: apply the format to all formats in the list
 			for (let i = 0; i < len; i++) {
-				const f = this._textFormats[i] = this._textFormats[i].clone();
-
-				// check that we really update text format
-				const initial = f.updateID;
-
+				this._textFormats[i] = this._textFormats[i].clone();
 				format.applyToFormat(this._textFormats[i]);
-				//mutated = mutated || (initial !== f.updateID);
 			}
 
-			if (mutated) {
-				this._textDirty = true;
-			}
 			return;
 		}
 
@@ -3368,11 +3324,11 @@ export class TextField extends DisplayObjectContainer {
 					newFormatsTextFormats.push(oldFormat);
 					newFormatsTextFormatsIdx.push(beginIndex);
 					//console.log("add old format", beginIndex);
-			    }
+				}
 
 				while (oldEndIdx < endIndex) {
 					//console.log("add new merged format", oldEndIdx);
-					var newFormat = this._textFormats[i].clone();
+					const newFormat = this._textFormats[i].clone();
 					format.applyToFormat(newFormat);
 					newFormatsTextFormats.push(newFormat);
 					newFormatsTextFormatsIdx.push(oldEndIdx);
@@ -3386,14 +3342,14 @@ export class TextField extends DisplayObjectContainer {
 				}
 				if (oldEndIdx == endIndex) {
 					//console.log("add new format rest", endIndex);
-					var newFormat = oldFormat.clone();
+					const newFormat = oldFormat.clone();
 					format.applyToFormat(newFormat);
 					newFormatsTextFormats.push(newFormat);
 					newFormatsTextFormatsIdx.push(endIndex);
 				}
 				if (oldEndIdx > endIndex) {
 					//console.log("add new format rest", endIndex);
-					var newFormat = oldFormat.clone();
+					const newFormat = oldFormat.clone();
 					format.applyToFormat(newFormat);
 					newFormatsTextFormats.push(newFormat);
 					newFormatsTextFormatsIdx.push(endIndex);
@@ -3473,8 +3429,11 @@ export class TextField extends DisplayObjectContainer {
 			return;
 
 		if (this._selectionBeginIndex != this._selectionEndIndex) {
-			var textBeforeCursor: string = (this._selectionBeginIndex != 0) ? this._iText.slice(0, this._selectionBeginIndex) : '';
-			var textAfterCursor: string = (this._selectionEndIndex < this._iText.length) ? this._iText.slice(this._selectionEndIndex, this._iText.length) : '';
+			const textBeforeCursor: string =
+				(this._selectionBeginIndex != 0) ? this._iText.slice(0, this._selectionBeginIndex) : '';
+			const textAfterCursor: string =
+				(this._selectionEndIndex < this._iText.length) ?
+					this._iText.slice(this._selectionEndIndex, this._iText.length) : '';
 			this.text = textBeforeCursor + textAfterCursor;
 			this._selectionEndIndex = this._selectionBeginIndex;
 			return;
@@ -3483,14 +3442,14 @@ export class TextField extends DisplayObjectContainer {
 			if (this._selectionBeginIndex == 0) {
 				return;
 			}
-			var textBeforeCursor: string = this._iText.slice(0, this._selectionBeginIndex - 1);
-			var textAfterCursor: string = this._iText.slice(this._selectionEndIndex, this._iText.length);
+			const textBeforeCursor: string = this._iText.slice(0, this._selectionBeginIndex - 1);
+			const textAfterCursor: string = this._iText.slice(this._selectionEndIndex, this._iText.length);
 			this.text = textBeforeCursor + textAfterCursor;
 			this._selectionBeginIndex -= 1;
 			this._selectionEndIndex = this._selectionBeginIndex;
 		} else if (deleteMode == 'Delete') {
-			var textBeforeCursor: string = this._iText.slice(0, this._selectionBeginIndex);
-			var textAfterCursor: string = this._iText.slice(this._selectionEndIndex + 1, this._iText.length);
+			const textBeforeCursor: string = this._iText.slice(0, this._selectionBeginIndex);
+			const textAfterCursor: string = this._iText.slice(this._selectionEndIndex + 1, this._iText.length);
 			this.text = textBeforeCursor + textAfterCursor;
 			this._selectionEndIndex = this._selectionBeginIndex;
 		}
@@ -3633,9 +3592,10 @@ export class TextField extends DisplayObjectContainer {
 	private _insertNewText(newText: string) {
 
 		if (this._selectionBeginIndex != this._selectionEndIndex) {
-			var textBeforeCursor: string = this._iText.slice(0, this._selectionBeginIndex);
-			var textAfterCursor: string = this._iText.slice(this._selectionEndIndex, this._iText.length);
-			if (this.maxChars > 0 && (textBeforeCursor.length + textAfterCursor.length + newText.length) > this.maxChars) {
+			const textBeforeCursor: string = this._iText.slice(0, this._selectionBeginIndex);
+			const textAfterCursor: string = this._iText.slice(this._selectionEndIndex, this._iText.length);
+			if (this.maxChars > 0
+				&& (textBeforeCursor.length + textAfterCursor.length + newText.length) > this.maxChars) {
 				const maxNewChars: number = this.maxChars - textBeforeCursor.length + textAfterCursor.length;
 				if (maxNewChars > 0) {
 					newText = newText.slice(0, maxNewChars);
@@ -3646,10 +3606,10 @@ export class TextField extends DisplayObjectContainer {
 			this._selectionEndIndex = this._selectionBeginIndex;
 		} else {
 			if (this.maxChars > 0 && this._iText.length >= this.maxChars) {
-
+				// do nothing
 			} else {
-				var textBeforeCursor: string = this._iText.slice(0, this._selectionBeginIndex);
-				var textAfterCursor: string = this._iText.slice(this._selectionEndIndex, this._iText.length);
+				const textBeforeCursor: string = this._iText.slice(0, this._selectionBeginIndex);
+				const textAfterCursor: string = this._iText.slice(this._selectionEndIndex, this._iText.length);
 				this.text = textBeforeCursor + newText + textAfterCursor;
 				this._selectionBeginIndex += 1;
 				this._selectionEndIndex = this._selectionBeginIndex;
