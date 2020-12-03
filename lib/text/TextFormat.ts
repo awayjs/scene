@@ -1,7 +1,5 @@
-import { AssetBase, IgnoreConflictStrategy } from '@awayjs/core';
-
+import { AssetBase } from '@awayjs/core';
 import { IMaterial } from '@awayjs/renderer';
-
 import { IFontTable } from './IFontTable';
 import { FontStyleName } from './FontStyleName';
 import { TextFormatAlign } from './TextFormatAlign';
@@ -349,7 +347,8 @@ export class TextFormat extends AssetBase {
 	private _font_table: IFontTable;
 	public get font_table(): IFontTable {
 		if (!this._font_table) {
-			this.font_table = <TesselatedFontTable> this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
+			this.font_table = <TesselatedFontTable>
+				this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
 		}
 		return this._font_table;
 	}
@@ -378,7 +377,8 @@ export class TextFormat extends AssetBase {
 	public fallback_font_table: IFontTable;
 
 	/**
-	 * The material to use for texturing geometry generated for this text-format. this material will be used by the TextField
+	 * The material to use for texturing geometry generated for this text-format.
+	 * this material will be used by the TextField
 	 */
 	public material: IMaterial;
 
@@ -417,7 +417,8 @@ export class TextFormat extends AssetBase {
 				console.log('could not find font-table on font', value, this._font);
 			}
 			if ((<TesselatedFontTable> this.font_table).get_font_chars().length == 0) {
-				this.font_table = <TesselatedFontTable>newFont.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+				this.font_table = <TesselatedFontTable>
+					newFont.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
 				if (!this.font_table) {
 					console.log('could not find font-table on font', value, this._font);
 				}
@@ -453,7 +454,7 @@ export class TextFormat extends AssetBase {
 		if (this._style_name == FontStyleName.ITALIC || this._style_name == FontStyleName.BOLDITALIC)
 			this._italic = true;
 		if (this._font)
-		    this.font_table = this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+			this.font_table = this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
 	}
 
 	public get font(): Font {
@@ -462,7 +463,8 @@ export class TextFormat extends AssetBase {
 		}
 
 		this._font = DefaultFontManager.getFont(null);
-		this._font_table = <TesselatedFontTable> this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+		this._font_table = <TesselatedFontTable>
+			this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
 
 		return this._font;
 	}
@@ -566,7 +568,8 @@ export class TextFormat extends AssetBase {
 	 */
 	constructor(
 		font: string = null, size: number = null, color: number = null, bold: boolean = null,
-		italic: boolean = null, underline: boolean = null, url: string = null, link_target: string = null, align: string = null,
+		italic: boolean = null, underline: boolean = null, url: string = null,
+		link_target: string = null, align: string = null,
 		leftMargin: number = null, rightMargin: number = null, indent: number = null, leading: number = null) {
 		super();
 		this._align = align;
@@ -588,7 +591,7 @@ export class TextFormat extends AssetBase {
 		this.url = url;
 		this.link_target = link_target;
 
-		this._font_table = null;//=<TesselatedFontTable>this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+		this._font_table = null;
 		this._style_name = FontStyleName.STANDART;
 
 		if (typeof font === 'string') {
