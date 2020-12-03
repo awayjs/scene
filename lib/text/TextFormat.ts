@@ -596,11 +596,11 @@ export class TextFormat extends AssetBase {
 			const low = font.toLowerCase();
 
 			if (asset) {
-				if (low.indexOf(FontStyleName.BOLD)) {
+				if (low.includes(FontStyleName.BOLD)) {
 					this._style_name = FontStyleName.BOLD;
-				} else if (low.indexOf(FontStyleName.BOLDITALIC.toLowerCase())) {
+				} else if (low.includes(FontStyleName.BOLDITALIC.toLowerCase())) {
 					this._style_name = FontStyleName.BOLDITALIC;
-				} else if (low.indexOf(FontStyleName.ITALIC)) {
+				} else if (low.includes(FontStyleName.ITALIC)) {
 					this._style_name = FontStyleName.ITALIC;
 				}
 			}
