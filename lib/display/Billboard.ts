@@ -1,7 +1,7 @@
 import { PickingCollision, PartitionBase, PickEntity, _Pick_PickableBase, EntityNode } from '@awayjs/view';
 import { RenderableEvent, MaterialEvent, IMaterial, ITexture, StyleEvent } from '@awayjs/renderer';
 import { Rectangle, Matrix3D, Box, Vector3D, Sphere } from '@awayjs/core';
-import { ImageSampler, Image2D, ImageUtils, ContextGLTriangleFace, Stage } from '@awayjs/stage';
+import { ImageSampler, Image2D, ImageUtils, ContextGLTriangleFace } from '@awayjs/stage';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 
 /**
@@ -171,6 +171,8 @@ export class Billboard extends DisplayObjectContainer {
 		this.material = material;
 
 		this._updateDimensions();
+		if (this._sampler)
+			this._sampler.smooth = smoothing;
 	}
 
 	public isEntity(): boolean {
@@ -334,7 +336,8 @@ export class _Render_Billboard extends _Render_RenderableBase {
 
 	protected _getRenderMaterial(): _Render_MaterialBase {
 		const material: IMaterial = (<Billboard> this._asset).material || MaterialUtils.getDefaultColorMaterial();
-		return material.getAbstraction<_Render_MaterialBase>(this.renderGroup.getRenderElements(this.stageElements.elements));
+		return material.getAbstraction<_Render_MaterialBase>(
+			this.renderGroup.getRenderElements(this.stageElements.elements));
 	}
 
 	protected _getStyle(): Style {
