@@ -17,6 +17,9 @@ interface IScriptQueue {
 	constructors: MovieClip[],
 }
 export class FrameScriptManager {
+
+	public static invalidAS3Constructors: boolean = false;
+
 	// FrameScript debugging:
 	// the first line of a FrameScript should be a comment that represents the functions unique name
 	// the exporter creates a js file, containing a object that has the framescripts functions set as properties according to the unique names
@@ -144,6 +147,8 @@ export class FrameScriptManager {
 	}
 
 	public static execute_as3_constructors_recursiv(mc: MovieClip): void {
+		if (!FrameScriptManager.invalidAS3Constructors)
+			return;
 		/**
 		 * when called from advanceFrame, this should iterate all childs and execute constructors
 		 *
@@ -226,6 +231,7 @@ export class FrameScriptManager {
 			// 	todo: this does not dispatch ADDED and ADDED_TO_STAGE on SHAPE,
 			//	because in awayjs timeline Shape are Sprite without any as3-adapter
 		}
+		FrameScriptManager.invalidAS3Constructors = false;
 	}
 
 	// todo: better / faster way to check if a obj is currently on stage
