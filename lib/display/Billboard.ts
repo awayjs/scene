@@ -56,6 +56,8 @@ export class Billboard extends DisplayObjectContainer {
 	private _billboardHeight: number;
 	private _billboardRect: Rectangle;
 
+	private _sampler: ImageSampler;
+
 	private _onInvalidateTextureDelegate: (event: MaterialEvent) => void;
 
 	public static getNewBillboard(
@@ -123,6 +125,10 @@ export class Billboard extends DisplayObjectContainer {
 
 		this._updateDimensions();
 		this._invalidateMaterial();
+	}
+
+	public get sampler(): ImageSampler {
+		return this._sampler;
 	}
 
 	/**
@@ -202,21 +208,22 @@ export class Billboard extends DisplayObjectContainer {
 			: null;
 
 		if (image) {
-			const sampler: ImageSampler = <ImageSampler> (
+			this._sampler = <ImageSampler> (
 					this._style?.getSamplerAt(texture)
 					|| this.material.style?.getSamplerAt(texture)
 					|| texture.getSamplerAt(0)
 					|| ImageUtils.getDefaultSampler());
 
-			if (sampler.imageRect) {
-				this._billboardWidth = sampler.imageRect.width * image.width;
-				this._billboardHeight = sampler.imageRect.height * image.height;
+			if (this._sampler.imageRect) {
+				this._billboardWidth = this._sampler.imageRect.width * image.width;
+				this._billboardHeight = this._sampler.imageRect.height * image.height;
 			} else {
 				this._billboardWidth = image.rect.width;
 				this._billboardHeight = image.rect.height;
 			}
 
-			this._billboardRect = sampler.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
+			this._billboardRect =
+				this._sampler.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
 		} else {
 			this._billboardWidth = 1;
 			this._billboardHeight = 1;
