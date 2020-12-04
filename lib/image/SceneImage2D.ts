@@ -715,6 +715,8 @@ export class SceneImage2D extends BitmapImage2D {
 		const root = SceneImage2D._billboardRoot;
 		const billboard = SceneImage2D._billboard;
 
+		billboard.sampler.smooth = smoothing;
+
 		renderer.disableClear = true;
 		renderer.view.target = this;
 		renderer.view.projection.scale = 1000 / this.rect.height;
