@@ -572,10 +572,6 @@ export class TextFormat extends AssetBase {
 		link_target: string = null, align: string = null,
 		leftMargin: number = null, rightMargin: number = null, indent: number = null, leading: number = null) {
 		super();
-		this._align = align;
-		this._leftMargin = leftMargin;
-		this._rightMargin = rightMargin;
-		this._indent = indent;
 
 		this._font_name = font;
 		this._size = size;
@@ -583,13 +579,16 @@ export class TextFormat extends AssetBase {
 		this._bold = bold;
 		this._italic = italic;
 		this._underline = underline;
+		this.url = url; // not really used yet
+		this.link_target = link_target; // not really used yet
+		this._align = align;
+		this._leftMargin = leftMargin;
+		this._rightMargin = rightMargin;
+		this._indent = indent;
 		this._leading = leading;
+
 		this._letterSpacing = null;
 		this._font = null;
-
-		// not really used yet:
-		this.url = url;
-		this.link_target = link_target;
 
 		this._font_table = null;
 		this._style_name = FontStyleName.STANDART;
@@ -613,10 +612,11 @@ export class TextFormat extends AssetBase {
 	}
 
 	public clone(): TextFormat {
-		const clonedFormat: TextFormat = new TextFormat();
-		this.applyToFormat(clonedFormat);
+		const clonedFormat: TextFormat = new TextFormat(
+			this._font_name, this._size, this._color, this._bold,
+			this._italic, this._underline,this.url, this.link_target,
+			this._align, this._leftMargin, this._rightMargin, this._indent, this._leading);
 		return clonedFormat;
-
 	}
 
 	/*

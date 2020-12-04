@@ -979,23 +979,17 @@ export class TextField extends DisplayObjectContainer {
 	 * @throws Error This method cannot be used on a text field with a style
 	 *               sheet.
 	 */
-	public _defaultTextFormat: TextFormat;
 
-	public get defaultTextFormat(): TextFormat {
-		if (this._defaultTextFormat == null) {
-			this._defaultTextFormat = new TextFormat();
-		}
-		return this._defaultTextFormat;
-	}
+	// CODE BELOW IS NOT IN USE! Instead of defaultTextFormat away only use textFormat.
+	// Take a look into get/set defaultTextFormat in playerglobal/lib/text/TextField.ts
 
-	public set defaultTextFormat(value: TextFormat) {
-		if (this._defaultTextFormat == value)
-			return;
+	// public _defaultTextFormat: TextFormat;
 
-		this._defaultTextFormat = value;
+	// public get defaultTextFormat(): TextFormat {
+	// }
 
-		this._textDirty = true;
-	}
+	// public set defaultTextFormat(value: TextFormat) {
+	// }
 
 	/**
 	 * Specifies whether the text field is a password text field. If the value of
@@ -1517,13 +1511,20 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	public set textFormat(value: TextFormat) {
+		if (!value) throw new Error('TextField::: set textFormat - no value!');
+
 		if (this._textFormat == value) {
 			return;
 		}
 		this._textDirty = true;
 
 		this._textFormat = value;
-		//this.reConstruct();
+		this._textShapesDirty = true;
+		// this._positionsDirty = true;
+		// this._glyphsDirty = true;
+		// this._shapesDirty = true;
+		this._textDirty = true;
+		this.reConstruct();
 
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
@@ -3246,10 +3247,6 @@ export class TextField extends DisplayObjectContainer {
 	 *                    specified is out of range.
 	 */
 	public setTextFormat(format: TextFormat, beginIndex: number /*int*/ = -1, endIndex: number /*int*/ = -1): void {
-		this._textShapesDirty = true;
-		if (this._textDirty) {
-			this.reConstruct();
-		}
 		/**
          *  this should only effect existing text
          *  if no text exist, this function does nothing
@@ -3270,9 +3267,12 @@ export class TextField extends DisplayObjectContainer {
 
 			// easy: apply the format to all formats in the list
 			for (let i = 0; i < len; i++) {
-				this._textFormats[i] = this._textFormats[i].clone();
-				format.applyToFormat(this._textFormats[i]);
+				this._textFormats[i] = format.clone();
 			}
+
+			this._textDirty = true;
+			this._textShapesDirty = true;
+			this.reConstruct();
 
 			return;
 		}
@@ -3375,7 +3375,10 @@ export class TextField extends DisplayObjectContainer {
 			this._textFormats[i] = newFormatsTextFormats[i];
 			this._textFormatsIdx[i] = newFormatsTextFormatsIdx[i];
 		}
+
 		this._textDirty = true;
+		this._textShapesDirty = true;
+		this.reConstruct();
 	}
 
 	/**
