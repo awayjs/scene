@@ -1854,6 +1854,7 @@ export class TextField extends DisplayObjectContainer {
 		this._selectionEndIndex = 0;
 		this._scrollH = 0;
 		this._scrollV = 0;
+		this._textFormats = [];
 
 		this._graphics = Graphics.getGraphics(); //unique graphics object for each TextField
 		this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
