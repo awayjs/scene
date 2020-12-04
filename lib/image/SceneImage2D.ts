@@ -307,6 +307,7 @@ export class SceneImage2D extends BitmapImage2D {
 
 		SceneImage2D._root.partition = SceneImage2D._renderer.partition;
 
+		SceneImage2D._renderer.antiAlias = 4;
 		//setup the projection
 		SceneImage2D._renderer.disableClear = true;
 		SceneImage2D._renderer.view.backgroundAlpha = 0;
@@ -335,6 +336,7 @@ export class SceneImage2D extends BitmapImage2D {
 
 		SceneImage2D._billboardRoot.partition = SceneImage2D._billboardRenderer.partition;
 
+		SceneImage2D._renderer.antiAlias = 4;
 		//setup the projection
 		SceneImage2D._billboardRenderer.disableClear = true;
 		SceneImage2D._billboardRenderer.view.backgroundAlpha = 0;
