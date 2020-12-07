@@ -152,7 +152,9 @@ export class SceneImage2D extends BitmapImage2D {
 		}
 
 		const context = <ContextWebGL> this._stage.context;
-		//const internalData = this.getDataInternal();
+
+		// force to construct buffer
+		this.getDataInternal(true);
 
 		this._stage.setRenderTarget(this, false);
 		this._asyncRead = context.drawToBitmapImage2D(this, false, async);
@@ -176,7 +178,7 @@ export class SceneImage2D extends BitmapImage2D {
 		});
 	}
 
-	/* internal */ getDataInternal (constructEmpty = false) {
+	/* internal */ getDataInternal (constructEmpty = true) {
 		if (this._initalFillColor === null) {
 			return super.getDataInternal(constructEmpty);
 		}
@@ -413,7 +415,7 @@ export class SceneImage2D extends BitmapImage2D {
 		this._data = null;
 		this._locked = false;
 
-		if (!SceneImage2D.tryStoreImage(this, false)) {
+		if (!this.wasUpload || !SceneImage2D.tryStoreImage(this, false)) {
 			super.dispose();
 		}
 
