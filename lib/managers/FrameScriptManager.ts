@@ -2,6 +2,7 @@ import { DisplayObject } from '../display/DisplayObject';
 import { MovieClip } from '../display/MovieClip';
 import { IMovieClipAdapter } from '../adapters/IMovieClipAdapter';
 import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
+import { Settings } from '../Settings';
 
 interface IInterval {
 	f: Function;
@@ -22,7 +23,8 @@ export class FrameScriptManager {
 
 	// FrameScript debugging:
 	// the first line of a FrameScript should be a comment that represents the functions unique name
-	// the exporter creates a js file, containing a object that has the framescripts functions set as properties according to the unique names
+	// the exporter creates a js file, containing a object that has the framescripts
+	// functions set as properties according to the unique names
 	// this object can be set as "frameScriptDebug" in order to enable debug mode
 
 	public static frameScriptDebug: Object = undefined;
@@ -147,7 +149,7 @@ export class FrameScriptManager {
 	}
 
 	public static execute_as3_constructors_recursiv(mc: MovieClip): void {
-		if (!FrameScriptManager.invalidAS3Constructors)
+		if (Settings.ENABLE_DISABLE_CONSTRUCTOR && !FrameScriptManager.invalidAS3Constructors)
 			return;
 		/**
 		 * when called from advanceFrame, this should iterate all childs and execute constructors
@@ -185,7 +187,8 @@ export class FrameScriptManager {
 		 *
 		 * now when we have a timeline navigation called from for example constructor of mc1
 		 *
-		 * after the timeline navigation, it will first process new constructors added for the new frame we navigated too
+		 * after the timeline navigation, it will first process new constructors
+		 * added for the new frame we navigated too
 		 * it will than continue to work of top-level childs that have not been processed yet
 		 * so the order should look like this:
 		 * - child1 - start constructor
@@ -221,7 +224,10 @@ export class FrameScriptManager {
 		}
 
 		// if mc was created by timeline, instanceID != ""
-		if ((<any>mc).just_added_to_timeline && mc._sessionID >= 0 && mcadapter && (<any>mcadapter).dispatchStaticEvent) {
+		if ((<any>mc).just_added_to_timeline
+			&& mc._sessionID >= 0
+			&& mcadapter
+			&& (<any>mcadapter).dispatchStaticEvent) {
 
 			(<any>mcadapter).dispatchStaticEvent('added', mcadapter);
 			(<any>mc).just_added_to_timeline = false;
@@ -231,7 +237,10 @@ export class FrameScriptManager {
 			// 	todo: this does not dispatch ADDED and ADDED_TO_STAGE on SHAPE,
 			//	because in awayjs timeline Shape are Sprite without any as3-adapter
 		}
-		FrameScriptManager.invalidAS3Constructors = false;
+
+		if (Settings.ENABLE_DISABLE_CONSTRUCTOR) {
+			FrameScriptManager.invalidAS3Constructors = false;
+		}
 	}
 
 	// todo: better / faster way to check if a obj is currently on stage
