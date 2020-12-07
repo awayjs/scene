@@ -132,6 +132,8 @@ export class SceneImage2D extends BitmapImage2D {
 
 	private _asyncRead: Promise<boolean>;
 
+	private _initalFillColor: number = null;
+
 	protected syncData(async = false): boolean | Promise<boolean> {
 
 		if (async && this._asyncRead) {
@@ -174,9 +176,28 @@ export class SceneImage2D extends BitmapImage2D {
 		});
 	}
 
+	/* internal */ getDataInternal (constructEmpty = false) {
+		if (this._initalFillColor === null) {
+			return super.getDataInternal(constructEmpty);
+		}
+
+		// disable empty buffer filling
+		// and check that buffer is empyt (has now symbol or alpha)
+		let data = super.getDataInternal(false);
+
+		// if it empty, fill with initlal value
+		if (!data) {
+			super.fillRect(this.rect, this._initalFillColor);
+			this._initalFillColor = null;
+			data = this._data;
+		}
+
+		return data;
+	}
+
 	public get data(): Uint8ClampedArray {
 		this.syncData();
-		// access to private
+
 		return this._data;
 	}
 
@@ -289,7 +310,9 @@ export class SceneImage2D extends BitmapImage2D {
 		width: number, height: number, transparent: boolean = true,
 		fillColor: number = 0xffffffff, powerOfTwo: boolean = true, stage: Stage = null) {
 
-		super(width, height, transparent, fillColor, powerOfTwo, stage);
+		super(width, height, transparent, null, powerOfTwo, stage);
+
+		this._initalFillColor = fillColor;
 	}
 
 	private createRenderer() {
@@ -435,7 +458,7 @@ export class SceneImage2D extends BitmapImage2D {
 
 		const argb = ColorUtils.float32ColorToARGB(color);
 		const alpha = this._transparent ? argb[0] / 255 : 1;
-		const isCrop = !this._rect.equals(rect);
+		const isCrop = rect !== this._rect && !this._rect.equals(rect);
 
 		this._stage.setRenderTarget(this, true);
 
@@ -507,6 +530,11 @@ export class SceneImage2D extends BitmapImage2D {
 
 		// need drop alpha from source when target is not has alpha
 		mergeAlpha = this.transparent !== source.transparent || mergeAlpha;
+
+		if (this._initalFillColor !== null) {
+			this.fillRect(this._rect, this._initalFillColor);
+			this._initalFillColor = null;
+		}
 
 		if (source !== this) {
 			this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
@@ -676,6 +704,11 @@ export class SceneImage2D extends BitmapImage2D {
 
 		this.dropAllReferences();
 		this.unmarkToUnload();
+
+		if (this._initalFillColor !== null) {
+			this.fillRect(this._rect, this._initalFillColor);
+			this._initalFillColor = null;
+		}
 
 		if (source instanceof DisplayObject) {
 			this._drawAsDisplay(source, matrix, colorTransform, blendMode, clipRect, smoothing);
