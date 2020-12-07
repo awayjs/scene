@@ -148,9 +148,14 @@ export class FrameScriptManager {
 		}
 	}
 
-	public static execute_as3_constructors_recursiv(mc: MovieClip): void {
-		if (Settings.ENABLE_DISABLE_CONSTRUCTOR && !FrameScriptManager.invalidAS3Constructors)
+	public static execute_as3_constructors_enterFrame(mc: MovieClip): void {
+		if (!FrameScriptManager.invalidAS3Constructors)
 			return;
+		FrameScriptManager.execute_as3_constructors_recursiv(mc);
+		FrameScriptManager.invalidAS3Constructors = false;
+	}
+
+	public static execute_as3_constructors_recursiv(mc: MovieClip): void {
 		/**
 		 * when called from advanceFrame, this should iterate all childs and execute constructors
 		 *
@@ -236,10 +241,6 @@ export class FrameScriptManager {
 				(<any>mcadapter).dispatchStaticEvent('addedToStage', mcadapter);
 			// 	todo: this does not dispatch ADDED and ADDED_TO_STAGE on SHAPE,
 			//	because in awayjs timeline Shape are Sprite without any as3-adapter
-		}
-
-		if (Settings.ENABLE_DISABLE_CONSTRUCTOR) {
-			FrameScriptManager.invalidAS3Constructors = false;
 		}
 	}
 
