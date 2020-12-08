@@ -134,6 +134,8 @@ export class SceneImage2D extends BitmapImage2D {
 
 	private _initalFillColor: number = null;
 
+	private _internalSync: boolean = false;
+
 	protected syncData(async = false): boolean | Promise<boolean> {
 
 		if (async && this._asyncRead) {
@@ -153,11 +155,19 @@ export class SceneImage2D extends BitmapImage2D {
 
 		const context = <ContextWebGL> this._stage.context;
 
-		// force to construct buffer
-		this.getDataInternal(true);
-
 		this._stage.setRenderTarget(this, false);
+
+		// when we call syncData, we already loose other data
+		// not require apply symbol etc, because it already should be applied
+		if (!this._data) {
+			this._data = new Uint8ClampedArray(this.width * this.height * 4);
+		}
+
+		// mark that this internal call, avoid reqursion loop
+		this._internalSync = true;
 		this._asyncRead = context.drawToBitmapImage2D(this, false, async);
+		this._internalSync = false;
+
 		this._stage.setRenderTarget(null);
 
 		if (!async) {
@@ -178,30 +188,43 @@ export class SceneImage2D extends BitmapImage2D {
 		});
 	}
 
-	/* internal */ getDataInternal (constructEmpty = true) {
+	/* overide internal */getDataInternal (constructEmpty = true, skipSync = false) {
+
+		// if sync called, check that this is requried
+		if (!skipSync && this._imageDataDirty && !this._internalSync) {
+			// sync data already should fill _data
+			this.syncData(false);
+
+			return this._data;
+		}
+
 		if (this._initalFillColor === null) {
-			return super.getDataInternal(constructEmpty);
+			return super.getDataInternal(constructEmpty, true);
 		}
 
 		// disable empty buffer filling
 		// and check that buffer is empyt (has now symbol or alpha)
-		let data = super.getDataInternal(false);
+		const data = super.getDataInternal(false, true);
 
 		// if it empty, fill with initlal value
 		if (!data) {
+
+			// fill rect constuct buffer inside
 			super.fillRect(this.rect, this._initalFillColor);
 			this._initalFillColor = null;
-			data = this._data;
+
+			return this._data;
 		}
 
 		return data;
 	}
 
+	/*
 	public get data(): Uint8ClampedArray {
 		this.syncData();
 
-		return this._data;
-	}
+		return this._data || super.getDataInternal(true);
+	}*/
 
 	/**
 	 * Marks region as dirty for optiomisation for getPixel* methods
