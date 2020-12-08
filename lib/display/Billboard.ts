@@ -175,7 +175,7 @@ export class Billboard extends DisplayObjectContainer {
 			this._sampler.smooth = smoothing;
 	}
 
-	public advanceFrame():void {
+	public advanceFrame(): void {
 		//override for billboard
 	}
 

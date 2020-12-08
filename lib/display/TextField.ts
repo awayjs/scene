@@ -1863,7 +1863,7 @@ export class TextField extends DisplayObjectContainer {
 		this.mouseEnabled = this._selectable;
 	}
 
-	public advanceFrame():void {
+	public advanceFrame(): void {
 		//override for textfield
 	}
 
