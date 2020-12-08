@@ -175,6 +175,10 @@ export class Billboard extends DisplayObjectContainer {
 			this._sampler.smooth = smoothing;
 	}
 
+	public advanceFrame():void {
+		//override for billboard
+	}
+
 	public isEntity(): boolean {
 		return true;
 	}
