@@ -492,9 +492,9 @@ export class SceneImage2D extends BitmapImage2D {
 		}
 
 		this._stage.clear(
-			argb[1] * alpha | 0,
-			argb[2] * alpha | 0,
-			argb[3] * alpha | 0,
+			(argb[1] / 0xff) * alpha | 0,
+			(argb[2] / 0xff) * alpha | 0,
+			(argb[3] / 0xff) * alpha | 0,
 			alpha
 		);
 
