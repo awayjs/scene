@@ -73,7 +73,6 @@ export class DefaultFontManager {
 		//fontName = (fontName + '').toLowerCase().replace(/bold|italic|regular/g, '').trim();
 		//const alias = fontName.replace(/ |-/g, '');
 
-
 		let font: Font = this._registered_fonts[ns][fontName] ;//|| this._registered_fonts[ns][alias];
 
 		if (font) {
