@@ -40,7 +40,7 @@ const PUBLIC_FIELDS = [
 	'size', 'color',
 	'bold', 'italic',
 	'underline', 'leading',
-	'letterSpacing'
+	'letterSpacing', 'style_name', 'font_table'
 ];
 
 export class TextFormat extends AssetBase {
@@ -407,7 +407,9 @@ export class TextFormat extends AssetBase {
 		if (value !== this._font_name) {
 			this._updateID++;
 		}
-
+		this._font_name = value;
+		this._setFontFromString(value);
+		/*
 		const newFont = DefaultFontManager.getFont(value);
 		if (newFont) {
 			this._font = newFont;
@@ -423,23 +425,22 @@ export class TextFormat extends AssetBase {
 					console.log('could not find font-table on font', value, this._font);
 				}
 			}
-			this._font_name = value;
 
 		} else {
 
 			console.log('could not find font for name ', value);
-		}
+		}*/
 	}
 
 	public get style_name(): FontStyleName {
-		if (!this._italic && !this._bold)
+		/*if (!this._italic && !this._bold)
 			this._style_name = FontStyleName.STANDART;
 		else if (this._italic && !this._bold)
 			this._style_name = FontStyleName.ITALIC;
 		else if (!this._italic && this._bold)
 			this._style_name = FontStyleName.BOLD;
 		else if (this._italic && this._bold)
-			this._style_name = FontStyleName.BOLDITALIC;
+			this._style_name = FontStyleName.BOLDITALIC;*/
 		return this._style_name;
 	}
 
@@ -464,7 +465,7 @@ export class TextFormat extends AssetBase {
 
 		this._font = DefaultFontManager.getFont(null);
 		this._font_table = <TesselatedFontTable>
-			this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+			this._font.get_font_table(this._style_name, TesselatedFontTable.assetType);
 
 		return this._font;
 	}
@@ -593,22 +594,25 @@ export class TextFormat extends AssetBase {
 		this._font_table = null;
 		this._style_name = FontStyleName.STANDART;
 
-		if (typeof font === 'string') {
-			const asset = DefaultFontManager.getFont(font);
-			const low = font.toLowerCase();
+		if (typeof font === 'string')
+			this._setFontFromString(font);
+	}
 
-			if (asset) {
-				if (low.includes(FontStyleName.BOLD)) {
-					this._style_name = FontStyleName.BOLD;
-				} else if (low.includes(FontStyleName.BOLDITALIC.toLowerCase())) {
-					this._style_name = FontStyleName.BOLDITALIC;
-				} else if (low.includes(FontStyleName.ITALIC)) {
-					this._style_name = FontStyleName.ITALIC;
-				}
-			}
+	private _setFontFromString(font_name: string) {
+		const asset = DefaultFontManager.getFont(font_name);
 
-			this.font = asset;
+		if (asset) {
+			this._style_name = FontStyleName.STANDART;
+			/*if (low.includes(FontStyleName.BOLD)) {
+				this._style_name = FontStyleName.BOLD;
+			} else if (low.includes(FontStyleName.BOLDITALIC.toLowerCase())) {
+				this._style_name = FontStyleName.BOLDITALIC;
+			} else if (low.includes(FontStyleName.ITALIC)) {
+				this._style_name = FontStyleName.ITALIC;
+			}*/
 		}
+
+		this.font = asset;
 	}
 
 	public clone(): TextFormat {
