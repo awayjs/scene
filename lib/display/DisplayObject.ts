@@ -1542,6 +1542,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		this._defaultBoundingVolume = this._getDefaultBoundingVolume();
 	}
 
+	public advanceFrame(): void {
+		//default to do nothing
+	}
+
 	public isEntity(): boolean {
 		return this._scrollRect ? true : false;
 	}

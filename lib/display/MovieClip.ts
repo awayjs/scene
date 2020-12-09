@@ -550,13 +550,6 @@ export class MovieClip extends Sprite {
 	}
 
 	/**
-	 * should be called right before the call to away3d-render.
-	 */
-	public update(dt: number = 0): void {
-		this.advanceFrame();
-	}
-
-	/**
 	 * Stop playback of animation and hold current position
 	 */
 	public stop(): void {
@@ -608,19 +601,8 @@ export class MovieClip extends Sprite {
 			//console.log("advancedFrame ", this.name, this._currentFrameIndex);
 		}
 
-		// than come the children from bottom up:
-		let child: DisplayObject;
-		for (let i: number = 0; i < this._children.length; i++) {
+		super.advanceFrame();
 
-			child = this._children[i];
-
-			if (child && child.isAsset(MovieClip)) {
-				(<MovieClip>child).advanceFrame();
-			}
-			if (child && (child.isAsset(Sprite) || child.isAsset(LoaderContainer)) && (<Sprite>child).numChildren && (<any>child.adapter).advanceFrame) {
-				(<any>child.adapter).advanceFrame();
-			}
-		}
 		this._skipAdvance = false;
 	}
 

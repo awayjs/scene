@@ -157,6 +157,11 @@ export class DisplayObjectContainer extends DisplayObject {
 		this.tabChildren = false;
 	}
 
+	public advanceFrame(): void {
+		for (let i: number = 0; i < this._children.length; i++)
+			this._children[i].advanceFrame();
+	}
+
 	public getChildForDraw(child: DisplayObject): DisplayObject {
 		child._setParent(null);
 		return child;

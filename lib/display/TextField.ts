@@ -1863,6 +1863,10 @@ export class TextField extends DisplayObjectContainer {
 		this.mouseEnabled = this._selectable;
 	}
 
+	public advanceFrame(): void {
+		//override for textfield
+	}
+
 	public isEntity(): boolean {
 		return true;
 	}
@@ -2610,7 +2614,7 @@ export class TextField extends DisplayObjectContainer {
 			for (let e = 0; e < record.entries.length;e++) {
 				glyphdata[r][e] = record.entries[e].glyphIndex;
 				advance[r][e] = record.entries[e].advance / 20;
-				xpos += record.entries[e].advance / 20;
+				xpos += advance[r][e];
 			}
 		}
 
@@ -3267,12 +3271,12 @@ export class TextField extends DisplayObjectContainer {
 
 			// easy: apply the format to all formats in the list
 			for (let i = 0; i < len; i++) {
-				this._textFormats[i] = format.clone();
+				this._textFormats[i] = this._textFormats[i].clone();
+				format.applyToFormat(this._textFormats[i]);
 			}
 
 			this._textDirty = true;
 			this._textShapesDirty = true;
-			this.reConstruct();
 
 			return;
 		}
@@ -3378,7 +3382,6 @@ export class TextField extends DisplayObjectContainer {
 
 		this._textDirty = true;
 		this._textShapesDirty = true;
-		this.reConstruct();
 	}
 
 	/**
