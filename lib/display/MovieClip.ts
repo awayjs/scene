@@ -550,13 +550,6 @@ export class MovieClip extends Sprite {
 	}
 
 	/**
-	 * should be called right before the call to away3d-render.
-	 */
-	public update(dt: number = 0): void {
-		this.advanceFrame();
-	}
-
-	/**
 	 * Stop playback of animation and hold current position
 	 */
 	public stop(): void {
