@@ -243,7 +243,6 @@ export class TextField extends DisplayObjectContainer {
 	public isStatic: boolean=false;
 
 	public updateMaskMode() {
-		//if(this._textWidth>this._width || this._textHeight>this._height){
 		// mask needed
 		if (this.inMaskMode) {
 			if (this._maskWidth != this._width || this._maskHeight != this._height ||
@@ -277,11 +276,19 @@ export class TextField extends DisplayObjectContainer {
 			this.addChild(this.maskChild);
 			this.addChild(this.textChild);
 			this.maskChild.maskMode = true;
-			this.textChild.masks = [this.maskChild];
+			//this.textChild.masks = [this.maskChild];
 
 			this._graphics.clear();
 			this.targetGraphics = this.textChild.graphics;
 			return;
+		}
+		// only use masking if needed:
+		if (this._textWidth > this._width || this._textHeight > this._height) {
+			this.textChild.masks = [this.maskChild];
+			console.log("text is masked", this._iText);
+		} else {
+			this.textChild.masks = null;
+			console.log("text not masked", this._iText);
 		}
 		return;
 		//}
