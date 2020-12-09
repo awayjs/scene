@@ -69,11 +69,12 @@ export class DefaultFontManager {
 		this._registered_fonts || (this._registered_fonts = {});
 		this._registered_fonts[ns] || (this._registered_fonts[ns] = {});
 
-		fontName = (fontName + '').toLowerCase().replace(/bold|italic|regular/g, '').trim();
+		// stop grouping by fontName - needed for SF
+		//fontName = (fontName + '').toLowerCase().replace(/bold|italic|regular/g, '').trim();
+		//const alias = fontName.replace(/ |-/g, '');
 
-		const alias = fontName.replace(/ |-/g, '');
 
-		let font: Font = this._registered_fonts[ns][fontName] || this._registered_fonts[ns][alias];
+		let font: Font = this._registered_fonts[ns][fontName] ;//|| this._registered_fonts[ns][alias];
 
 		if (font) {
 			return font;
@@ -91,7 +92,9 @@ export class DefaultFontManager {
 		}
 
 		this._registered_fonts[ns][fontName] = font;
-		this._registered_fonts[ns][alias] = font;
+
+		// stop grouping by fontName - needed for SF
+		//this._registered_fonts[ns][alias] = font;
 
 		return font;
 	}
@@ -112,7 +115,8 @@ export class DefaultFontManager {
 
 		const ns = namespace || AssetBase.DEFAULT_NAMESPACE;
 
-		fontName = (fontName + '').toLowerCase().replace(/bold|italic|regular|-/g, '').trim();
+		// stop grouping by fontName - needed for SF
+		//fontName = (fontName + '').toLowerCase().replace(/bold|italic|regular|-/g, '').trim();
 
 		this._registered_fonts || (this._registered_fonts = {});
 		this._registered_fonts[ns] || (this._registered_fonts[ns] = {});
