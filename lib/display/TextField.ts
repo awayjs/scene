@@ -285,10 +285,8 @@ export class TextField extends DisplayObjectContainer {
 		// only use masking if needed:
 		if (this._textWidth > this._width || this._textHeight > this._height) {
 			this.textChild.masks = [this.maskChild];
-			console.log('text is masked', this._iText);
 		} else {
 			this.textChild.masks = null;
-			console.log('text not masked', this._iText);
 		}
 		return;
 		//}
