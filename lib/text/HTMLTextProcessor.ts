@@ -1,8 +1,5 @@
 import { TextField } from '../display/TextField';
 import { TextFormat } from './TextFormat';
-import { ColorUtils } from '@awayjs/core';
-import { TextFormatAlign } from './TextFormatAlign';
-import { TextFieldAutoSize } from './TextFieldAutoSize';
 import { parse } from 'node-html-parser';
 
 export class HTMLTextProcessor {
@@ -62,7 +59,8 @@ export class HTMLTextProcessor {
 				} else if (input[cnt + 1] == 'u') {
 					//console.log("html i");
 					openTags[openTags.length] = 'u';
-				} else if (input[cnt + 1] == 'f' && input[cnt + 2] == 'o' && input[cnt + 3] == 'n' && input[cnt + 4] == 't') {
+				} else if (input[cnt + 1] == 'f' && input[cnt + 2] == 'o'
+					&& input[cnt + 3] == 'n' && input[cnt + 4] == 't') {
 					//console.log("html font");
 					openTags[openTags.length] = 'font';
 					cnt += 2;
@@ -71,8 +69,8 @@ export class HTMLTextProcessor {
 					openTags[openTags.length] = 'li';
 					cnt++;
 				} else if (input[cnt + 1] == '/' && input[cnt + 2] == 'p') {
-					var c: number = openTags.length;
-					var lastOpenTag: number = -1;
+					let c: number = openTags.length;
+					let lastOpenTag: number = -1;
 					while (c > 0) {
 						c--;
 						if (openTags[c] == 'p') {
@@ -84,7 +82,7 @@ export class HTMLTextProcessor {
 						insertAt[insertAt.length] = cnt;
 						insert[insert.length] = 4;
 					} else {
-						var c: number = openTags.length - 1;
+						c = openTags.length - 1;
 						while (c > lastOpenTag) {
 							insertAt[insertAt.length] = cnt;
 							insert[insert.length] = '</' + openTags[c] + '>';
@@ -94,8 +92,8 @@ export class HTMLTextProcessor {
 						openTags.pop();
 					}
 				} else if (input[cnt + 1] == '/' && input[cnt + 2] == 'b') {
-					var c: number = openTags.length;
-					var lastOpenTag: number = -1;
+					let c: number = openTags.length;
+					let lastOpenTag: number = -1;
 					while (c > 0) {
 						c--;
 						if (openTags[c] == 'b') {
@@ -107,7 +105,7 @@ export class HTMLTextProcessor {
 						insertAt[insertAt.length] = cnt;
 						insert[insert.length] = 4;
 					} else {
-						var c: number = openTags.length - 1;
+						c = openTags.length - 1;
 						while (c > lastOpenTag) {
 							insertAt[insertAt.length] = cnt;
 							insert[insert.length] = '</' + openTags[c] + '>';
@@ -117,8 +115,8 @@ export class HTMLTextProcessor {
 						openTags.pop();
 					}
 				} else if (input[cnt + 1] == '/' && input[cnt + 2] == 'i') {
-					var c: number = openTags.length;
-					var lastOpenTag: number = -1;
+					let c: number = openTags.length;
+					let lastOpenTag: number = -1;
 					while (c > 0) {
 						c--;
 						if (openTags[c] == 'i') {
@@ -130,7 +128,7 @@ export class HTMLTextProcessor {
 						insertAt[insertAt.length] = cnt;
 						insert[insert.length] = 4;
 					} else {
-						var c: number = openTags.length - 1;
+						c = openTags.length - 1;
 						while (c > lastOpenTag) {
 							insertAt[insertAt.length] = cnt;
 							insert[insert.length] = '</' + openTags[c] + '>';
@@ -140,8 +138,8 @@ export class HTMLTextProcessor {
 						openTags.pop();
 					}
 				} else if (input[cnt + 1] == '/' && input[cnt + 2] == 'u') {
-					var c: number = openTags.length;
-					var lastOpenTag: number = -1;
+					let c: number = openTags.length;
+					let lastOpenTag: number = -1;
 					while (c > 0) {
 						c--;
 						if (openTags[c] == 'u') {
@@ -153,7 +151,7 @@ export class HTMLTextProcessor {
 						insertAt[insertAt.length] = cnt;
 						insert[insert.length] = 4;
 					} else {
-						var c: number = openTags.length - 1;
+						c = openTags.length - 1;
 						while (c > lastOpenTag) {
 							insertAt[insertAt.length] = cnt;
 							insert[insert.length] = '</' + openTags[c] + '>';
@@ -163,8 +161,8 @@ export class HTMLTextProcessor {
 						openTags.pop();
 					}
 				} else if (input[cnt + 1] == '/' && input[cnt + 2] == 'l' && input[cnt + 3] == 'i') {
-					var c: number = openTags.length;
-					var lastOpenTag: number = -1;
+					let c: number = openTags.length;
+					let lastOpenTag: number = -1;
 					while (c > 0) {
 						c--;
 						if (openTags[c] == 'li') {
@@ -176,7 +174,7 @@ export class HTMLTextProcessor {
 						insertAt[insertAt.length] = cnt;
 						insert[insert.length] = 7;
 					} else {
-						var c: number = openTags.length - 1;
+						c = openTags.length - 1;
 						while (c > lastOpenTag) {
 							insertAt[insertAt.length] = cnt;
 							insert[insert.length] = '</' + openTags[c] + '>';
@@ -185,9 +183,10 @@ export class HTMLTextProcessor {
 						}
 						openTags.pop();
 					}
-				} else if (input[cnt + 1] == '/' && input[cnt + 2] == 'f' && input[cnt + 3] == 'o' && input[cnt + 4] == 'n' && input[cnt + 5] == 't') {
-					var c: number = openTags.length;
-					var lastOpenTag: number = -1;
+				} else if (input[cnt + 1] == '/' && input[cnt + 2] == 'f'
+					&& input[cnt + 3] == 'o' && input[cnt + 4] == 'n' && input[cnt + 5] == 't') {
+					let c: number = openTags.length;
+					let lastOpenTag: number = -1;
 					while (c > 0) {
 						c--;
 						if (openTags[c] == 'font') {
@@ -199,7 +198,7 @@ export class HTMLTextProcessor {
 						insertAt[insertAt.length] = cnt;
 						insert[insert.length] = 7;
 					} else {
-						var c: number = openTags.length - 1;
+						c = openTags.length - 1;
 						while (c > lastOpenTag) {
 							insertAt[insertAt.length] = cnt;
 							insert[insert.length] = '</' + openTags[c] + '>';
@@ -214,7 +213,7 @@ export class HTMLTextProcessor {
 				cnt++;
 			}
 		}
-		var c: number = openTags.length;
+		let c: number = openTags.length;
 		while (c > 0) {
 			c--;
 			insertAt[insertAt.length] = cnt;
@@ -256,17 +255,25 @@ export class HTMLTextProcessor {
 			textProps.multiline = doc.firstChild.childNodes.length > 0;
 			this.readHTMLTextPropertiesRecursive(target_tf, doc, textProps, target_tf._textFormat);
 		}
-		if (textProps.text != '' && ((textProps.text.charCodeAt(textProps.text.length - 1) == 13) || (textProps.text.charCodeAt(textProps.text.length - 1) == 10))) {
+		if (textProps.text != '' && ((textProps.text.charCodeAt(textProps.text.length - 1) == 13)
+			|| (textProps.text.charCodeAt(textProps.text.length - 1) == 10))) {
 			textProps.text = textProps.text.slice(0, textProps.text.length - 1);
 		}
-		if (textProps.text != '' && (textProps.text.length >= 3 && textProps.text[textProps.text.length - 1] == 'n' && textProps.text[textProps.text.length - 2] == '\\' && textProps.text[textProps.text.length - 3] == '\\')) {
+		if (textProps.text != '' && (textProps.text.length >= 3 && textProps.text[textProps.text.length - 1] == 'n'
+			&& textProps.text[textProps.text.length - 2] == '\\'
+			&& textProps.text[textProps.text.length - 3] == '\\')) {
 			textProps.text = textProps.text.slice(0, textProps.text.length - 3);
-		} else if (textProps.text != '' && (textProps.text.length >= 2 && textProps.text[textProps.text.length - 1] == 'n' && textProps.text[textProps.text.length - 2] == '\\')) {
+		} else if (textProps.text != '' && (textProps.text.length >= 2
+			&& textProps.text[textProps.text.length - 1] == 'n' && textProps.text[textProps.text.length - 2] == '\\')) {
 			textProps.text = textProps.text.slice(0, textProps.text.length - 2);
 		}
-		if (textProps.text != '' && (textProps.text.length >= 3 && textProps.text[textProps.text.length - 1] == 'n' && textProps.text[textProps.text.length - 2] == '\\' && textProps.text[textProps.text.length - 3] == '\\')) {
+		if (textProps.text != '' && (textProps.text.length >= 3 && textProps.text[textProps.text.length - 1] == 'n'
+			&& textProps.text[textProps.text.length - 2] == '\\'
+			&& textProps.text[textProps.text.length - 3] == '\\')) {
 			textProps.text = textProps.text.slice(0, textProps.text.length - 3);
-		} else if (textProps.text != '' && (textProps.text.length >= 2 && textProps.text[textProps.text.length - 1] == 'n' && textProps.text[textProps.text.length - 2] == '\\')) {
+		} else if (textProps.text != '' && (textProps.text.length >= 2
+			&& textProps.text[textProps.text.length - 1] == 'n'
+			&& textProps.text[textProps.text.length - 2] == '\\')) {
 			textProps.text = textProps.text.slice(0, textProps.text.length - 2);
 		}
 		target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] = textProps.text.length;
@@ -281,44 +288,51 @@ export class HTMLTextProcessor {
 		const newProps_names: string[] = [];
 		if (myChild.attributes) {
 			if ((<any>myChild.attributes).size || (<any>myChild.attributes).SIZE) {
-				var value = (<any>myChild.attributes).size ? (<any>myChild.attributes).size : (<any>myChild.attributes).SIZE;
+				let value = (<any>myChild.attributes).size ?
+					(<any>myChild.attributes).size : (<any>myChild.attributes).SIZE;
 				value = value.replace(/[^0-9.]/g, '');
 				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = 'size';
 			}
 			if ((<any>myChild.attributes).color || (<any>myChild.attributes).COLOR) {
-				var value = (<any>myChild.attributes).color ? (<any>myChild.attributes).color : (<any>myChild.attributes).COLOR;
+				let value = (<any>myChild.attributes).color ?
+					(<any>myChild.attributes).color : (<any>myChild.attributes).COLOR;
 				value = value.replace('#', '0x');
 				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = 'color';
 			}
 			if ((<any>myChild.attributes).indent || (<any>myChild.attributes).INDENT) {
-				var value = (<any>myChild.attributes).indent ? (<any>myChild.attributes).indent : (<any>myChild.attributes).INDENT;
+				let value = (<any>myChild.attributes).indent ?
+					(<any>myChild.attributes).indent : (<any>myChild.attributes).INDENT;
 				value = value.replace(/[^0-9.]/g, '');
 				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = 'indent';
 			}
 			if ((<any>myChild.attributes).leftMargin || (<any>myChild.attributes).LEFTMARGIN) {
-				var value = (<any>myChild.attributes).leftMargin ? (<any>myChild.attributes).leftMargin : (<any>myChild.attributes).LEFTMARGIN;
+				let value = (<any>myChild.attributes).leftMargin ?
+					(<any>myChild.attributes).leftMargin : (<any>myChild.attributes).LEFTMARGIN;
 				value = value.replace(/[^0-9.]/g, '');
 				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = 'leftMargin';
 			}
 			if ((<any>myChild.attributes).rightMargin || (<any>myChild.attributes).RIGHTMARGIN) {
-				var value = (<any>myChild.attributes).rightMargin ? (<any>myChild.attributes).rightMargin : (<any>myChild.attributes).RIGHTMARGIN;
+				let value = (<any>myChild.attributes).rightMargin ?
+					(<any>myChild.attributes).rightMargin : (<any>myChild.attributes).RIGHTMARGIN;
 				value = value.replace(/[^0-9.]/g, '');
 				newProps_values[newProps_values.length] = parseInt(value);
 				newProps_names[newProps_names.length] = 'rightMargin';
 			}
 			if ((<any>myChild.attributes).align || (<any>myChild.attributes).ALIGN) {
-				var value = (<any>myChild.attributes).align ? (<any>myChild.attributes).align : (<any>myChild.attributes).ALIGN;
+				const value = (<any>myChild.attributes).align ?
+					(<any>myChild.attributes).align : (<any>myChild.attributes).ALIGN;
 				newProps_values[newProps_values.length] = value;
 				newProps_names[newProps_names.length] = 'align';
 			}
 			if ((<any>myChild.attributes).face || (<any>myChild.attributes).FACE) {
-				var value = (<any>myChild.attributes).face ? (<any>myChild.attributes).face : (<any>myChild.attributes).FACE;
+				const value = (<any>myChild.attributes).face ?
+					(<any>myChild.attributes).face : (<any>myChild.attributes).FACE;
 				newProps_values[newProps_values.length] = value;
-				newProps_names[newProps_names.length] = 'font_name';
+				newProps_names[newProps_names.length] = 'font';
 			}
 		}
 		let i = newProps_values.length;
@@ -338,23 +352,22 @@ export class HTMLTextProcessor {
 
 		// check if this is a paragraph. if it is, we want to add a linebreak in case there is text already present
 		// we also check if there is already a linebreak in the text, and do not add another if there is
-
+		/*
 		if (myChild.tagName == 'p') {
-			/*if(textProps.text!="" && !(textProps.text.length>2 && textProps.text[textProps.text.length-1]=="n"&& textProps.text[textProps.text.length-2]=="\\")){
+			if(textProps.text!="" && !(textProps.text.length>2 && textProps.text[textProps.text.length-1]=="n"
+				&& textProps.text[textProps.text.length-2]=="\\")){
 
 				textProps.text+="\\n";
-			}*/
+			}
 		}
-		// if this is a bold-tag, we create a new textformat if the current format is not bold
-		else if (myChild.tagName == 'b') {
+		*/
+		if (myChild.tagName == 'b') {
 			if (!currentFormat.bold) {
 				cloneFormat = true;
 				newProps_values[newProps_values.length] = true;
 				newProps_names[newProps_names.length] = 'bold';
 			}
-		}
-		// if this is a italic-tag, we create a new textformat if the current format is not italic
-		else if (myChild.tagName == 'i') {
+		} else if (myChild.tagName == 'i') {
 			if (!currentFormat.italic) {
 				cloneFormat = true;
 				newProps_values[newProps_values.length] = true;
@@ -370,7 +383,8 @@ export class HTMLTextProcessor {
 			// todo
 			cloneFormat = true;
 		} else if (myChild.tagName == 'li') {
-		/*	if(textProps.text!="" && !(textProps.text.length>2 && textProps.text[textProps.text.length-1]=="n"&& textProps.text[textProps.text.length-2]=="\\")){
+		/*	if(textProps.text!="" && !(textProps.text.length>2 && textProps.text[textProps.text.length-1]=="n"
+			&& textProps.text[textProps.text.length-2]=="\\")){
 				textProps.text+="\\n";
 			}*/
 			textProps.text += '    ●    ';
@@ -411,7 +425,8 @@ export class HTMLTextProcessor {
 			}
 		}
 		if (myChild.tagName == 'li' || myChild.tagName == 'p') {
-			//if(textProps.text!="" && !(textProps.text.length>=2 && textProps.text[textProps.text.length-1]=="n"&& textProps.text[textProps.text.length-2]=="\\")){
+			//if(textProps.text!="" && !(textProps.text.length>=2 && textProps.text[textProps.text.length-1]=="n"
+			//&& textProps.text[textProps.text.length-2]=="\\")){
 			textProps.text += '\\n';
 			//}
 		}
