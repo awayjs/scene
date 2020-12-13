@@ -14,7 +14,7 @@ export class DefaultFontManager {
 	public static deviceFont: Font=null;
 
 	public static getDefaultFont(): Font {
-		if (this._default_font === null) {
+		if (!this._default_font) {
 			this.setDefaultFont();
 		}
 
@@ -69,6 +69,7 @@ export class DefaultFontManager {
 		this._registered_fonts || (this._registered_fonts = {});
 		this._registered_fonts[ns] || (this._registered_fonts[ns] = {});
 
+		//console.warn("defineFont", fontName, ns);
 		// stop grouping by fontName - needed for SF
 		//fontName = (fontName + '').toLowerCase().replace(/bold|italic|regular/g, '').trim();
 		//const alias = fontName.replace(/ |-/g, '');
@@ -87,7 +88,7 @@ export class DefaultFontManager {
 		font.name = fontName;
 
 		if (!this._default_font) {
-			this.deviceFont = this._default_font = font;
+			//this.deviceFont = this._default_font = font;
 		}
 
 		this._registered_fonts[ns][fontName] = font;
@@ -132,6 +133,7 @@ export class DefaultFontManager {
 				}
 			}
 		}
+		//console.log("no font found for");
 		return this.getDefaultFont();
 	}
 

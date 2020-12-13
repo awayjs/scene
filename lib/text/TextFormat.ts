@@ -290,7 +290,7 @@ export class TextFormat extends AssetBase {
 
 		this._bold = value;
 		if (this._font) {
-			this.font_table = this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
+			this.font_table = this.font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
 		}
 
 	}
@@ -311,7 +311,7 @@ export class TextFormat extends AssetBase {
 
 		this._italic = value;
 		if (this._font) {
-			this.font_table = this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
+			this.font_table = this.font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
 		}
 	}
 
@@ -348,7 +348,7 @@ export class TextFormat extends AssetBase {
 	public get font_table(): IFontTable {
 		if (!this._font_table) {
 			this.font_table = <TesselatedFontTable>
-				this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
+				this.font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
 		}
 		return this._font_table;
 	}
@@ -394,21 +394,20 @@ export class TextFormat extends AssetBase {
 	 * The font-name can be used to get a Font-object from the AssetLibrary.
 	 * A Font object provides a list of Font-table, corresponding to font-table names.
 	 */
-	private _font_name: string;
 	private _font: Font;
 
 	private _style_name: FontStyleName;
 
 	public get font_name(): string {
-		return this._font_name ? this._font_name : '';
+		return this.font?.fontName;
 	}
 
 	public set font_name(value: string) {
-		if (value !== this._font_name) {
+		/*if (value !== this._font_name) {
 			this._updateID++;
 		}
-		this._font_name = value;
-		this._setFontFromString(value);
+		this._setFontFromString(value);*/
+		//console.log("set from font name", value);
 		/*
 		const newFont = DefaultFontManager.getFont(value);
 		if (newFont) {
@@ -455,7 +454,7 @@ export class TextFormat extends AssetBase {
 		if (this._style_name == FontStyleName.ITALIC || this._style_name == FontStyleName.BOLDITALIC)
 			this._italic = true;
 		if (this._font)
-			this.font_table = this.font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+			this.font_table = this.font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
 	}
 
 	public get font(): Font {
@@ -465,14 +464,14 @@ export class TextFormat extends AssetBase {
 
 		this._font = DefaultFontManager.getFont(null);
 		this._font_table = <TesselatedFontTable>
-			this._font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+			this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
 
 		return this._font;
 	}
 
 	public set font(value: Font) {
 		if (typeof value === 'string') {
-			this.font_name = value;
+			this._setFontFromString(value);
 			return;
 		}
 
@@ -481,7 +480,7 @@ export class TextFormat extends AssetBase {
 		}
 
 		this._font = value;
-		this._font_table = this._font.get_font_table(this._style_name, TesselatedFontTable.assetType);
+		this._font_table = this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
 	}
 
 	/**
@@ -574,7 +573,6 @@ export class TextFormat extends AssetBase {
 		leftMargin: number = null, rightMargin: number = null, indent: number = null, leading: number = null) {
 		super();
 
-		this._font_name = font;
 		this._size = size;
 		this._color = color;
 		this._bold = bold;
@@ -589,13 +587,15 @@ export class TextFormat extends AssetBase {
 		this._leading = leading;
 
 		this._letterSpacing = null;
-		this._font = null;
 
 		this._font_table = null;
 		this._style_name = FontStyleName.STANDART;
 
 		if (typeof font === 'string')
 			this._setFontFromString(font);
+		else {
+			this._font = font;
+		}
 	}
 
 	private _setFontFromString(font_name: string) {
@@ -617,7 +617,7 @@ export class TextFormat extends AssetBase {
 
 	public clone(): TextFormat {
 		const clonedFormat: TextFormat = new TextFormat(
-			this._font_name, this._size, this._color, this._bold,
+			<any> this._font, this._size, this._color, this._bold,
 			this._italic, this._underline,this.url, this.link_target,
 			this._align, this._leftMargin, this._rightMargin, this._indent, this._leading);
 		return clonedFormat;

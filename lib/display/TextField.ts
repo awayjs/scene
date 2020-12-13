@@ -776,7 +776,7 @@ export class TextField extends DisplayObjectContainer {
 
 		this.reConstruct(true);
 
-		if (this._textFormat
+		/*if (this._textFormat
 			&& !this._textFormat.font_table.isAsset(TesselatedFontTable)
 			&& !this._textFormat.material) {
 			// only for FNT font-tables
@@ -785,7 +785,7 @@ export class TextField extends DisplayObjectContainer {
 			this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
 			this.transform.colorTransform.color = (this.textColor != null) ? this.textColor : this._textFormat.color;
 			this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-		}
+		}*/
 		//}
 		/*
 		if (projection) {
@@ -1529,7 +1529,7 @@ export class TextField extends DisplayObjectContainer {
 		// this._glyphsDirty = true;
 		// this._shapesDirty = true;
 		this._textDirty = true;
-		this.reConstruct();
+		//this.reConstruct();
 
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
@@ -1627,7 +1627,7 @@ export class TextField extends DisplayObjectContainer {
 			this._textDirty = true;
 		}
 
-		if (this._textFormat
+		/*if (this._textFormat
 			&& !this._textFormat.font_table.isAsset(TesselatedFontTable)
 			&& !this._textFormat.material) {
 
@@ -1641,7 +1641,12 @@ export class TextField extends DisplayObjectContainer {
 
 			if (this._implicitPartition)
 				this._implicitPartition.invalidateEntity(this);
-		}
+		//}*/
+
+		this._glyphsDirty = true;
+
+		if (this._implicitPartition)
+			this._implicitPartition.invalidateEntity(this);
 	}
 
 	private getTextColorForTextFormat(format: TextFormat) {
