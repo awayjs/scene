@@ -11,7 +11,6 @@ import {
 } from '@awayjs/view';
 import { RendererBase, RenderGroup, RendererType } from '@awayjs/renderer';
 
-import { TouchPoint } from './base/TouchPoint';
 import { Camera } from './display/Camera';
 import { CameraEvent } from './events/CameraEvent';
 import { MouseManager } from './managers/MouseManager';
@@ -19,6 +18,7 @@ import { DisplayObjectContainer } from './display/DisplayObjectContainer';
 import { DisplayObject } from './display/DisplayObject';
 import { MaterialManager } from '@awayjs/graphics';
 import { MethodMaterial, ImageTexture2D } from '@awayjs/materials';
+import { TouchPoint } from '@awayjs/stage';
 
 export class Scene {
 
@@ -54,7 +54,6 @@ export class Scene {
 
 	public _mouseX: number;
 	public _mouseY: number;
-	public _touchPoints: Array<TouchPoint> = new Array<TouchPoint>();
 
 	public get partition(): PartitionBase {
 		return this._partition;
@@ -64,20 +63,21 @@ export class Scene {
 		if (this._partition == value)
 			return;
 
+		if (this._mousePicker)
+			this._mouseManager.unregisterPicker(this._mousePicker);
+
 		this._partition = value;
 		this._mousePicker = this._pickGroup.getRaycastPicker(this._partition);
 		this._tabPicker = this._pickGroup.getTabPicker(this._partition);
 		this._mousePicker.findClosestCollision = true;
+
+		this._mouseManager.registerPicker(this._mousePicker);
 
 		if (this._camera) {
 			this._camera.clear();
 			this._partition.invalidateEntity(this._camera);
 			this._camera.partition = this._partition;
 		}
-
-		this._mousePicker = this._pickGroup.getRaycastPicker(this._partition);
-		this._tabPicker = this._pickGroup.getTabPicker(this._partition);
-		this._mousePicker.findClosestCollision = true;
 
 		this._partition.root.partition = this._partition;
 
@@ -100,16 +100,17 @@ export class Scene {
 
 			PickGroup.clearInstance(this._view);
 
-			this._mouseManager.unregisterContainer(this._view.stage.container);
-			this._mouseManager.unregisterScene(this);
+			if (this._mousePicker)
+				this._mouseManager.unregisterPicker(this._mousePicker);
 		}
 
 		this._view = value;
 		this._pickGroup = PickGroup.getInstance(this._view);
 
-		this._mouseManager = MouseManager.getInstance(this._pickGroup);
-		this._mouseManager.registerContainer(this._view.stage.container);
-		this._mouseManager.registerScene(this);
+		this._mouseManager = MouseManager.getInstance(this._view.stage);
+
+		if (this._mousePicker)
+			this._mouseManager.registerPicker(this._mousePicker);
 
 		if (this._camera)
 			this._view.projection = this._camera.projection;
@@ -139,11 +140,7 @@ export class Scene {
 		//				this._mouse3DManager.addViewLayer(this);
 	}
 
-	public layeredView: boolean; //TODO: something to enable this correctly
-
 	public disableMouseEvents: boolean; //TODO: hack to ignore mouseevents on certain views
-
-	public forceMouseMove: boolean;
 
 	public get renderer(): RendererBase {
 		if (!this._renderer)
@@ -164,17 +161,13 @@ export class Scene {
 		return this._mouseY;
 	}
 
-	public get touchPoints(): Array<TouchPoint> {
-		return this._touchPoints;
-	}
-
 	public getLocalMouseX(entity: DisplayObject): number {
 		return entity
 			.transform
 			.inverseConcatenatedMatrix3D
 			.transformVector(
-				this._renderer.view.unproject(
-					this._mouseX, this._mouseY, 1000))
+				this._view.unproject(
+					this._view.stage.screenX, this._view.stage.screenY, 1000))
 			.x;
 	}
 
@@ -183,8 +176,8 @@ export class Scene {
 			.transform
 			.inverseConcatenatedMatrix3D
 			.transformVector(
-				this._renderer.view.unproject(
-					this._mouseX, this._mouseY, 1000))
+				this._view.unproject(
+					this._view.stage.screenX, this._view.stage.screenY, 1000))
 			.y;
 	}
 
@@ -192,16 +185,16 @@ export class Scene {
 		let localPosition: Vector3D;
 		const localTouchPoints: Array<TouchPoint> = new Array<TouchPoint>();
 
-		const len: number = this._touchPoints.length;
+		const len: number = this._view.stage.touchPoints.length;
 		for (let i: number = 0; i < len; i++) {
 			localPosition = entity
 				.transform
 				.inverseConcatenatedMatrix3D
 				.transformVector(
-					this._renderer.view.unproject(
-						this._touchPoints[i].x, this._touchPoints[i].y, 1000));
+					this._view.unproject(
+						this._view.stage.touchPoints[i].x, this._view.stage.touchPoints[i].y, 1000));
 
-			localTouchPoints.push(new TouchPoint(localPosition.x, localPosition.y, this._touchPoints[i].id));
+			localTouchPoints.push(new TouchPoint(localPosition.x, localPosition.y, this._view.stage.touchPoints[i].id));
 		}
 
 		return localTouchPoints;
@@ -296,8 +289,7 @@ export class Scene {
 
 	public fireMouseEvents() {
 		if (!this.disableMouseEvents)
-			this._mouseManager.fireMouseEvents(this);
-
+			this._mouseManager.fireMouseEvents(this._mousePicker);
 	}
 
 	/**
@@ -308,19 +300,15 @@ export class Scene {
 
 		// update picking
 		if (fireMousEvents && !this.disableMouseEvents)
-			this._mouseManager.fireMouseEvents(this);
+			this._mouseManager.fireMouseEvents(this._mousePicker);
 
 		if (this.beforeRenderCallback)
 			this.beforeRenderCallback();
 
 		const stage = this._view.stage;
 
-		stage.onRenderBegin && stage.onRenderBegin();
-
 		//render the contents of the scene
 		this.renderer.render();
-
-		stage.onRenderEnd && stage.onRenderEnd();
 	}
 
 	/**
@@ -345,14 +333,9 @@ export class Scene {
 			this._renderer = null;
 		}
 
-		// TODO: imeplement mouseManager / touch3DManager
-		this._mouseManager.unregisterScene(this);
-
-		//this._touch3DManager.disableTouchListeners(this);
-		//this._touch3DManager.dispose();
+		this._mouseManager.dispose();
 
 		this._mouseManager = null;
-		//this._touch3DManager = null;
 	}
 
 	/**
@@ -360,14 +343,6 @@ export class Scene {
 	 */
 	private _onProjectionChanged(event: CameraEvent): void {
 		this._view.projection = this._camera.projection;
-	}
-
-	public getViewCollision(x: number, y: number): PickingCollision {
-		//update ray
-		const rayPosition: Vector3D = this._view.unproject(x, y, 0);
-		const rayDirection: Vector3D = this._view.unproject(x, y, 1).subtract(rayPosition);
-
-		return this._mousePicker.getCollision(rayPosition, rayDirection);
 	}
 }
 
