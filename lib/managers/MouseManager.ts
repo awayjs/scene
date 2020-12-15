@@ -129,9 +129,9 @@ export class MouseManager {
 		container.addEventListener('dblclick', this.onDoubleClickDelegate);
 		container.addEventListener('touchstart', this.onMouseDownDelegate);
 		container.addEventListener('mousedown', this.onMouseDownDelegate);
-		container.addEventListener('touchmove', this.onMouseMoveDelegate);
-		document.addEventListener('mousemove', this.onMouseMoveDelegate);
-		document.addEventListener('mouseup', this.onMouseUpDelegate);
+		window.addEventListener('touchmove', this.onMouseMoveDelegate);
+		window.addEventListener('mousemove', this.onMouseMoveDelegate);
+		window.addEventListener('mouseup', this.onMouseUpDelegate);
 		container.addEventListener('touchend', this.onMouseUpDelegate);
 		container.addEventListener('touchend', this.onClickDelegate);
 		container.addEventListener('mousewheel', this.onMouseWheelDelegate);
@@ -167,9 +167,9 @@ export class MouseManager {
 		container.removeEventListener('dblclick', this.onDoubleClickDelegate);
 		container.removeEventListener('touchstart', this.onMouseDownDelegate);
 		container.removeEventListener('mousedown', this.onMouseDownDelegate);
-		container.removeEventListener('touchmove', this.onMouseMoveDelegate);
-		document.removeEventListener('mousemove', this.onMouseMoveDelegate);
-		document.removeEventListener('mouseup', this.onMouseUpDelegate);
+		window.removeEventListener('touchmove', this.onMouseMoveDelegate);
+		window.removeEventListener('mousemove', this.onMouseMoveDelegate);
+		window.removeEventListener('mouseup', this.onMouseUpDelegate);
 		container.removeEventListener('touchend', this.onMouseUpDelegate);
 		container.removeEventListener('touchend', this.onClickDelegate);
 		container.removeEventListener('mousewheel', this.onMouseWheelDelegate);
