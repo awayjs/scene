@@ -334,7 +334,7 @@ export class MouseManager {
 					if (this._currentFocusEntity)
 						this._currentFocusEntity.setFocus(false, true);
 
-					this._currentFocusEntity = this._mouseDragCollision.pickerEntity;
+					this._currentFocusEntity = this._mouseDragCollision?.pickerEntity;
 
 					if (this._currentFocusEntity)
 						this._currentFocusEntity.setFocus(true, true);
@@ -365,7 +365,7 @@ export class MouseManager {
 					if (!this._eventBubbling) {
 						this.setupAndDispatchEvent(this._mouseUpOutside, event, this._mouseDragCollision);
 					}
-				} else if (this._mouseDragging && this._mouseDragCollision.pickerEntity && this._mouseDragCollision.pickerEntity == dispatcher) {
+				} else if (this._mouseDragging && this._mouseDragCollision && this._mouseDragCollision.pickerEntity == dispatcher) {
 					// no avm1dragging is in process, but current collision is not the same as collision that appeared on mouse-down,
 					// need to dispatch a MOUSE_UP_OUTSIDE on _mouseDragEntity
 					upPickerEntity = this._mouseDragCollision.pickerEntity;
