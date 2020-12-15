@@ -1682,6 +1682,10 @@ export class TextField extends DisplayObjectContainer {
 	 */
 	public get textHeight(): number {
 		this.reConstruct();
+		if (this.type == TextFieldType.INPUT && this._iText == '') {
+			this.textFormat.font_table.initFontSize(this.textFormat.size);
+			return this.textFormat.font_table.getLineHeight();
+		}
 
 		return this._textHeight;
 	}
