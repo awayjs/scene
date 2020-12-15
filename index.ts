@@ -12,7 +12,6 @@ export { IFrameScript } from './lib/base/IFrameScript';
 export { ISymbolDecoder } from './lib/base/ISymbolDecoder';
 export { Timeline } from './lib/base/Timeline';
 export { TimelineActionType } from './lib/base/TimelineActionType';
-export { TouchPoint } from './lib/base/TouchPoint';
 
 export { ControllerBase } from './lib/controllers/ControllerBase';
 export { FirstPersonController } from './lib/controllers/FirstPersonController';

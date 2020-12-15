@@ -1,16 +1,13 @@
 import { Vector3D } from '@awayjs/core';
+import { Stage } from '@awayjs/stage';
 
-import { PickingCollision, PickGroup, PickEntity } from '@awayjs/view';
+import { PickingCollision, PickEntity, RaycastPicker, IPartitionEntity, IPickingEntity } from '@awayjs/view';
 
-import { TouchPoint } from '../base/TouchPoint';
-import { DisplayObject } from '../display/DisplayObject';
 import { KeyboardEvent } from '../events/KeyboardEvent';
 import { MouseEvent } from '../events/MouseEvent';
 import { FrameScriptManager } from '../managers/FrameScriptManager';
 
-import { Scene } from '../Scene';
 import { IInputRecorder } from './IInputRecorder';
-import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 
 const TMP_POINT = { x: 0, y: 0 };
 /**
@@ -21,21 +18,16 @@ export class MouseManager {
 	private static _instance: MouseManager;
 	public static inputRecorder: IInputRecorder;
 
-	private _pickGroup: PickGroup;
-	private _sceneLookup: Array<Scene> = new Array<Scene>();
-	private _containerLookup: Array<HTMLElement> = new Array<HTMLElement>();
+	private _stage: Stage;
+	private static _instancePool: Record<number, MouseManager> = {};
+	private _pickerLookup: Array<RaycastPicker> = new Array<RaycastPicker>();
 
-	public _iActiveScene: Scene;
-	public _iUpdateDirty: boolean;
-	public _iCollision: PickingCollision;
-	public _prevICollision: PickingCollision;
+	private _updateDirty: boolean;
+	private _prevCollision: PickingCollision;
 
-	private _iCollisionEntity: DisplayObject;         // current hit entity
-	private _prevICollisionEntity: DisplayObject;     // entity hit on last frame
-	private _mouseDragEntity: DisplayObject;     // entity hit on mouse-down
-	private _mouseDragPickerEntity: DisplayObject;
+	private _mouseDragCollision: PickingCollision;     // entity hit on mouse-down
 	private _mouseDragging: boolean;            // true while mosue is dragged
-	private _currentFocusEntity: DisplayObject;       // entity currently in focus
+	private _currentFocusEntity: IPickingEntity;       // entity currently in focus
 
 	public allowKeyInput: boolean=true;
 
@@ -43,8 +35,6 @@ export class MouseManager {
 
 	private _eventBubbling: boolean=true;           //  should events bubble up
 	private _allowFocusOnUnfocusable: boolean=true;  // should unfocus-able object steal focus ?
-
-	public _stage: DisplayObject;
 
 	private _showCursor: boolean;
 
@@ -87,12 +77,10 @@ export class MouseManager {
 	private _isTouch: Boolean;
 	private _isAVM1Dragging: Boolean = false;
 
-	public startDragObject(obj: DisplayObject) {
+	public startDragObject(collision: PickingCollision) {
 		this._isAVM1Dragging = true;
-		if (!this._mouseDragEntity)
-			this._mouseDragEntity = obj;
-		if (!this._mouseDragPickerEntity)
-			this._mouseDragPickerEntity = obj;
+		if (!this._mouseDragCollision)
+			this._mouseDragCollision = collision;
 	}
 
 	public stopDragObject() {
@@ -118,8 +106,8 @@ export class MouseManager {
 	/**
 	 * Creates a new <code>MouseManager</code> object.
 	 */
-	constructor(pickGroup: PickGroup) {
-		this._pickGroup = pickGroup;
+	constructor(stage: Stage) {
+		this._stage = stage;
 		this.onClickDelegate = (event) => this.onClick(event);
 		this.onDoubleClickDelegate = (event) => this.onDoubleClick(event);
 		this.onMouseDownDelegate = (event) => this.onMouseDown(event);
@@ -134,6 +122,23 @@ export class MouseManager {
 		this._isTouch = (('ontouchstart' in window) || navigator.msMaxTouchPoints > 0);
 		this._showCursor = true;
 		this._mouseDragging = false;
+
+		//register stage
+		const container = this._stage.container;
+		container.addEventListener('click', this.onClickDelegate);
+		container.addEventListener('dblclick', this.onDoubleClickDelegate);
+		container.addEventListener('touchstart', this.onMouseDownDelegate);
+		container.addEventListener('mousedown', this.onMouseDownDelegate);
+		container.addEventListener('touchmove', this.onMouseMoveDelegate);
+		container.addEventListener('mousemove', this.onMouseMoveDelegate);
+		container.addEventListener('mouseup', this.onMouseUpDelegate);
+		container.addEventListener('touchend', this.onMouseUpDelegate);
+		container.addEventListener('touchend', this.onClickDelegate);
+		container.addEventListener('mousewheel', this.onMouseWheelDelegate);
+		container.addEventListener('mouseover', this.onMouseOverDelegate);
+		container.addEventListener('mouseout', this.onMouseOutDelegate);
+		window.addEventListener('keydown', this.onKeyDownDelegate);
+		window.addEventListener('keyup', this.onKeyUpDelegate);
 	}
 
 	public set useSoftkeyboard(value: boolean) {
@@ -155,49 +160,24 @@ export class MouseManager {
 		return this._useSoftkeyboard;
 	}
 
-	public registerContainer(container: HTMLElement): void {
-		if (container && this._containerLookup.indexOf(container) == -1) {
-			container.addEventListener('click', this.onClickDelegate);
-			container.addEventListener('dblclick', this.onDoubleClickDelegate);
-			container.addEventListener('touchstart', this.onMouseDownDelegate);
-			container.addEventListener('mousedown', this.onMouseDownDelegate);
-			container.addEventListener('touchmove', this.onMouseMoveDelegate);
-			container.addEventListener('mousemove', this.onMouseMoveDelegate);
-			container.addEventListener('mouseup', this.onMouseUpDelegate);
-			container.addEventListener('touchend', this.onMouseUpDelegate);
-			container.addEventListener('touchend', this.onClickDelegate);
-			container.addEventListener('mousewheel', this.onMouseWheelDelegate);
-			container.addEventListener('mouseover', this.onMouseOverDelegate);
-			container.addEventListener('mouseout', this.onMouseOutDelegate);
-        	window.addEventListener('keydown', this.onKeyDownDelegate);
-			window.addEventListener('keyup', this.onKeyUpDelegate);
-
-			this._containerLookup.push(container);
-		}
-	}
-
-	public unregisterContainer(container: HTMLElement): void {
-		if (container && this._containerLookup.indexOf(container) != -1) {
-			container.removeEventListener('click', this.onClickDelegate);
-			container.removeEventListener('dblclick', this.onDoubleClickDelegate);
-			container.removeEventListener('touchstart', this.onMouseDownDelegate);
-			container.removeEventListener('mousedown', this.onMouseDownDelegate);
-			container.removeEventListener('touchmove', this.onMouseMoveDelegate);
-			container.removeEventListener('mousemove', this.onMouseMoveDelegate);
-			container.removeEventListener('mouseup', this.onMouseUpDelegate);
-			container.removeEventListener('touchend', this.onMouseUpDelegate);
-			container.removeEventListener('touchend', this.onClickDelegate);
-			container.removeEventListener('mousewheel', this.onMouseWheelDelegate);
-			container.removeEventListener('mouseover', this.onMouseOverDelegate);
-			container.removeEventListener('mouseout', this.onMouseOutDelegate);
-			window.removeEventListener('keydown', this.onKeyDownDelegate);
-			window.removeEventListener('keyup', this.onKeyUpDelegate);
-
-			this._containerLookup.splice(this._containerLookup.indexOf(container), 1);
-		}
-	}
-
 	public dispose() {
+		//unregister stage
+		const container = this._stage.container;
+		container.removeEventListener('click', this.onClickDelegate);
+		container.removeEventListener('dblclick', this.onDoubleClickDelegate);
+		container.removeEventListener('touchstart', this.onMouseDownDelegate);
+		container.removeEventListener('mousedown', this.onMouseDownDelegate);
+		container.removeEventListener('touchmove', this.onMouseMoveDelegate);
+		container.removeEventListener('mousemove', this.onMouseMoveDelegate);
+		container.removeEventListener('mouseup', this.onMouseUpDelegate);
+		container.removeEventListener('touchend', this.onMouseUpDelegate);
+		container.removeEventListener('touchend', this.onClickDelegate);
+		container.removeEventListener('mousewheel', this.onMouseWheelDelegate);
+		container.removeEventListener('mouseover', this.onMouseOverDelegate);
+		container.removeEventListener('mouseout', this.onMouseOutDelegate);
+		window.removeEventListener('keydown', this.onKeyDownDelegate);
+		window.removeEventListener('keyup', this.onKeyUpDelegate);
+
 		this._stage = null;
 		this.onClickDelegate = null;
 		this.onDoubleClickDelegate = null;
@@ -228,27 +208,20 @@ export class MouseManager {
 
 	}
 
-	public static clearInstance() {
-		if (this._instance) {
-			this._instance.dispose();
-			this._instance = null;
-
+	public static clearInstance(stage: Stage) {
+		if (this._instancePool[stage.id]) {
+			this._instancePool[stage.id].dispose();
+			delete this._instancePool[stage.id]
 		}
 	}
 
-	public static getInstance(pickGroup: PickGroup): MouseManager {
-		if (this._instance)
-			return this._instance;
+	public static getInstance(stage: Stage): MouseManager {
+		return this._instancePool[stage.id]
+			|| (this._instancePool[stage.id] = new MouseManager(stage));
 
-		//  todo: this is only needed due to MW react-lesson-player requesting a MouseManager with pickGroup=null
-		//  can be removed once the MW code is adjusted
-		if (!pickGroup)
-			return new MouseManager(pickGroup);
-
-		return (this._instance = new MouseManager(pickGroup));
 	}
 
-	public setFocus(obj: DisplayObject) {
+	public setFocus(obj: IPickingEntity) {
 		if (this._currentFocusEntity == obj) {
 			return;
 		}
@@ -266,31 +239,7 @@ export class MouseManager {
 		return this._currentFocusEntity;
 	}
 
-	public focusNextTab() {
-		if (this._sceneLookup.length == 0)
-			return;
-		const newFocus: DisplayObject = <DisplayObject> this._sceneLookup[0].tabPicker.getNextTabEntity(this._currentFocusEntity);
-		if (newFocus == this._currentFocusEntity)
-			return;
-		if (this._currentFocusEntity)
-			this._currentFocusEntity.setFocus(false, false);
-		this._currentFocusEntity = newFocus;
-		this._currentFocusEntity.setFocus(true, false);
-	}
-
-	public focusPreviousTab() {
-		if (this._sceneLookup.length == 0)
-			return;
-		const newFocus: DisplayObject = <DisplayObject> this._sceneLookup[0].tabPicker.getPrevTabEntity(this._currentFocusEntity);
-		if (newFocus == this._currentFocusEntity)
-			return;
-		if (this._currentFocusEntity)
-			this._currentFocusEntity.setFocus(false, false);
-		this._currentFocusEntity = newFocus;
-		this._currentFocusEntity.setFocus(true, false);
-	}
-
-	private dispatchEvent(event: MouseEvent, dispatcher: DisplayObject) {
+	private dispatchEvent(event: MouseEvent, dispatcher: IPartitionEntity) {
 		if (!this._eventBubbling) {
 			if (dispatcher) {
 				dispatcher.dispatchEvent(event);
@@ -315,105 +264,36 @@ export class MouseManager {
 		}
 	}
 
-	private setupAndDispatchEvent(event: MouseEvent, sourceEvent, collision: PickingCollision) {
-		event = this.setUpEvent(event, sourceEvent, collision);
+	private setupAndDispatchEvent(event: MouseEvent, sourceEvent, collision: PickingCollision, commonAncestor: IPickingEntity = null) {
+
+		if (sourceEvent) {
+			event.delta = sourceEvent.wheelDelta;
+			event.ctrlKey = sourceEvent.ctrlKey;
+			event.altKey = sourceEvent.altKey;
+			event.shiftKey = sourceEvent.shiftKey;
+		}
+
+		event = this.setUpEvent(event, collision, commonAncestor);
 		this.dispatchEvent(event, event.pickerEntity);
 	}
 
-	public fireMouseEvents(scene: Scene): void {
-		//forceMouseMove move only makes sense for non-touch interaction
-		if (scene.forceMouseMove && !this._isTouch && !this._iUpdateDirty)
-			this._iCollision = scene.getViewCollision(scene._mouseX, scene._mouseY);
+	public fireMouseEvents(forcePicker: RaycastPicker = null): void {
 
-		this._rollOut.commonAncestor = null;
-		this._rollOver.commonAncestor = null;
-
-		this._iCollisionEntity = <DisplayObject> ((this._iCollision) ? this._iCollision.pickerEntity : null);
-
-		if (this._iCollisionEntity != this._prevICollisionEntity) {
-
-			//  If colliding object has changed, queue OVER and OUT events.
-			//  If the mouse is dragged (mouse-down is hold), use DRAG_OVER and DRAG_OUT instead of MOUSE_OVER MOUSE_OUT
-			//  DRAG_OVER and DRAG_OUT are only dispatched on the object that was hit on the mouse-down (_mouseDragEntity)
-
-			//  Store the info if the collision is a enabled Button (_collisionIsEnabledButton)
-
-			if (this._prevICollisionEntity) {
-				if (!this._isTouch && !this._mouseDragging)
-					this.queueDispatch(this._mouseOut, this._mouseMoveEvent, this._prevICollision);
-				else if (this._mouseDragging && this._mouseDragPickerEntity && this._mouseDragPickerEntity == this._prevICollisionEntity)
-					this.queueDispatch(this._dragOut, this._mouseMoveEvent, this._prevICollision);
-			}
-
-			if (!this._prevICollisionEntity && this._iCollisionEntity) {
-				// rollout / rollover easy case, can just bubble up
-				this.queueDispatch(this._rollOut, this._mouseMoveEvent, this._prevICollision);
-				this.queueDispatch(this._rollOver, this._mouseMoveEvent, this._iCollision);
-			}
-			if (this._prevICollisionEntity && !this._iCollisionEntity) {
-				// rollout / rollover easy case, can just bubble up
-				this.queueDispatch(this._rollOut, this._mouseMoveEvent, this._prevICollision);
-				this.queueDispatch(this._rollOver, this._mouseMoveEvent, this._iCollision);
-			}
-			if (this._prevICollisionEntity && this._iCollisionEntity) {
-				// rollout / rollover find common ancester and only bubble up to that point
-				const parentsPrev: DisplayObject[] = [];
-				let parent: DisplayObject = this._prevICollisionEntity;
-				while (parent && !parent.isAVMScene) {
-					parentsPrev.push(parent);
-					parent = parent.parent;
-				}
-				let commonAncestor: DisplayObject = null;
-				parent = this._iCollisionEntity;
-				while (parent && !parent.isAVMScene) {
-					const oldParentIdx = parentsPrev.indexOf(parent);
-					if (oldParentIdx == -1) {
-						parent = parent.parent;
-					} else {
-						commonAncestor = parent;
-						parent = null;
-					}
-				}
-				if (commonAncestor != this._prevICollisionEntity)
-					this.queueDispatch(this._rollOut, this._mouseMoveEvent, this._prevICollision, commonAncestor);
-
-				if (commonAncestor != this._iCollisionEntity)
-					this.queueDispatch(this._rollOver, this._mouseMoveEvent, this._iCollision, commonAncestor);
-
-			}
-
-			this._collisionIsEnabledButton = this._iCollisionEntity ? (<any> this._iCollisionEntity).buttonEnabled : false;
-
-			if (this._iCollisionEntity) {
-				if (!this._isTouch && !this._mouseDragging)
-					this.queueDispatch(this._mouseOver, this._mouseMoveEvent, this._iCollision);
-				else if (this._mouseDragging && this._mouseDragPickerEntity && this._mouseDragPickerEntity == this._iCollisionEntity)
-					this.queueDispatch(this._dragOver, this._mouseMoveEvent, this._iCollision);
-			}
-
-			this._prevICollision = this._iCollision;
-			this._prevICollisionEntity = this._iCollisionEntity;
-		} else {
-			//  colliding object has not changed
-			//  Check if we need to send any MOUSE_OVER/DRAG_OVER event to handle the case when a Button has become active while under the mouse.
-			const isActiveButton = this._iCollisionEntity ? (<any> this._iCollisionEntity).buttonEnabled : false;
-
-			if (this._collisionIsEnabledButton != isActiveButton && isActiveButton) {
-				if (!this._isTouch)
-					this.queueDispatch(this._mouseOver, this._mouseMoveEvent, this._iCollision);
-				else if (this._mouseDragPickerEntity && this._mouseDragPickerEntity == this._iCollisionEntity)
-					this.queueDispatch(this._dragOver, this._mouseMoveEvent, this._iCollision);
-			}
-
-			this._collisionIsEnabledButton = isActiveButton;
+		let collision:PickingCollision;
+		if (forcePicker) {
+			collision = forcePicker.getViewCollision(this._stage.screenX, this._stage.screenY);
+		} else if (this._updateDirty) {
+			for (let i = 0; i < this._pickerLookup.length; i++)
+				if (!collision || this._pickerLookup[i].layeredView)
+					collision = this._pickerLookup[i].getViewCollision(this._stage.screenX, this._stage.screenY, false, collision);
 		}
 
-		// set cursor if not dragging mouse
-		if (!this._mouseDragging)
-			document.body.style.cursor = this._showCursor ? (this._iCollisionEntity ? this._iCollisionEntity.getMouseCursor() : 'initial') : 'none';
+		//if theres nothing to update, return
+		if (!forcePicker && !this._updateDirty)
+			return;
 
 		let event: MouseEvent;
-		let dispatcher: DisplayObject;
+		let dispatcher: IPickingEntity;
 		const len: number = this._queuedEvents.length;
 		// Dispatch all queued events.
 		/*var logEvents="";
@@ -423,119 +303,206 @@ export class MouseManager {
         console.log(logEvents);*/
 		for (let i: number = 0; i < len; ++i) {
 			event = this._queuedEvents[i];
-			dispatcher = event.pickerEntity;
+			dispatcher = collision?.pickerEntity;
+
+			this.setUpEvent(event, collision);
 
 			if (event.type == MouseEvent.MOUSE_DOWN) {
 				this._mouseDragging = true;
 
 				// no event-bubbling. dispatch on stage first
-				if (!this._eventBubbling && this._stage)
+				if (!this._eventBubbling)
 					this._stage.dispatchEvent(event);
 
 				// todo: at this point the object under the mouse might have been changed, so we need to recheck the collision
 
 				// on Touch dispatch mouseOver Command
 				if (this._isTouch)
-					this.setupAndDispatchEvent(this._mouseOver, this._mouseMoveEvent, this._iCollision);
+					this.setupAndDispatchEvent(this._mouseOver, this._mouseMoveEvent, collision);
 
-				this._mouseDragEntity = event.entity;
-				this._mouseDragPickerEntity = event.pickerEntity;
+				this._mouseDragCollision = collision;
 
 				if (dispatcher) {
 					//console.log("onPress", dispatcher)
 					this.dispatchEvent(event, dispatcher);
-				} else if (this._eventBubbling && this._stage)
+				} else if (this._eventBubbling)
 					this._stage.dispatchEvent(event);
 
 				//  in FP6, a mouseclick on non focus-able object still steal the focus
 				//  in newer FP they only steal the focus if the the new hit is focusable
-				if (this._allowFocusOnUnfocusable || (this._mouseDragPickerEntity && this._mouseDragPickerEntity.tabEnabled)) {
+				if (this._allowFocusOnUnfocusable || (this._mouseDragCollision && this._mouseDragCollision.pickerEntity.tabEnabled)) {
 					if (this._currentFocusEntity)
 						this._currentFocusEntity.setFocus(false, true);
 
-					this._currentFocusEntity = this._mouseDragPickerEntity;
+					this._currentFocusEntity = this._mouseDragCollision.pickerEntity;
 
 					if (this._currentFocusEntity)
 						this._currentFocusEntity.setFocus(true, true);
 				}
 
-				if (this._mouseDragEntity)
-					this.setupAndDispatchEvent(this._dragStart, event, (this._mouseDragEntity.getAbstraction<PickEntity>(this._pickGroup)).pickingCollision);
+				if (this._mouseDragCollision)
+					this.setupAndDispatchEvent(this._dragStart, event, this._mouseDragCollision);
 
 			} else if (event.type == MouseEvent.MOUSE_UP) {
 
 				// no event-bubbling. dispatch on stage first
-				if (!this._eventBubbling && this._stage)
+				if (!this._eventBubbling)
 					this._stage.dispatchEvent(event);
 
 				// todo: at this point the object under the mouse might have been changed, so we need to recheck the collision
 
-				let upEntity: DisplayObject = null;
-				let upPickerEntity: DisplayObject = null;
-				if (this._isAVM1Dragging && this._mouseDragPickerEntity) {
+				let upEntity: IPartitionEntity = null;
+				let upPickerEntity: IPickingEntity = null;
+				if (this._isAVM1Dragging && this._mouseDragCollision) {
 					// avm1dragging is in process, dispatch the mouse-up on this._mouseDragEntity instead of the current collision
-					upPickerEntity = this._mouseDragPickerEntity;
-					upEntity = this._mouseDragEntity;
-				} else if (this._mouseDragging && this._mouseDragPickerEntity && this._mouseDragPickerEntity != dispatcher) {
+					upPickerEntity = this._mouseDragCollision.pickerEntity;
+					upEntity = this._mouseDragCollision.entity;
+				} else if (this._mouseDragging && this._mouseDragCollision && this._mouseDragCollision.pickerEntity != dispatcher) {
 					// no avm1dragging is in process, but current collision is not the same as collision that appeared on mouse-down,
 					// need to dispatch a MOUSE_UP_OUTSIDE on _mouseDragEntity
-					if ((<any> this._mouseDragPickerEntity).buttonEnabled)
-						this.setupAndDispatchEvent(this._mouseOut, event, this._mouseDragEntity.getAbstraction<PickEntity>(this._pickGroup).pickingCollision);
+					if ((<any> this._mouseDragCollision.pickerEntity).buttonEnabled)
+						this.setupAndDispatchEvent(this._mouseOut, event, this._mouseDragCollision);
 					if (!this._eventBubbling) {
-						this.setupAndDispatchEvent(this._mouseUpOutside, event, this._mouseDragEntity.getAbstraction<PickEntity>(this._pickGroup).pickingCollision);
+						this.setupAndDispatchEvent(this._mouseUpOutside, event, this._mouseDragCollision);
 					}
-				} else if (this._mouseDragging && this._mouseDragPickerEntity && this._mouseDragPickerEntity == dispatcher) {
+				} else if (this._mouseDragging && this._mouseDragCollision.pickerEntity && this._mouseDragCollision.pickerEntity == dispatcher) {
 					// no avm1dragging is in process, but current collision is not the same as collision that appeared on mouse-down,
 					// need to dispatch a MOUSE_UP_OUTSIDE on _mouseDragEntity
-					upPickerEntity = this._mouseDragPickerEntity;
-					upEntity = this._mouseDragEntity;
+					upPickerEntity = this._mouseDragCollision.pickerEntity;
+					upEntity = this._mouseDragCollision.entity;
 				}
 
 				if (this._mouseDragging && dispatcher)
-					this.setupAndDispatchEvent(this._mouseOver, event, this._iCollision);
+					this.setupAndDispatchEvent(this._mouseOver, event, collision);
 
 				if (this._isTouch && upEntity)
-					this.setupAndDispatchEvent(this._mouseOut, this._mouseMoveEvent, upEntity.getAbstraction<PickEntity>(this._pickGroup).pickingCollision);
+					this.setupAndDispatchEvent(this._mouseOut, this._mouseMoveEvent, this._mouseDragCollision);
 
 				if (upPickerEntity) {
 					//console.log("onRelease", upPickerEntity)
 					this.dispatchEvent(event, upPickerEntity);
 				} else if (this._eventBubbling && dispatcher)
 					this.dispatchEvent(event, dispatcher);
-				else if (this._eventBubbling && this._stage)
+				else if (this._eventBubbling)
 					this._stage.dispatchEvent(event);
 
 				if (upEntity)
-					this.setupAndDispatchEvent(this._dragStop, event, upEntity.getAbstraction<PickEntity>(this._pickGroup).pickingCollision);
+					this.setupAndDispatchEvent(this._dragStop, event, this._mouseDragCollision);
 
-				this._mouseDragPickerEntity = null;
-				this._mouseDragEntity = null;
+				this._mouseDragCollision = null;
 				this._mouseDragging = false;
 				this._isAVM1Dragging = false;
 
 			} else if (event.type == MouseEvent.MOUSE_MOVE) {
 				// no event-bubbling. dispatch on stage first
 				if (!this._eventBubbling) {
-					if (this._stage)
-                    	this._stage.dispatchEvent(event);
+					this._stage.dispatchEvent(event);
 				} else {
 					if (event.pickerEntity)
                     	this.dispatchEvent(event, event.pickerEntity);
-					else if (this._stage)
+					else
 						this._stage.dispatchEvent(event);
 
 				}
 
-				if (this._mouseDragEntity)
-					this.setupAndDispatchEvent(this._dragMove, event, this._mouseDragEntity.getAbstraction<PickEntity>(this._pickGroup).pickingCollision);
+				if (this._mouseDragCollision)
+					this.setupAndDispatchEvent(this._dragMove, event, this._mouseDragCollision);
 			} else {
 				// MouseEvent.MOUSE_OVER / MouseEvent.MOUSE_OUT / MouseEvent.DRAG_OVER / MouseEvent.DRAG_OUT
 				this.dispatchEvent(event, dispatcher);
 			}
 		}
+
 		this._queuedEvents.length = 0;
 
-		this._iUpdateDirty = false;
+		this._rollOut.commonAncestor = null;
+		this._rollOver.commonAncestor = null;
+
+		let collisionEntity: IPickingEntity = collision?.pickerEntity;
+		let prevCollisionEntity: IPickingEntity = this._prevCollision?.pickerEntity;
+
+		if (collisionEntity != prevCollisionEntity) {
+
+			//  If colliding object has changed, queue OVER and OUT events.
+			//  If the mouse is dragged (mouse-down is hold), use DRAG_OVER and DRAG_OUT instead of MOUSE_OVER MOUSE_OUT
+			//  DRAG_OVER and DRAG_OUT are only dispatched on the object that was hit on the mouse-down (_mouseDragEntity)
+
+			//  Store the info if the collision is a enabled Button (_collisionIsEnabledButton)
+
+			if (prevCollisionEntity) {
+				if (!this._isTouch && !this._mouseDragging)
+					this.setupAndDispatchEvent(this._mouseOut, this._mouseMoveEvent, this._prevCollision);
+				else if (this._mouseDragging && this._mouseDragCollision && this._mouseDragCollision.pickerEntity == prevCollisionEntity)
+					this.setupAndDispatchEvent(this._dragOut, this._mouseMoveEvent, this._prevCollision);
+			}
+
+			if (!prevCollisionEntity && collisionEntity) {
+				// rollout / rollover easy case, can just bubble up
+				this.setupAndDispatchEvent(this._rollOut, this._mouseMoveEvent, this._prevCollision);
+				this.setupAndDispatchEvent(this._rollOver, this._mouseMoveEvent, collision);
+			}
+			if (prevCollisionEntity && !collisionEntity) {
+				// rollout / rollover easy case, can just bubble up
+				this.setupAndDispatchEvent(this._rollOut, this._mouseMoveEvent, this._prevCollision);
+				this.setupAndDispatchEvent(this._rollOver, this._mouseMoveEvent, collision);
+			}
+			if (prevCollisionEntity && collisionEntity) {
+				// rollout / rollover find common ancester and only bubble up to that point
+				const parentsPrev: IPickingEntity[] = [];
+				let parent: IPickingEntity = prevCollisionEntity;
+				while (parent && !parent.isAVMScene) {
+					parentsPrev.push(parent);
+					parent = <IPickingEntity> parent.parent;
+				}
+				let commonAncestor: IPickingEntity = null;
+				parent = collisionEntity;
+				while (parent && !parent.isAVMScene) {
+					const oldParentIdx = parentsPrev.indexOf(parent);
+					if (oldParentIdx == -1) {
+						parent = <IPickingEntity> parent.parent;
+					} else {
+						commonAncestor = parent;
+						parent = null;
+					}
+				}
+				if (commonAncestor != prevCollisionEntity)
+					this.setupAndDispatchEvent(this._rollOut, this._mouseMoveEvent, this._prevCollision, commonAncestor);
+
+				if (commonAncestor != collisionEntity)
+					this.setupAndDispatchEvent(this._rollOver, this._mouseMoveEvent, collision, commonAncestor);
+
+			}
+
+			this._collisionIsEnabledButton = collisionEntity ? (<any> collisionEntity).buttonEnabled : false;
+
+			if (collisionEntity) {
+				if (!this._isTouch && !this._mouseDragging)
+					this.setupAndDispatchEvent(this._mouseOver, this._mouseMoveEvent, collision);
+				else if (this._mouseDragging && this._mouseDragCollision && this._mouseDragCollision.pickerEntity == collisionEntity)
+					this.setupAndDispatchEvent(this._dragOver, this._mouseMoveEvent, collision);
+			}
+
+			this._prevCollision = collision;
+		} else {
+			//  colliding object has not changed
+			//  Check if we need to send any MOUSE_OVER/DRAG_OVER event to handle the case when a Button has become active while under the mouse.
+			const isActiveButton = collisionEntity ? (<any> collisionEntity).buttonEnabled : false;
+
+			if (this._collisionIsEnabledButton != isActiveButton && isActiveButton) {
+				if (!this._isTouch)
+					this.setupAndDispatchEvent(this._mouseOver, this._mouseMoveEvent, collision);
+				else if (this._mouseDragCollision && this._mouseDragCollision.pickerEntity == collisionEntity)
+					this.setupAndDispatchEvent(this._dragOver, this._mouseMoveEvent, collision);
+			}
+
+			this._collisionIsEnabledButton = isActiveButton;
+		}
+
+		// set cursor if not dragging mouse
+		if (!this._mouseDragging)
+			document.body.style.cursor = this._showCursor ? (collisionEntity ? collisionEntity.getMouseCursor() : 'initial') : 'none';
+
+		this._updateDirty = false;
 	}
 
 	//		public addSceneLayer(scene:Scene)
@@ -554,14 +521,12 @@ export class MouseManager {
 	//			_sceneCount = _childDepth;
 	//		}
 
-	public registerScene(scene: Scene): void {
-		if (scene)
-			this._sceneLookup.push(scene);
+	public registerPicker(picker: RaycastPicker): void {
+		this._pickerLookup.push(picker);
 	}
 
-	public unregisterScene(scene: Scene): void {
-		if (scene)
-			this._sceneLookup.splice(this._sceneLookup.indexOf(scene), 1);
+	public unregisterPicker(picker: RaycastPicker): void {
+		this._pickerLookup.splice(this._pickerLookup.indexOf(picker), 1);
 	}
 
 	public addEventsForSceneBinary(touchMessage: ArrayBuffer, sceneIdx: number = 0): void {
@@ -714,56 +679,30 @@ export class MouseManager {
 		}
 	}
 
-	private mapContainerToView(x: number, y: number, out: {x: number, y: number} = { x: 0, y: 0 }) {
-		let rect;
-		const container = <HTMLCanvasElement> this._containerLookup[0];
-		// IE 11 fix
-		if (!container.parentElement) {
-			rect = { x: 0, y: 0, width: 0, height: 0 };
-		} else {
-			rect = container.getBoundingClientRect();
-		}
-
-		out.x = (x - rect.left) * container.clientWidth / rect.width;
-		out.y = (y - rect.top) * container.clientHeight / rect.height;
-
-		return out;
-	}
-
 	// ---------------------------------------------------------------------
 	// Private.
 	// ---------------------------------------------------------------------
-	private setUpEvent(event: MouseEvent, sourceEvent, collision: PickingCollision, commonAncestor: DisplayObject = null): MouseEvent {
+	private setUpEvent(event: MouseEvent, collision: PickingCollision, commonAncestor: IPickingEntity = null): MouseEvent {
 		event._iAllowedToImmediatlyPropagate = true;
 		event._iAllowedToPropagate = true;
 		// 2D properties.
-		if (sourceEvent) {
-			const x = (sourceEvent.clientX != null) ? sourceEvent.clientX : sourceEvent.changedTouches ? sourceEvent.changedTouches[0].clientX : 0;
-			const y = (sourceEvent.clientY != null) ? sourceEvent.clientY : sourceEvent.changedTouches ? sourceEvent.changedTouches[0].clientY : 0;
-			const point = this.mapContainerToView(x, y, TMP_POINT);
-
-			event.delta = sourceEvent.wheelDelta;
-			event.ctrlKey = sourceEvent.ctrlKey;
-			event.altKey = sourceEvent.altKey;
-			event.shiftKey = sourceEvent.shiftKey;
-			event.screenX = point.x;
-			event.screenY = point.y;
-		}
+		event.screenX = this._stage.screenX;
+		event.screenY = this._stage.screenY;
 		//console.log("event", event, collisionEntity, collisionEntity);
 
 		// 3D properties.
 		if (collision) {
-			event.entity = <DisplayObject> collision.entity;
+			event.entity = collision.entity;
 
-			event.pickerEntity = <DisplayObject> collision.pickerEntity;
+			event.pickerEntity = collision.pickerEntity;
 			// Object.
 			event.traversable = collision.traversable;
 			// UV.
 			event.uv = collision.uv;
 			// Position.
-			event.position = collision.position ? collision.position.clone() : null;
+			event.position = collision.position?.clone();
 			// Normal.
-			event.normal = collision.normal ? collision.normal.clone() : null;
+			event.normal = collision.normal?.clone();
 			// Face index.
 			event.elementIndex = collision.elementIndex;
 		} else {
@@ -777,14 +716,18 @@ export class MouseManager {
 			event.elementIndex = 0;
 		}
 		event.commonAncestor = commonAncestor;
-		return event;
 
+		return event;
 	}
 
-	private queueDispatch(event: MouseEvent, sourceEvent, collision: PickingCollision, commonAncestor: DisplayObject = null): void {
+	private queueDispatch(event: MouseEvent, sourceEvent): void {
 		// Store event to be dispatched later.
-		this._queuedEvents.push(this.setUpEvent(event, sourceEvent, collision, commonAncestor));
+		event.delta = sourceEvent.wheelDelta;
+		event.ctrlKey = sourceEvent.ctrlKey;
+		event.altKey = sourceEvent.altKey;
+		event.shiftKey = sourceEvent.shiftKey;
 
+		this._queuedEvents.push(event);
 	}
 
 	// ---------------------------------------------------------------------
@@ -842,35 +785,35 @@ export class MouseManager {
 
 		this.updateColliders(event);
 
-		this.queueDispatch(this._mouseMove, this._mouseMoveEvent = event, this._iCollision);
+		this.queueDispatch(this._mouseMove, this._mouseMoveEvent = event);
 	}
 
 	public onMouseOut(event): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this.updateColliders(event);
 
-		this.queueDispatch(this._mouseOut, event, this._iCollision);
+		this.queueDispatch(this._mouseOut, event);
 	}
 
 	public onMouseOver(event): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this.updateColliders(event);
 
-		this.queueDispatch(this._mouseOver, event, this._iCollision);
+		this.queueDispatch(this._mouseOver, event);
 	}
 
 	public onClick(event): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this.updateColliders(event);
 
-		this.queueDispatch(this._mouseClick, event, this._iCollision);
+		this.queueDispatch(this._mouseClick, event);
 	}
 
 	public onDoubleClick(event): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this.updateColliders(event);
 
-		this.queueDispatch(this._mouseDoubleClick, event, this._iCollision);
+		this.queueDispatch(this._mouseDoubleClick, event);
 	}
 
 	private _isDown: boolean = false;
@@ -885,15 +828,12 @@ export class MouseManager {
 
 		this.updateColliders(event);
 
-		//console.log("this._iCollisionEntity", this._iCollisionEntity);
+		//console.log("collisionEntity", collisionEntity);
 		if (this._isTouch) {
 			event.preventDefault();
-			for (const key in this._containerLookup) {
-				this._containerLookup[key].focus();
-
-			}
+			this._stage.container.focus();
 		}
-		this.queueDispatch(this._mouseDown, event, this._iCollision);
+		this.queueDispatch(this._mouseDown, event);
 	}
 
 	public onMouseUp(event): void {
@@ -907,63 +847,21 @@ export class MouseManager {
 
 		if (this._isTouch) {
 			event.preventDefault();
-			for (const key in this._containerLookup) {
-				this._containerLookup[key].focus();
-
-			}
+			this._stage.container.focus();
 		}
-		this.queueDispatch(this._mouseUp, event, this._iCollision);
+		this.queueDispatch(this._mouseUp, event);
 	}
 
 	public onMouseWheel(event): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this.updateColliders(event);
 
-		this.queueDispatch(this._mouseWheel, event, this._iCollision);
+		this.queueDispatch(this._mouseWheel, event);
 	}
 
 	private updateColliders(event): void {
-		let scene: Scene;
+		this._stage.interactionHandler(event);
 
-		let mouseX: number = (event.clientX != null) ? event.clientX : event.changedTouches[0].clientX;
-		let mouseY: number = (event.clientY != null) ? event.clientY : event.changedTouches[0].clientY;
-
-		let point = this.mapContainerToView(mouseX, mouseY, TMP_POINT);
-		mouseX = point.x;
-		mouseY = point.y;
-
-		const len: number = this._sceneLookup.length;
-
-		for (let i: number = 0; i < len; i++) {
-			scene = this._sceneLookup[i];
-			scene._touchPoints.length = 0;
-
-			if (event.touches) {
-				var touch;
-				const len_touches: number = event.touches.length;
-				for (let t: number = 0; t < len_touches; t++) {
-					touch = event.touches[t];
-
-					point = this.mapContainerToView(touch.clientX, touch.clientY, TMP_POINT);
-
-					scene._touchPoints.push(new TouchPoint(point.x, point.y, touch.identifier));
-				}
-			}
-
-			if (this._iUpdateDirty)
-				continue;
-
-			scene._mouseX = mouseX;
-			scene._mouseY = mouseY;
-
-			if (!scene.disableMouseEvents)
-				this._iCollision = scene.getViewCollision(scene._mouseX, scene._mouseY);
-
-			if (scene.layeredView && this._iCollision)
-				break;
-
-		}
-
-		this._iUpdateDirty = true;
+		this._updateDirty = true;
 	}
 }

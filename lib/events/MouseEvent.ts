@@ -1,6 +1,6 @@
 import { Point, Vector3D, EventBase } from '@awayjs/core';
 
-import { IPartitionEntity, ITraversable, View } from '@awayjs/view';
+import { IPartitionEntity, IPickingEntity, ITraversable, View } from '@awayjs/view';
 
 import { IMaterial } from '@awayjs/renderer';
 import { DisplayObject } from '../display/DisplayObject';
@@ -12,7 +12,7 @@ import { DisplayObject } from '../display/DisplayObject';
 export class MouseEvent extends EventBase {
 	// Private.
 	public _iParentEvent: MouseEvent;
-	public commonAncestor: DisplayObject;
+	public commonAncestor: IPickingEntity;
 
 	/**
 	 * Defines the value of the type property of a mouseOver3d event object.
@@ -123,12 +123,12 @@ export class MouseEvent extends EventBase {
 	/**
 	 * The entity inside which the event took place.
 	 */
-	public entity: DisplayObject;
+	public entity: IPartitionEntity;
 
 	/**
 	 * The entity of the picker inside which the event took place.
 	 */
-	public pickerEntity: DisplayObject;
+	public pickerEntity: IPickingEntity;
 
 	/**
 	 * The traversable owner inside which the event took place.
