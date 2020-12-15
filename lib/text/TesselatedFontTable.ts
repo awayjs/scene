@@ -538,7 +538,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 	public getLineHeight(): number {
 		return this._size_multiply * (this._ascent - this.descent); // sf
-		
 
 		//return this._size_multiply * this._font_em_size;
 		//return (this._ascent+this._descent)*this._size_multiply;	// enable for icycle
