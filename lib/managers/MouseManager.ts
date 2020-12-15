@@ -211,7 +211,7 @@ export class MouseManager {
 	public static clearInstance(stage: Stage) {
 		if (this._instancePool[stage.id]) {
 			this._instancePool[stage.id].dispose();
-			delete this._instancePool[stage.id]
+			delete this._instancePool[stage.id];
 		}
 	}
 
@@ -279,7 +279,7 @@ export class MouseManager {
 
 	public fireMouseEvents(forcePicker: RaycastPicker = null): void {
 
-		let collision:PickingCollision;
+		let collision: PickingCollision;
 		if (forcePicker) {
 			collision = forcePicker.getViewCollision(this._stage.screenX, this._stage.screenY);
 		} else if (this._updateDirty) {
@@ -418,8 +418,8 @@ export class MouseManager {
 		this._rollOut.commonAncestor = null;
 		this._rollOver.commonAncestor = null;
 
-		let collisionEntity: IPickingEntity = collision?.pickerEntity;
-		let prevCollisionEntity: IPickingEntity = this._prevCollision?.pickerEntity;
+		const collisionEntity: IPickingEntity = collision?.pickerEntity;
+		const prevCollisionEntity: IPickingEntity = this._prevCollision?.pickerEntity;
 
 		if (collisionEntity != prevCollisionEntity) {
 
