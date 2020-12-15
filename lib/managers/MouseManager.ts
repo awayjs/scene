@@ -162,8 +162,8 @@ export class MouseManager {
 			container.addEventListener('touchstart', this.onMouseDownDelegate);
 			container.addEventListener('mousedown', this.onMouseDownDelegate);
 			container.addEventListener('touchmove', this.onMouseMoveDelegate);
-			container.addEventListener('mousemove', this.onMouseMoveDelegate);
-			container.addEventListener('mouseup', this.onMouseUpDelegate);
+			document.addEventListener('mousemove', this.onMouseMoveDelegate);
+			document.addEventListener('mouseup', this.onMouseUpDelegate);
 			container.addEventListener('touchend', this.onMouseUpDelegate);
 			container.addEventListener('touchend', this.onClickDelegate);
 			container.addEventListener('mousewheel', this.onMouseWheelDelegate);
@@ -716,6 +716,7 @@ export class MouseManager {
 
 	private mapContainerToView(x: number, y: number, out: {x: number, y: number} = { x: 0, y: 0 }) {
 		let rect;
+		console.log("mapContainerToView", x, y);
 		const container = <HTMLCanvasElement> this._containerLookup[0];
 		// IE 11 fix
 		if (!container.parentElement) {
@@ -727,6 +728,7 @@ export class MouseManager {
 		out.x = (x - rect.left) * container.clientWidth / rect.width;
 		out.y = (y - rect.top) * container.clientHeight / rect.height;
 
+		console.log("mapContainerToView out", out.x, out.y);
 		return out;
 	}
 
