@@ -323,17 +323,18 @@ export class TextField extends DisplayObjectContainer {
 			return;
 		}
 
-		if (value) {
-			this.setSelection(0, this._iText.length);
+		// if (value) {
+		// 	this.setSelection(0, this._iText.length);
 
-			// check if a adapter exists
-			if (sendSoftKeyEvent && this.adapter != this) {
-				// todo: create a ITextFieldAdapter, so we can use selectText() without casting to any
-				(<any> this.adapter).selectTextField(fromMouseDown);
-			}
-		} else {
-			this.setSelection(0, 0);
-		}
+		// 	// check if a adapter exists
+		// 	if (sendSoftKeyEvent && this.adapter != this) {
+		// 		// todo: create a ITextFieldAdapter, so we can use selectText() without casting to any
+		// 		(<any> this.adapter).selectTextField(fromMouseDown);
+		// 	}
+		// } else {
+		// 	this.setSelection(0, 0);
+		// }
+		this.setSelection(0, 0);
 
 		this._glyphsDirty = true;
 		if (this._implicitPartition)
@@ -393,9 +394,15 @@ export class TextField extends DisplayObjectContainer {
 	private startSelectionByMouse(event) {
 		this._selectionBeginIndex = this.findCharIdxForMouse(event);
 		this._selectionEndIndex = this._selectionBeginIndex;
-		//console.log("startSelectionByMouse", this._selectionBeginIndex, this._selectionEndIndex);
+
+		if (this.cursorShape) this.cursorShape.invalidate();
+		this.cursorShape = undefined;
+		if (this.bgShapeSelect) this.bgShapeSelect.invalidate();
+		this.bgShapeSelect = undefined;
+
 		this._glyphsDirty = true;
-		this.reConstruct();
+		this._shapesDirty = true;
+		this._textShapesDirty = true;
 		this.cursorBlinking = false;
 		this.drawSelectionGraphics();
 	}
@@ -413,6 +420,10 @@ export class TextField extends DisplayObjectContainer {
 	private updateSelectionByMouseDelegate: (event) => void;
 	private updateSelectionByMouse(event) {
 		this._selectionEndIndex = this.findCharIdxForMouse(event);
+
+		if (this.bgShapeSelect) this.bgShapeSelect.invalidate();
+		this.bgShapeSelect = undefined;
+
 		//console.log("updateSelectionByMouse", this._selectionBeginIndex, this._selectionEndIndex);
 		this._glyphsDirty = true;
 		this.reConstruct();
@@ -442,6 +453,7 @@ export class TextField extends DisplayObjectContainer {
 			this.drawCursor();
 		} else {
 			this.showSelection = true;
+			this.cursorBlinking = true; // disable cursor if text select mode
 			this.drawSelectedBG();
 		}
 
@@ -466,7 +478,9 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	private drawCursor() {
-		this._shapesDirty = true;
+		this._glyphsDirty = true;
+		this._textShapesDirty = true;
+		this._textDirty = true;
 
 		if (this.cursorBlinking || !this.selectable || this.selectionBeginIndex !== this.selectionEndIndex) {
 			return;
@@ -534,8 +548,9 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	private drawSelectedBG() {
-
-		this._shapesDirty = true;
+		this._glyphsDirty = true;
+		this._textShapesDirty = true;
+		this._textDirty = true;
 
 		if (this._selectionBeginIndex < 0) {
 			this._selectionBeginIndex = 0;
