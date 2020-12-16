@@ -478,9 +478,7 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	private drawCursor() {
-		this._glyphsDirty = true;
-		this._textShapesDirty = true;
-		this._textDirty = true;
+		this._shapesDirty = true;
 
 		if (this.cursorBlinking || !this.selectable || this.selectionBeginIndex !== this.selectionEndIndex) {
 			return;
@@ -548,9 +546,8 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	private drawSelectedBG() {
-		this._glyphsDirty = true;
+		this._shapesDirty = true;
 		this._textShapesDirty = true;
-		this._textDirty = true;
 
 		if (this._selectionBeginIndex < 0) {
 			this._selectionBeginIndex = 0;
