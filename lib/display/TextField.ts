@@ -157,6 +157,7 @@ export class TextField extends DisplayObjectContainer {
 
 	private _iText: string = '';
 	private _text: string = '';
+	private _iTextWoLineBreaks: string = ''; // _iText without line breaks
 	private _textInteractionMode: TextInteractionMode;
 
 	private _textWidth: number;
@@ -1104,6 +1105,7 @@ export class TextField extends DisplayObjectContainer {
 		this._labelData = null;
 		this._text = processedText;
 		this._iText = processedText;
+		this._iTextWoLineBreaks = processedText.replace(/(\r\n|\n|\\n|\r)/gm,'');
 		this._textDirty = true;
 		//console.log("set text", value, "on" , this);
 		if (this._autoSize != TextFieldAutoSize.NONE)
@@ -1478,6 +1480,7 @@ export class TextField extends DisplayObjectContainer {
 		}
 
 		this._iText = value;
+		this._iTextWoLineBreaks = value.replace(/(\r\n|\n|\\n|\r)/gm,'');
 		this._textFormats = [this.newTextFormat];
 		this._textFormatsIdx = [this._iText.length];
 		this._textDirty = true;
@@ -1495,6 +1498,7 @@ export class TextField extends DisplayObjectContainer {
 		this._labelData = labelData;
 		this.isStatic = true;
 		this._iText = '';
+		this._iTextWoLineBreaks = '';
 
 		this._textDirty = false;
 		this._positionsDirty = false;
@@ -2181,9 +2185,9 @@ export class TextField extends DisplayObjectContainer {
 						this._textRuns_formats[this._textRuns_formats.length] = tf;
 						this._textRuns_words[this._textRuns_words.length] = this.words.length;
 
-						this.chars_codes[this.chars_codes.length] = 55;
-						this.chars_width[this.chars_width.length] = 0;
-						this.tf_per_char[this.tf_per_char.length] = tf;
+						// this.chars_codes[this.chars_codes.length] = 55;
+						// this.chars_width[this.chars_width.length] = 0;
+						// this.tf_per_char[this.tf_per_char.length] = tf;
 
 						startNewWord = true;
 						whitespace_cnt = 0;
@@ -2232,7 +2236,7 @@ export class TextField extends DisplayObjectContainer {
 					} else {
 						// no whitespace
 
-						if (this.multiline && this._autoSize == TextFieldAutoSize.NONE && this._wordWrap) {
+						if (this._autoSize == TextFieldAutoSize.NONE && this._wordWrap) {
 							if (this.words[this.words.length - 2] + char_width >= maxLineWidth) {
 								startNewWord = true;
 							}
@@ -2398,7 +2402,7 @@ export class TextField extends DisplayObjectContainer {
 				format.font_table.initFontSize(format.size);
 				indent = format.indent;
 				w_len = this._textRuns_words[(tr * 4)] + (this._textRuns_words[(tr * 4) + 1] * 5);
-				if (!this.multiline || tr_length <= maxLineWidth || !this.wordWrap) {
+				if (tr_length <= maxLineWidth || !this.wordWrap) {
 					//if(tr_length<maxLineWidth || !this.wordWrap){
 					// this must be a single textline
 					//console.log("just add to line",(tr * 4) , w_len, this.words, this._textRuns_words);
@@ -2991,6 +2995,7 @@ export class TextField extends DisplayObjectContainer {
 	 * @throws RangeError The character index specified is out of range.
 	 */
 	public getLineIndexOfChar(charIndex: number /*int*/): number /*int*/ {
+		this.buildParagraphs();
 
 		const len: number = this.lines_charIdx_start.length - 1;
 		for (let i: number;i < len; i++) {
@@ -3201,8 +3206,8 @@ export class TextField extends DisplayObjectContainer {
 	 */
 	public replaceText(beginIndex: number /*int*/, endIndex: number /*int*/, newText: string): void {
 
-		const textBeforeCursor: string = this._iText.slice(0, beginIndex - 1);
-		const textAfterCursor: string = this._iText.slice(endIndex, this._iText.length);
+		const textBeforeCursor: string = this._iTextWoLineBreaks.slice(0, beginIndex - 1);
+		const textAfterCursor: string = this._iTextWoLineBreaks.slice(endIndex, this._iTextWoLineBreaks.length);
 		this.text = textBeforeCursor + newText + textAfterCursor;
 		this._selectionEndIndex = this._selectionBeginIndex + newText.length;
 	}
@@ -3284,14 +3289,13 @@ export class TextField extends DisplayObjectContainer {
          *  this means that we only want to act on the existing textFormats list,
          *  never on the textFormat property directly
          * */
-		//console.log("setTextFormat", this.chars_codes.length, format, this._iText);
-		if (this.chars_codes.length == 0 || !format)
+		if (!format || this._iTextWoLineBreaks.length == 0)
 			return;
 
 		if ((beginIndex == -1 && endIndex == -1)
             || (beginIndex == 0 && endIndex == -1)
 			|| ((beginIndex == -1 || beginIndex == 0)
-				&& endIndex >= this.chars_codes.length)) {
+				&& endIndex >= this._iTextWoLineBreaks.length)) {
 
 			const len = this._textFormats.length;
 
@@ -3325,10 +3329,10 @@ export class TextField extends DisplayObjectContainer {
 		let oldEndIdx: number = -1;
 		let oldFormat: TextFormat;
 		const formatLen = this._textFormats.length;
-		const charLen = this.chars_codes.length;
+		const textLen = this._iTextWoLineBreaks.length;
 
 		if (beginIndex == -1) beginIndex = 0;
-		if (endIndex == -1) endIndex = charLen;
+		if (endIndex == -1) endIndex = textLen;
 
 		if (endIndex < beginIndex) {
 			const tmp = endIndex;

@@ -388,8 +388,8 @@ export class HTMLTextProcessor {
 				textProps.text+="\\n";
 			}*/
 			textProps.text += '    ●    ';
-		} else if (myChild.tagName == 'br') {
-			textProps.text += '\\n';
+		} else if (myChild.tagName == 'br' && target_tf.multiline) {
+			textProps.text += '\n';
 		}
 
 		let childFormat: TextFormat = currentFormat;
@@ -402,7 +402,7 @@ export class HTMLTextProcessor {
 			}
 			target_tf._textFormats.push(childFormat);
 			target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] = textProps.text.length;
-			target_tf._textFormatsIdx.push(textProps.text.length);
+			target_tf._textFormatsIdx.push(textProps.text.replace(/(\r\n|\n|\\n|\r)/gm,'').length);
 		}
 
 		// if the node has children, we just traverse children, and do not consider adding the nodeValue as text
@@ -413,7 +413,7 @@ export class HTMLTextProcessor {
 
 					target_tf._textFormats.push(childFormat);
 					target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] = textProps.text.length;
-					target_tf._textFormatsIdx.push(textProps.text.length);
+					target_tf._textFormatsIdx.push(textProps.text.replace(/(\r\n|\n|\\n|\r)/gm,'').length);
 				}
 				this.readHTMLTextPropertiesRecursive(target_tf, myChild.childNodes[k], textProps, childFormat);
 			}
@@ -421,13 +421,13 @@ export class HTMLTextProcessor {
 			// if a nodes content contains only line-breaks or whitespace, flash seem to ignore it
 			const testContent: string = (<any>myChild).text.replace(/[\s\r\n]/gi, '');
 			if (testContent != '') {
-				textProps.text += (<any>myChild).text.replace('\n', '\\n');
+				textProps.text += (<any>myChild).text;
 			}
 		}
 		if (myChild.tagName == 'li' || myChild.tagName == 'p') {
 			//if(textProps.text!="" && !(textProps.text.length>=2 && textProps.text[textProps.text.length-1]=="n"
 			//&& textProps.text[textProps.text.length-2]=="\\")){
-			textProps.text += '\\n';
+			textProps.text += '\n';
 			//}
 		}
 	}
