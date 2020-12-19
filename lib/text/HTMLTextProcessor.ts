@@ -259,24 +259,17 @@ export class HTMLTextProcessor {
 			|| (textProps.text.charCodeAt(textProps.text.length - 1) == 10))) {
 			textProps.text = textProps.text.slice(0, textProps.text.length - 1);
 		}
-		if (textProps.text != '' && (textProps.text.length >= 3 && textProps.text[textProps.text.length - 1] == 'n'
-			&& textProps.text[textProps.text.length - 2] == '\\'
-			&& textProps.text[textProps.text.length - 3] == '\\')) {
-			textProps.text = textProps.text.slice(0, textProps.text.length - 3);
-		} else if (textProps.text != '' && (textProps.text.length >= 2
+		if (textProps.text != '' && (textProps.text.length >= 2
 			&& textProps.text[textProps.text.length - 1] == 'n' && textProps.text[textProps.text.length - 2] == '\\')) {
 			textProps.text = textProps.text.slice(0, textProps.text.length - 2);
 		}
-		if (textProps.text != '' && (textProps.text.length >= 3 && textProps.text[textProps.text.length - 1] == 'n'
-			&& textProps.text[textProps.text.length - 2] == '\\'
-			&& textProps.text[textProps.text.length - 3] == '\\')) {
-			textProps.text = textProps.text.slice(0, textProps.text.length - 3);
-		} else if (textProps.text != '' && (textProps.text.length >= 2
+		if (textProps.text != '' && (textProps.text.length >= 2
 			&& textProps.text[textProps.text.length - 1] == 'n'
 			&& textProps.text[textProps.text.length - 2] == '\\')) {
 			textProps.text = textProps.text.slice(0, textProps.text.length - 2);
 		}
-		target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] = textProps.text.length;
+		target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] =
+			textProps.text.replace(/(\r\n|\n|\\n|\r)/gm,'').length;
 		return textProps.text;
 	}
 
@@ -401,7 +394,8 @@ export class HTMLTextProcessor {
 				childFormat[newProps_names[i]] = newProps_values[i];
 			}
 			target_tf._textFormats.push(childFormat);
-			target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] = textProps.text.length;
+			target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] =
+				textProps.text.replace(/(\r\n|\n|\\n|\r)/gm,'').length;
 			target_tf._textFormatsIdx.push(textProps.text.replace(/(\r\n|\n|\\n|\r)/gm,'').length);
 		}
 
@@ -412,7 +406,8 @@ export class HTMLTextProcessor {
 				if (target_tf._textFormats[target_tf._textFormats.length - 1] != childFormat) {
 
 					target_tf._textFormats.push(childFormat);
-					target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] = textProps.text.length;
+					target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] =
+						textProps.text.replace(/(\r\n|\n|\\n|\r)/gm,'').length;
 					target_tf._textFormatsIdx.push(textProps.text.replace(/(\r\n|\n|\\n|\r)/gm,'').length);
 				}
 				this.readHTMLTextPropertiesRecursive(target_tf, myChild.childNodes[k], textProps, childFormat);
