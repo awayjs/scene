@@ -16,7 +16,8 @@ import { Stage,
 	BlendMode,
 	ContextWebGL,
 	ContextGLBlendFactor,
-	ContextGLTriangleFace
+	ContextGLTriangleFace,
+	ImageUtils
 } from '@awayjs/stage';
 
 import { DefaultRenderer, RenderGroup, RendererType, Style } from '@awayjs/renderer';
@@ -49,6 +50,10 @@ export class SceneImage2D extends BitmapImage2D {
 		width: number, height: number, transparent: boolean = true,
 		fillColor: number = 0xffffffff,
 		powerOfTwo: boolean = true, stage: Stage = null, msaa = false) {
+
+		if (width > ImageUtils.MAX_SIZE || height > ImageUtils.MAX_SIZE) {
+			throw `Try to create image greater that ${ImageUtils.MAX_SIZE}, ${width}x${height}`;
+		}
 
 		let index = -1;
 		for (let i = 0; i < this._pool.length; i++) {
