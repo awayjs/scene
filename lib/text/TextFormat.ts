@@ -290,7 +290,7 @@ export class TextFormat extends AssetBase {
 
 		this._bold = value;
 		if (this._font) {
-			this.font_table = this.font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+			this.font_table = this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
 		}
 
 	}
@@ -311,7 +311,7 @@ export class TextFormat extends AssetBase {
 
 		this._italic = value;
 		if (this._font) {
-			this.font_table = this.font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+			this.font_table = this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
 		}
 	}
 
@@ -348,7 +348,7 @@ export class TextFormat extends AssetBase {
 	public get font_table(): IFontTable {
 		if (!this._font_table) {
 			this.font_table = <TesselatedFontTable>
-				this.font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+				this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
 		}
 		return this._font_table;
 	}
@@ -432,14 +432,14 @@ export class TextFormat extends AssetBase {
 	}
 
 	public get style_name(): FontStyleName {
-		/*if (!this._italic && !this._bold)
+		if (!this._italic && !this._bold)
 			this._style_name = FontStyleName.STANDART;
 		else if (this._italic && !this._bold)
 			this._style_name = FontStyleName.ITALIC;
 		else if (!this._italic && this._bold)
 			this._style_name = FontStyleName.BOLD;
 		else if (this._italic && this._bold)
-			this._style_name = FontStyleName.BOLDITALIC;*/
+			this._style_name = FontStyleName.BOLDITALIC;
 		return this._style_name;
 	}
 
@@ -448,13 +448,15 @@ export class TextFormat extends AssetBase {
 			this._updateID++;
 		}
 
+		// @todo - what if "standart" passed? we should maybe clean this._bold, this._italic in this function on start?
+
 		this._style_name = value;
 		if (this._style_name == FontStyleName.BOLD || this._style_name == FontStyleName.BOLDITALIC)
 			this._bold = true;
 		if (this._style_name == FontStyleName.ITALIC || this._style_name == FontStyleName.BOLDITALIC)
 			this._italic = true;
 		if (this._font)
-			this.font_table = this.font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+			this.font_table = this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
 	}
 
 	public get font(): Font {
@@ -464,7 +466,7 @@ export class TextFormat extends AssetBase {
 
 		this._font = DefaultFontManager.getFont(null);
 		this._font_table = <TesselatedFontTable>
-			this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+			this._font.get_font_table(this.style_name, TesselatedFontTable.assetType);
 
 		return this._font;
 	}
@@ -480,7 +482,7 @@ export class TextFormat extends AssetBase {
 		}
 
 		this._font = value;
-		this._font_table = this._font.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
+		this._font_table = this._font.get_font_table(this.style_name, TesselatedFontTable.assetType);
 	}
 
 	/**
@@ -595,6 +597,12 @@ export class TextFormat extends AssetBase {
 			this._setFontFromString(font);
 		else {
 			this._font = font;
+			if (bold && !italic) {
+				this._style_name = FontStyleName.BOLD;
+			} else if (!bold && italic) {
+				this._style_name = FontStyleName.ITALIC;
+			} else if (bold && italic) {
+				this._style_name = FontStyleName.BOLDITALIC;
 		}
 	}
 
@@ -603,13 +611,15 @@ export class TextFormat extends AssetBase {
 
 		if (asset) {
 			this._style_name = FontStyleName.STANDART;
-			/*if (low.includes(FontStyleName.BOLD)) {
+			if (this._bold && !this._italic) {
 				this._style_name = FontStyleName.BOLD;
-			} else if (low.includes(FontStyleName.BOLDITALIC.toLowerCase())) {
-				this._style_name = FontStyleName.BOLDITALIC;
-			} else if (low.includes(FontStyleName.ITALIC)) {
+			} else if (!this._bold && this._italic) {
 				this._style_name = FontStyleName.ITALIC;
-			}*/
+			} else if (this._bold && this._italic) {
+				this._style_name = FontStyleName.BOLDITALIC;
+			}
+		} else {
+			console.error(`Font not found by name: '${font_name}'`);
 		}
 
 		this.font = asset;
