@@ -603,6 +603,7 @@ export class TextFormat extends AssetBase {
 				this._style_name = FontStyleName.ITALIC;
 			} else if (bold && italic) {
 				this._style_name = FontStyleName.BOLDITALIC;
+			}
 		}
 	}
 
