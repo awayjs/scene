@@ -101,11 +101,11 @@ export class Font extends AssetBase {
 			}
 			return table;
 		}
-		console.log("font style not found return different");
+		console.log('font style not found return different');
 		if (returnDifferentStyle && Object.keys(this._font_styles).length > 0) {
-			for (const key in this._font_styles){
-				
-				console.log("font style not found return different", key);
+			for (const key in this._font_styles) {
+
+				console.log('font style not found return different', key);
 				return this._font_styles[key];
 			}
 		}
