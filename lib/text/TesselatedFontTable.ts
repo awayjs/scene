@@ -58,13 +58,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 	private _fntSizeLimit: number=-1;
 	private _fnt_channels: BitmapImage2D[];
 
-	public get fallbackTable(): IFontTable {
-		if (DefaultFontManager.deviceFont && DefaultFontManager.deviceFont.font_styles[0] != this) {
-			return DefaultFontManager.deviceFont.font_styles[0];
-		}
-		return null;
-	}
-
 	/**
 	 * Creates a new TesselatedFont object
 	 * If a opentype_font object is passed, the chars will get tessellated whenever requested.
@@ -459,10 +452,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			has = !!this._opentype_font.charToGlyph(String.fromCharCode(parseInt(char_code)));
 		}
 
-		if (!has && this.fallbackTable) {
-			has = !!this.fallbackTable.hasChar(char_code);
-		}
-
 		return has;
 	}
 
@@ -475,10 +464,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 	}
 
 	public initFontSize(font_size: number) {
-		if (this.fallbackTable) {
-			this.fallbackTable.initFontSize(font_size);
-		}
-
 		if (this._current_size === font_size) {
 			return;
 		}
@@ -525,9 +510,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 				return (Math.floor(tesselated_font_char.char_width * this._size_multiply * 20)) / 20;
 			}
 		}
-
-		if (this.fallbackTable)
-			return this.fallbackTable.getCharWidth(char_code);
 
 		return 0;
 	}
@@ -622,18 +604,19 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		this._font_em_size = font_em_size;
 	}
 
-	public buildTextLineFromIndices(tf: TextField, format: TextFormat, x: number, y: number, indices: number[], advance: number[]): Point {
+	public buildTextLineFromIndices(
+		tf: TextField,
+		format: TextFormat,
+		x: number, y: number,
+		indices: number[],
+		advance: number[]): Point {
 
 		const textShape: TextShape = tf.getTextShapeForIdentifierAndFormat(format.color.toString(), format);
 
 		const origin_x = x;
-		const origin_y = y;
 		y -= this._ascent * this._size_multiply;//this.getLineHeight();
 		let charGlyph: TesselatedFontChar;
 		let char_vertices: AttributesBuffer;
-		const c: number = 0;
-		const amount_of_chars_in_text: number = 0;
-		const startIdx: number = 0;
 		let buffer: Float32Array;
 		let v: number;
 		let size_multiply: number;
@@ -655,7 +638,10 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			} else {
 				if (charGlyph.fill_data == null) {
 
-					if (charGlyph.fill_data_path.commands[0][0] == 1 && charGlyph.fill_data_path.data[0][0] == 0 && charGlyph.fill_data_path.data[0][1] == 0) {
+					if (charGlyph.fill_data_path.commands[0][0] == 1
+						&& charGlyph.fill_data_path.data[0][0] == 0
+						&& charGlyph.fill_data_path.data[0][1] == 0) {
+
 						charGlyph.fill_data_path.data[0].shift();
 						charGlyph.fill_data_path.data[0].shift();
 						charGlyph.fill_data_path.commands[0].shift();
@@ -785,10 +771,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 				if (tf.chars_codes[c] != 32 && tf.chars_codes[c] != 9) {
 					charGlyph = this.getChar(tf.chars_codes[c].toString());
 					size_multiply = this._size_multiply;
-					if (!charGlyph && this.fallbackTable) {
-						charGlyph = (<TesselatedFontTable> this.fallbackTable).getChar(tf.chars_codes[c].toString());
-						size_multiply = (<TesselatedFontTable> this.fallbackTable)._size_multiply;
-					}
 					if (charGlyph) {
 
 						if (useFNT) {

@@ -34,7 +34,6 @@ export class BitmapFontTable extends AssetBase implements IFontTable {
 	private _texture_height: number;
 	private _charDictDirty: Boolean;
 	public font: any;
-	public fallbackTable: IFontTable;
 	public _adjust_size: number;
 
 	/**
@@ -64,8 +63,6 @@ export class BitmapFontTable extends AssetBase implements IFontTable {
 	}
 
 	public initFontSize(font_size: number) {
-		if (this.fallbackTable)
-			this.fallbackTable.initFontSize(font_size);
 		if (this._adjust_size)
 			font_size *= this._adjust_size;
 		if (this._current_size == font_size) return;
