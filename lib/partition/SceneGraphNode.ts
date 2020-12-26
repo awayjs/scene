@@ -1,5 +1,4 @@
 import { IPartitionTraverser, NodeBase, EntityNode } from '@awayjs/view';
-import { DisplayObject } from '../display/DisplayObject';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 
 /**

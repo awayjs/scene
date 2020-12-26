@@ -2,7 +2,8 @@ import { Matrix, AssetBase, Point, Rectangle, ColorTransform, ColorUtils } from 
 
 import { ImageSampler, AttributesBuffer, Float2Attributes, AttributesView, BitmapImage2D } from '@awayjs/stage';
 
-import { GraphicsPath, Shape, TriangleElements, GraphicsFactoryFills, DrawMode, GraphicsFactoryHelper, MaterialManager } from '@awayjs/graphics';
+import { GraphicsPath, Shape, TriangleElements, GraphicsFactoryFills,
+	GraphicsFactoryHelper, MaterialManager } from '@awayjs/graphics';
 
 import { Style } from '@awayjs/renderer';
 import { MaterialBase, MethodMaterial } from '@awayjs/materials';
@@ -12,7 +13,6 @@ import { TextFormat } from './TextFormat';
 import { TextShape } from './TextShape';
 
 import { TextField } from '../display/TextField';
-import { DefaultFontManager } from '../managers/DefaultFontManager';
 
 const ONCE_EMIT_TABLE: StringMap<boolean> = Object.create(null);
 function once(obj: any, key = '') {
@@ -92,19 +92,14 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			 console.log('Typo Descender', opentype_font.tables.os2.sTypoDescender);
 			 */
 			this._font_em_size = 72;//2048;
-			this._ascent = opentype_font.tables.hhea.ascender / (this._opentype_font.unitsPerEm / 72);///this._font_em_size;
+			this._ascent = opentype_font.tables.hhea.ascender / (this._opentype_font.unitsPerEm / 72);
 			this._descent = -2 + opentype_font.tables.hhea.descender / (this._opentype_font.unitsPerEm / 72);
-			/* console.log("this._ascent", this._ascent);
-            console.log("this._descent", this._descent);(this._ascent-this.descent)
-            console.log("this._ascent-this._descent", this._ascent-this.descent)*/
 			this._current_size = 0;
 			this._size_multiply = 0;
 
 			const thisGlyph = this._opentype_font.charToGlyph(String.fromCharCode(32));
 			if (thisGlyph) {
-				//this._whitespace_width=(opentype_font.tables.hhea.advanceWidthMax/72);//*(1 / thisGlyph.path.unitsPerEm * 72));
 				this._whitespace_width = thisGlyph.advanceWidth / (this._opentype_font.unitsPerEm / 72);
-				//console.log("this._whitespace_width", thisGlyph.advanceWidth);
 			}
 			return;
 		}
@@ -210,11 +205,12 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			// 	if this was loaded from opentype,
 			//	we make sure all glyphs are tesselated first
 			for (let g: number = 0; g < this._opentype_font.glyphs.length;g++) {
-				const thisGlyph = this._opentype_font.charToGlyph(String.fromCharCode(this._opentype_font.glyphs.glyphs[g].unicode));//this._opentype_font.glyphs.glyphs[g].name);
+				const thisGlyph = this._opentype_font.charToGlyph(
+					String.fromCharCode(this._opentype_font.glyphs.glyphs[g].unicode));
 				if (thisGlyph) {
 					const thisPath = thisGlyph.getPath();
 					const awayPath: GraphicsPath = new GraphicsPath();
-					var i = 0;
+					let i = 0;
 					const len = thisPath.commands.length;
 					let startx: number = 0;
 					let starty: number = 0;
@@ -226,17 +222,24 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 							awayPath.moveTo(cmd.x, cmd.y + y_offset);
 							startx = cmd.x;
 							starty = cmd.y + y_offset;
-						} else if (cmd.type === 'L') {	awayPath.lineTo(cmd.x, cmd.y + y_offset);} else if (cmd.type === 'Q') {	awayPath.curveTo(cmd.x1, cmd.y1 + y_offset, cmd.x, cmd.y + y_offset);} else if (cmd.type === 'C') {	awayPath.cubicCurveTo(cmd.x1, cmd.y1 + y_offset, cmd.x2, cmd.y2 + y_offset, cmd.x, cmd.y + y_offset);} else if (cmd.type === 'Z') {	awayPath.lineTo(startx, starty);}
+						} else if (cmd.type === 'L') {
+							awayPath.lineTo(cmd.x, cmd.y + y_offset);
+						} else if (cmd.type === 'Q') {
+							awayPath.curveTo(cmd.x1, cmd.y1 + y_offset, cmd.x, cmd.y + y_offset);
+						} else if (cmd.type === 'C') {
+							awayPath.cubicCurveTo(cmd.x1, cmd.y1 + y_offset, cmd.x2,
+								cmd.y2 + y_offset, cmd.x, cmd.y + y_offset);
+						} else if (cmd.type === 'Z') {	awayPath.lineTo(startx, starty);}
 					}
-					const tesselated_font_char: TesselatedFontChar = new TesselatedFontChar(null, null, awayPath);
-					tesselated_font_char.char_width = (thisGlyph.advanceWidth * (1 / thisGlyph.path.unitsPerEm * 72));
-					tesselated_font_char.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(awayPath, true);
-					if (!tesselated_font_char.fill_data) {
+					const t_font_char: TesselatedFontChar = new TesselatedFontChar(null, null, awayPath);
+					t_font_char.char_width = (thisGlyph.advanceWidth * (1 / thisGlyph.path.unitsPerEm * 72));
+					t_font_char.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(awayPath, true);
+					if (!t_font_char.fill_data) {
 						console.log('error tesselating opentype glyph', this._opentype_font.glyphs.glyphs[g]);
 						//return null;
 					} else {
-						this._font_chars.push(tesselated_font_char);
-						this._font_chars_dic[this._opentype_font.glyphs.glyphs[g].unicode] = tesselated_font_char;
+						this._font_chars.push(t_font_char);
+						this._font_chars_dic[this._opentype_font.glyphs.glyphs[g].unicode] = t_font_char;
 
 					}
 					//console.log("unicode:",this._opentype_font.glyphs.glyphs[g].unicode);
@@ -256,7 +259,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		let channel_idx: number = 0;
 		let maxSize = 0;
 		const allChars: any[] = [];
-		let allWidth = 0;
 
 		let maxy: number = Number.MIN_VALUE;
 		let maxx: number = Number.MIN_VALUE;
@@ -268,7 +270,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		// 	step1: loop over all chars, get their bounds and sort them by there height
 		//	done without applying any font-scale to the glyphdata
 		let allAreas: number = 0;
-		for (var i: number = 0; i < this._font_chars.length;i++) {
+		for (let i: number = 0; i < this._font_chars.length;i++) {
 			char_vertices = this._font_chars[i].fill_data;
 			//console.log("got the glyph from opentype", this._opentype_font.glyphs.glyphs[g]);
 			buffer = new Float32Array(char_vertices.buffer);
@@ -292,7 +294,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 				(maxx - minx) / (this._font_chars[i].char_width),
 				(maxy - miny) / (this._font_em_size));
 
-			allWidth += (maxx - minx) + padding * 2;
 			allAreas += (maxx - minx + padding + padding) * (maxy - miny + padding + padding);
 			allChars[allChars.length] = {
 				idx:i,
@@ -331,7 +332,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 				invalid = false;
 				x = 0;
 				y = padding;
-				for (var i: number = 0; i < allChars.length;i++) {
+				for (let i: number = 0; i < allChars.length;i++) {
 					curCharHeight = allChars[i].height * size_multiply;
 					tmpx = 0;
 					tmpy = 0;
@@ -361,7 +362,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		let font_char: TesselatedFontChar;
 		x = 0;
 		y = padding;
-		for (var i: number = 0; i < allChars.length;i++) {
+		for (let i: number = 0; i < allChars.length;i++) {
 
 			font_char = this._font_chars[allChars[i].idx];
 			char_vertices = font_char.fill_data;
@@ -403,7 +404,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 					maxy = tmpy;
 				}
 			}
-			font_char.fnt_uv = new Rectangle(x / maxSize, 1 - (y / maxSize), (maxx - x) / maxSize, ((maxy - y) / maxSize));
+			font_char.fnt_uv = new Rectangle(
+				x / maxSize, 1 - (y / maxSize),
+				(maxx - x) / maxSize, ((maxy - y) / maxSize));
 
 			//this._drawDebugRect(glyph_verts[channel_idx], x, maxx, y, maxy);
 
@@ -411,7 +414,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 		}
 		const shapes: Shape[] = [];
-		for (var i: number = 0; i < glyph_verts.length;i++) {
+		for (let i: number = 0; i < glyph_verts.length;i++) {
 			const attr_length: number = 2;//(tess_fontTable.usesCurves)?3:2;
 			const attributesView: AttributesView = new AttributesView(Float32Array, attr_length);
 			attributesView.set(glyph_verts[i]);
@@ -448,7 +451,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		let has = !!this._font_chars_dic[char_code];
 
 		if (!has && this._opentype_font) {
-			//console.log("get char for '"+String.fromCharCode(parseInt(name))+"'. char does not exists yet. try creating it from opentype.");
 			has = !!this._opentype_font.charToGlyph(String.fromCharCode(parseInt(char_code)));
 		}
 
@@ -474,15 +476,13 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		if (!this._size_multiply) {
 			debugger;
 		}
-
-		//console.log("text-font-table: ",this._ascent, this._descent, this._font_em_size)
 	}
 
 	public getCharVertCnt(char_code: string): number {
 
-		const tesselated_font_char: TesselatedFontChar = this._font_chars_dic[char_code];
-		if (tesselated_font_char) {
-			return tesselated_font_char.fill_data.length;
+		const t_font_char: TesselatedFontChar = this._font_chars_dic[char_code];
+		if (t_font_char) {
+			return t_font_char.fill_data.length;
 		}
 
 		return 0;
@@ -501,13 +501,13 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			return (space * 8 * 20) / 20;
 		}
 
-		let tesselated_font_char: TesselatedFontChar = this.getChar(char_code);
-		if (tesselated_font_char) {
-			return (Math.floor(tesselated_font_char.char_width * this._size_multiply * 20)) / 20;
+		let t_font_char: TesselatedFontChar = this.getChar(char_code);
+		if (t_font_char) {
+			return (Math.floor(t_font_char.char_width * this._size_multiply * 20)) / 20;
 		} else {
 			if (char_code == '9679') {
-				tesselated_font_char = this.createPointGlyph_9679();
-				return (Math.floor(tesselated_font_char.char_width * this._size_multiply * 20)) / 20;
+				t_font_char = this.createPointGlyph_9679();
+				return (Math.floor(t_font_char.char_width * this._size_multiply * 20)) / 20;
 			}
 		}
 
@@ -519,10 +519,11 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 	}
 
 	public getLineHeight(): number {
-		return this._size_multiply * (this._ascent - this.descent); // sf
-
-		//return this._size_multiply * this._font_em_size;
-		//return (this._ascent+this._descent)*this._size_multiply;	// enable for icycle
+		// @todo: root evil for wrong linespace :(
+		// i am still not sure if we use the correct version of this 3:
+		return this._size_multiply * (this._ascent - this.descent); // used for sf
+		//return this._size_multiply * this._font_em_size;	// used a long time for poki etc
+		//return (this._ascent+this._descent)*this._size_multiply;	// used long ago for icycle
 	}
 
 	public getUnderLineHeight(): number {
@@ -533,9 +534,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		return TesselatedFontTable.assetType;
 	}
 
-	/**
-	 *
-	 */
 	public dispose(): void {
 		for (let i: number = 0; i < this._font_chars.length; i++) {
 			this._font_chars[i].dispose();
@@ -675,15 +673,17 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 	public fillTextRun(tf: TextField, format: TextFormat, startWord: number, wordCnt: number, cleanLastWord: false) {
 
-		const useFNT: boolean = this._fntSizeLimit >= 0 && (this._fntSizeLimit == 0 || this._fntSizeLimit >= format.size);
-		const textShape: TextShape = tf.getTextShapeForIdentifierAndFormat(format.color.toString() + useFNT.toString() + '0', format);
+		const useFNT: boolean = this._fntSizeLimit >= 0 &&
+			(this._fntSizeLimit == 0 || this._fntSizeLimit >= format.size);
+		const textShape: TextShape =
+			tf.getTextShapeForIdentifierAndFormat(format.color.toString() + useFNT.toString() + '0', format);
 
 		const fntTextShapesByChannel: any = {};
 		const fntSelectedTextShapesByChannel: any = {};
 		//var currentFNTTextShapeMap:any;
 
-		var argb: number[];
-		var mat: MethodMaterial;
+		let argb: number[];
+		let mat: MethodMaterial;
 		if (useFNT) {
 			argb = ColorUtils.float32ColorToARGB(format.color);
 			mat = new MethodMaterial(this._fnt_channels[0]);
@@ -698,7 +698,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		let textShapeSelected: TextShape;
 		let newFormat: TextFormat;
 
-		let currentTextShape: TextShape = null;
+		let curTShape: TextShape = null;
 		let charGlyph: TesselatedFontChar;
 		let w: number = 0;
 		const w_len: number = startWord + wordCnt * 5;
@@ -739,7 +739,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 		// drop verts to the state of previous word because prev word may be wrapped
 		if (cleanLastWord) {
-			textShape.verts.length = tf.last_word_vertices_count || 0; // @todo this not supports selectable text for now
+			// @todo this not supports selectable text for now
+			textShape.verts.length = tf.last_word_vertices_count || 0;
 		}
 
 		// loop over all the words and create the text data for it
@@ -767,7 +768,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			//y=tf.words[w+2]+(this.ascent-this.get_font_em_size())*this._size_multiply; // enable for icycle
 			amount_of_chars_in_text = startIdx + tf.words[w + 4];
 			for (c = startIdx; c < amount_of_chars_in_text; c++) {
-				currentTextShape = (tf.isInFocus && c >= select_start && c < select_end) ? textShapeSelected : textShape;
+				curTShape = (tf.isInFocus && c >= select_start && c < select_end) ?
+					textShapeSelected : textShape;
 				if (tf.chars_codes[c] != 32 && tf.chars_codes[c] != 9) {
 					charGlyph = this.getChar(tf.chars_codes[c].toString());
 					size_multiply = this._size_multiply;
@@ -775,68 +777,77 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 						if (useFNT) {
 							// the font should use fnt
-							const curFormat = currentTextShape.format;
-							let currentTextShapeFNT = (tf.isInFocus && c >= select_start && c < select_end) ? fntSelectedTextShapesByChannel[useFNT.toString() + charGlyph.fnt_channel] : fntTextShapesByChannel[curFormat.color.toString() + useFNT.toString() + charGlyph.fnt_channel];
-							if (!currentTextShapeFNT) {
-								const newtextShape: TextShape = tf.getTextShapeForIdentifierAndFormat(curFormat.color.toString() + useFNT.toString() + charGlyph.fnt_channel.toString(), curFormat);
-								var argb: number[] = ColorUtils.float32ColorToARGB(curFormat.color);
-								var mat: MethodMaterial = new MethodMaterial(this._fnt_channels[charGlyph.fnt_channel]);
+							const curFormat = curTShape.format;
+							let ctmpTShape = (tf.isInFocus && c >= select_start && c < select_end) ?
+								fntSelectedTextShapesByChannel[useFNT.toString() + charGlyph.fnt_channel] :
+								fntTextShapesByChannel[curFormat.color.toString() +
+									useFNT.toString() + charGlyph.fnt_channel];
+							if (!ctmpTShape) {
+								const newtextShape: TextShape =
+									tf.getTextShapeForIdentifierAndFormat(
+										curFormat.color.toString()
+										+ useFNT.toString() + charGlyph.fnt_channel.toString(),
+										curFormat);
+								const argb: number[] = ColorUtils.float32ColorToARGB(curFormat.color);
+								const mat: MethodMaterial = new MethodMaterial(
+									this._fnt_channels[charGlyph.fnt_channel]);
 								mat.colorTransform = new ColorTransform(argb[1] / 255, argb[2] / 255, argb[3] / 255);
 								mat.bothSides = true;
 								mat.alphaBlending = true;
 								mat.useColorTransform = true;
 								mat.style.sampler = new ImageSampler(false, true, true);
 								newtextShape.fntMaterial = mat;
-								fntTextShapesByChannel[curFormat.color.toString() + useFNT.toString() + charGlyph.fnt_channel] = newtextShape;
-								currentTextShapeFNT = newtextShape;
+								fntTextShapesByChannel[curFormat.color.toString() +
+									useFNT.toString() + charGlyph.fnt_channel] = newtextShape;
+								ctmpTShape = newtextShape;
 							}
 							const x1: number = x + ((charGlyph.char_width * size_multiply) * charGlyph.fnt_rect.x);
 							const x2: number = x1 + ((charGlyph.char_width * size_multiply) * charGlyph.fnt_rect.width);
 							const y1: number = y + ((this._font_em_size * size_multiply) * charGlyph.fnt_rect.y);
 							const y2: number = y1 + ((this._font_em_size * size_multiply) * charGlyph.fnt_rect.height);
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = x1;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = y1;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = charGlyph.fnt_uv.x;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = charGlyph.fnt_uv.y;
+							ctmpTShape.verts[ctmpTShape.verts.length] = x1;
+							ctmpTShape.verts[ctmpTShape.verts.length] = y1;
+							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x;
+							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y;
 
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = x2;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = y1;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = charGlyph.fnt_uv.y;
+							ctmpTShape.verts[ctmpTShape.verts.length] = x2;
+							ctmpTShape.verts[ctmpTShape.verts.length] = y1;
+							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
+							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y;
 
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = x2;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = y2;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
+							ctmpTShape.verts[ctmpTShape.verts.length] = x2;
+							ctmpTShape.verts[ctmpTShape.verts.length] = y2;
+							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
+							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
 
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = x1;//
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = y1;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = charGlyph.fnt_uv.x;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = charGlyph.fnt_uv.y;
+							ctmpTShape.verts[ctmpTShape.verts.length] = x1;//
+							ctmpTShape.verts[ctmpTShape.verts.length] = y1;
+							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x;
+							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y;
 
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = x1;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = y2;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = charGlyph.fnt_uv.x;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
+							ctmpTShape.verts[ctmpTShape.verts.length] = x1;
+							ctmpTShape.verts[ctmpTShape.verts.length] = y2;
+							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x;
+							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
 
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = x2;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = y2;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
-							currentTextShapeFNT.verts[currentTextShapeFNT.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
+							ctmpTShape.verts[ctmpTShape.verts.length] = x2;
+							ctmpTShape.verts[ctmpTShape.verts.length] = y2;
+							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
+							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
 
 						} else {
 							char_vertices = charGlyph.fill_data;
 							buffer = new Float32Array(char_vertices.buffer);
 							if (this.usesCurves) {
 								for (v = 0; v < char_vertices.count; v++) {
-									currentTextShape.verts[currentTextShape.verts.length] = (buffer[v * 3] * size_multiply) + x;
-									currentTextShape.verts[currentTextShape.verts.length] = (buffer[v * 3 + 1] * size_multiply) + y;
-									currentTextShape.verts[currentTextShape.verts.length] = buffer[v * 3 + 2];
+									curTShape.verts[curTShape.verts.length] = (buffer[v * 3] * size_multiply) + x;
+									curTShape.verts[curTShape.verts.length] = (buffer[v * 3 + 1] * size_multiply) + y;
+									curTShape.verts[curTShape.verts.length] = buffer[v * 3 + 2];
 								}
 							} else {
 								for (v = 0; v < char_vertices.count; v++) {
-									currentTextShape.verts[currentTextShape.verts.length] = ((buffer[v * 2]) * size_multiply) + x;
-									currentTextShape.verts[currentTextShape.verts.length] = ((buffer[v * 2 + 1]) * size_multiply) + y;
+									curTShape.verts[curTShape.verts.length] = ((buffer[v * 2]) * size_multiply) + x;
+									curTShape.verts[curTShape.verts.length] = ((buffer[v * 2 + 1]) * size_multiply) + y;
 								}
 							}
 
@@ -845,7 +856,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 						// todo: handle kerning
 					} else {
 						if (once(this, 'miss' + tf.chars_codes[c])) {
-							console.debug('[TesselatedFontTable] Error: char not found in fontTable', tf.chars_codes[c], String.fromCharCode(tf.chars_codes[c]));
+							console.debug('[TesselatedFontTable] Error: char not found in fontTable',
+								tf.chars_codes[c], String.fromCharCode(tf.chars_codes[c]));
 						}
 					}
 				}
@@ -854,18 +866,18 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			const topY: number = y + this.getUnderLineHeight() + half_thickness;
 			const bottomY: number = y + this.getUnderLineHeight() - half_thickness;
 			if (tf.selectable && newFormat.underline && (startWord + 1) < tf.words.length) {
-				currentTextShape.verts[currentTextShape.verts.length] = start_x;
-				currentTextShape.verts[currentTextShape.verts.length] = bottomY;
-				currentTextShape.verts[currentTextShape.verts.length] = start_x;
-				currentTextShape.verts[currentTextShape.verts.length] = topY;
-				currentTextShape.verts[currentTextShape.verts.length] = x;
-				currentTextShape.verts[currentTextShape.verts.length] = topY;
-				currentTextShape.verts[currentTextShape.verts.length] = x;
-				currentTextShape.verts[currentTextShape.verts.length] = topY;
-				currentTextShape.verts[currentTextShape.verts.length] = x;
-				currentTextShape.verts[currentTextShape.verts.length] = bottomY;
-				currentTextShape.verts[currentTextShape.verts.length] = start_x;
-				currentTextShape.verts[currentTextShape.verts.length] = bottomY;
+				curTShape.verts[curTShape.verts.length] = start_x;
+				curTShape.verts[curTShape.verts.length] = bottomY;
+				curTShape.verts[curTShape.verts.length] = start_x;
+				curTShape.verts[curTShape.verts.length] = topY;
+				curTShape.verts[curTShape.verts.length] = x;
+				curTShape.verts[curTShape.verts.length] = topY;
+				curTShape.verts[curTShape.verts.length] = x;
+				curTShape.verts[curTShape.verts.length] = topY;
+				curTShape.verts[curTShape.verts.length] = x;
+				curTShape.verts[curTShape.verts.length] = bottomY;
+				curTShape.verts[curTShape.verts.length] = start_x;
+				curTShape.verts[curTShape.verts.length] = bottomY;
 			}
 
 		}
@@ -874,184 +886,131 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 	public createPointGlyph_9679(): TesselatedFontChar {
 		const verts: number[] = [];
-		GraphicsFactoryHelper.drawElipse(this._font_em_size / 2, this._font_em_size / 2, this._font_em_size / 8, this._font_em_size / 8, verts, 0, 360, 5, false);
+		GraphicsFactoryHelper.drawElipse(
+			this._font_em_size / 2, this._font_em_size / 2,
+			this._font_em_size / 8, this._font_em_size / 8,
+			verts, 0, 360, 5, false);
 
 		const attributesView: AttributesView = new AttributesView(Float32Array, 2);
 		attributesView.set(verts);
 		const attributesBuffer: AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
 		attributesView.dispose();
-		const tesselated_font_char: TesselatedFontChar = new TesselatedFontChar(attributesBuffer, null, null);
-		tesselated_font_char.char_width = this._font_em_size;
-		this._font_chars.push(tesselated_font_char);
-		this._font_chars_dic['9679'] = tesselated_font_char;
-		return tesselated_font_char;
+		const t_font_char: TesselatedFontChar = new TesselatedFontChar(attributesBuffer, null, null);
+		t_font_char.char_width = this._font_em_size;
+		this._font_chars.push(t_font_char);
+		this._font_chars_dic['9679'] = t_font_char;
+		return t_font_char;
 	}
 
-	/**
-	 *
-	 */
 	public getChar(name: string): TesselatedFontChar {
-		var tesselated_font_char: TesselatedFontChar = this._font_chars_dic[name];
-		if (tesselated_font_char == null) {
+		let t_font_char: TesselatedFontChar = this._font_chars_dic[name];
+		if (!t_font_char) {
 			if (this._opentype_font) {
-				//console.log("get char for '"+String.fromCharCode(parseInt(name))+"'. char does not exists yet. try creating it from opentype.");
 				const thisGlyph = this._opentype_font.charToGlyph(String.fromCharCode(parseInt(name)));
 				if (thisGlyph) {
 					//console.log("got the glyph from opentype");
-					if (true) {//todo: only do this for webGL
-						const thisPath = thisGlyph.getPath();
-						const awayPath: GraphicsPath = new GraphicsPath();
-						let i = 0;
-						const len = thisPath.commands.length;
+					const thisPath = thisGlyph.getPath();
+					const awayPath: GraphicsPath = new GraphicsPath();
+					let i = 0;
+					const len = thisPath.commands.length;
 
-						//awayPath.lineTo(0, 0);
-						//awayPath.moveTo(0,0);//-100);
-						//awayPath.curveTo(100, 250, 200,0);
-						//awayPath.lineTo(150, 100);
-						//awayPath.moveTo(0,20);
-						//awayPath.curveTo(100, 270, 200,20);
-						//awayPath.moveTo(0,-20);
-						//awayPath.moveTo(0,-10);
-						//awayPath.curveTo(100, -110, 200,-10);
+					//awayPath.lineTo(0, 0);
+					//awayPath.moveTo(0,0);//-100);
+					//awayPath.curveTo(100, 250, 200,0);
+					//awayPath.lineTo(150, 100);
+					//awayPath.moveTo(0,20);
+					//awayPath.curveTo(100, 270, 200,20);
+					//awayPath.moveTo(0,-20);
+					//awayPath.moveTo(0,-10);
+					//awayPath.curveTo(100, -110, 200,-10);
 
-						let startx: number = 0;
-						let starty: number = 0;
-						const y_offset = this._ascent;
-						//40 = 66
-						for (i = 0;i < len;i++) {
-							const cmd = thisPath.commands[i];
-							//console.log("cmd", cmd.type, cmd.x, cmd.y, cmd.x1, cmd.y1, cmd.x2, cmd.y2);
-							if (cmd.type === 'M') {
-								awayPath.moveTo(cmd.x, cmd.y + y_offset);
-								startx = cmd.x;
-								starty = cmd.y + y_offset;
-							} else if (cmd.type === 'L') {	awayPath.lineTo(cmd.x, cmd.y + y_offset);} else if (cmd.type === 'Q') {	awayPath.curveTo(cmd.x1, cmd.y1 + y_offset, cmd.x, cmd.y + y_offset);} else if (cmd.type === 'C') {	awayPath.cubicCurveTo(cmd.x1, cmd.y1 + y_offset, cmd.x2, cmd.y2 + y_offset, cmd.x, cmd.y + y_offset);} else if (cmd.type === 'Z') {	awayPath.lineTo(startx, starty);}
-						}
-						/*
-								awayPath.moveTo(0, 0);
-								awayPath.lineTo(-5000, 500);
-								awayPath.lineTo(-5000, 5000);
-								awayPath.lineTo(-500, 5000);
-                                awayPath.lineTo(-500, 500);
-                                */
-
-						//awayPath.style = new GraphicsStrokeStyle(0xff0000, 1, 1, JointStyle.MITER, CapsStyle.NONE, 100);
-						/*
-						var final_vert_list:Array<number>=[];
-						//todo
-						//GraphicsFactoryStrokes.draw_pathes([awayPath], final_vert_list, false);
-						var attributesView:AttributesView = new AttributesView(Float32Array, 3);
-						attributesView.set(final_vert_list);
-						var attributesBuffer:AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
-						attributesView.dispose();
-
-                        //console.log("tesselated_font_char.char_width "+tesselated_font_char.char_width);
-                        */
-						var tesselated_font_char: TesselatedFontChar = new TesselatedFontChar(null, null, awayPath);
-						tesselated_font_char.char_width = (thisGlyph.advanceWidth * (1 / thisGlyph.path.unitsPerEm * 72));
-						tesselated_font_char.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(awayPath, true);
-
-						if (!tesselated_font_char.fill_data) {
-							if (once(this, 'tess' + name)) {
-								console.debug('[TesselatedFontTable] Error:tesselating opentype glyph:', name.charCodeAt(0));
-							}
-							return null;
-						}
-
-						this._font_chars.push(tesselated_font_char);
-						this._font_chars_dic[name] = tesselated_font_char;
+					let startx: number = 0;
+					let starty: number = 0;
+					const y_offset = this._ascent;
+					//40 = 66
+					for (i = 0;i < len;i++) {
+						const cmd = thisPath.commands[i];
+						//console.log("cmd", cmd.type, cmd.x, cmd.y, cmd.x1, cmd.y1, cmd.x2, cmd.y2);
+						if (cmd.type === 'M') {
+							awayPath.moveTo(cmd.x, cmd.y + y_offset);
+							startx = cmd.x;
+							starty = cmd.y + y_offset;
+						} else if (cmd.type === 'L') {
+							awayPath.lineTo(cmd.x, cmd.y + y_offset);
+						} else if (cmd.type === 'Q') {
+							awayPath.curveTo(cmd.x1, cmd.y1 + y_offset, cmd.x, cmd.y + y_offset);
+						} else if (cmd.type === 'C') {
+							awayPath.cubicCurveTo(
+								cmd.x1, cmd.y1 + y_offset, cmd.x2, cmd.y2 + y_offset, cmd.x, cmd.y + y_offset);
+						} else if (cmd.type === 'Z') {	awayPath.lineTo(startx, starty);}
 					}
+
+					t_font_char = new TesselatedFontChar(null, null, awayPath);
+					t_font_char.char_width = (thisGlyph.advanceWidth * (1 / thisGlyph.path.unitsPerEm * 72));
+					t_font_char.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(awayPath, true);
+
+					if (!t_font_char.fill_data) {
+						if (once(this, 'tess' + name)) {
+							console.debug('[TesselatedFontTable] Error:tesselating opentype glyph:',
+								name.charCodeAt(0));
+						}
+						return null;
+					}
+
+					this._font_chars.push(t_font_char);
+					this._font_chars_dic[name] = t_font_char;
 				}
 			}
 			if (name == '9679') {
-				tesselated_font_char = this.createPointGlyph_9679();
+				t_font_char = this.createPointGlyph_9679();
 			}
-		} else if (tesselated_font_char.fill_data == null && tesselated_font_char.stroke_data == null && tesselated_font_char.fill_data_path != null) {
+		} else if (t_font_char.fill_data == null &&
+			t_font_char.stroke_data == null && t_font_char.fill_data_path != null) {
 			// 	hack for messed up "X": remove the first command if it is moveTo that points to 0,0
 			//	change the new first command to moveTo
-			if (tesselated_font_char.fill_data_path.commands[0][0] == 1 && tesselated_font_char.fill_data_path.data[0][0] == 0 && tesselated_font_char.fill_data_path.data[0][1] == 0) {
-				tesselated_font_char.fill_data_path.data[0].shift();
-				tesselated_font_char.fill_data_path.data[0].shift();
-				tesselated_font_char.fill_data_path.commands[0].shift();
-				tesselated_font_char.fill_data_path.commands[0][0] = 2;
+			if (t_font_char.fill_data_path.commands[0][0] == 1 &&
+				t_font_char.fill_data_path.data[0][0] == 0 && t_font_char.fill_data_path.data[0][1] == 0) {
+				t_font_char.fill_data_path.data[0].shift();
+				t_font_char.fill_data_path.data[0].shift();
+				t_font_char.fill_data_path.commands[0].shift();
+				t_font_char.fill_data_path.commands[0][0] = 2;
 			}
-			tesselated_font_char.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(tesselated_font_char.fill_data_path, true);
-			if (!tesselated_font_char.fill_data) {
+			t_font_char.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(t_font_char.fill_data_path, true);
+			if (!t_font_char.fill_data) {
 				if (once(this, 'tess' + name)) {
 					console.debug('[TesselatedFontTable] Error:tesselating glyph:', name.charCodeAt(0));
 				}
 				return null;
 			}
 		}
-		if (!tesselated_font_char) {
-			//console.warn("Warning: could not find glyph: ", name, String.fromCharCode(parseInt(name)), this.font.name, this.name, this.font);
-		}
-		return tesselated_font_char;
+		return t_font_char;
 	}
 
-	public setChar(name: string, char_width: number, fills_data: AttributesBuffer = null, stroke_data: AttributesBuffer = null, uses_curves: boolean = false, glyph_idx: number = 0, fill_data_path: GraphicsPath = null): void {
+	public setChar(
+		name: string, char_width: number, fills_data: AttributesBuffer = null,
+		stroke_data: AttributesBuffer = null, uses_curves: boolean = false,
+		glyph_idx: number = 0, fill_data_path: GraphicsPath = null): void {
+
 		char_width = Math.floor(char_width * 20) / 20;
 		//console.log("adding char", name, String.fromCharCode(parseInt(name)));
 		if ((fills_data == null) && (stroke_data == null) && (fill_data_path == null))
-			throw ('TesselatedFontTable: trying to create a TesselatedFontChar with no data (fills_data, stroke_data and fill_data_path is null)');
+			throw (`TesselatedFontTable: trying to create a TesselatedFontChar with no data 
+				(fills_data, stroke_data and fill_data_path is null)`);
 		if (this._font_chars.length > 0) {
 			if (uses_curves != this._usesCurves) {
-				throw ('TesselatedFontTable: Can not set different types of graphic-glyphs (curves vs non-cuves) on the same FontTable!');
+				throw (`TesselatedFontTable: Can not set different types of graphic-glyphs
+					(curves vs non-cuves) on the same FontTable!`);
 			}
 		} else {
 			this._usesCurves = uses_curves;
 		}
-		const tesselated_font_char: TesselatedFontChar = new TesselatedFontChar(fills_data, stroke_data, fill_data_path);
-		tesselated_font_char.char_width = char_width;
-		tesselated_font_char.glyph_idx = glyph_idx;
-		tesselated_font_char.name = name;
-		this._glyphIdxToChar[glyph_idx] = tesselated_font_char;
+		const t_font_char: TesselatedFontChar = new TesselatedFontChar(fills_data, stroke_data, fill_data_path);
+		t_font_char.char_width = char_width;
+		t_font_char.glyph_idx = glyph_idx;
+		t_font_char.name = name;
+		this._glyphIdxToChar[glyph_idx] = t_font_char;
 
-		this._font_chars.push(tesselated_font_char);
-		this._font_chars_dic[name] = tesselated_font_char;
+		this._font_chars.push(t_font_char);
+		this._font_chars_dic[name] = t_font_char;
 	}
-
-	public buildTextRuns(textRuns: Array<Array<number>>, output_verts: Array<Array<number>>): void {
-		if ((textRuns.length * 2) != (output_verts.length))
-			throw ('Invalid data passed to TesselatedFontTable.buildTextRuns(). output_verts.length is not double textRuns.length.');
-
-		let i: number = 0;
-		let font_size: number = 0;
-		let drawMode: number = 0;
-		let charCode: number = 0;
-		let xpos: number = 0;
-		let ypos: number = 0;
-		let runCnt: number = 0;
-		let runLen: number = 0;
-		const vertCnt: number = 0;
-		const len: number = textRuns.length;
-		let textrun: Array<number>;
-		let thisChar: TesselatedFontChar;
-		for (i = 0;i < len;i++) {
-			textrun = textRuns[i];
-			font_size = textrun[0];
-			drawMode = textrun[1];
-			ypos = textrun[2];
-			runLen = textrun.length;
-			for (runCnt = 3;runCnt < runLen;runCnt += 2) {
-				charCode = textrun[runCnt];
-				xpos = textrun[runCnt + 1];
-				thisChar = this.getChar(charCode.toString());
-				if ((drawMode == DrawMode.BOTH) || (drawMode == DrawMode.STROKE)) {
-					if (output_verts[i * 2] == null) {
-						throw ('Trying to render strokes for a textrun, but no output_vert list was set for this textrun strokes');
-					}
-
-				}
-				if ((drawMode == DrawMode.BOTH) || (drawMode == DrawMode.FILL)) {
-					if (output_verts[i * 2 + 1] == null) {
-						throw ('Trying to render fills for a textrun, but no output_vert list was set for this textrun fills');
-					}
-
-				}
-			}
-
-		}
-	}
-
 }

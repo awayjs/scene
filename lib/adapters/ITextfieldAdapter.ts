@@ -1,5 +1,4 @@
 import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
-import { DisplayObject } from '../display/DisplayObject';
 
 export interface ITextfieldAdapter extends IDisplayObjectAdapter
 {

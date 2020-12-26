@@ -1,11 +1,10 @@
-import { ColorUtils, Matrix, ColorTransform, Rectangle, Point, Vector3D, AssetEvent } from '@awayjs/core';
+import { ColorUtils, Matrix, Rectangle, Point, Vector3D, AssetEvent } from '@awayjs/core';
 import { ImageSampler, AttributesBuffer, AttributesView, Float2Attributes } from '@awayjs/stage';
 import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
 import { Style } from '@awayjs/renderer';
 import { MaterialBase } from '@awayjs/materials';
 import { Graphics, Shape, TriangleElements, GraphicsFactoryHelper, MaterialManager } from '@awayjs/graphics';
 
-import { HierarchicalProperties } from '../base/HierarchicalProperties';
 import { TesselatedFontTable } from '../text/TesselatedFontTable';
 import { AntiAliasType } from '../text/AntiAliasType';
 import { GridFitType } from '../text/GridFitType';
@@ -2429,7 +2428,8 @@ export class TextField extends DisplayObjectContainer {
 						}
 						// (1.5* format.font_table.getCharWidth("32")) is to replicate flash behavior
 						if (isSpace
-							|| (this.lines_width[linecnt] + word_width) <= (maxLineWidth - indent - (1 * format.font_table.getCharWidth('32')))
+							|| (this.lines_width[linecnt] + word_width) <= (
+								maxLineWidth - indent - (1 * format.font_table.getCharWidth('32')))
 							|| this.lines_width[linecnt] == 0) {
 							this.lines_wordEndIndices[linecnt] = w + 5;
 							this.lines_width[linecnt] += word_width;

@@ -1,13 +1,10 @@
-import { Box, Point, ArgumentError, RangeError, Matrix3D } from '@awayjs/core';
+import { Point, ArgumentError, RangeError } from '@awayjs/core';
 
 import { PartitionBase, EntityNode } from '@awayjs/view';
 
 import { HierarchicalProperties } from '../base/HierarchicalProperties';
 
-import { Scene } from '../Scene';
-
 import { DisplayObject } from './DisplayObject';
-import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
 //import {Sprite} from "./Sprite";
 
 /**

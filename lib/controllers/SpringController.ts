@@ -23,7 +23,8 @@ export class SpringController extends LookAtController {
 	public stiffness: number;
 
 	/**
-	 * Damping is the spring internal friction, or how much it resists the "boinggggg" effect. Too high and you'll lose it!
+	 * Damping is the spring internal friction,
+	 * or how much it resists the "boinggggg" effect. Too high and you'll lose it!
 	 * A number between 1 and 20 is recommended.
 	 */
 	public damping: number;
@@ -34,11 +35,13 @@ export class SpringController extends LookAtController {
 	public mass: number;
 
 	/**
-	 * Offset of spring center from target in target object space, ie: Where the camera should ideally be in the target object space.
+	 * Offset of spring center from target in target object space,
+	 * ie: Where the camera should ideally be in the target object space.
 	 */
 	public positionOffset: Vector3D = new Vector3D(0, 500, -1000);
 
-	constructor(targetObject: DisplayObject = null, lookAtObject: DisplayObject = null, stiffness: number = 1, mass: number = 40, damping: number = 4) {
+	constructor(targetObject: DisplayObject = null,
+		lookAtObject: DisplayObject = null, stiffness: number = 1, mass: number = 40, damping: number = 4) {
 		super(targetObject, lookAtObject);
 
 		this.stiffness = stiffness;
@@ -55,14 +58,13 @@ export class SpringController extends LookAtController {
 	}
 
 	public update(interpolate: boolean = true): void {
-		let offs: Vector3D;
 
 		if (!this._pLookAtObject || !this._pTargetObject)
 			return;
 
 		this._pControllerDirty = true;
 
-		offs = this._pLookAtObject.transform.matrix3D.deltaTransformVector(this.positionOffset);
+		const offs: Vector3D = this._pLookAtObject.transform.matrix3D.deltaTransformVector(this.positionOffset);
 		this._desiredPosition.x = this._pLookAtObject.x + offs.x;
 		this._desiredPosition.y = this._pLookAtObject.y + offs.y;
 		this._desiredPosition.z = this._pLookAtObject.z + offs.z;

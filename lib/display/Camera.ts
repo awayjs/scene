@@ -58,7 +58,8 @@ export class Camera extends DisplayObjectContainer {
 	 * @return The normalised screen position of the given scene coordinates.
 	 */
 	public project(position: Vector3D, target: Vector3D = null): Vector3D {
-		return this._projection.project(this._transform.inverseConcatenatedMatrix3D.transformVector(position, target), target);
+		return this._projection.project(
+			this._transform.inverseConcatenatedMatrix3D.transformVector(position, target), target);
 	}
 
 	/**

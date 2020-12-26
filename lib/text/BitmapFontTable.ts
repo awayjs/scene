@@ -74,7 +74,8 @@ export class BitmapFontTable extends AssetBase implements IFontTable {
 		const this_char: BitmapFontChar = this._font_chars_dic[char_code];
 		if (this_char) {
 			//console.log("this_char found");
-			return [this_char.x, this_char.y, this_char.width, this_char.height, this_char.x_offset * this._size_multiply, this_char.y_offset * this._size_multiply];
+			return [this_char.x, this_char.y, this_char.width, this_char.height,
+				this_char.x_offset * this._size_multiply, this_char.y_offset * this._size_multiply];
 		}
 		//console.log("this_char not found" + char_code);
 		return [];
@@ -86,7 +87,10 @@ export class BitmapFontTable extends AssetBase implements IFontTable {
 			const realheight: number = (this_char.height / this._init_size) * this._current_size;
 			const realWidth: number = (this_char.width / this._init_size) * this._current_size;
 			//console.log("this_char found");
-			return [this_char.x / this._texture_width, this_char.y / this._texture_height, this_char.width / this._texture_width, this_char.height / this._texture_height, this_char.x_offset * this._size_multiply, this_char.y_offset * this._size_multiply, realheight, realWidth];
+			return [this_char.x / this._texture_width, this_char.y / this._texture_height,
+				this_char.width / this._texture_width, this_char.height / this._texture_height,
+				this_char.x_offset * this._size_multiply, this_char.y_offset * this._size_multiply,
+				realheight, realWidth];
 		}
 		//console.log("this_char not found" + char_code);
 		return [];
@@ -217,8 +221,11 @@ export class BitmapFontTable extends AssetBase implements IFontTable {
 	/**
 	 *
 	 */
-	public setChar(id: string, x: number,y: number, width: number,  height: number, xoff: number, yoff: number, xadv: number, page: number, channel: number): void {
-		const bitmap_font_char: BitmapFontChar = new BitmapFontChar(id, x, y, width, height, xoff, yoff, xadv, page, channel);
+	public setChar(
+		id: string, x: number,y: number, width: number,  height: number,
+		xoff: number, yoff: number, xadv: number, page: number, channel: number): void {
+		const bitmap_font_char: BitmapFontChar
+			= new BitmapFontChar(id, x, y, width, height, xoff, yoff, xadv, page, channel);
 		this._font_chars.push(bitmap_font_char);
 		this._font_chars_dic[id] = bitmap_font_char;
 	}

@@ -1,4 +1,5 @@
-import { AssetLibraryBundle, Loader, LoaderContext, URLRequest, AssetEvent, URLLoaderEvent, LoaderEvent, ParserEvent, ParserBase, EventBase } from '@awayjs/core';
+import { AssetLibraryBundle, Loader, LoaderContext, URLRequest, AssetEvent,
+	URLLoaderEvent, LoaderEvent, ParserEvent, ParserBase, EventBase } from '@awayjs/core';
 
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 import { DisplayObject } from './DisplayObject';
@@ -193,7 +194,8 @@ export class LoaderContainer extends DisplayObjectContainer {
 	}
 
 	/**
-	 * Special addEventListener case for <code>URLLoaderEvent.LOAD_ERROR</code> and <code>ype == ParserEvent.PARSE_ERROR</code>
+	 * Special addEventListener case for <code>
+	 * URLLoaderEvent.LOAD_ERROR</code> and <code>ype == ParserEvent.PARSE_ERROR</code>
 	 *
 	 * @param type
 	 * @param listener
@@ -206,7 +208,8 @@ export class LoaderContainer extends DisplayObjectContainer {
 	}
 
 	/**
-	 * Special removeEventListener case for <code>URLLoaderEvent.LOAD_ERROR</code> and <code>ype == ParserEvent.PARSE_ERROR</code>
+	 * Special removeEventListener case for <code>
+	 * URLLoaderEvent.LOAD_ERROR</code> and <code>ype == ParserEvent.PARSE_ERROR</code>
 	 *
 	 * @param type
 	 * @param listener
@@ -401,7 +404,8 @@ export class LoaderContainer extends DisplayObjectContainer {
 	 * @event unload        Dispatched by the <code>contentLoaderInfo</code>
 	 *                      object when a loaded object is removed.
 	 */
-	public load(request: URLRequest, context: LoaderContext = null, ns: string = null, parser: ParserBase = null): void {
+	public load(request: URLRequest, context: LoaderContext = null,
+		ns: string = null, parser: ParserBase = null): void {
 		this._getLoader().load(request, context, ns, parser);
 	}
 
@@ -499,7 +503,8 @@ export class LoaderContainer extends DisplayObjectContainer {
 		if (this._contentLoader)
 			this.close();
 
-		this._contentLoader = (this._useAssetLib) ? AssetLibraryBundle.getInstance(this._assetLibId).getLoader() : new Loader();
+		this._contentLoader =
+			(this._useAssetLib) ? AssetLibraryBundle.getInstance(this._assetLibId).getLoader() : new Loader();
 
 		this._contentLoader.addEventListener(LoaderEvent.LOADER_START, this._onLoaderStartDelegate);
 		this._contentLoader.addEventListener(URLLoaderEvent.LOAD_PROGRESS, this._onLoadProgressDelegate);

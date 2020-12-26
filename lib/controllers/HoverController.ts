@@ -172,7 +172,8 @@ export class HoverController extends LookAtController {
 	}
 
 	/**
-	 * Fractional difference in distance between the horizontal camera orientation and vertical camera orientation. Defaults to 2.
+	 * Fractional difference in distance between the horizontal camera orientation
+	 * and vertical camera orientation. Defaults to 2.
 	 *
 	 * @see    #distance
 	 */
@@ -208,7 +209,10 @@ export class HoverController extends LookAtController {
 	/**
 	 * Creates a new <code>HoverController</code> object.
 	 */
-	constructor(targetObject: DisplayObject = null, lookAtObject: DisplayObject = null, panAngle: number = 0, tiltAngle: number = 90, distance: number = 1000, minTiltAngle: number = -90, maxTiltAngle: number = 90, minPanAngle: number = null, maxPanAngle: number = null, steps: number = 8, yFactor: number = 2, wrapPanAngle: boolean = false) {
+	constructor(targetObject: DisplayObject = null, lookAtObject: DisplayObject = null,
+		panAngle: number = 0, tiltAngle: number = 90, distance: number = 1000,
+		minTiltAngle: number = -90, maxTiltAngle: number = 90, minPanAngle: number = null,
+		maxPanAngle: number = null, steps: number = 8, yFactor: number = 2, wrapPanAngle: boolean = false) {
 		super(targetObject, lookAtObject);
 
 		this.distance = distance;
@@ -230,7 +234,8 @@ export class HoverController extends LookAtController {
 	/**
 	 * Updates the current tilt angle and pan angle values.
 	 *
-	 * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
+	 * Values are calculated using the defined <code>tiltAngle</code>,
+	 * <code>panAngle</code> and <code>steps</code> variables.
 	 *
 	 * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
 	 *
@@ -268,20 +273,27 @@ export class HoverController extends LookAtController {
 			}
 
 			//snap coords if angle differences are close
-			if ((Math.abs(this.tiltAngle - this._iCurrentTiltAngle) < 0.01) && (Math.abs(this._panAngle - this._iCurrentPanAngle) < 0.01)) {
+			if ((Math.abs(this.tiltAngle - this._iCurrentTiltAngle) < 0.01)
+			&& (Math.abs(this._panAngle - this._iCurrentPanAngle) < 0.01)) {
 				this._iCurrentTiltAngle = this._tiltAngle;
 				this._iCurrentPanAngle = this._panAngle;
 			}
 		}
 
-		const pos: Vector3D = (this.lookAtObject) ? this.lookAtObject.transform.position : (this.lookAtPosition) ? this.lookAtPosition : this._pOrigin;
-		this.targetObject.x = pos.x + this.distance * Math.sin(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.cos(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
-		this.targetObject.y = pos.y + this.distance * Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS) * this.yFactor;
-		this.targetObject.z = pos.z + this.distance * Math.cos(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.cos(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
+		const pos: Vector3D = (this.lookAtObject) ? this.lookAtObject.transform.position :
+			(this.lookAtPosition) ? this.lookAtPosition : this._pOrigin;
+		this.targetObject.x = pos.x + this.distance * Math.sin(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) *
+			Math.cos(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
+		this.targetObject.y =
+			pos.y + this.distance * Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS) * this.yFactor;
+		this.targetObject.z = pos.z + this.distance * Math.cos(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) *
+			Math.cos(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
 
-		this._upAxis.x = -Math.sin(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
+		this._upAxis.x = -Math.sin(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) *
+			Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
 		this._upAxis.y = Math.cos(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
-		this._upAxis.z = -Math.cos(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) * Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
+		this._upAxis.z = -Math.cos(this._iCurrentPanAngle * MathConsts.DEGREES_TO_RADIANS) *
+			Math.sin(this._iCurrentTiltAngle * MathConsts.DEGREES_TO_RADIANS);
 
 		if (this._pTargetObject) {
 			if (this._pLookAtPosition)

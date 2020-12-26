@@ -1,7 +1,7 @@
 import { Vector3D } from '@awayjs/core';
 import { Stage } from '@awayjs/stage';
 
-import { PickingCollision, PickEntity, RaycastPicker, IPartitionEntity, IPickingEntity } from '@awayjs/view';
+import { PickingCollision, RaycastPicker, IPartitionEntity, IPickingEntity } from '@awayjs/view';
 
 import { KeyboardEvent } from '../events/KeyboardEvent';
 import { MouseEvent } from '../events/MouseEvent';
@@ -9,7 +9,6 @@ import { FrameScriptManager } from '../managers/FrameScriptManager';
 
 import { IInputRecorder } from './IInputRecorder';
 
-const TMP_POINT = { x: 0, y: 0 };
 /**
  * MouseManager enforces a singleton pattern and is not intended to be instanced.
  * it provides a manager class for detecting mouse hits on scene objects and sending out mouse events.
@@ -264,7 +263,8 @@ export class MouseManager {
 		}
 	}
 
-	private setupAndDispatchEvent(event: MouseEvent, sourceEvent, collision: PickingCollision, commonAncestor: IPickingEntity = null) {
+	private setupAndDispatchEvent(event: MouseEvent, sourceEvent,
+		collision: PickingCollision, commonAncestor: IPickingEntity = null) {
 
 		if (sourceEvent) {
 			event.delta = sourceEvent.wheelDelta;
@@ -285,7 +285,8 @@ export class MouseManager {
 		} else if (this._updateDirty) {
 			for (let i = 0; i < this._pickerLookup.length; i++)
 				if (!collision || this._pickerLookup[i].layeredView)
-					collision = this._pickerLookup[i].getViewCollision(this._stage.screenX, this._stage.screenY, false, collision);
+					collision = this._pickerLookup[i].getViewCollision(this._stage.screenX,
+						this._stage.screenY, false, collision);
 		}
 
 		//if theres nothing to update, return
@@ -314,7 +315,8 @@ export class MouseManager {
 				if (!this._eventBubbling)
 					this._stage.dispatchEvent(event);
 
-				// todo: at this point the object under the mouse might have been changed, so we need to recheck the collision
+				// @todo: at this point the object under the mouse might have been changed,
+				// so we need to recheck the collision ?
 
 				// on Touch dispatch mouseOver Command
 				if (this._isTouch)
@@ -330,7 +332,8 @@ export class MouseManager {
 
 				//  in FP6, a mouseclick on non focus-able object still steal the focus
 				//  in newer FP they only steal the focus if the the new hit is focusable
-				if (this._allowFocusOnUnfocusable || (this._mouseDragCollision && this._mouseDragCollision.pickerEntity.tabEnabled)) {
+				if (this._allowFocusOnUnfocusable || (this._mouseDragCollision
+					&& this._mouseDragCollision.pickerEntity.tabEnabled)) {
 					if (this._currentFocusEntity)
 						this._currentFocusEntity.setFocus(false, true);
 
@@ -349,24 +352,30 @@ export class MouseManager {
 				if (!this._eventBubbling)
 					this._stage.dispatchEvent(event);
 
-				// todo: at this point the object under the mouse might have been changed, so we need to recheck the collision
+				// @todo: at this point the object under the mouse might have been changed,
+				// so we need to recheck the collision ?
 
 				let upEntity: IPartitionEntity = null;
 				let upPickerEntity: IPickingEntity = null;
 				if (this._isAVM1Dragging && this._mouseDragCollision) {
-					// avm1dragging is in process, dispatch the mouse-up on this._mouseDragEntity instead of the current collision
+					// avm1dragging is in process, dispatch the mouse-up on this.
+					// mouseDragEntity instead of the current collision
 					upPickerEntity = this._mouseDragCollision.pickerEntity;
 					upEntity = this._mouseDragCollision.entity;
-				} else if (this._mouseDragging && this._mouseDragCollision && this._mouseDragCollision.pickerEntity != dispatcher) {
-					// no avm1dragging is in process, but current collision is not the same as collision that appeared on mouse-down,
+				} else if (this._mouseDragging && this._mouseDragCollision
+					&& this._mouseDragCollision.pickerEntity != dispatcher) {
+					// no avm1dragging is in process, but current collision
+					// is not the same as collision that appeared on mouse-down,
 					// need to dispatch a MOUSE_UP_OUTSIDE on _mouseDragEntity
 					if ((<any> this._mouseDragCollision.pickerEntity).buttonEnabled)
 						this.setupAndDispatchEvent(this._mouseOut, event, this._mouseDragCollision);
 					if (!this._eventBubbling) {
 						this.setupAndDispatchEvent(this._mouseUpOutside, event, this._mouseDragCollision);
 					}
-				} else if (this._mouseDragging && this._mouseDragCollision && this._mouseDragCollision.pickerEntity == dispatcher) {
-					// no avm1dragging is in process, but current collision is not the same as collision that appeared on mouse-down,
+				} else if (this._mouseDragging && this._mouseDragCollision
+					&& this._mouseDragCollision.pickerEntity == dispatcher) {
+					// no avm1dragging is in process,
+					// but current collision is not the same as collision that appeared on mouse-down,
 					// need to dispatch a MOUSE_UP_OUTSIDE on _mouseDragEntity
 					upPickerEntity = this._mouseDragCollision.pickerEntity;
 					upEntity = this._mouseDragCollision.entity;
@@ -399,7 +408,7 @@ export class MouseManager {
 					this._stage.dispatchEvent(event);
 				} else {
 					if (event.pickerEntity)
-                    	this.dispatchEvent(event, event.pickerEntity);
+						this.dispatchEvent(event, event.pickerEntity);
 					else
 						this._stage.dispatchEvent(event);
 
@@ -425,14 +434,16 @@ export class MouseManager {
 
 			//  If colliding object has changed, queue OVER and OUT events.
 			//  If the mouse is dragged (mouse-down is hold), use DRAG_OVER and DRAG_OUT instead of MOUSE_OVER MOUSE_OUT
-			//  DRAG_OVER and DRAG_OUT are only dispatched on the object that was hit on the mouse-down (_mouseDragEntity)
+			//  DRAG_OVER and DRAG_OUT are only dispatched on the object that was hit on the mouse-down
+			// (_mouseDragEntity)
 
 			//  Store the info if the collision is a enabled Button (_collisionIsEnabledButton)
 
 			if (prevCollisionEntity) {
 				if (!this._isTouch && !this._mouseDragging)
 					this.setupAndDispatchEvent(this._mouseOut, this._mouseMoveEvent, this._prevCollision);
-				else if (this._mouseDragging && this._mouseDragCollision && this._mouseDragCollision.pickerEntity == prevCollisionEntity)
+				else if (this._mouseDragging && this._mouseDragCollision
+					&& this._mouseDragCollision.pickerEntity == prevCollisionEntity)
 					this.setupAndDispatchEvent(this._dragOut, this._mouseMoveEvent, this._prevCollision);
 			}
 
@@ -466,7 +477,8 @@ export class MouseManager {
 					}
 				}
 				if (commonAncestor != prevCollisionEntity)
-					this.setupAndDispatchEvent(this._rollOut, this._mouseMoveEvent, this._prevCollision, commonAncestor);
+					this.setupAndDispatchEvent(this._rollOut, this._mouseMoveEvent,
+						this._prevCollision, commonAncestor);
 
 				if (commonAncestor != collisionEntity)
 					this.setupAndDispatchEvent(this._rollOver, this._mouseMoveEvent, collision, commonAncestor);
@@ -478,14 +490,16 @@ export class MouseManager {
 			if (collisionEntity) {
 				if (!this._isTouch && !this._mouseDragging)
 					this.setupAndDispatchEvent(this._mouseOver, this._mouseMoveEvent, collision);
-				else if (this._mouseDragging && this._mouseDragCollision && this._mouseDragCollision.pickerEntity == collisionEntity)
+				else if (this._mouseDragging && this._mouseDragCollision &&
+					this._mouseDragCollision.pickerEntity == collisionEntity)
 					this.setupAndDispatchEvent(this._dragOver, this._mouseMoveEvent, collision);
 			}
 
 			this._prevCollision = collision;
 		} else {
 			//  colliding object has not changed
-			//  Check if we need to send any MOUSE_OVER/DRAG_OVER event to handle the case when a Button has become active while under the mouse.
+			//  Check if we need to send any MOUSE_OVER/DRAG_OVER event to handle the case
+			//  when a Button has become active while under the mouse.
 			const isActiveButton = collisionEntity ? (<any> collisionEntity).buttonEnabled : false;
 
 			if (this._collisionIsEnabledButton != isActiveButton && isActiveButton) {
@@ -500,7 +514,8 @@ export class MouseManager {
 
 		// set cursor if not dragging mouse
 		if (!this._mouseDragging)
-			document.body.style.cursor = this._showCursor ? (collisionEntity ? collisionEntity.getMouseCursor() : 'initial') : 'none';
+			document.body.style.cursor =
+				this._showCursor ? (collisionEntity ? collisionEntity.getMouseCursor() : 'initial') : 'none';
 
 		this._updateDirty = false;
 	}
@@ -551,7 +566,7 @@ export class MouseManager {
 		if ((touchtype != 1) && (touchtype != 6) && (touchtype != 12) && (touchtype != 262) && (touchtype != 518)) {
 			// if this is not a UP command, we add all touches
 			for (i = 0; i < numTouches; i++) {
-				var newTouch: any = {};
+				const newTouch: any = {};
 				newTouch.identifier = messageScene[cnt++];
 				newTouch.clientX = messageScene[cnt++];
 				newTouch.clientY = messageScene[cnt++];
@@ -565,7 +580,7 @@ export class MouseManager {
 			// if this is a UP command, we add all touches, except the active one
 			if (numTouches == 1) {
 
-				var newTouch: any = {};
+				const newTouch: any = {};
 				newTouch.identifier = messageScene[cnt++];
 				newTouch.clientX = messageScene[cnt++];
 				newTouch.clientY = messageScene[cnt++];
@@ -575,7 +590,7 @@ export class MouseManager {
 				y = newTouchEvent.clientY;
 			} else {
 				for (i = 0; i < numTouches; i++) {
-					var newTouch: any = {};
+					const newTouch: any = {};
 					newTouch.identifier = messageScene[cnt++];
 					newTouch.clientX = messageScene[cnt++];
 					newTouch.clientY = messageScene[cnt++];
@@ -613,7 +628,8 @@ export class MouseManager {
 		 */
 		if ((touchtype == 0) || (touchtype == 5) || (touchtype == 11) || (touchtype == 261) || (touchtype == 517)) {
 			this.onMouseDown(newTouchEvent);
-		} else if ((touchtype == 1) || (touchtype == 6) || (touchtype == 12) || (touchtype == 262) || (touchtype == 518)) {
+		} else if ((touchtype == 1) || (touchtype == 6)
+				|| (touchtype == 12) || (touchtype == 262) || (touchtype == 518)) {
 			this.onMouseUp(newTouchEvent);
 		} else if (touchtype == 2) {
 			this.onMouseMove(newTouchEvent);
@@ -639,7 +655,7 @@ export class MouseManager {
 		newTouchEvent.changedTouches = [];
 		if ((touchtype != 1) && (touchtype != 6)) {
 			for (i = 0; i < numTouches; i++) {
-				var newTouch: any = {};
+				const newTouch: any = {};
 				newTouch.identifier = touchesFromMessage[cnt++];
 				newTouch.clientX = touchesFromMessage[cnt++];
 				newTouch.clientY = touchesFromMessage[cnt++];
@@ -650,7 +666,7 @@ export class MouseManager {
 		} else {
 			for (i = 0; i < numTouches; i++) {
 				if (i != activeTouch) {
-					var newTouch: any = {};
+					const newTouch: any = {};
 					newTouch.identifier = touchesFromMessage[cnt++];
 					newTouch.clientX = touchesFromMessage[cnt++];
 					newTouch.clientY = touchesFromMessage[cnt++];
@@ -682,7 +698,8 @@ export class MouseManager {
 	// ---------------------------------------------------------------------
 	// Private.
 	// ---------------------------------------------------------------------
-	private setUpEvent(event: MouseEvent, collision: PickingCollision, commonAncestor: IPickingEntity = null): MouseEvent {
+	private setUpEvent(event: MouseEvent,
+		collision: PickingCollision, commonAncestor: IPickingEntity = null): MouseEvent {
 		event._iAllowedToImmediatlyPropagate = true;
 		event._iAllowedToPropagate = true;
 		// 2D properties.

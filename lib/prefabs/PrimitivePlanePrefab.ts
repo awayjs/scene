@@ -24,7 +24,9 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase {
 	 * @param yUp Defines whether the normal vector of the plane should point along the Y-axis (true) or Z-axis (false).
 	 * @param doubleSided Defines whether the plane will be visible from both sides, with correct vertex normals.
 	 */
-	constructor(material: IMaterial = null, elementsType: string = 'triangle', width: number = 100, height: number = 100, segmentsW: number = 1, segmentsH: number = 1, yUp: boolean = true, doubleSided: boolean = false) {
+	constructor(material: IMaterial = null,
+		elementsType: string = 'triangle', width: number = 100, height: number = 100,
+		segmentsW: number = 1, segmentsH: number = 1, yUp: boolean = true, doubleSided: boolean = false) {
 
 		super(material, elementsType);
 
@@ -71,7 +73,8 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase {
 	}
 
 	/**
-	 *  Defines whether the normal vector of the plane should point along the Y-axis (true) or Z-axis (false). Defaults to true.
+	 *  Defines whether the normal vector of the plane should point along the Y-axis (true) or Z-axis (false).
+	 * Defaults to true.
 	 */
 	public get yUp(): boolean {
 		return this._yUp;
@@ -84,7 +87,9 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase {
 	}
 
 	/**
-	 * Defines whether the plane will be visible from both sides, with correct vertex normals (as opposed to bothSides on Material). Defaults to false.
+	 * Defines whether the plane will be visible from both sides,
+	 * with correct vertex normals (as opposed to bothSides on Material).
+	 * Defaults to false.
 	 */
 	public get doubleSided(): boolean {
 		return this._doubleSided;
@@ -143,7 +148,7 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase {
 			const triangleGraphics: TriangleElements = <TriangleElements> target;
 
 			let numVertices: number = (this._segmentsH + 1) * tw;
-			var positions: ArrayBufferView;
+			let positions: ArrayBufferView;
 			let normals: Float32Array;
 			let tangents: Float32Array;
 
@@ -260,7 +265,7 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase {
 			const lineGraphics: LineElements = <LineElements> target;
 
 			const numSegments: number = (this._segmentsH + 1) + tw;
-			var positions: ArrayBufferView;
+			let positions: ArrayBufferView;
 			let thickness: Float32Array;
 
 			const hw: number = this._width / 2;

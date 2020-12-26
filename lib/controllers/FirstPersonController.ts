@@ -135,7 +135,9 @@ export class FirstPersonController extends ControllerBase {
 	/**
 	 * Creates a new <code>HoverController</code> object.
 	 */
-	constructor(targetObject: DisplayObject = null, panAngle: number = 0, tiltAngle: number = 90, minTiltAngle: number = -90, maxTiltAngle: number = 90, steps: number = 8, wrapPanAngle: boolean = false) {
+	constructor(targetObject: DisplayObject = null, panAngle: number = 0,
+		tiltAngle: number = 90, minTiltAngle: number = -90, maxTiltAngle: number = 90,
+		steps: number = 8, wrapPanAngle: boolean = false) {
 		super(targetObject);
 
 		this.panAngle = panAngle;
@@ -153,7 +155,8 @@ export class FirstPersonController extends ControllerBase {
 	/**
 	 * Updates the current tilt angle and pan angle values.
 	 *
-	 * Values are calculated using the defined <code>tiltAngle</code>, <code>panAngle</code> and <code>steps</code> variables.
+	 * Values are calculated using the defined <code>tiltAngle</code>,
+	 * <code>panAngle</code> and <code>steps</code> variables.
 	 *
 	 * @param interpolate   If the update to a target pan- or tiltAngle is interpolated. Default is true.
 	 *
@@ -191,7 +194,8 @@ export class FirstPersonController extends ControllerBase {
 			}
 
 			//snap coords if angle differences are close
-			if ((Math.abs(this.tiltAngle - this._iCurrentTiltAngle) < 0.01) && (Math.abs(this._panAngle - this._iCurrentPanAngle) < 0.01)) {
+			if ((Math.abs(this.tiltAngle - this._iCurrentTiltAngle) < 0.01) &&
+				(Math.abs(this._panAngle - this._iCurrentPanAngle) < 0.01)) {
 				this._iCurrentTiltAngle = this._tiltAngle;
 				this._iCurrentPanAngle = this._panAngle;
 			}

@@ -8,7 +8,8 @@ import { HoverController } from '../controllers/HoverController';
  * @see    away3d.containers.View3D
  */
 export class FollowController extends HoverController {
-	constructor(targetObject: DisplayObject = null, lookAtObject: DisplayObject = null, tiltAngle: number = 45, distance: number = 700) {
+	constructor(targetObject: DisplayObject = null, lookAtObject: DisplayObject = null,
+		tiltAngle: number = 45, distance: number = 700) {
 		super(targetObject, lookAtObject, 0, tiltAngle, distance);
 	}
 

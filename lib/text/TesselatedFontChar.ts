@@ -1,5 +1,5 @@
 import { AttributesBuffer } from '@awayjs/stage';
-import { GraphicsPath, GraphicsFactoryFills } from '@awayjs/graphics';
+import { GraphicsPath } from '@awayjs/graphics';
 import { Rectangle } from '@awayjs/core';
 
 /**
@@ -57,7 +57,11 @@ export class TesselatedFontChar {
 	 */
 	public kerningValues: Array<number>=[];
 
-	constructor(fill_data: AttributesBuffer = null, stroke_data: AttributesBuffer = null, fill_data_path: GraphicsPath = null) {
+	constructor(
+		fill_data: AttributesBuffer = null,
+		stroke_data: AttributesBuffer = null,
+		fill_data_path: GraphicsPath = null) {
+
 		this.fill_data = fill_data;
 		this.stroke_data = stroke_data;
 		this.fill_data_path = fill_data_path;
