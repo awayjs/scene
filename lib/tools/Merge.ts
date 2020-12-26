@@ -20,11 +20,16 @@ export class Merge {
 	private _toDispose: Array<Sprite>;
 
 	/**
-	 * @param    keepMaterial    [optional]    Determines if the merged object uses the recevier sprite material information or keeps its source material(s). Defaults to false.
-	 * If false and receiver object has multiple materials, the last material found in receiver subsprites is applied to the merged subsprite(es).
-	 * @param    disposeSources  [optional]    Determines if the sprite and geometry source(s) used for the merging are disposed. Defaults to false.
+	 * @param    keepMaterial    [optional]
+	 * Determines if the merged object uses the recevier sprite material information or keeps its source material(s).
+	 * Defaults to false.
+	 * If false and receiver object has multiple materials,
+	 * the last material found in receiver subsprites is applied to the merged subsprite(es).
+	 * @param    disposeSources  [optional]
+	 * Determines if the sprite and geometry source(s) used for the merging are disposed. Defaults to false.
 	 * If true, only receiver geometry and resulting sprite are kept in  memory.
-	 * @param    objectSpace     [optional]    Determines if source sprite(es) is/are merged using objectSpace or worldspace. Defaults to false.
+	 * @param    objectSpace     [optional]
+	 * Determines if source sprite(es) is/are merged using objectSpace or worldspace. Defaults to false.
 	 */
 	constructor(keepMaterial: boolean = false, disposeSources: boolean = false, objectSpace: boolean = false) {
 		this._keepMaterial = keepMaterial;
@@ -66,7 +71,8 @@ export class Merge {
 	}
 
 	/**
-	 * Merges all the children of a container into a single Sprite. If no Sprite object is found, method returns the receiver without modification.
+	 * Merges all the children of a container into a single Sprite.
+	 * If no Sprite object is found, method returns the receiver without modification.
 	 *
 	 * @param    receiver           The Sprite to receive the merged contents of the container.
 	 * @param    objectContainer    The DisplayObjectContainer holding the sprites to be mergd.
@@ -111,7 +117,9 @@ export class Merge {
 	}
 
 	/**
-	 *  Merges 2 sprites into one. It is recommand to use apply when 2 sprites are to be merged. If more need to be merged, use either applyToSprites or applyToContainer methods.
+	 *  Merges 2 sprites into one.
+	 * It is recommand to use apply when 2 sprites are to be merged.
+	 * If more need to be merged, use either applyToSprites or applyToContainer methods.
 	 *
 	 * @param    receiver    The Sprite to receive the merged contents of both sprites.
 	 * @param    sprite        The Sprite to be merged with the receiver sprite
@@ -135,17 +143,9 @@ export class Merge {
 	}
 
 	private merge(destSprite: Sprite, dispose: boolean): void {
-		var i: number;
-		//var oldGraphics:Graphics;
-		let destGraphics: Graphics;
-		let useSubMaterials: boolean;
-
-		//oldGraphics = destSprite.graphics.clone();
-		destGraphics = destSprite.graphics;
-
-		// Only apply materials directly to sub-sprites if necessary,
-		// i.e. if there is more than one material available.
-		useSubMaterials = (this._shapeVOs.length > 1);
+		let i: number;
+		const destGraphics: Graphics = destSprite.graphics;
+		const useSubMaterials: boolean = (this._shapeVOs.length > 1);
 
 		for (i = 0; i < this._shapeVOs.length; i++) {
 			const elements: TriangleElements = new TriangleElements(new AttributesBuffer());
@@ -170,7 +170,7 @@ export class Merge {
 
 		if (dispose) {
 			const len: number = this._toDispose.length;
-			for (var i: number; i < len; i++)
+			for (i; i < len; i++)
 				this._toDispose[i].dispose();
 		}
 
@@ -181,34 +181,27 @@ export class Merge {
 		let subIdx: number;
 		let calc: number;
 		for (subIdx = 0; subIdx < sprite.graphics.count; subIdx++) {
-			var i: number;
-			var len: number;
-			var iIdx: number, vIdx: number, nIdx: number, tIdx: number, uIdx: number;
-			var indexOffset: number;
-			var elements: TriangleElements;
-			var vo: ShapeVO;
-			var vertices: Array<number>;
-			var normals: Array<number>;
-			var tangents: Array<number>;
-			var ind: Uint16Array;
+			let i: number;
+			let len: number;
+			let iIdx: number, vIdx: number, nIdx: number, tIdx: number;
 
-			elements = <TriangleElements> sprite.graphics.getShapeAt(subIdx).elements;
+			const elements: TriangleElements = <TriangleElements> sprite.graphics.getShapeAt(subIdx).elements;
 
 			// Get (or create) a VO for this material
-			vo = this.getShapeData(sprite.graphics.getShapeAt(subIdx).material);
+			const vo: ShapeVO = this.getShapeData(sprite.graphics.getShapeAt(subIdx).material);
 
 			// Vertices and normals are copied to temporary vectors, to be transformed
 			// before concatenated onto those of the data. This is unnecessary if no
 			// transformation will be performed, i.e. for object space merging.
-			vertices = (this._objectSpace) ? vo.vertices : new Array<number>();
-			normals = (this._objectSpace) ? vo.normals : new Array<number>();
-			tangents = (this._objectSpace) ? vo.tangents : new Array<number>();
+			const vertices: number[] = (this._objectSpace) ? vo.vertices : [];
+			const normals: number[] = (this._objectSpace) ? vo.normals : [];
+			const tangents: number[] = (this._objectSpace) ? vo.tangents : [];
 
 			// Copy over vertex attributes
 			vIdx = vertices.length;
 			nIdx = normals.length;
 			tIdx = tangents.length;
-			uIdx = vo.uvs.length;
+			const uIdx = vo.uvs.length;
 
 			this.copyAttributes(elements.positions, vertices, elements.numVertices, vIdx);
 			this.copyAttributes(elements.normals, normals, elements.numVertices, nIdx);
@@ -216,10 +209,10 @@ export class Merge {
 			this.copyAttributes(elements.uvs, vo.uvs, elements.numVertices, uIdx);
 
 			// Copy over triangle indices
-			indexOffset = (!this._objectSpace) ? vo.vertices.length / 3 : 0;
+			const indexOffset: number = (!this._objectSpace) ? vo.vertices.length / 3 : 0;
 			iIdx = vo.indices.length;
 			len = elements.numElements;
-			ind = elements.indices.get(len);
+			const ind: Uint16Array = elements.indices.get(len);
 			for (i = 0; i < len; i++) {
 				calc = i * 3;
 				vo.indices[iIdx++] = ind[calc] + indexOffset;
@@ -265,9 +258,7 @@ export class Merge {
 
 		if (this._keepMaterial) {
 			let i: number;
-			let len: number;
-
-			len = this._shapeVOs.length;
+			const len = this._shapeVOs.length;
 			for (i = 0; i < len; i++) {
 				if (this._shapeVOs[i].material == material) {
 					data = this._shapeVOs[i];

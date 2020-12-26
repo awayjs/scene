@@ -57,8 +57,7 @@ export class Cast {
 		return true;
 	}
 
-	public static tryColor(data: any): number /*uint*/
-	{
+	public static tryColor(data: any): number /*uint*/ {
 		if (typeof (data) == 'number' /*uint*/)
 			return Math.floor(<number> data);
 
@@ -221,8 +220,7 @@ export class Cast {
 		return null;
 	}
 
-	public static color(data: any): number /*uint*/
-	{
+	public static color(data: any): number /*uint*/ {
 		const result: number /*uint*/ = this.tryColor(data);
 
 		if (result == null)
@@ -245,6 +243,7 @@ export class Cast {
 			this._classes[name] = result;
 			return result;
 		} catch (e /*ReferenceError*/) {
+			// @todo
 		}
 
 		this._notClasses[name] = true;
@@ -298,6 +297,7 @@ export class Cast {
 			const bmd: Image2D = Cast.image2D(data);
 			return new ImageTexture2D(bmd);
 		} catch (e /*CastError*/) {
+			// @todo
 		}
 
 		throw new CastError('Can\'t cast to ImageTexture2D: ' + data);

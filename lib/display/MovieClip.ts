@@ -8,7 +8,6 @@ import { FrameScriptManager } from '../managers/FrameScriptManager';
 import { DisplayObject } from './DisplayObject';
 import { Sprite } from './Sprite';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
-import { LoaderContainer } from './LoaderContainer';
 
 export class MovieClip extends Sprite {
 	public static mcForConstructor: MovieClip;
@@ -310,7 +309,8 @@ export class MovieClip extends Sprite {
 			for (var key in this._potentialInstances) {
 				if (this._potentialInstances[key] != null) {
 					if (this._potentialInstances[key].isAsset(TextField)) {
-						(<TextField>this._potentialInstances[key]).text = (<TextField>this.timeline.getPotentialChildPrototype(parseInt(key))).text;
+						(<TextField>this._potentialInstances[key]).text =
+							(<TextField>this.timeline.getPotentialChildPrototype(parseInt(key))).text;
 					}
 					else if (this._potentialInstances[key].isAsset(MovieClip))
 						(<MovieClip>this._potentialInstances[key]).reset_textclones();
@@ -502,7 +502,8 @@ export class MovieClip extends Sprite {
 	}
 
 	// should only be called from timeline when navigating frames
-	public constructFrame(timeline: Timeline, start_construct_idx: number, target_keyframe_idx: number, jump_forward: boolean,
+	public constructFrame(timeline: Timeline, start_construct_idx: number,
+		target_keyframe_idx: number, jump_forward: boolean,
 		frame_idx: number, queue_pass2: boolean, queue_script: boolean) {
 		console.warn('[scene/MovieClip] - constructFrame not implemented');
 	}

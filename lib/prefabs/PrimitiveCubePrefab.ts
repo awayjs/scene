@@ -157,23 +157,24 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase {
 		let i: number, j: number, inc: number = 0;
 
 		let vidx: number, fidx: number; // indices
-		let hw: number, hh: number, hd: number; // halves
 		let dw: number, dh: number, dd: number; // deltas
 
 		let outer_pos: number;
 
 		// half cube dimensions
-		hw = this._width / 2;
-		hh = this._height / 2;
-		hd = this._depth / 2;
+		const hw: number = this._width / 2;
+		const hh: number = this._height / 2;
+		const hd: number = this._depth / 2;
 
 		if (elementsType == ElementsType.TRIANGLE) {
 
 			const triangleGraphics: TriangleElements = <TriangleElements> target;
 
-			const numVertices: number = ((this._segmentsW + 1) * (this._segmentsH + 1) + (this._segmentsW + 1) * (this._segmentsD + 1) + (this._segmentsH + 1) * (this._segmentsD + 1)) * 2;
+			const numVertices: number = ((this._segmentsW + 1) * (this._segmentsH + 1) +
+				(this._segmentsW + 1) * (this._segmentsD + 1) + (this._segmentsH + 1) * (this._segmentsD + 1)) * 2;
 
-			const numIndices: number = ((this._segmentsW * this._segmentsH + this._segmentsW * this._segmentsD + this._segmentsH * this._segmentsD) * 12);
+			const numIndices: number = ((this._segmentsW * this._segmentsH +
+				this._segmentsW * this._segmentsD + this._segmentsH * this._segmentsD) * 12);
 
 			if (numVertices == triangleGraphics.numVertices && triangleGraphics.indices != null) {
 				triangleGraphics.invalidateIndices();
@@ -360,10 +361,9 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase {
 			const lineGraphics: LineElements = <LineElements> target;
 
 			const numSegments: number = this._segmentsH * 4 +  this._segmentsW * 4 + this._segmentsD * 4;
-			let thickness: Float32Array;
 
 			positions = new Float32Array(numSegments * 6);
-			thickness = new Float32Array(numSegments);
+			const thickness: Float32Array = new Float32Array(numSegments);
 
 			vidx = 0;
 
@@ -527,7 +527,8 @@ export class PrimitiveCubePrefab extends PrimitivePrefabBase {
 
 		if (elementsType == ElementsType.TRIANGLE) {
 
-			numVertices = ((this._segmentsW + 1) * (this._segmentsH + 1) + (this._segmentsW + 1) * (this._segmentsD + 1) + (this._segmentsH + 1) * (this._segmentsD + 1)) * 2;
+			numVertices = ((this._segmentsW + 1) * (this._segmentsH + 1) +
+				(this._segmentsW + 1) * (this._segmentsD + 1) + (this._segmentsH + 1) * (this._segmentsD + 1)) * 2;
 
 			const triangleGraphics: TriangleElements = <TriangleElements> target;
 

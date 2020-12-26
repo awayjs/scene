@@ -148,9 +148,6 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase {
 			const triangleGraphics: TriangleElements = <TriangleElements> target;
 
 			let numVertices: number = (this._segmentsH + 1) * tw;
-			let positions: ArrayBufferView;
-			let normals: Float32Array;
-			let tangents: Float32Array;
 
 			if (this._doubleSided)
 				numVertices *= 2;
@@ -182,9 +179,9 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase {
 				this._pInvalidateUVs();
 			}
 
-			positions = triangleGraphics.positions.get(numVertices);
-			normals = triangleGraphics.normals.get(numVertices);
-			tangents = triangleGraphics.tangents.get(numVertices);
+			const positions: ArrayBufferView = triangleGraphics.positions.get(numVertices);
+			const normals: Float32Array = triangleGraphics.normals.get(numVertices);
+			const tangents: Float32Array = triangleGraphics.tangents.get(numVertices);
 			stride = triangleGraphics.concatenatedBuffer.stride / 4;
 
 			fidx = 0;
@@ -265,14 +262,12 @@ export class PrimitivePlanePrefab extends PrimitivePrefabBase {
 			const lineGraphics: LineElements = <LineElements> target;
 
 			const numSegments: number = (this._segmentsH + 1) + tw;
-			let positions: ArrayBufferView;
-			let thickness: Float32Array;
 
 			const hw: number = this._width / 2;
 			const hh: number = this._height / 2;
 
-			positions = new Float32Array(numSegments * 6);
-			thickness = new Float32Array(numSegments);
+			const positions: ArrayBufferView = new Float32Array(numSegments * 6);
+			const thickness: Float32Array = new Float32Array(numSegments);
 
 			fidx = 0;
 
