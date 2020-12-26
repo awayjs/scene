@@ -39,8 +39,10 @@ export class HTMLTextProcessor {
 
 		input = input.replace(new RegExp('& ', 'g'), '&amp; ');
 
-		// 	some preprocessing to make sure that html-tags are closing
-		// 	todo: this can probably be done better
+		// some preprocessing to make sure that html-tags are closing
+		// to some degree FP seem to auto-close tags, so we need to do the same
+		// (ugly code follows)
+		// 	@todo: this can probably be done better
 		let cnt = 0;
 		const openTags: any[] = [];
 		const insertAt: number[] = [];
@@ -231,24 +233,9 @@ export class HTMLTextProcessor {
 			}
 		}
 
-		//console.log("html fixed",  input);
-		const textProps: any = {
-			text:''
-			/*size:this.textFormat.size,
-			color:this.textFormat.color,
-			indent:this.le,
-			leftMargin:symbol.tag.leftMargin/20,
-			rightMargin:symbol.tag.rightMargin/20,
-			variableName:symbol.tag.variableName,
-			align:symbol.tag.align,
-			multiline:false*/
-		};
+		const textProps: any = { text:'' };
 
-		target_tf._textFormat.italic = false;
-		target_tf._textFormat.bold = false;
-		//target_tf._textFormat.align=TextFormatAlign.LEFT;
 		target_tf._textFormats = [target_tf._textFormat];
-		//target_tf._textFormat.size=16;
 		target_tf._textFormatsIdx = [0];
 		const doc = parse(input);
 		if (doc && doc.firstChild) {
@@ -268,17 +255,17 @@ export class HTMLTextProcessor {
 			&& textProps.text[textProps.text.length - 2] == '\\')) {
 			textProps.text = textProps.text.slice(0, textProps.text.length - 2);
 		}
-		target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] =
-			textProps.text.replace(/(\r\n|\n|\\n|\r)/gm,'').length;
+		target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] = textProps.text.length;
 		return textProps.text;
 	}
 
 	private readHTMLTextPropertiesRecursive(target_tf: TextField, myChild, textProps: any, currentFormat: TextFormat) {
 
-		//console.log("textfied content xml node:",myChild);
-		//console.log(myChild.tagName);
 		const newProps_values: any[] = [];
 		const newProps_names: string[] = [];
+
+		// step 1 : collect the textformat-properties provided by this child.attributes
+
 		if (myChild.attributes) {
 			if ((<any>myChild.attributes).size || (<any>myChild.attributes).SIZE) {
 				let value = (<any>myChild.attributes).size ?
@@ -328,8 +315,37 @@ export class HTMLTextProcessor {
 				newProps_names[newProps_names.length] = 'font';
 			}
 		}
-		let i = newProps_values.length;
+
+		// step2: collect the textformat-properties provided by this child.tagName
+
+		if (myChild.tagName == 'b' || myChild.rawTagName == 'b') {
+			if (!currentFormat.bold) {
+				newProps_values[newProps_values.length] = true;
+				newProps_names[newProps_names.length] = 'bold';
+			}
+		} else if (myChild.tagName == 'i' || myChild.rawTagName == 'i') {
+			if (!currentFormat.italic) {
+				newProps_values[newProps_values.length] = true;
+				newProps_names[newProps_names.length] = 'italic';
+			}
+		} else if (myChild.tagName == 'u' || myChild.rawTagName == 'u') {
+			if (!currentFormat.underline) {
+				newProps_values[newProps_values.length] = true;
+				newProps_names[newProps_names.length] = 'underline';
+			}
+		} else if (myChild.tagName == 'font' || myChild.rawTagName == 'font') {
+			// @todo - is this one even executing in any case ? (we already support "face" attribute)
+		} else if (myChild.tagName == 'li' || myChild.rawTagName == 'li') {
+			textProps.text += '    ●    ';
+		} else if ((myChild.tagName == 'br' || myChild.rawTagName == 'br') && target_tf.multiline) {
+			textProps.text += '\n';
+		}
+
+		// step 3 : compare new properties against properties of current Textformat
+		// decide if we need to add a new (merged) TextFormat
+
 		let cloneFormat = false;
+		let i = newProps_values.length;
 		while (i > 0) {
 			i--;
 			if (currentFormat[newProps_names[i]] != newProps_values[i]) {
@@ -337,93 +353,44 @@ export class HTMLTextProcessor {
 				break;
 			}
 		}
-		/*if(target_tf._textFormats[target_tf._textFormats.length-1]!=currentFormat){
-			target_tf._textFormats.push(currentFormat);
-			target_tf._textFormatsIdx.push(textProps.text.length);
-
-		}*/
-
-		// check if this is a paragraph. if it is, we want to add a linebreak in case there is text already present
-		// we also check if there is already a linebreak in the text, and do not add another if there is
-		/*
-		if (myChild.tagName == 'p') {
-			if(textProps.text!="" && !(textProps.text.length>2 && textProps.text[textProps.text.length-1]=="n"
-				&& textProps.text[textProps.text.length-2]=="\\")){
-
-				textProps.text+="\\n";
-			}
-		}
-		*/
-		if (myChild.tagName == 'b') {
-			if (!currentFormat.bold) {
-				cloneFormat = true;
-				newProps_values[newProps_values.length] = true;
-				newProps_names[newProps_names.length] = 'bold';
-			}
-		} else if (myChild.tagName == 'i') {
-			if (!currentFormat.italic) {
-				cloneFormat = true;
-				newProps_values[newProps_values.length] = true;
-				newProps_names[newProps_names.length] = 'italic';
-			}
-		} else if (myChild.tagName == 'u') {
-			if (!currentFormat.underline) {
-				cloneFormat = true;
-				newProps_values[newProps_values.length] = true;
-				newProps_names[newProps_names.length] = 'underline';
-			}
-		} else if (myChild.tagName == 'font') {
-			// todo
-			cloneFormat = true;
-		} else if (myChild.tagName == 'li') {
-		/*	if(textProps.text!="" && !(textProps.text.length>2 && textProps.text[textProps.text.length-1]=="n"
-			&& textProps.text[textProps.text.length-2]=="\\")){
-				textProps.text+="\\n";
-			}*/
-			textProps.text += '    ●    ';
-		} else if (myChild.tagName == 'br' && target_tf.multiline) {
-			textProps.text += '\n';
-		}
 
 		let childFormat: TextFormat = currentFormat;
 		if (cloneFormat) {
-			childFormat = currentFormat.clone();//(FontStyleName.BOLD);
+			childFormat = currentFormat.clone();
 			i = newProps_values.length;
 			while (i > 0) {
 				i--;
 				childFormat[newProps_names[i]] = newProps_values[i];
 			}
 			target_tf._textFormats.push(childFormat);
-			target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] =
-				textProps.text.replace(/(\r\n|\n|\\n|\r)/gm,'').length;
-			target_tf._textFormatsIdx.push(textProps.text.replace(/(\r\n|\n|\\n|\r)/gm,'').length);
+			target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] = textProps.text.length;
+			target_tf._textFormatsIdx.push(textProps.text.length);
 		}
 
-		// if the node has children, we just traverse children, and do not consider adding the nodeValue as text
-		// todo: double check if above behavior is true for html text
 		if (myChild.childNodes && myChild.childNodes.length > 0) {
+			// this is a container node
+			// for container nodes, we traverse children, but do not add any text for the parent node
+			// @todo: double check if above behavior is true for html text
 			for (let k = 0; k < myChild.childNodes.length;k++) {
 				if (target_tf._textFormats[target_tf._textFormats.length - 1] != childFormat) {
 
 					target_tf._textFormats.push(childFormat);
-					target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] =
-						textProps.text.replace(/(\r\n|\n|\\n|\r)/gm,'').length;
-					target_tf._textFormatsIdx.push(textProps.text.replace(/(\r\n|\n|\\n|\r)/gm,'').length);
+					target_tf._textFormatsIdx[target_tf._textFormatsIdx.length - 1] = textProps.text.length;
+					target_tf._textFormatsIdx.push(textProps.text.length);
 				}
 				this.readHTMLTextPropertiesRecursive(target_tf, myChild.childNodes[k], textProps, childFormat);
 			}
 		} else {
-			// if a nodes content contains only line-breaks or whitespace, flash seem to ignore it
+			// this is a content node - add the text to output
+			// if a nodes content contains only line-breaks or whitespace, FP seem to ignore it
 			const testContent: string = (<any>myChild).text.replace(/[\s\r\n]/gi, '');
 			if (testContent != '') {
 				textProps.text += (<any>myChild).text;
 			}
 		}
-		if (myChild.tagName == 'li' || myChild.tagName == 'p') {
-			//if(textProps.text!="" && !(textProps.text.length>=2 && textProps.text[textProps.text.length-1]=="n"
-			//&& textProps.text[textProps.text.length-2]=="\\")){
+		if (myChild.tagName == 'li' || myChild.tagName == 'p'
+			|| myChild.rawTagName == 'li' || myChild.rawTagName == 'p') {
 			textProps.text += '\n';
-			//}
 		}
 	}
 }
