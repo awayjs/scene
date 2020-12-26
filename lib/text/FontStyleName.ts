@@ -1,10 +1,7 @@
 
-export class FontStyleName {
-	public static STANDART: string = 'standart';
-
-	public static BOLD: string = 'bold';
-
-	public static ITALIC: string = 'italic';
-
-	public static BOLDITALIC: string = 'boldItalic';
+export enum FontStyleName {
+	STANDART = 'standart',
+	BOLD = 'bold',
+	ITALIC = 'italic',
+	BOLDITALIC = 'boldItalic'
 }
