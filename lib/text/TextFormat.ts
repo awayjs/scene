@@ -40,7 +40,7 @@ const PUBLIC_FIELDS = [
 	'size', 'color',
 	'bold', 'italic',
 	'underline', 'leading',
-	'letterSpacing', 'style_name', 'font_table'
+	'letterSpacing', 'font_table'
 ];
 
 export class TextFormat extends AssetBase {
@@ -52,6 +52,7 @@ export class TextFormat extends AssetBase {
 		return this._updateID;
 	}
 
+	private _textFormatDirty: boolean = false;
 	/**
      * return true if a certain property was set for this format.
      *
@@ -289,9 +290,7 @@ export class TextFormat extends AssetBase {
 		}
 
 		this._bold = value;
-		if (this._font) {
-			this.font_table = this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
-		}
+		this._textFormatDirty = true;
 
 	}
 
@@ -310,9 +309,7 @@ export class TextFormat extends AssetBase {
 		}
 
 		this._italic = value;
-		if (this._font) {
-			this.font_table = this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
-		}
+		this._textFormatDirty = true;
 	}
 
 	/**
@@ -346,35 +343,20 @@ export class TextFormat extends AssetBase {
 	 */
 	private _font_table: IFontTable;
 	public get font_table(): IFontTable {
-		if (!this._font_table) {
-			this.font_table = <TesselatedFontTable>
-				this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
+		if (!this._font_table || this._textFormatDirty) {
+			this.font; // getter makes sure a font exists !
+			this.update_font_table();
 		}
 		return this._font_table;
 	}
 
 	public set font_table(value: IFontTable) {
-		if (value !== this._font_table) {
-			this._updateID++;
-		}
-
+		// setting fonttable does not change bold / izalic
+		// font_table is only ever set in parser or when using label-data
+		// after using "bold" or "itaic" font_table should never be set directly
 		this._font_table = value;
-		this._style_name = this._font_table.name;
-		if (this._style_name == FontStyleName.ITALIC)
-			this._italic = true;
-		if (this._style_name == FontStyleName.BOLD)
-			this._bold = true;
-		if (this._style_name == FontStyleName.BOLDITALIC) {
-			this._bold = true;
-			this._italic = true;
-		}
-
+		this._textFormatDirty = false;
 	}
-
-	/**
-	 * The font-table that provides the subgeos for the chars
-	 */
-	public fallback_font_table: IFontTable;
 
 	/**
 	 * The material to use for texturing geometry generated for this text-format.
@@ -396,67 +378,31 @@ export class TextFormat extends AssetBase {
 	 */
 	private _font: Font;
 
-	private _style_name: FontStyleName;
-
 	public get font_name(): string {
 		return this.font?.fontName;
 	}
 
-	public set font_name(value: string) {
-		/*if (value !== this._font_name) {
-			this._updateID++;
-		}
-		this._setFontFromString(value);*/
-		//console.log("set from font name", value);
-		/*
-		const newFont = DefaultFontManager.getFont(value);
-		if (newFont) {
-			this._font = newFont;
-			this.font_table = <TesselatedFontTable>
-				newFont.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
-			if (!this.font_table) {
-				console.log('could not find font-table on font', value, this._font);
-			}
-			if ((<TesselatedFontTable> this.font_table).get_font_chars().length == 0) {
-				this.font_table = <TesselatedFontTable>
-					newFont.get_font_table(FontStyleName.STANDART, TesselatedFontTable.assetType);
-				if (!this.font_table) {
-					console.log('could not find font-table on font', value, this._font);
-				}
-			}
+	public update_font_table() {
 
-		} else {
-
-			console.log('could not find font for name ', value);
-		}*/
-	}
-
-	public get style_name(): FontStyleName {
-		if (!this._italic && !this._bold)
-			this._style_name = FontStyleName.STANDART;
-		else if (this._italic && !this._bold)
-			this._style_name = FontStyleName.ITALIC;
+		this._textFormatDirty = false;
+		let stylename = FontStyleName.STANDART;
+		if (this._italic && !this._bold)
+			stylename = FontStyleName.ITALIC;
 		else if (!this._italic && this._bold)
-			this._style_name = FontStyleName.BOLD;
+			stylename = FontStyleName.BOLD;
 		else if (this._italic && this._bold)
-			this._style_name = FontStyleName.BOLDITALIC;
-		return this._style_name;
-	}
+			stylename = FontStyleName.BOLDITALIC;
 
-	public set style_name(value: FontStyleName) {
-		if (value !== this._style_name) {
-			this._updateID++;
+		if (this._font) {
+			const newFontTable = this.font.get_font_table(stylename, TesselatedFontTable.assetType, null, true);
+			if (this._font_table && !newFontTable) {
+				// if we have a font-table, and we switch to invalid style,
+				// we just keep the existing font-table
+				return;
+			}
+			this._font_table = newFontTable ? newFontTable : Font.emptyFontTable;
+			return;
 		}
-
-		// @todo - what if "standart" passed? we should maybe clean this._bold, this._italic in this function on start?
-
-		this._style_name = value;
-		if (this._style_name == FontStyleName.BOLD || this._style_name == FontStyleName.BOLDITALIC)
-			this._bold = true;
-		if (this._style_name == FontStyleName.ITALIC || this._style_name == FontStyleName.BOLDITALIC)
-			this._italic = true;
-		if (this._font)
-			this.font_table = this.font.get_font_table(this.style_name, TesselatedFontTable.assetType);
 	}
 
 	public get font(): Font {
@@ -465,13 +411,13 @@ export class TextFormat extends AssetBase {
 		}
 
 		this._font = DefaultFontManager.getFont(null);
-		this._font_table = <TesselatedFontTable>
-			this._font.get_font_table(this.style_name, TesselatedFontTable.assetType);
-
+		this._font_table = null;
+		this._textFormatDirty = true;
 		return this._font;
 	}
 
 	public set font(value: Font) {
+		this._textFormatDirty = true;
 		if (typeof value === 'string') {
 			this._setFontFromString(value);
 			return;
@@ -481,8 +427,12 @@ export class TextFormat extends AssetBase {
 			this._updateID++;
 		}
 
-		this._font = value;
-		this._font_table = this._font.get_font_table(this.style_name, TesselatedFontTable.assetType);
+		if (value) {
+			this._font = value;
+			return;
+		}
+		this._font = null;
+		this._font_table = null;
 	}
 
 	/**
@@ -591,39 +541,21 @@ export class TextFormat extends AssetBase {
 		this._letterSpacing = null;
 
 		this._font_table = null;
-		this._style_name = FontStyleName.STANDART;
 
-		if (typeof font === 'string')
+		if (typeof font === 'string') {
 			this._setFontFromString(font);
-		else {
+			return;
+		} else if (font) {
 			this._font = font;
-			if (bold && !italic) {
-				this._style_name = FontStyleName.BOLD;
-			} else if (!bold && italic) {
-				this._style_name = FontStyleName.ITALIC;
-			} else if (bold && italic) {
-				this._style_name = FontStyleName.BOLDITALIC;
-			}
+			this._textFormatDirty = true;
 		}
+
 	}
 
 	private _setFontFromString(font_name: string) {
 		const asset = DefaultFontManager.getFont(font_name);
-
-		if (asset) {
-			this._style_name = FontStyleName.STANDART;
-			if (this._bold && !this._italic) {
-				this._style_name = FontStyleName.BOLD;
-			} else if (!this._bold && this._italic) {
-				this._style_name = FontStyleName.ITALIC;
-			} else if (this._bold && this._italic) {
-				this._style_name = FontStyleName.BOLDITALIC;
-			}
-		} else {
-			console.error(`Font not found by name: '${font_name}'`);
-		}
-
 		this.font = asset;
+		this._textFormatDirty = true;
 	}
 
 	public clone(): TextFormat {
@@ -631,63 +563,17 @@ export class TextFormat extends AssetBase {
 			<any> this._font, this._size, this._color, this._bold,
 			this._italic, this._underline,this.url, this.link_target,
 			this._align, this._leftMargin, this._rightMargin, this._indent, this._leading);
+		clonedFormat.font_table = this._font_table;
 		return clonedFormat;
 	}
 
-	/*
-
-	public cloneForStyle(style_name:FontStyleName):TextFormat{
-		if(this._style_name==style_name){
-			return this;
-		}
-		var clonedFormat:TextFormat=this.clone();
-		clonedFormat.style_name=style_name;
-		return clonedFormat;
-	}*/
-
 	public applyToFormat(format: TextFormat) {
-
-		/*if(this._style_name!==null){
-            format.style_name=this._style_name;
-        }*/
-		/*
-		if(this._font!==null){
-            format.font=this._font;
-        }
-		if(this._align!==null)
-            format.align=this._align;
-        if(this._leftMargin!==null)
-            format.leftMargin=this._leftMargin;
-        if(this._rightMargin!==null)
-            format.rightMargin=this._rightMargin;
-        if(this._indent!==null)
-            format.indent=this._indent;
-
-		if(this._size!==null)
-            format.size=this._size;
-        if(this._color!==null)
-            format.color=this._color;
-        if(this._bold!==null)
-            format.bold=this._bold;
-        if(this._italic!==null)
-            format.italic=this._italic;
-        if(this._underline!==null)
-            format.underline=this._underline;
-        if(this._leading!==null)
-            format.leading=this._leading;
-        if(this._letterSpacing!==null)
-			format.letterSpacing=this._letterSpacing;
-		*/
 
 		for (const field of PUBLIC_FIELDS) {
 			if (this['_' + field] !== null) {
 				format[field] = this['_' + field];
 			}
 		}
-
-		//if(this._font_name!==null)
-		//    format.font_name=this._font_name;
-
 		return format;
 	}
 
