@@ -3,7 +3,8 @@ import { AssetBase, AbstractMethodError } from '@awayjs/core';
 import { DisplayObject } from '../display/DisplayObject';
 
 /**
- * PrefabBase is an abstract base class for prefabs, which are prebuilt display objects that allow easy cloning and updating
+ * PrefabBase is an abstract base class for prefabs,
+ * which are prebuilt display objects that allow easy cloning and updating
  */
 export class PrefabBase extends AssetBase {
 	public _pObjects: Array<DisplayObject> = new Array<DisplayObject>();

@@ -37,7 +37,8 @@ export class BitmapFontChar {
 	public page: number;
 	public channel: number;
 
-	constructor(id: string, x: number,y: number, width: number,  height: number, xoff: number, yoff: number, xadv: number, page: number, channel: number) {
+	constructor(id: string, x: number,y: number, width: number,  height: number,
+		xoff: number, yoff: number, xadv: number, page: number, channel: number) {
 		this.id = id;
 		this.x = x;
 		this.y = y;

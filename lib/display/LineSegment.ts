@@ -1,6 +1,7 @@
 ﻿import { Vector3D, Matrix3D, Box, Sphere } from '@awayjs/core';
 
-import { PickingCollision, PartitionBase, _Pick_PickableBase, PickEntity, IEntityTraverser, EntityNode } from '@awayjs/view';
+import { PickingCollision, PartitionBase, _Pick_PickableBase,
+	PickEntity, IEntityTraverser, EntityNode } from '@awayjs/view';
 
 import { RenderableEvent, IMaterial } from '@awayjs/renderer';
 
@@ -101,9 +102,8 @@ import { AssetEvent } from '@awayjs/core';
 
 import { LineElements } from '@awayjs/graphics';
 
-import { _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase, RenderEntity, MaterialUtils, Style } from '@awayjs/renderer';
-import { MaterialBase } from '@awayjs/materials';
-import { Stage } from '@awayjs/stage';
+import { _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase,
+	RenderEntity, MaterialUtils, Style } from '@awayjs/renderer';
 
 /**
  * @class away.pool._Render_LineSegment
@@ -118,7 +118,8 @@ export class _Render_LineSegment extends _Render_RenderableBase {
      * @protected
      */
 	protected _getStageElements(): _Stage_ElementsBase {
-		const elements: LineElements = _Render_LineSegment._lineGraphics[(<LineSegment> this._asset).id] || (_Render_LineSegment._lineGraphics[(<LineSegment> this._asset).id] = new LineElements());
+		const elements: LineElements = _Render_LineSegment._lineGraphics[(<LineSegment> this._asset).id]
+			|| (_Render_LineSegment._lineGraphics[(<LineSegment> this._asset).id] = new LineElements());
 
 		const start: Vector3D = (<LineSegment> this._asset).startPosition;
 		const end: Vector3D = (<LineSegment> this._asset).endPosition;
@@ -142,7 +143,8 @@ export class _Render_LineSegment extends _Render_RenderableBase {
 
 	protected _getRenderMaterial(): _Render_MaterialBase {
 		const material: IMaterial = (<LineSegment> this._asset).material || MaterialUtils.getDefaultColorMaterial();
-		return material.getAbstraction<_Render_MaterialBase>(this.renderGroup.getRenderElements(this.stageElements.elements));
+		return material.getAbstraction<_Render_MaterialBase>(
+			this.renderGroup.getRenderElements(this.stageElements.elements));
 	}
 
 	protected _getStyle(): Style {
@@ -191,7 +193,8 @@ export class _Pick_LineSegment extends _Pick_PickableBase {
 		return true;
 	}
 
-	public getBoxBounds(matrix3D: Matrix3D = null, strokeFlag: boolean = true, cache: Box = null, target: Box = null): Box {
+	public getBoxBounds(matrix3D: Matrix3D = null, strokeFlag: boolean = true,
+		cache: Box = null, target: Box = null): Box {
 		if (this._lineSegmentBoxDirty) {
 			this._lineSegmentBoxDirty = false;
 
@@ -206,10 +209,13 @@ export class _Pick_LineSegment extends _Pick_PickableBase {
 				Math.abs(startPosition.z - endPosition.z));
 		}
 
-		return (matrix3D ? matrix3D.transformBox(this._lineSegmentBox) : this._lineSegmentBox).union(target, target || cache);
+		return (matrix3D ?
+			matrix3D.transformBox(this._lineSegmentBox) :
+			this._lineSegmentBox).union(target, target || cache);
 	}
 
-	public getSphereBounds(center: Vector3D, matrix3D: Matrix3D = null, strokeFlag: boolean = true, cache: Sphere = null, target: Sphere = null): Sphere {
+	public getSphereBounds(center: Vector3D, matrix3D: Matrix3D = null, strokeFlag: boolean = true,
+		cache: Sphere = null, target: Sphere = null): Sphere {
 		if (this._lineSegmentSphereDirty) {
 			this._lineSegmentSphereDirty = false;
 
@@ -226,7 +232,9 @@ export class _Pick_LineSegment extends _Pick_PickableBase {
 				Math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight + halfDepth * halfDepth));
 		}
 
-		return (matrix3D ? matrix3D.transformSphere(this._lineSegmentSphere) : this._lineSegmentSphere).union(target, target || cache);
+		return (matrix3D ?
+			matrix3D.transformSphere(this._lineSegmentSphere) :
+			this._lineSegmentSphere).union(target, target || cache);
 	}
 
 	public testCollision(collision: PickingCollision, closestFlag: boolean): boolean {

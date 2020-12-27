@@ -28,7 +28,8 @@ export class LookAtController extends ControllerBase {
 
 	public set lookAtPosition(val: Vector3D) {
 		if (this._pLookAtObject) {
-			this._pLookAtObject.removeEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this._onLookAtObjectChangedDelegate);
+			this._pLookAtObject.removeEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED,
+				this._onLookAtObjectChangedDelegate);
 			this._pLookAtObject = null;
 		}
 
@@ -48,12 +49,14 @@ export class LookAtController extends ControllerBase {
 			return;
 
 		if (this._pLookAtObject)
-			this._pLookAtObject.removeEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this._onLookAtObjectChangedDelegate);
+			this._pLookAtObject.removeEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED,
+				this._onLookAtObjectChangedDelegate);
 
 		this._pLookAtObject = val;
 
 		if (this._pLookAtObject)
-			this._pLookAtObject.addEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED, this._onLookAtObjectChangedDelegate);
+			this._pLookAtObject.addEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED,
+				this._onLookAtObjectChangedDelegate);
 
 		this.pNotifyUpdate();
 	}

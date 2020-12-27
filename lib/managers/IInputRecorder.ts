@@ -1,4 +1,3 @@
 export interface IInputRecorder{
-	recordEvent(event: Event)
-
+	recordEvent(event: Event);
 }

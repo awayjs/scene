@@ -63,7 +63,8 @@ export class TextLineMetrics {
 	 * @param leading     The measurement of the vertical distance between the
 	 *                    lines of text.
 	 */
-	constructor(x: number = 0, width: number = 0, height: number = 0, ascent: number = 0, descent: number = 0, leading: number = 0) {
+	constructor(x: number = 0, width: number = 0, height: number = 0,
+		ascent: number = 0, descent: number = 0, leading: number = 0) {
 		this.x = x;
 		this.width = width;
 		this.height = height;

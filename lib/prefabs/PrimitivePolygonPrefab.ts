@@ -47,7 +47,8 @@ export class PrimitivePolygonPrefab extends PrimitiveCylinderPrefab {
 	 * @param sides Defines the number of sides of the regular polygon.
 	 * @param yUp Defines whether the regular polygon should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(material: IMaterial = null, elementsType: string = 'triangle', radius: number = 100, sides: number = 16, yUp: boolean = true) {
+	constructor(material: IMaterial = null, elementsType: string = 'triangle',
+		radius: number = 100, sides: number = 16, yUp: boolean = true) {
 		super(material, elementsType, radius, 0, 0, sides, 1, true, false, false, yUp);
 	}
 }

@@ -11,13 +11,12 @@ export class SkyboxElements extends TriangleElements {
 	}
 }
 
-import { Stage, ContextGLDrawMode, ContextGLProgramType, IContextGL, ShaderRegisterCache, ShaderRegisterData, ShaderRegisterElement } from '@awayjs/stage';
-
-import { View } from '@awayjs/view';
+import { Stage, ContextGLDrawMode, ContextGLProgramType, IContextGL,
+	ShaderRegisterCache, ShaderRegisterData, ShaderRegisterElement } from '@awayjs/stage';
 
 import { RenderGroup } from '@awayjs/renderer';
 
-import { Matrix3D, Vector3D, ProjectionBase } from '@awayjs/core';
+import { Matrix3D, Vector3D } from '@awayjs/core';
 
 import { _Stage_TriangleElements } from '@awayjs/graphics';
 
@@ -33,11 +32,15 @@ export class _Render_SkyboxElements extends _Render_ElementsBase {
 	/**
      * @inheritDoc
      */
-	public _getVertexCode(shader: ShaderBase, registerCache: ShaderRegisterCache, sharedRegisters: ShaderRegisterData): string {
+	public _getVertexCode(shader: ShaderBase, registerCache: ShaderRegisterCache,
+		sharedRegisters: ShaderRegisterData): string {
 		let code: string = '';
 
 		//get the projection coordinates
-		const position: ShaderRegisterElement = (shader.globalPosDependencies > 0) ? sharedRegisters.globalPositionVertex : sharedRegisters.animatedPosition;
+		const position: ShaderRegisterElement =
+			(shader.globalPosDependencies > 0) ?
+				sharedRegisters.globalPositionVertex :
+				sharedRegisters.animatedPosition;
 
 		//reserving vertex constants for projection matrix
 		const viewMatrixReg: ShaderRegisterElement = registerCache.getFreeVertexConstant();
@@ -68,7 +71,8 @@ export class _Render_SkyboxElements extends _Render_ElementsBase {
 		return code;
 	}
 
-	public _getFragmentCode(shader: ShaderBase, registerCache: ShaderRegisterCache, sharedRegisters: ShaderRegisterData): string {
+	public _getFragmentCode(shader: ShaderBase, registerCache: ShaderRegisterCache,
+		sharedRegisters: ShaderRegisterData): string {
 		return '';
 	}
 }
@@ -87,7 +91,8 @@ export class _Stage_SkyboxElements extends _Stage_TriangleElements {
 		shader.vertexConstantData[index++] = 2 * camPos.y;
 		shader.vertexConstantData[index++] = 2 * camPos.z;
 		shader.vertexConstantData[index++] = 1;
-		shader.vertexConstantData[index++] = shader.vertexConstantData[index++] = shader.vertexConstantData[index++] = shader.view.projection.far / Math.sqrt(3);
+		shader.vertexConstantData[index++] = shader.vertexConstantData[index++] =
+			shader.vertexConstantData[index++] = shader.view.projection.far / Math.sqrt(3);
 		shader.vertexConstantData[index] = 1;
 
 		const near: Vector3D = new Vector3D();
@@ -98,7 +103,8 @@ export class _Stage_SkyboxElements extends _Stage_TriangleElements {
 		const cx: number = near.x;
 		const cy: number = near.y;
 		const cz: number = near.z;
-		const cw: number = -(near.x * camPos.x + near.y * camPos.y + near.z * camPos.z + Math.sqrt(cx * cx + cy * cy + cz * cz));
+		const cw: number =
+			-(near.x * camPos.x + near.y * camPos.y + near.z * camPos.z + Math.sqrt(cx * cx + cy * cy + cz * cz));
 
 		const signX: number = cx >= 0 ? 1 : -1;
 		const signY: number = cy >= 0 ? 1 : -1;

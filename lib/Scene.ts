@@ -2,7 +2,6 @@ import { Vector3D, getTimer } from '@awayjs/core';
 
 import {
 	View,
-	PickingCollision,
 	BasicPartition,
 	PartitionBase,
 	TabPicker,

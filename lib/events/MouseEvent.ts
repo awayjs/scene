@@ -3,7 +3,6 @@ import { Point, Vector3D, EventBase } from '@awayjs/core';
 import { IPartitionEntity, IPickingEntity, ITraversable, View } from '@awayjs/view';
 
 import { IMaterial } from '@awayjs/renderer';
-import { DisplayObject } from '../display/DisplayObject';
 
 /**
  * A MouseEvent is dispatched when a mouse event occurs over a mouseEnabled object in View.

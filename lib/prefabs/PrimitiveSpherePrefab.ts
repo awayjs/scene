@@ -75,7 +75,9 @@ export class PrimitiveSpherePrefab extends PrimitivePrefabBase {
 	 * @param segmentsH Defines the number of vertical segments that make up the sphere.
 	 * @param yUp Defines whether the sphere poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(material: IMaterial = null, elementsType: string = 'triangle', radius: number = 50, segmentsW: number = 16, segmentsH: number = 12, yUp: boolean = true) {
+	constructor(material: IMaterial = null, elementsType: string = 'triangle',
+		radius: number = 50, segmentsW: number = 16,
+		segmentsH: number = 12, yUp: boolean = true) {
 		super(material, elementsType);
 
 		this._radius = radius;
@@ -89,7 +91,7 @@ export class PrimitiveSpherePrefab extends PrimitivePrefabBase {
 	 */
 	public _pBuildGraphics(target: ElementsBase, elementsType: string): void {
 		let indices: Uint16Array;
-		var positions: ArrayBufferView;
+		let positions: ArrayBufferView;
 		let normals: Float32Array;
 		let tangents: Float32Array;
 		let stride: number;
@@ -138,14 +140,14 @@ export class PrimitiveSpherePrefab extends PrimitivePrefabBase {
 
 				startIndex = vidx;
 
-				var horangle: number = Math.PI * j / this._segmentsH;
-				var z: number = -this._radius * Math.cos(horangle);
-				var ringradius: number = this._radius * Math.sin(horangle);
+				const horangle: number = Math.PI * j / this._segmentsH;
+				const z: number = -this._radius * Math.cos(horangle);
+				const ringradius: number = this._radius * Math.sin(horangle);
 
 				for (i = 0; i <= this._segmentsW; ++i) {
-					var verangle: number = 2 * Math.PI * i / this._segmentsW;
-					var x: number = ringradius * Math.cos(verangle);
-					var y: number = ringradius * Math.sin(verangle);
+					const verangle: number = 2 * Math.PI * i / this._segmentsW;
+					const x: number = ringradius * Math.cos(verangle);
+					const y: number = ringradius * Math.sin(verangle);
 					const normLen: number = 1 / Math.sqrt(x * x + y * y + z * z);
 					const tanLen: number = Math.sqrt(y * y + x * x);
 
@@ -229,7 +231,7 @@ export class PrimitiveSpherePrefab extends PrimitivePrefabBase {
 			const lineGraphics: LineElements = <LineElements> target;
 
 			const numSegments: number = this._segmentsH * this._segmentsW * 2 + this._segmentsW;
-			var positions: ArrayBufferView = new Float32Array(numSegments * 6);
+			const positions: ArrayBufferView = new Float32Array(numSegments * 6);
 			const thickness: Float32Array = new Float32Array(numSegments);
 
 			vidx = 0;
@@ -238,14 +240,14 @@ export class PrimitiveSpherePrefab extends PrimitivePrefabBase {
 
 			for (j = 0; j <= this._segmentsH; ++j) {
 
-				var horangle: number = Math.PI * j / this._segmentsH;
-				var z: number = -this._radius * Math.cos(horangle);
-				var ringradius: number = this._radius * Math.sin(horangle);
+				const horangle: number = Math.PI * j / this._segmentsH;
+				const z: number = -this._radius * Math.cos(horangle);
+				const ringradius: number = this._radius * Math.sin(horangle);
 
 				for (i = 0; i <= this._segmentsW; ++i) {
-					var verangle: number = 2 * Math.PI * i / this._segmentsW;
-					var x: number = ringradius * Math.cos(verangle);
-					var y: number = ringradius * Math.sin(verangle);
+					const verangle: number = 2 * Math.PI * i / this._segmentsW;
+					const x: number = ringradius * Math.cos(verangle);
+					const y: number = ringradius * Math.sin(verangle);
 
 					if (this._yUp) {
 						comp1 = -z;
@@ -266,7 +268,8 @@ export class PrimitiveSpherePrefab extends PrimitivePrefabBase {
 
 						//vertical lines
 						if (j > 0) {
-							const addx: number = (j == 1) ? 3 - (6 * (this._segmentsW - i) + 12 * i) : 3 - this._segmentsW * 12;
+							const addx: number =
+								(j == 1) ? 3 - (6 * (this._segmentsW - i) + 12 * i) : 3 - this._segmentsW * 12;
 							positions[vidx] = positions[vidx++ + addx];
 							positions[vidx] = positions[vidx++ + addx];
 							positions[vidx] = positions[vidx++ + addx];

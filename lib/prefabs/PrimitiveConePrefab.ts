@@ -28,7 +28,11 @@ export class PrimitiveConePrefab extends PrimitiveCylinderPrefab {
 	 * @param segmentsH Defines the number of vertical segments that make up the cone. Defaults to 1.
 	 * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(material: IMaterial = null, elementsType: string = 'triangle', radius: number = 50, height: number = 100, segmentsW: number = 16, segmentsH: number = 1, closed: boolean = true, yUp: boolean = true) {
+	constructor(material: IMaterial = null, elementsType: string = 'triangle',
+		radius: number = 50, height: number = 100,
+		segmentsW: number = 16, segmentsH: number = 1,
+		closed: boolean = true, yUp: boolean = true) {
+
 		super(material, elementsType, 0, radius, height, segmentsW, segmentsH, false, closed, true, yUp);
 	}
 }

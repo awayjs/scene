@@ -1,7 +1,5 @@
 import { EventBase } from '@awayjs/core';
 
-import { Camera } from '../display/Camera';
-
 /**
  * @class away.events.CameraEvent
  */

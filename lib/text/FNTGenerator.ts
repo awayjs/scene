@@ -1,18 +1,15 @@
 import { Font } from './Font';
 import { TesselatedFontTable } from './TesselatedFontTable';
-import { ColorTransform, Matrix, Rectangle, Point, ColorUtils, PerspectiveProjection, CoordinateSystem, Transform, Vector3D } from '@awayjs/core';
+import { PerspectiveProjection, CoordinateSystem, Transform, Vector3D } from '@awayjs/core';
 
-import { Stage, ImageSampler, BitmapImage2D, _Stage_BitmapImage2D, BlendMode } from '@awayjs/stage';
+import { Stage, BitmapImage2D } from '@awayjs/stage';
 
 import { DefaultRenderer, RenderGroup, RendererType } from '@awayjs/renderer';
 
-import { MethodMaterial } from '@awayjs/materials';
-import { DisplayObject } from '../display/DisplayObject';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 import { SceneGraphPartition } from '../partition/SceneGraphPartition';
 
-import { Scene } from '../Scene';
-import { View, PickGroup } from '@awayjs/view';
+import { View } from '@awayjs/view';
 import { Sprite } from '../display/Sprite';
 import { Shape } from '@awayjs/graphics';
 
@@ -32,7 +29,9 @@ export class FNTGenerator {
 
 		//create the view
 		this._root = new DisplayObjectContainer();
-		this._renderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, stage, null, null, null, true), RendererType.DEFAULT).getRenderer(new SceneGraphPartition(this._root));
+		this._renderer = <DefaultRenderer> RenderGroup.getInstance(
+			new View(projection, stage, null, null, null, true), RendererType.DEFAULT).getRenderer(
+			new SceneGraphPartition(this._root));
 		this._root.partition = this._renderer.partition;
 
 		//setup the projection
@@ -49,11 +48,12 @@ export class FNTGenerator {
 		let outputBitmap: BitmapImage2D;
 		const outputBitmaps: BitmapImage2D[] = [];
 		let mipSize: number;
-		const pixelRatio: number = this._renderer.view.stage.context.pixelRatio;
+		//const pixelRatio: number = this._renderer.view.stage.context.pixelRatio;
 
-		for (let i: number = 0; i < font.font_styles.length; i++) {
+		for (const key in font.font_styles) {
 
-			const shapes: Shape[] = (<TesselatedFontTable>font.font_styles[i]).generateFNTTextures(padding, fontSize, maxSize);
+			const shapes: Shape[] =
+				(<TesselatedFontTable>font.font_styles[key]).generateFNTTextures(padding, fontSize, maxSize);
 
 			for (let s = 0; s < shapes.length; s++) {
 
@@ -73,7 +73,7 @@ export class FNTGenerator {
 				outputBitmap = new BitmapImage2D(bitmapSize, bitmapSize, true, 0, true);
 
 				outputBitmaps.push(outputBitmap);
-				(<TesselatedFontTable>font.font_styles[i]).addFNTChannel(outputBitmap);
+				(<TesselatedFontTable>font.font_styles[key]).addFNTChannel(outputBitmap);
 
 				while (mipSize >= 1) {
 

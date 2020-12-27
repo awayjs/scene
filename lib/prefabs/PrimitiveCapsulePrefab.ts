@@ -86,10 +86,13 @@ export class PrimitiveCapsulePrefab extends PrimitivePrefabBase {
 	 * @param radius The radius of the capsule.
 	 * @param height The height of the capsule.
 	 * @param segmentsW Defines the number of horizontal segments that make up the capsule. Defaults to 16.
-	 * @param segmentsH Defines the number of vertical segments that make up the capsule. Defaults to 15. Must be uneven value.
+	 * @param segmentsH Defines the number of vertical segments that make up the capsule.
+	 * Defaults to 15. Must be uneven value.
 	 * @param yUp Defines whether the capsule poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(material: IMaterial = null, elementsType: string = 'triangle', radius: number = 50, height: number = 100, segmentsW: number = 16, segmentsH: number = 15, yUp: boolean = true) {
+	constructor(material: IMaterial = null, elementsType: string = 'triangle',
+		radius: number = 50, height: number = 100,
+		segmentsW: number = 16, segmentsH: number = 15, yUp: boolean = true) {
 		super(material, elementsType);
 
 		this._radius = radius;
@@ -122,8 +125,10 @@ export class PrimitiveCapsulePrefab extends PrimitivePrefabBase {
 			const triangleGraphics: TriangleElements = <TriangleElements> target;
 
 			// evaluate target number of vertices, triangles and indices
-			this._numVertices = (this._segmentsH + 1) * (this._segmentsW + 1); // segmentsH + 1 because of closure, segmentsW + 1 because of closure
-			numIndices = (this._segmentsH - 1) * this._segmentsW * 6; // each level has segmentH quads, each of 2 triangles
+			this._numVertices = (this._segmentsH + 1) * (this._segmentsW + 1);
+			// segmentsH + 1 because of closure, segmentsW + 1 because of closure
+			numIndices = (this._segmentsH - 1) * this._segmentsW * 6;
+			// each level has segmentH quads, each of 2 triangles
 
 			// need to initialize raw arrays or can be reused?
 			if (this._numVertices == triangleGraphics.numVertices) {

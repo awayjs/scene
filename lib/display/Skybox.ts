@@ -2,9 +2,10 @@ import { AssetEvent } from '@awayjs/core';
 
 import { BlendMode, ImageCube } from '@awayjs/stage';
 
-import { View, PickingCollision, PartitionBase, BoundingVolumeType } from '@awayjs/view';
+import { PickingCollision, PartitionBase, BoundingVolumeType } from '@awayjs/view';
 
-import { IAnimationSet, IMaterial, ITexture, RenderableEvent, MaterialEvent, Style, StyleEvent, IRenderEntity, RenderGroup } from '@awayjs/renderer';
+import { IAnimationSet, IMaterial, ITexture, RenderableEvent,
+	MaterialEvent, Style, StyleEvent, IRenderEntity, RenderGroup } from '@awayjs/renderer';
 
 import { ImageTextureCube } from '@awayjs/materials';
 
@@ -45,7 +46,8 @@ export class Skybox extends DisplayObject implements IMaterial {
 	 * The blend mode to use when drawing this renderable. The following blend modes are supported:
 	 * <ul>
 	 * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
-	 * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
+	 * <li>BlendMode.LAYER: Force blending.
+	 * This will draw the object the same as NORMAL, but without writing depth writes.</li>
 	 * <li>BlendMode.MULTIPLY</li>
 	 * <li>BlendMode.ADD</li>
 	 * <li>BlendMode.ALPHA</li>
@@ -209,9 +211,8 @@ export class Skybox extends DisplayObject implements IMaterial {
 	}
 }
 
-import { Matrix3D, ProjectionBase } from '@awayjs/core';
-
-import { DefaultRenderer, _Render_RenderableBase, _Shader_TextureBase, ShaderBase, _Render_ElementsBase, RenderEntity } from '@awayjs/renderer';
+import { _Render_RenderableBase,
+	_Shader_TextureBase, ShaderBase, _Render_ElementsBase, RenderEntity } from '@awayjs/renderer';
 
 import { ContextGLCompareMode, ShaderRegisterCache, ShaderRegisterData, AttributesBuffer } from '@awayjs/stage';
 
@@ -256,7 +257,8 @@ export class _Render_SkyboxMaterial extends _Render_MaterialPassBase {
 
 		this.requiresBlending = (this._material.blendMode != BlendMode.NORMAL);
 
-		this.shader.setBlendMode((this._material.blendMode == BlendMode.NORMAL && this.requiresBlending) ? BlendMode.LAYER : this._material.blendMode);
+		this.shader.setBlendMode((this._material.blendMode == BlendMode.NORMAL && this.requiresBlending) ?
+			BlendMode.LAYER : this._material.blendMode);
 	}
 
 	public _includeDependencies(shader: ShaderBase): void {
@@ -269,7 +271,8 @@ export class _Render_SkyboxMaterial extends _Render_MaterialPassBase {
      * @inheritDoc
      */
 	public _getFragmentCode(registerCache: ShaderRegisterCache, sharedRegisters: ShaderRegisterData): string {
-		return this._texture._getFragmentCode(sharedRegisters.shadedTarget, registerCache, sharedRegisters, sharedRegisters.positionVarying);
+		return this._texture._getFragmentCode(
+			sharedRegisters.shadedTarget, registerCache, sharedRegisters, sharedRegisters.positionVarying);
 	}
 
 	public _setRenderState(renderable: _Render_RenderableBase): void {
@@ -312,15 +315,20 @@ export class _Render_Skybox extends _Render_RenderableBase {
 			elements = new SkyboxElements(new AttributesBuffer(11, 4));
 			elements.autoDeriveNormals = false;
 			elements.autoDeriveTangents = false;
-			elements.setIndices(Array<number>(0, 1, 2, 2, 3, 0, 6, 5, 4, 4, 7, 6, 2, 6, 7, 7, 3, 2, 4, 5, 1, 1, 0, 4, 4, 0, 3, 3, 7, 4, 2, 1, 5, 5, 6, 2));
-			elements.setPositions(Array<number>(-1, 1, -1, 1, 1, -1, 1, 1, 1, -1, 1, 1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1));
+			elements.setIndices(Array<number>(
+				0, 1, 2, 2, 3, 0, 6, 5, 4, 4, 7, 6, 2, 6, 7, 7, 3, 2,
+				4, 5, 1, 1, 0, 4, 4, 0, 3, 3, 7, 4, 2, 1, 5, 5, 6, 2));
+			elements.setPositions(Array<number>(
+				-1, 1, -1, 1, 1, -1, 1, 1, 1, -1, 1, 1,
+				-1,-1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1));
 		}
 
 		return elements.getAbstraction<_Stage_SkyboxElements>(this._stage);
 	}
 
 	protected _getRenderMaterial(): _Render_SkyboxMaterial {
-		return this._asset.getAbstraction<_Render_SkyboxMaterial>(this.renderGroup.getRenderElements(this.stageElements.elements));
+		return this._asset.getAbstraction<_Render_SkyboxMaterial>(
+			this.renderGroup.getRenderElements(this.stageElements.elements));
 	}
 
 	protected _getStyle(): Style {
@@ -343,7 +351,8 @@ export class SkyboxNode extends EntityNode {
 	 * @param numPlanes
 	 * @returns {boolean}
 	 */
-	public isInFrustum(rootEntity: IPartitionEntity, planes: Array<Plane3D>, numPlanes: number, pickGroup: PickGroup): boolean {
+	public isInFrustum(rootEntity: IPartitionEntity, planes: Array<Plane3D>,
+		numPlanes: number, pickGroup: PickGroup): boolean {
 		if (!this.isVisible())
 			return false;
 

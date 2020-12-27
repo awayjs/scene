@@ -12,7 +12,8 @@ import { DisplayObject } from './DisplayObject';
  * Explorer and in the Insert Target Path dialog box in the Actions
  * panel. After you create an instance of a button in Flash Professional, you can
  * use the methods and properties of the SimpleButton class to manipulate buttons
- * with ActionScript.</p><p class="- topic/p ">In ActionScript 3.0, you use the <codeph class="+ topic/ph pr-d/codeph ">new SimpleButton()</codeph> constructor to create a
+ * with ActionScript.</p><p class="- topic/p ">In ActionScript 3.0, you use the
+ * <codeph class="+ topic/ph pr-d/codeph ">new SimpleButton()</codeph> constructor to create a
  * SimpleButton instance.</p><p class="- topic/p ">The SimpleButton class inherits from the InteractiveObject class.</p>
  *
  *   EXAMPLE:
@@ -22,19 +23,32 @@ import { DisplayObject } from './DisplayObject';
  * ButtonDisplayState objects.  The result is a button that is created in the shape of
  * a square, whose background color changes based on the mouse state by overriding instance properties of
  * the SimpleButton class.  This is accomplished by performing the following steps:
- * <ol class="- topic/ol "><li class="- topic/li ">In the <codeph class="+ topic/ph pr-d/codeph ">SimpleButtonExample()</codeph> constructor, a new CustomSimpleButton object of type
- * SimpleButton, called <codeph class="+ topic/ph pr-d/codeph ">button</codeph>, is created, which calls the <codeph class="+ topic/ph pr-d/codeph ">CustomSimpleButton</codeph> constructor
- * method.  The <codeph class="+ topic/ph pr-d/codeph ">button</codeph> object is the added to the display list.  The button's color and size are
- * determined in the steps that follow.</li><li class="- topic/li ">In the CustomSimpleButton class, instance properties are declared that are later used
- * to control the size and background color of <codeph class="+ topic/ph pr-d/codeph ">button</codeph>, based on the state it is in (orange
+ * <ol class="- topic/ol "><li class="- topic/li ">In the <codeph class="+ topic/ph pr-d/codeph ">
+ * SimpleButtonExample()</codeph> constructor, a new CustomSimpleButton object of type
+ * SimpleButton, called <codeph class="+ topic/ph pr-d/codeph ">button</codeph>,
+ * is created, which calls the <codeph class="+ topic/ph pr-d/codeph ">CustomSimpleButton</codeph> constructor
+ * method.  The <codeph class="+ topic/ph pr-d/codeph ">button</codeph>
+ * object is the added to the display list.  The button's color and size are
+ * determined in the steps that follow.</li><li class="- topic/li ">In the CustomSimpleButton class,
+ * instance properties are declared that are later used
+ * to control the size and background color of <codeph class="+ topic/ph pr-d/codeph ">button</codeph>,
+ * based on the state it is in (orange
  * in the normal state, dark yellow in the mouse over state, an light blue in the mouse down state).
- * In all of the <codeph class="+ topic/ph pr-d/codeph ">button</codeph>'s states, the size of the square is set to 80 pixels by using the
- * <codeph class="+ topic/ph pr-d/codeph ">size</codeph> property.</li><li class="- topic/li ">The constructor function for the CustomSimpleButton class sets the
- * <codeph class="+ topic/ph pr-d/codeph ">downState</codeph>, <codeph class="+ topic/ph pr-d/codeph ">overState</codeph>, <codeph class="+ topic/ph pr-d/codeph ">upState</codeph>,
- * <codeph class="+ topic/ph pr-d/codeph ">hitTestState</codeph>, and <codeph class="+ topic/ph pr-d/codeph ">useHandCursor</codeph> properties with
- * four instances of the ButtonDisplayState class.</li><li class="- topic/li ">In the ButtonDisplayState class, the constructor sets the value of the
- * square's size and background color and calls the <codeph class="+ topic/ph pr-d/codeph ">draw()</codeph> method.</li><li class="- topic/li ">The <codeph class="+ topic/ph pr-d/codeph ">draw()</codeph> method redraws the square with the size and background color set in
- * the constructor based on the button's state.</li></ol><codeblock xml:space="preserve" class="+ topic/pre pr-d/codeblock ">
+ * In all of the <codeph class="+ topic/ph pr-d/codeph ">button</codeph>'s states,
+ * the size of the square is set to 80 pixels by using the
+ * <codeph class="+ topic/ph pr-d/codeph ">size</codeph> property.</li><li class="- topic/li ">
+ * The constructor function for the CustomSimpleButton class sets the
+ * <codeph class="+ topic/ph pr-d/codeph ">downState</codeph>, <codeph class="+ topic/ph pr-d/codeph ">
+ * overState</codeph>, <codeph class="+ topic/ph pr-d/codeph ">upState</codeph>,
+ * <codeph class="+ topic/ph pr-d/codeph ">hitTestState</codeph>, and <codeph class="+ topic/ph pr-d/codeph ">
+ * useHandCursor</codeph> properties with
+ * four instances of the ButtonDisplayState class.</li><li class="- topic/li ">
+ * In the ButtonDisplayState class, the constructor sets the value of the
+ * square's size and background color and calls the <codeph class="+ topic/ph pr-d/codeph ">draw()</codeph> method.</li>
+ * <li class="- topic/li ">The <codeph class="+ topic/ph pr-d/codeph ">draw()</codeph>
+ * method redraws the square with the size and background color set in
+ * the constructor based on the button's state.</li></ol>
+ * <codeblock xml:space="preserve" class="+ topic/pre pr-d/codeblock ">
 
  */
 export class SimpleButton extends Sprite {
@@ -46,7 +60,8 @@ export class SimpleButton extends Sprite {
 	 * @param	downState	The initial value for the SimpleButton down state.
 	 * @param	hitTestState	The initial value for the SimpleButton hitTest state.
 	 */
-	constructor (upState: DisplayObject = null, overState: DisplayObject = null, downState: DisplayObject = null, hitTestState: DisplayObject = null) {
+	constructor (upState: DisplayObject = null, overState: DisplayObject = null,
+		downState: DisplayObject = null, hitTestState: DisplayObject = null) {
 		super();
 	}
 
@@ -183,7 +198,9 @@ export class SimpleButton extends Sprite {
 	 *
 	 *   You can change the useHandCursor property at any time;
 	 * the modified button immediately uses the new cursor behavior.
-	 * @maelexample	Create two buttons on the Stage with the instance names <code>myBtn1_btn</code> and <code>myBtn2_btn</code>. Enter the following ActionScript in Frame 1 of the Timeline:
+	 * @maelexample	Create two buttons on the Stage with the instance names
+	 * <code>myBtn1_btn</code> and <code>myBtn2_btn</code>.
+	 * Enter the following ActionScript in Frame 1 of the Timeline:
 	 *   <listing>
 	 *   myBtn1_btn.useHandCursor = false;
 	 *   myBtn1_btn.onRelease = buttonClick;
@@ -191,7 +208,9 @@ export class SimpleButton extends Sprite {
 	 *   function buttonClick() {
 		 *   trace(this._name);
 		 *   }
-	 *   </listing><p class="- topic/p ">When the mouse is over and clicks <code>myBtn1_btn</code>, there is no pointing hand. However, you see the pointing hand when the button is over and clicks <code>myBtn2_btn</code>.</p>
+	 *   </listing><p class="- topic/p ">When the mouse is over and clicks <code>myBtn1_btn</code>,
+	 * there is no pointing hand.
+	 * However, you see the pointing hand when the button is over and clicks <code>myBtn2_btn</code>.</p>
 	 */
 	public get useHandCursor (): boolean {
 		console.log('useHandCursor not implemented yet in flash/SimpleButton');

@@ -85,7 +85,9 @@ export class PrimitiveTorusPrefab extends PrimitivePrefabBase {
 	 * @param segmentsT Defines the number of vertical segments that make up the torus.
 	 * @param yUp Defines whether the torus poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(material: IMaterial = null, elementsType: string = 'triangle', radius: number = 50, tubeRadius: number = 50, segmentsR: number = 16, segmentsT: number = 8, yUp: boolean = true) {
+	constructor(material: IMaterial = null, elementsType: string = 'triangle',
+		radius: number = 50, tubeRadius: number = 50,
+		segmentsR: number = 16, segmentsT: number = 8, yUp: boolean = true) {
 		super(material, elementsType);
 
 		this._radius = radius;
@@ -106,7 +108,8 @@ export class PrimitiveTorusPrefab extends PrimitivePrefabBase {
 		let stride: number;
 
 		let i: number, j: number;
-		let x: number, y: number, z: number, nx: number, ny: number, nz: number, revolutionAngleR: number, revolutionAngleT: number;
+		let x: number, y: number, z: number, nx: number, ny: number, nz: number,
+			revolutionAngleR: number, revolutionAngleT: number;
 		let vidx: number;
 		let fidx: number;
 		let numIndices: number = 0;
@@ -116,8 +119,10 @@ export class PrimitiveTorusPrefab extends PrimitivePrefabBase {
 			const triangleGraphics: TriangleElements = <TriangleElements> target;
 
 			// evaluate target number of vertices, triangles and indices
-			this._numVertices = (this._segmentsT + 1) * (this._segmentsR + 1); // segmentsT + 1 because of closure, segmentsR + 1 because of closure
-			numIndices = this._segmentsT * this._segmentsR * 6; // each level has segmentR quads, each of 2 triangles
+			this._numVertices = (this._segmentsT + 1) * (this._segmentsR + 1);
+			// segmentsT + 1 because of closure, segmentsR + 1 because of closure
+			numIndices = this._segmentsT * this._segmentsR * 6;
+			// each level has segmentR quads, each of 2 triangles
 
 			// need to initialize raw arrays or can be reused?
 			if (this._numVertices == triangleGraphics.numVertices) {

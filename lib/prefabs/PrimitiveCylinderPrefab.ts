@@ -141,7 +141,11 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase {
 	 * @param bottomClosed Defines whether the bottom end of the cylinder is closed (true) or open.
 	 * @param yUp Defines whether the cone poles should lay on the Y-axis (true) or on the Z-axis (false).
 	 */
-	constructor(material: IMaterial = null, elementsType: string = 'triangle', topRadius: number = 50, bottomRadius: number = 50, height: number = 100, segmentsW: number = 16, segmentsH: number = 1, topClosed: boolean = true, bottomClosed: boolean = true, surfaceClosed: boolean = true, yUp: boolean = true) {
+	constructor(material: IMaterial = null, elementsType: string = 'triangle',
+		topRadius: number = 50, bottomRadius: number = 50, height: number = 100,
+		segmentsW: number = 16, segmentsH: number = 1,
+		topClosed: boolean = true, bottomClosed: boolean = true,
+		surfaceClosed: boolean = true, yUp: boolean = true) {
 		super(material, elementsType);
 
 		this._topRadius = topRadius;
@@ -202,8 +206,10 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase {
 
 			// evaluate target number of vertices, triangles and indices
 			if (this._surfaceClosed) {
-				this._numVertices += (this._pSegmentsH + 1) * (this._pSegmentsW + 1); // segmentsH + 1 because of closure, segmentsW + 1 because of UV unwrapping
-				numIndices += this._pSegmentsH * this._pSegmentsW * 6; // each level has segmentW quads, each of 2 triangles
+				this._numVertices += (this._pSegmentsH + 1) * (this._pSegmentsW + 1);
+				// segmentsH + 1 because of closure, segmentsW + 1 because of UV unwrapping
+				numIndices += this._pSegmentsH * this._pSegmentsW * 6;
+				// each level has segmentW quads, each of 2 triangles
 			}
 			if (this._topClosed) {
 				this._numVertices += 2 * (this._pSegmentsW + 1); // segmentsW + 1 because of unwrapping
@@ -501,7 +507,6 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase {
 			vidx = 0;
 
 			fidx = 0;
-			const _radius = 50;
 			for (j = 0; j <= this._pSegmentsH; ++j) {
 
 				radius = this._topRadius - ((j / this._pSegmentsH) * (this._topRadius - this._pBottomRadius));
@@ -531,7 +536,8 @@ export class PrimitiveCylinderPrefab extends PrimitivePrefabBase {
 
 						//vertical lines
 						if (j > 0) {
-							const addx: number = (j == 1) ? 3 - (6 * (this._pSegmentsW - i) + 12 * i) : 3 - this._pSegmentsW * 12;
+							const addx: number =
+								(j == 1) ? 3 - (6 * (this._pSegmentsW - i) + 12 * i) : 3 - this._pSegmentsW * 12;
 							positions[vidx] = positions[vidx++ + addx];
 							positions[vidx] = positions[vidx++ + addx];
 							positions[vidx] = positions[vidx++ + addx];

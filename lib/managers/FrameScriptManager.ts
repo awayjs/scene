@@ -2,8 +2,6 @@ import { DisplayObject } from '../display/DisplayObject';
 import { MovieClip } from '../display/MovieClip';
 import { IMovieClipAdapter } from '../adapters/IMovieClipAdapter';
 import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
-import { Settings } from '../Settings';
-
 interface IInterval {
 	f: Function;
 	t: number;
