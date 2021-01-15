@@ -53,6 +53,7 @@ export { SceneImage2D } from './lib/image/SceneImage2D';
 
 export { FrameScriptManager } from './lib/managers/FrameScriptManager';
 export { DefaultFontManager } from './lib/managers/DefaultFontManager';
+export { DeviceFontManager } from './lib/managers/DeviceFontManager';
 export { IInputRecorder } from './lib/managers/IInputRecorder';
 export { MouseManager } from './lib/managers/MouseManager';
 

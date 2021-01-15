@@ -43,6 +43,10 @@ DeviceFontManager.deviceFontMap[DEVICEFONT.SANS] = [
 	'_sans',
 	'Arial'];
 
+DeviceFontManager.deviceFontMap['Arial Narrow'] = [
+	'Arial Narrow'];
+DeviceFontManager.deviceFontMap['Arial Black'] = [
+	'Arial Black'];
 DeviceFontManager.deviceFontMap[DEVICEFONT.SERIF] = [];
 
 DeviceFontManager.deviceFontMap[DEVICEFONT.TYPEWRITER] = [];
