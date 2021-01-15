@@ -379,7 +379,7 @@ export class TextFormat extends AssetBase {
 	private _font: Font;
 
 	public get font_name(): string {
-		return this.font?.fontName;
+		return this.font?.name;
 	}
 
 	public update_font_table() {
