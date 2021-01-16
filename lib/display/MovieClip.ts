@@ -8,7 +8,17 @@ import { FrameScriptManager } from '../managers/FrameScriptManager';
 import { DisplayObject } from './DisplayObject';
 import { Sprite } from './Sprite';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
+interface IScene {
+	offset: number;
+	name: string;
+	labels: ILabel[];
+	numFrames: number;
+}
 
+interface ILabel {
+	frame: number;
+	name: string;
+}
 export class MovieClip extends Sprite {
 	public static mcForConstructor: MovieClip;
 	//todo: this 3 are no longer used (?)
@@ -43,6 +53,7 @@ export class MovieClip extends Sprite {
 	public preventScript: boolean = false;
 	private _timeline: Timeline;
 
+	private _scenes: IScene[] = [];
 	// buttonMode specifies if the mc has any mouse-listeners attached that should trigger showing the hand-cursor
 	// if this is set once to true; it will never get set back to false again.
 	private _buttonMode: boolean = false;
@@ -198,6 +209,43 @@ export class MovieClip extends Sprite {
 		if (this._soundStreams) {
 			this._soundStreams.syncSounds(0, false, this.parent);
 		}
+	}
+
+	public get currentScene(): IScene {
+		if (this.scenes.length == 1) {
+			if (this.scenes[0].numFrames == -1) {
+				this.scenes[0].numFrames = this.timeline.numFrames;
+			}
+			return this.scenes[0];
+		}
+		if (this.scenes.length == 0) {
+			return {
+				name: 'Scene1',
+				offset:0,
+				labels:[],
+				numFrames:this.timeline.numFrames,
+			};
+		}
+		let currentScene = this.scenes[0];
+		for (let i = 0; i < this.scenes.length; i++) {
+			const scene = this.scenes[i];
+			if (scene.offset > this.currentFrameIndex) {
+				break;
+			}
+			currentScene = scene;
+		}
+		if (currentScene.numFrames == -1) {
+			currentScene.numFrames = this.timeline.numFrames - currentScene.offset;
+		}
+		return currentScene;
+	}
+
+	public get scenes(): IScene[] {
+		return this._scenes;
+	}
+
+	public set scenes(value: IScene[]) {
+		this._scenes = value;
 	}
 
 	public get isPlaying(): boolean {
@@ -571,6 +619,7 @@ export class MovieClip extends Sprite {
 		super.copyTo(movieClip);
 		movieClip.loop = this.loop;
 		movieClip._soundStreams = this._soundStreams;
+		movieClip._scenes = this._scenes;
 		movieClip.symbolID = this.symbolID;
 
 	}
