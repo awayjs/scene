@@ -498,7 +498,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 		// TAB
 		if (char_code == '9') {
-			return (space * 8 * 20) / 20;
+			// todo: temporary change this to 2.
+			// need to implement textFormat tabstop
+			return (space * 2 * 20) / 20;
 		}
 
 		let t_font_char: TesselatedFontChar = this.getChar(char_code);
