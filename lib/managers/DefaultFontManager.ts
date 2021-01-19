@@ -11,6 +11,49 @@ export class DefaultFontManager {
 	private static _registered_fonts_by_className: any = {};
 	private static _namespaces: string[] = [];
 
+	private static _embbedCFF_fonts: any = {};
+
+	public static defineFont_CFF(fontName: string, ns: string = AssetBase.DEFAULT_NAMESPACE) {
+		this._embbedCFF_fonts || (this._embbedCFF_fonts = {});
+		this._embbedCFF_fonts[ns] || (this._embbedCFF_fonts[ns] = {});
+
+		let font: Font = this._embbedCFF_fonts[ns][fontName];
+
+		if (font) {
+			return font;
+		}
+
+		font = new Font();
+		font.name = fontName;
+		this._embbedCFF_fonts[ns][fontName] = font;
+		return font;
+	}
+
+	public static getFont_CFF(fontName: string, namespace: string = AssetBase.DEFAULT_NAMESPACE) {
+
+		if (!fontName) {
+			return DeviceFontManager.getDeviceFont(fontName);
+		}
+
+		const ns = namespace || AssetBase.DEFAULT_NAMESPACE;
+
+		this._embbedCFF_fonts || (this._embbedCFF_fonts = {});
+		this._embbedCFF_fonts[ns] || (this._embbedCFF_fonts[ns] = {});
+
+		const font: Font = this._embbedCFF_fonts[ns][fontName];
+
+		if (font) {
+			return font;
+		}
+
+		for (const key in this._embbedCFF_fonts) {
+			if (this._embbedCFF_fonts[key][fontName]) {
+				return this._embbedCFF_fonts[key][fontName];
+			}
+		}
+		return DeviceFontManager.getDeviceFont(fontName);
+	}
+
 	public static defineFont(fontName: string, ns: string = AssetBase.DEFAULT_NAMESPACE) {
 
 		//console.log('[DefaultFontManager] - defineFont', fontName, 'deviceFont:', this.deviceFontsLoading);

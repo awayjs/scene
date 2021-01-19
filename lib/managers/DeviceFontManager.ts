@@ -27,6 +27,10 @@ export class DeviceFontManager {
 	}
 
 	public static getDeviceFontName(fontName: string): string {
+		if (!fontName) {
+			// console.log('default font equested - using sans');
+			return DEVICEFONT.SANS;
+		}
 		for (const key in this.deviceFontMap) {
 			const idx = this.deviceFontMap[key].indexOf(fontName);
 			if (idx >= 0) {

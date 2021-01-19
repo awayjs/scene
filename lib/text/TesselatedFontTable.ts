@@ -99,7 +99,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 			const thisGlyph = this._opentype_font.charToGlyph(String.fromCharCode(32));
 			if (thisGlyph) {
-				this._whitespace_width = thisGlyph.advanceWidth / (this._opentype_font.unitsPerEm / 72);
+				//this._whitespace_width = thisGlyph.advanceWidth / (this._opentype_font.unitsPerEm / 72);
 			}
 			return;
 		}
@@ -463,6 +463,15 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		}
 		// todo: when updating a font we must take care that they are compatible in terms of em_size
 		this._opentype_font = newOpenTypeFont;
+		this._ascent = newOpenTypeFont.ascender;// * (1024 / newOpenTypeFont.unitsPerEm);
+		this._descent = newOpenTypeFont.descender ;//* (1024 / newOpenTypeFont.unitsPerEm);
+		this._font_em_size = newOpenTypeFont.unitsPerEm;
+
+		const space = this.getChar('32');
+		if (space) {
+			this._whitespace_width = space.char_width;
+		}
+		//console.log('changeOpenTypeFont', this._ascent, this._descent, this._font_em_size);
 	}
 
 	public initFontSize(font_size: number) {
@@ -930,25 +939,31 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 					let starty: number = 0;
 					const y_offset = this._ascent;
 					//40 = 66
-					for (i = 0;i < len;i++) {
+					const scale = (this._opentype_font.unitsPerEm / 72);
+					for (i = 0; i < len; i++) {
 						const cmd = thisPath.commands[i];
 						//console.log("cmd", cmd.type, cmd.x, cmd.y, cmd.x1, cmd.y1, cmd.x2, cmd.y2);
 						if (cmd.type === 'M') {
-							awayPath.moveTo(cmd.x, cmd.y + y_offset);
-							startx = cmd.x;
-							starty = cmd.y + y_offset;
+							awayPath.moveTo(scale * cmd.x, scale * cmd.y + y_offset);
+							startx = scale * cmd.x;
+							starty = scale * cmd.y + y_offset;
 						} else if (cmd.type === 'L') {
-							awayPath.lineTo(cmd.x, cmd.y + y_offset);
+							awayPath.lineTo(scale * cmd.x, scale * cmd.y + y_offset);
 						} else if (cmd.type === 'Q') {
-							awayPath.curveTo(cmd.x1, cmd.y1 + y_offset, cmd.x, cmd.y + y_offset);
+							awayPath.curveTo(scale * cmd.x1, scale * cmd.y1 + y_offset,
+								scale * cmd.x, scale * cmd.y + y_offset);
 						} else if (cmd.type === 'C') {
-							awayPath.cubicCurveTo(
-								cmd.x1, cmd.y1 + y_offset, cmd.x2, cmd.y2 + y_offset, cmd.x, cmd.y + y_offset);
+							const mergedX = cmd.x1 + (cmd.x2 - cmd.x1) / 2;
+							const mergedY = cmd.y1 + (cmd.y2 - cmd.y1) / 2;
+							awayPath.curveTo(scale * cmd.x1, scale * cmd.y1 + y_offset,
+								scale * mergedX, scale * mergedY + y_offset);
+							awayPath.curveTo(scale * cmd.x2, scale * cmd.y2 + y_offset,
+								scale * cmd.x, scale * cmd.y + y_offset);
 						} else if (cmd.type === 'Z') {	awayPath.lineTo(startx, starty);}
 					}
 
 					t_font_char = new TesselatedFontChar(null, null, awayPath);
-					t_font_char.char_width = (thisGlyph.advanceWidth * (1 / thisGlyph.path.unitsPerEm * 72));
+					t_font_char.char_width = thisGlyph.advanceWidth;//(1 / thisGlyph.path.unitsPerEm * 72);
 					t_font_char.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(awayPath, true);
 
 					if (!t_font_char.fill_data) {

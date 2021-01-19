@@ -6,6 +6,8 @@ import { TextFormatAlign } from './TextFormatAlign';
 import { Font } from './Font';
 import { TesselatedFontTable } from './TesselatedFontTable';
 import { DefaultFontManager } from '../managers/DefaultFontManager';
+import { FontLookUpMode } from './FontLookUpMode';
+import { DeviceFontManager } from '../managers/DeviceFontManager';
 
 /**
  * The TextFormat class represents character formatting information. Use the
@@ -45,6 +47,8 @@ const PUBLIC_FIELDS = [
 
 export class TextFormat extends AssetBase {
 	public static assetType: string = '[asset TextFormat]';
+
+	public fontLookUpMode: FontLookUpMode;
 
 	// flag marked that format is changed.
 	_updateID: number = 0;
@@ -410,7 +414,15 @@ export class TextFormat extends AssetBase {
 			return this._font;
 		}
 
-		this._font = DefaultFontManager.getFont(null);
+		if (this.fontLookUpMode == FontLookUpMode.DEFAULT) {
+			this._font = DefaultFontManager.getFont(null);
+		} else if (this.fontLookUpMode == FontLookUpMode.DEVICE) {
+			this._font = DeviceFontManager.getDeviceFont(null);
+		} else if (this.fontLookUpMode == FontLookUpMode.EMBED_CFF) {
+			this._font = DefaultFontManager.getFont_CFF(null);
+		} else {
+			console.warn('[TextFormat] - unsupported FontLookUpMode', this.fontLookUpMode);
+		}
 		this._font_table = null;
 		this._textFormatDirty = true;
 		return this._font;
@@ -525,6 +537,7 @@ export class TextFormat extends AssetBase {
 		leftMargin: number = null, rightMargin: number = null, indent: number = null, leading: number = null) {
 		super();
 
+		this.fontLookUpMode = FontLookUpMode.DEFAULT;
 		this._size = size;
 		this._color = color;
 		this._bold = bold;
@@ -553,7 +566,17 @@ export class TextFormat extends AssetBase {
 	}
 
 	private _setFontFromString(font_name: string) {
-		const asset = DefaultFontManager.getFont(font_name);
+
+		let asset;
+
+		if (this.fontLookUpMode == FontLookUpMode.DEFAULT) {
+			asset = DefaultFontManager.getFont(font_name);
+		} else if (this.fontLookUpMode == FontLookUpMode.DEVICE) {
+			asset = DeviceFontManager.getDeviceFont(font_name);
+		} else if (this.fontLookUpMode == FontLookUpMode.EMBED_CFF) {
+			asset = DefaultFontManager.getFont_CFF(font_name);
+		}
+
 		this.font = asset;
 		this._textFormatDirty = true;
 	}
