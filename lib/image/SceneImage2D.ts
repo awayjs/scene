@@ -174,9 +174,18 @@ export class SceneImage2D extends BitmapImage2D {
 	}
 
 	public get canUseMSAAInternaly () {
+
+		let minW = Settings.MSAA_MINIMAL_IMAGE_SIZE;
+		let minH = Settings.MSAA_MINIMAL_IMAGE_SIZE;
+
+		if (this._stage) {
+			minH = Math.min(this._stage.height, minH);
+			minW = Math.min(this._stage.width, minW);
+		}
+
 		return (
-			this.width >= Settings.MSAA_MINIMAL_IMAGE_SIZE &&
-			this.height >= Settings.MSAA_MINIMAL_IMAGE_SIZE &&
+			this.width >= minW &&
+			this.height >= minH &&
 			!this._msaaNeedDrop
 		);
 	}
