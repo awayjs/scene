@@ -2886,8 +2886,15 @@ export class TextField extends DisplayObjectContainer {
 	 */
 	public getCharBoundaries(charIndex: number): Rectangle {
 
-		console.log('Textfield.getCharBoundaries() not implemented');
-		return this._charBoundaries;
+		const charBounds = new Rectangle();
+		if (charIndex >= this.char_positions_x.length) {
+			return charBounds;
+		}
+		charBounds.x = this.char_positions_x[charIndex];
+		charBounds.width = this.chars_width[charIndex];
+		charBounds.y = this.char_positions_y[charIndex];
+		charBounds.height = 10; // @todo
+		return charBounds;
 	}
 
 	/**
