@@ -151,9 +151,39 @@ export class SceneImage2D extends BitmapImage2D {
 
 	private _internalSync: boolean = false;
 
-	/*private*/ _antialiasQuality: number = 0;
+	protected _msaaNeedDrop: boolean = false;
+
+	protected _dropMSAA() {
+		if (this._msaaNeedDrop || !this.canUseMSAAInternaly) {
+			return;
+		}
+
+		this._msaaNeedDrop = true;
+
+		// force dispose texture and buffers
+		// MSAA not stored in pool
+		if (this.wasUpload) {
+			// super unload not call sync, we call it
+			super.unload();
+		}
+
+		console.debug(
+			'[SceneImage2D Experemental] Drop MSAA support because a setPixel* operation called after upload.',
+			this.id
+		);
+	}
+
+	public get canUseMSAAInternaly () {
+		return (
+			this.width >= Settings.MSAA_MINIMAL_IMAGE_SIZE &&
+			this.height >= Settings.MSAA_MINIMAL_IMAGE_SIZE &&
+			!this._msaaNeedDrop
+		);
+	}
+
+	/*private*/ _antialiasQuality: number = Settings.ALLOW_FORCE_MSAA;
 	public get antialiasQuality() {
-		return this._antialiasQuality;
+		return this.canUseMSAAInternaly ? this._antialiasQuality : 0;
 	}
 
 	protected syncData(async = false): boolean | Promise<boolean> {
@@ -662,6 +692,33 @@ export class SceneImage2D extends BitmapImage2D {
 		SceneImage2D.tryStoreImage(tmp, true);
 	}
 
+	public setPixel(x: number, y: number, color: number) {
+		// we can't upload buffer in MSAA texture after creating - only render it and get
+		if (this.canUseMSAAInternaly) {
+			this._dropMSAA();
+		}
+
+		super.setPixel(x, y, color);
+	}
+
+	public setPixel32(x: number, y: number, color: number) {
+		// we can't upload buffer in MSAA texture after creating - only render it and get
+		if (this.canUseMSAAInternaly) {
+			this._dropMSAA();
+		}
+
+		super.setPixel32(x, y, color);
+	}
+
+	public setPixels(rect: Rectangle, buffer: Uint8ClampedArray) {
+		// we can't upload buffer in MSAA texture after creating - only render it and get
+		if (this.wasUpload && this.canUseMSAAInternaly) {
+			this._dropMSAA();
+		}
+
+		super.setPixels(rect, buffer);
+	}
+
 	/**
 	 * @inheritdoc
 	 */
@@ -867,8 +924,15 @@ export class SceneImage2D extends BitmapImage2D {
 			this.createRenderer();
 
 		// if need use MSAA, we create temporary image and draw to it
-		const nativeMSAA = this._stage.context.glVersion === 2 && Settings.ALLOW_FORCE_MSAA > 1;
-		const emulatedMSAA = !nativeMSAA && Settings.ALLOW_APPROXIMATION > 1;
+		const internal = this.canUseMSAAInternaly;
+		const nativeMSAA = (
+			this._stage.context.glVersion === 2 && // can be used because a webgl2
+			Settings.ALLOW_FORCE_MSAA > 1 && // because a quality is more that 1
+			!internal); // and not internal
+		const emulatedMSAA = (
+			!nativeMSAA && // doesn't suport real MSAA
+			Settings.ALLOW_APPROXIMATION > 1 // allowed to use approximation
+			&& !internal); // and not internal MSAA
 
 		let target: SceneImage2D = this;
 		let scaleRatio = 1;
@@ -955,7 +1019,7 @@ export class SceneImage2D extends BitmapImage2D {
 			root.transform.moveTo(0, this._rect.height,0);
 		}
 
-		renderer.antiAlias = target._antialiasQuality || 0;
+		renderer.antiAlias = (internal ? this.antialiasQuality :  target._antialiasQuality) || 0;
 		renderer.view.target = target;
 
 		renderer.view.projection.scale = 1000 / this._rect.height;
