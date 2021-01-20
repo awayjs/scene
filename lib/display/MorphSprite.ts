@@ -205,7 +205,8 @@ export class MorphSprite extends Sprite {
 
 			if (endCmds.length != len_cmds) {
 				len_cmds = Math.min(endCmds.length, len_cmds);
-				throw ('Error in morph data - different number of commands in contour');
+				console.warn ('[MorphSprite] - Error in morph data - different number of commands in contour');
+				return;
 			}
 			for (let c2 = 0; c2 < len_cmds; c2++) {
 				switch (startCmds[c2]) {
