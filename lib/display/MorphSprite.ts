@@ -15,6 +15,15 @@ import {
 import { Sprite } from './Sprite';
 import { IMaterial } from '@awayjs/renderer';
 
+const ONCE_EMIT_MORPH_ERROR: StringMap<boolean> = Object.create(null);
+function once(obj: any, error = '') {
+	const has = ONCE_EMIT_MORPH_ERROR[obj._id + error];
+	ONCE_EMIT_MORPH_ERROR[obj._id + error] = true;
+	if (!has) {
+		console.warn('[MorphSprite] - id', obj.id, error, obj);
+	}
+	return !has;
+}
 export class MorphSprite extends Sprite {
 
 	public static assetType: string = '[asset MorphSprite]';
@@ -205,7 +214,7 @@ export class MorphSprite extends Sprite {
 
 			if (endCmds.length != len_cmds) {
 				len_cmds = Math.min(endCmds.length, len_cmds);
-				console.warn ('[MorphSprite] - Error in morph data - different number of commands in contour');
+				once(this, 'different number of commands in contour');
 				return;
 			}
 			for (let c2 = 0; c2 < len_cmds; c2++) {
