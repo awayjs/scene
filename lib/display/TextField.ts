@@ -210,7 +210,6 @@ export class TextField extends DisplayObjectContainer {
 	private _textRuns_words: number[]=[];	// stores words-offset, word-count and width for each textrun
 	public _words_amount_prev: number;
 	private _paragraph_textRuns_indices: number[]=[];	// stores textFormat for each textrun
-	private cleanLastWord = false;
 
 	private _maxWidthLine: number=0;
 
@@ -1974,8 +1973,6 @@ export class TextField extends DisplayObjectContainer {
 		if (this._textDirty) {
 			this._positionsDirty = true;
 
-			this.cleanLastWord = false;
-
 			this.chars_codes_prev = Array.from(this.chars_codes);
 			this.tf_per_char_prev = Array.from(this.tf_per_char);
 			// we do not use last word since last word may changed.
@@ -2072,9 +2069,9 @@ export class TextField extends DisplayObjectContainer {
 		//	and the new text-shapes are created and assigned to the graphics
 
 		if (this._textShapesDirty) {
-			// to nothing
+			// do nothing
 		} else if (this.chars_codes_prev.length == 0) {
-			// to nothing
+			// do nothing
 		} else if (this.chars_codes_prev.length > this.chars_codes.length) {
 			this._textShapesDirty = true;
 		} else if (this.chars_codes_prev[0] !== this.chars_codes[0]) {
@@ -2295,7 +2292,6 @@ export class TextField extends DisplayObjectContainer {
 			}
 		}
 		if (this._wordWrap) {
-			this.cleanLastWord = true;
 			this._words_amount_prev -= 5;
 		}
 	}
@@ -2737,14 +2733,13 @@ export class TextField extends DisplayObjectContainer {
 		for (let tr = 0; tr < tr_len; tr++) {
 			if (tr_words[(tr * 4) + 1] == 0) {
 				continue;
-			} else if (tr_words[(tr * 4)] + tr_words[(tr * 4) + 1] * 5 <= this._words_amount_prev) {
-				continue;
+			// } else if (tr_words[(tr * 4)] + tr_words[(tr * 4) + 1] * 5 <= this._words_amount_prev) {
+				// continue;
 			}
 			tr_formats[tr].font_table.initFontSize(tr_formats[tr].size);
 
 			tr_formats[tr].font_table.fillTextRun(
-				this, tr_formats[tr],  tr_words[(tr * 4)],
-				tr_words[(tr * 4) + 1], tr == tr_len - 1 ? this.cleanLastWord : false); // @todo w
+				this, tr_formats[tr],  tr_words[(tr * 4)], tr_words[(tr * 4) + 1]);
 		}
 
 		let textShape: TextShape;
@@ -3711,7 +3706,6 @@ export class TextField extends DisplayObjectContainer {
 		this.tf_per_char_prev.length = 0;
 		this.chars_codes_prev.length = 0;
 		this._words_amount_prev = 0;
-		this.cleanLastWord = false;
 
 		if (this.targetGraphics)
 			this.targetGraphics.clear();

@@ -682,7 +682,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 	}
 
-	public fillTextRun(tf: TextField, format: TextFormat, startWord: number, wordCnt: number, cleanLastWord: false) {
+	public fillTextRun(tf: TextField, format: TextFormat, startWord: number, wordCnt: number) {
 
 		const useFNT: boolean = this._fntSizeLimit >= 0 &&
 			(this._fntSizeLimit == 0 || this._fntSizeLimit >= format.size);
@@ -748,16 +748,14 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			}
 		}
 
-		// drop verts to the state of previous word because prev word may be wrapped
-		if (cleanLastWord) {
-			// @todo this not supports selectable text for now
-			textShape.verts.length = tf.last_word_vertices_count || 0;
-		}
+		// drop verts to the state of previous word because last word may be wrapped or changed
+		// @todo this not supports selectable text for now
+		textShape.verts.length = tf.last_word_vertices_count || 0;
 
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
 		for (w = startWord; w < w_len; w += 5) {
-			if (w < tf._words_amount_prev) {
+			if (w < tf._words_amount_prev - 5) {
 				continue;
 			}
 			if (w == w_len - 5) {
