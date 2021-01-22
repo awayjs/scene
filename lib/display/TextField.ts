@@ -3646,6 +3646,7 @@ export class TextField extends DisplayObjectContainer {
 				}
 			}
 			this.text = textBeforeCursor + newText + textAfterCursor;
+			this._textShapesDirty = true;
 			this._selectionBeginIndex += 1;
 			this._selectionEndIndex = this._selectionBeginIndex;
 		} else {
@@ -3655,6 +3656,7 @@ export class TextField extends DisplayObjectContainer {
 				const textBeforeCursor: string = this._iText.slice(0, this._selectionBeginIndex);
 				const textAfterCursor: string = this._iText.slice(this._selectionEndIndex, this._iText.length);
 				this.text = textBeforeCursor + newText + textAfterCursor;
+				this._textShapesDirty = true;
 				this._selectionBeginIndex += 1;
 				this._selectionEndIndex = this._selectionBeginIndex;
 			}
