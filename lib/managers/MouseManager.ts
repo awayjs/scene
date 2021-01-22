@@ -386,19 +386,26 @@ export class MouseManager {
 				this._isAVM1Dragging = false;
 
 			} else if (event.type == MouseEvent.MOUSE_MOVE) {
+
 				// no event-bubbling. dispatch on stage first
 				if (!this._eventBubbling) {
 					this._stage.dispatchEvent(event);
-				} else {
-					if (event.pickerEntity)
-						this.dispatchEvent(event, event.pickerEntity);
-					else
-						this._stage.dispatchEvent(event);
-
 				}
 
-				if (this._mouseDragCollision)
+				// fire to picker
+				if (event.pickerEntity) {
+					this.dispatchEvent(event, event.pickerEntity);
+				}
+
+				if (this._mouseDragCollision) {
 					this.setupAndDispatchEvent(this._dragMove, event, this._mouseDragCollision);
+				}
+
+				// if bubling is exist, fire to stage late
+				if (this._eventBubbling) {
+					this._stage.dispatchEvent(event);
+				}
+
 			} else {
 				// MouseEvent.MOUSE_OVER / MouseEvent.MOUSE_OUT / MouseEvent.DRAG_OVER / MouseEvent.DRAG_OUT
 				this.dispatchEvent(event, dispatcher);
