@@ -59,17 +59,6 @@ export class MouseManager {
 	private _dragStart: MouseEvent = new MouseEvent(MouseEvent.DRAG_START);
 	private _dragStop: MouseEvent = new MouseEvent(MouseEvent.DRAG_STOP);
 
-	private onClickDelegate: (event) => void;
-	private onDoubleClickDelegate: (event) => void;
-	private onMouseDownDelegate: (event) => void;
-	private onMouseMoveDelegate: (event) => void;
-	private onMouseUpDelegate: (event) => void;
-	private onMouseWheelDelegate: (event) => void;
-	private onMouseOverDelegate: (event) => void;
-	private onMouseOutDelegate: (event) => void;
-	private onKeyDownDelegate: (event) => void;
-	private onKeyUpDelegate: (event) => void;
-
 	private _useSoftkeyboard: boolean = false;
 
 	public buttonEnabledDirty: boolean;
@@ -107,16 +96,17 @@ export class MouseManager {
 	 */
 	constructor(stage: Stage) {
 		this._stage = stage;
-		this.onClickDelegate = (event) => this.onClick(event);
-		this.onDoubleClickDelegate = (event) => this.onDoubleClick(event);
-		this.onMouseDownDelegate = (event) => this.onMouseDown(event);
-		this.onMouseMoveDelegate = (event) => this.onMouseMove(event);
-		this.onMouseUpDelegate = (event) => this.onMouseUp(event);
-		this.onMouseWheelDelegate = (event) => this.onMouseWheel(event);
-		this.onMouseOverDelegate = (event) => this.onMouseOver(event);
-		this.onMouseOutDelegate = (event) => this.onMouseOut(event);
-		this.onKeyDownDelegate = (event) => this.onKeyDown(event);
-		this.onKeyUpDelegate = (event) => this.onKeyUp(event);
+		this.onClick = this.onClick.bind(this);
+		this.onDoubleClick = this.onDoubleClick.bind(this);
+		this.onMouseDown = this.onMouseDown.bind(this);
+		this.onMouseMove = this.onMouseMove.bind(this);
+		this.onMouseUp = this.onMouseUp.bind(this);
+		this.onMouseWheel = this.onMouseWheel.bind(this);
+		this.onMouseOver = this.onMouseOver.bind(this);
+		this.onMouseOut = this.onMouseOut.bind(this);
+		this.onKeyDown = this.onKeyDown.bind(this);
+		this.onKeyUp = this.onKeyUp.bind(this);
+
 		this.buttonEnabledDirty = false;
 		this._isTouch = (('ontouchstart' in window) || navigator.msMaxTouchPoints > 0);
 		this._showCursor = true;
@@ -124,20 +114,23 @@ export class MouseManager {
 
 		//register stage
 		const container = this._stage.container;
-		container.addEventListener('click', this.onClickDelegate);
-		container.addEventListener('dblclick', this.onDoubleClickDelegate);
-		container.addEventListener('touchstart', this.onMouseDownDelegate);
-		container.addEventListener('mousedown', this.onMouseDownDelegate);
-		window.addEventListener('touchmove', this.onMouseMoveDelegate);
-		window.addEventListener('mousemove', this.onMouseMoveDelegate);
-		window.addEventListener('mouseup', this.onMouseUpDelegate);
-		container.addEventListener('touchend', this.onMouseUpDelegate);
-		container.addEventListener('touchend', this.onClickDelegate);
-		container.addEventListener('mousewheel', this.onMouseWheelDelegate);
-		container.addEventListener('mouseover', this.onMouseOverDelegate);
-		container.addEventListener('mouseout', this.onMouseOutDelegate);
-		window.addEventListener('keydown', this.onKeyDownDelegate);
-		window.addEventListener('keyup', this.onKeyUpDelegate);
+		container.addEventListener('click', this.onClick);
+		container.addEventListener('dblclick', this.onClick);
+		container.addEventListener('touchstart', this.onMouseDown);
+		container.addEventListener('mousedown', this.onMouseDown);
+
+		window.addEventListener('touchmove', this.onMouseMove);
+		window.addEventListener('mousemove', this.onMouseMove);
+		window.addEventListener('mouseup', this.onMouseUp);
+
+		container.addEventListener('touchend', this.onMouseUp);
+		container.addEventListener('touchend', this.onClick);
+		container.addEventListener('mousewheel', this.onMouseWheel);
+		container.addEventListener('mouseover', this.onMouseOver);
+		container.addEventListener('mouseout', this.onMouseOut);
+
+		window.addEventListener('keydown', this.onKeyDown);
+		window.addEventListener('keyup', this.onKeyUp);
 	}
 
 	public set useSoftkeyboard(value: boolean) {
@@ -147,11 +140,11 @@ export class MouseManager {
 		//	- use device-softkeyboard on tablet / mobide
 		//	- optionally use a custom softkeyboard
 		if (!value) {
-			window.addEventListener('keydown', this.onKeyDownDelegate);
-			window.addEventListener('keyup', this.onKeyUpDelegate);
+			window.addEventListener('keydown', this.onKeyDown);
+			window.addEventListener('keyup', this.onKeyUp);
 		} else if (value) {
-			window.removeEventListener('keydown', this.onKeyDownDelegate);
-			window.removeEventListener('keyup', this.onKeyUpDelegate);
+			window.removeEventListener('keydown', this.onKeyDown);
+			window.removeEventListener('keyup', this.onKeyUp);
 		}
 	}
 
@@ -162,32 +155,22 @@ export class MouseManager {
 	public dispose() {
 		//unregister stage
 		const container = this._stage.container;
-		container.removeEventListener('click', this.onClickDelegate);
-		container.removeEventListener('dblclick', this.onDoubleClickDelegate);
-		container.removeEventListener('touchstart', this.onMouseDownDelegate);
-		container.removeEventListener('mousedown', this.onMouseDownDelegate);
-		window.removeEventListener('touchmove', this.onMouseMoveDelegate);
-		window.removeEventListener('mousemove', this.onMouseMoveDelegate);
-		window.removeEventListener('mouseup', this.onMouseUpDelegate);
-		container.removeEventListener('touchend', this.onMouseUpDelegate);
-		container.removeEventListener('touchend', this.onClickDelegate);
-		container.removeEventListener('mousewheel', this.onMouseWheelDelegate);
-		container.removeEventListener('mouseover', this.onMouseOverDelegate);
-		container.removeEventListener('mouseout', this.onMouseOutDelegate);
-		window.removeEventListener('keydown', this.onKeyDownDelegate);
-		window.removeEventListener('keyup', this.onKeyUpDelegate);
+		container.removeEventListener('click', this.onClick);
+		container.removeEventListener('dblclick', this.onDoubleClick);
+		container.removeEventListener('touchstart', this.onMouseDown);
+		container.removeEventListener('mousedown', this.onMouseDown);
+		window.removeEventListener('touchmove', this.onMouseMove);
+		window.removeEventListener('mousemove', this.onMouseMove);
+		window.removeEventListener('mouseup', this.onMouseUp);
+		container.removeEventListener('touchend', this.onMouseUp);
+		container.removeEventListener('touchend', this.onClick);
+		container.removeEventListener('mousewheel', this.onMouseWheel);
+		container.removeEventListener('mouseover', this.onMouseOver);
+		container.removeEventListener('mouseout', this.onMouseOut);
+		window.removeEventListener('keydown', this.onKeyDown);
+		window.removeEventListener('keyup', this.onKeyUp);
 
 		this._stage = null;
-		this.onClickDelegate = null;
-		this.onDoubleClickDelegate = null;
-		this.onMouseDownDelegate = null;
-		this.onMouseMoveDelegate = null;
-		this.onMouseUpDelegate = null;
-		this.onMouseWheelDelegate = null;
-		this.onMouseOverDelegate = null;
-		this.onMouseOutDelegate = null;
-		this.onKeyDownDelegate = null;
-		this.onKeyUpDelegate = null;
 
 		this._mouseMoveEvent = null;
 		this._mouseUp = null;
@@ -561,8 +544,7 @@ export class MouseManager {
 		const numTouches = messageScene[cnt++];
 		const touchtype = messageScene[cnt++];
 		const activeTouchID = messageScene[cnt++];
-		let x: number = 0;
-		let y: number = 0;
+
 		if ((touchtype != 1) && (touchtype != 6) && (touchtype != 12) && (touchtype != 262) && (touchtype != 518)) {
 			// if this is not a UP command, we add all touches
 			for (i = 0; i < numTouches; i++) {
@@ -574,8 +556,7 @@ export class MouseManager {
 				//newTouchEvent.changedTouches[i] = newTouch;
 			}
 			newTouchEvent.changedTouches[0] = newTouchEvent.touches[activeTouchID];
-			x = newTouchEvent.changedTouches[0].clientX;
-			y = newTouchEvent.changedTouches[0].clientY;
+
 		} else {
 			// if this is a UP command, we add all touches, except the active one
 			if (numTouches == 1) {
@@ -586,8 +567,7 @@ export class MouseManager {
 				newTouch.clientY = messageScene[cnt++];
 				newTouchEvent.clientX = newTouch.clientX;
 				newTouchEvent.clientY = newTouch.clientY;
-				x = newTouchEvent.clientX;
-				y = newTouchEvent.clientY;
+
 			} else {
 				for (i = 0; i < numTouches; i++) {
 					const newTouch: any = {};
@@ -600,8 +580,6 @@ export class MouseManager {
 					} else {
 						newTouchEvent.clientX = newTouch.clientX;
 						newTouchEvent.clientY = newTouch.clientY;
-						x = newTouchEvent.clientX;
-						y = newTouchEvent.clientY;
 					}
 				}
 			}
@@ -638,7 +616,7 @@ export class MouseManager {
 		}
 	}
 
-	public fireEventsForSceneFromString(touchMessage: String, sceneIdx: number = 0): void {
+	public fireEventsForSceneFromString(touchMessage: String, _sceneIdx: number = 0): void {
 
 		const newTouchEvent: any = {};
 		newTouchEvent.clientX = null;// set the x position from the active touch
