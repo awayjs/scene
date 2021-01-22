@@ -94,8 +94,9 @@ export class SceneImage2D extends BitmapImage2D {
 			stage
 		);
 
-		if (msaa) {
-			result._antialiasQuality = Settings.ALLOW_FORCE_MSAA;
+		if (!msaa) {
+			result._msaaNeedDrop = true;
+			result._antialiasQuality = 0;
 		}
 
 		return result;
@@ -629,7 +630,7 @@ export class SceneImage2D extends BitmapImage2D {
 		if (source !== this) {
 			this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
 		} else {
-			const tmp = SceneImage2D.getTemp(source.width, source.height, this._stage);
+			const tmp = SceneImage2D.getTemp(source.width, source.height, this._stage, false);
 
 			if (tmp._antialiasQuality > 0) {
 				throw 'Using MSAA texture for copy pixel!';
