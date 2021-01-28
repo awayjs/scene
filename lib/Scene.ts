@@ -18,6 +18,7 @@ import { DisplayObject } from './display/DisplayObject';
 import { MaterialManager } from '@awayjs/graphics';
 import { MethodMaterial, ImageTexture2D } from '@awayjs/materials';
 import { TouchPoint } from '@awayjs/stage';
+import { BasicGLSLMaterial } from './webgl/BasicGLSLMaterial';
 
 export class Scene {
 
@@ -345,5 +346,6 @@ export class Scene {
 	}
 }
 
+MaterialManager.specialBitmapMaterialClass = BasicGLSLMaterial;
 MaterialManager.materialClass = MethodMaterial;
 MaterialManager.textureClass = ImageTexture2D;
