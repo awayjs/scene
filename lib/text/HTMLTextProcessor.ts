@@ -27,7 +27,7 @@ export class HTMLTextProcessor {
 	public processHTML(target_tf: TextField, input: string): string {
 
 		//console.log("html in", input);
-		
+
 		//input = input.replace(new RegExp('&gt;', 'g'), ' ');
 		input = input.replace(new RegExp('&nbsp;', 'g'), ' ');
 		input = input.replace(new RegExp('â', 'g'), String.fromCharCode(8730));

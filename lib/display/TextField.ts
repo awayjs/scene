@@ -2164,7 +2164,6 @@ export class TextField extends DisplayObjectContainer {
 						char_code = CHAR_CODES.LF;
 					}
 
-
 					// again skip CR
 					if (char_code === CHAR_CODES.BS && next_char_code === CHAR_CODES.R) {
 						c += 1;
