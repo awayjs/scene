@@ -2,6 +2,16 @@ import { TextField } from '../display/TextField';
 import { TextFormat } from './TextFormat';
 import { parse } from 'node-html-parser';
 
+const MNEMOS = [
+	/*{
+		test: /\&apos;/g,
+		replace: '\''
+	},*/
+	{
+		test: /\&gt;/g,
+		replace: '\>'
+	}
+];
 export class HTMLTextProcessor {
 	private static instance: HTMLTextProcessor;
 	public static get() {
@@ -17,6 +27,8 @@ export class HTMLTextProcessor {
 	public processHTML(target_tf: TextField, input: string): string {
 
 		//console.log("html in", input);
+		
+		//input = input.replace(new RegExp('&gt;', 'g'), ' ');
 		input = input.replace(new RegExp('&nbsp;', 'g'), ' ');
 		input = input.replace(new RegExp('â', 'g'), String.fromCharCode(8730));
 		input = input.replace(new RegExp('Ã', 'g'), String.fromCharCode(215));
@@ -223,7 +235,7 @@ export class HTMLTextProcessor {
 		}
 		let additional: number = 0;
 		const len: number = insert.length;
-		for (let i: number = 0; i < len;i++) {
+		for (let i: number = 0; i < len; i++) {
 			if (typeof insert[i] === 'number') {
 				input = input.slice(0, insertAt[i] + additional) + input.slice(insertAt[i] + additional + insert[i]);
 				additional -= insert[i];
@@ -233,7 +245,7 @@ export class HTMLTextProcessor {
 			}
 		}
 
-		const textProps: any = { text:'' };
+		const textProps: any = { text: '' };
 
 		target_tf._textFormats = [target_tf._textFormat];
 		target_tf._textFormatsIdx = [0];
@@ -336,8 +348,10 @@ export class HTMLTextProcessor {
 		} else if (myChild.tagName == 'font' || myChild.rawTagName == 'font') {
 			// @todo - is this one even executing in any case ? (we already support "face" attribute)
 		} else if (myChild.tagName == 'li' || myChild.rawTagName == 'li') {
-			textProps.text += '    ●    ';
+			textProps.text += '\n    ●    ';
 		} else if ((myChild.tagName == 'br' || myChild.rawTagName == 'br') && target_tf.multiline) {
+			textProps.text += '\n';
+		} else if ((myChild.tagName == 'sbr' || myChild.rawTagName == 'sbr') && target_tf.multiline) {
 			textProps.text += '\n';
 		}
 
@@ -371,7 +385,7 @@ export class HTMLTextProcessor {
 			// this is a container node
 			// for container nodes, we traverse children, but do not add any text for the parent node
 			// @todo: double check if above behavior is true for html text
-			for (let k = 0; k < myChild.childNodes.length;k++) {
+			for (let k = 0; k < myChild.childNodes.length; k++) {
 				if (target_tf._textFormats[target_tf._textFormats.length - 1] != childFormat) {
 
 					target_tf._textFormats.push(childFormat);
@@ -385,11 +399,19 @@ export class HTMLTextProcessor {
 			// if a nodes content contains only line-breaks or whitespace, FP seem to ignore it
 			const testContent: string = (<any>myChild).text.replace(/[\s\r\n]/gi, '');
 			if (testContent != '') {
-				textProps.text += (<any>myChild).text;
+
+				let newText = (<any>myChild).text;
+				for (const m of MNEMOS) {
+					newText = newText.replace(m.test, m.replace);
+				}
+				textProps.text += newText;
 			}
 		}
-		if (myChild.tagName == 'li' || myChild.tagName == 'p'
-			|| myChild.rawTagName == 'li' || myChild.rawTagName == 'p') {
+		if (myChild.tagName == 'ul' || myChild.rawTagName == 'ul'
+			|| myChild.tagName == 'li' || myChild.rawTagName == 'li') {
+			//textProps.text = '\n' + textProps.text;
+
+		} else if (myChild.tagName == 'p' || myChild.rawTagName == 'p') {
 			textProps.text += '\n';
 		}
 	}
