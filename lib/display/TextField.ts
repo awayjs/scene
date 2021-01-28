@@ -40,6 +40,10 @@ const MNEMOS = [
 	{
 		test: /\&apos;/g,
 		replace: '\''
+	},
+	{
+		test: /\&gt;/g,
+		replace: '>'
 	}
 ];
 
@@ -1462,6 +1466,13 @@ export class TextField extends DisplayObjectContainer {
 		this._labelData = null;
 		this._text = value;
 
+		/*
+		for (let i = 0; i < this._text.length; i++) {
+			const charCode = this._text.charCodeAt(i);
+			if (this._text)
+			console.log("charcodes", this._text[i], this._text.charCodeAt(i));
+		}*/
+
 		if (value != '' && ((value.charCodeAt(value.length - 1) == 13) || (value.charCodeAt(value.length - 1) == 10))) {
 			value = value.slice(0, value.length - 1);
 		}
@@ -2146,13 +2157,13 @@ export class TextField extends DisplayObjectContainer {
 				for (let c = c_start; c < c_end; c++) {
 					let char_code = thisText.charCodeAt(c);
 
+					let next_char_code = thisText.charCodeAt(c + 1);
 					// skip CR, because there are only 2 variation
 					// CRLF or LF
 					if (char_code === CHAR_CODES.CR) {
-						continue;
+						char_code = CHAR_CODES.LF;
 					}
 
-					let next_char_code = thisText.charCodeAt(c + 1);
 
 					// again skip CR
 					if (char_code === CHAR_CODES.BS && next_char_code === CHAR_CODES.R) {
@@ -2799,6 +2810,7 @@ export class TextField extends DisplayObjectContainer {
 					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
 				}
 			}
+			textShape.verts.length = 0;
 		}
 	}
 
