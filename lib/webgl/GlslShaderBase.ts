@@ -183,13 +183,6 @@ export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 		this.activeElements = null;
 	}
 
-	/**
-	 *
-	 *
-	 * @param renderable
-	 * @param stage
-	 * @param camera
-	 */
 	public _setRenderState(renderState: _Render_RenderableBase): void {
 
 		//const viewMatrixIndex = 8;
@@ -343,8 +336,8 @@ export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 
 		this._initConstantData();
 
-		const frag = this.pass._getFragmentCode(null, null);
-		const ver = this.pass._getVertexCode(null, null);
+		const frag = this.pass.fragmentCode;
+		const ver = this.pass.vertexCode;
 
 		const data = this.stage.getProgramData(frag, ver);
 

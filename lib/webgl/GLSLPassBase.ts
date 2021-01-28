@@ -1,14 +1,13 @@
 import { EventDispatcher } from '@awayjs/core';
 import {
 	IPass,
+	ISimplePass,
 	PassEvent,
 	_Render_ElementsBase,
 	_Render_RenderableBase,
 } from '@awayjs/renderer';
 
 import {
-	ShaderRegisterCache,
-	ShaderRegisterData,
 	Stage,
 } from '@awayjs/stage';
 
@@ -20,38 +19,40 @@ const FRAG = `
 precision highp float;
 
 uniform vec4 fc[2];
-vec4 ft0;
-varying vec4 vi0;
+varying vec4 vUV;
 uniform sampler2D fs0;
 
+vec4 colorTransform(vec4 color) {
+
+	color.xyz = color.xyz / color.www;
+    color = color * fc[0] + fc[1];
+	color.xyz = color.xyz * color.www;
+
+	return color;
+}
+
 void main() {
-    ft0 = vec4(texture2D(fs0, vec2(vi0)).xyzw);
-
-	ft0.xyz = vec3(ft0.xyz / ft0.www);
-    ft0 = vec4(ft0 * fc[0]);
-    ft0 = vec4(ft0 + fc[1]);
-	ft0.xyz = vec3(ft0.xyz * ft0.www);
-
-    gl_FragColor = vec4(ft0);
+	vec4 color = texture2D(fs0, vUV.xy);
+	color = colorTransform(color);
+    gl_FragColor = color;
 }
 `;
 
 const VERT = `
 precision highp float;
 
-uniform float yflip;
 uniform vec4 vc[6];
 vec4 vt0;
 attribute vec4 va0;
 attribute vec4 va1;
-varying vec4 vi0;
+varying vec4 vUV;
 vec4 outpos;
 
 void main() {
     vt0 = vec4(va0);
-    vi0.x = dot(vec4(va1), vec4(vc[0]));
-    vi0.y = dot(vec4(va1), vec4(vc[1]));
-    vi0.zw = va1.ww;
+    vUV.x = dot(vec4(va1), vec4(vc[0]));
+    vUV.y = dot(vec4(va1), vec4(vc[1]));
+    vUV.zw = va1.ww;
 
 	outpos.x = dot(vec4(vt0), vec4(vc[2]));
     outpos.y = dot(vec4(vt0), vec4(vc[3]));
@@ -70,7 +71,7 @@ export interface IUniform {
 	_location?: WebGLUniformLocation
 }
 
-export class GLSLPassBase extends EventDispatcher implements IPass {
+export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 	protected _renderMaterial: _Render_BasicGlslMaterial;
 	protected _renderElements: _Render_ElementsBase;
 	protected _texture: _GLSLShader_ImageTexture2D;
@@ -103,6 +104,14 @@ export class GLSLPassBase extends EventDispatcher implements IPass {
 
 	get vertUniforms() {
 		return this._vertUniforms;
+	}
+
+	get vertexCode() {
+		return VERT;
+	}
+
+	get fragmentCode() {
+		return FRAG;
 	}
 
 	public get shader(): GLSLShaderBase {
@@ -161,28 +170,8 @@ export class GLSLPassBase extends EventDispatcher implements IPass {
 		);
 	}
 
-	_getVertexCode(_registerCache: ShaderRegisterCache, _sharedRegisters: ShaderRegisterData): string {
-		return VERT;
-	}
-
-	_getFragmentCode(_registerCache: ShaderRegisterCache, _sharedRegisters: ShaderRegisterData): string {
-		return FRAG;
-	}
-
-	_getPostAnimationFragmentCode(_registerCache: ShaderRegisterCache, _sharedRegisters: ShaderRegisterData): string {
-		throw new Error('Method not implemented.');
-	}
-
-	_getNormalVertexCode(_registerCache: ShaderRegisterCache, _sharedRegisters: ShaderRegisterData): string {
-		throw new Error('Method not implemented.');
-	}
-
-	_getNormalFragmentCode(_registerCache: ShaderRegisterCache, _sharedRegisters: ShaderRegisterData): string {
-		throw new Error('Method not implemented.');
-	}
-
-	_includeDependencies(_shader: any): void {
-		throw new Error('Method not implemented.');
+	_includeDependencies(_shader: GLSLShaderBase): void {
+		//
 	}
 
 	/**
@@ -194,7 +183,7 @@ export class GLSLPassBase extends EventDispatcher implements IPass {
 		const texture = this._renderMaterial.material.getTextureAt(0);
 		this._texture = texture ? texture.getAbstraction<_GLSLShader_ImageTexture2D>(this._shader) : null;
 
-		this.dispatchEvent(new PassEvent(PassEvent.INVALIDATE, this));
+		this.dispatchEvent(new PassEvent(PassEvent.INVALIDATE, <IPass> <any> this));
 	}
 
 	/**
@@ -211,39 +200,15 @@ export class GLSLPassBase extends EventDispatcher implements IPass {
 		}
 	}
 
-	/**
-	 * Renders the current pass. Before calling pass, activatePass needs to be called with the same index.
-	 * @param pass The pass used to render the renderable.
-	 * @param renderable The IRenderable object to draw.
-	 * @param stage The Stage object used for rendering.
-	 * @param entityCollector The EntityCollector object that contains the visible scene data.
-	 * @param viewProjection The view-projection matrix used to project to the screen. This is not the same as
-	 * camera.viewProjection as it includes the scaling factors when rendering to textures.
-	 *
-	 * @internal
-	 */
 	public _setRenderState(renderState: _Render_RenderableBase): void {
 		this._shader._setRenderState(renderState);
 	}
 
-	/**
-	 * Sets the render state for the pass that is independent of the rendered object. This needs to be called before
-	 * calling pass. Before activating a pass, the previously used pass needs to be deactivated.
-	 * @param stage The Stage object which is currently used for rendering.
-	 * @param camera The camera from which the scene is viewed.
-	 * @private
-	 */
 	public _activate(): void {
 		this._shader._activate();
 		this._texture.activate();
 	}
 
-	/**
-	 * Clears the render state for the pass. This needs to be called before activating another pass.
-	 * @param stage The Stage used for rendering
-	 *
-	 * @private
-	 */
 	public _deactivate(): void {
 		this._shader._deactivate();
 	}

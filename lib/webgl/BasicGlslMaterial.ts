@@ -30,7 +30,8 @@ export class _Render_BasicGlslMaterial extends _Render_MaterialBase {
 		super(material, renderElements);
 
 		this._material = material;
-		this._pAddPass(this._pass = new GLSLPassBase(this, renderElements));
+		this._pass = new GLSLPassBase(this, renderElements);
+		this._pAddPass(<any> this._pass);
 	}
 
 	public onClear(event: AssetEvent): void {
