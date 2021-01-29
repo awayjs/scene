@@ -14,62 +14,69 @@ import {
 import { _Render_BasicGlslMaterial } from './BasicGlslMaterial';
 import { _GLSLShader_ImageTexture2D } from './GLSLImageTexture';
 import { GLSLShaderBase } from './GLSLShaderBase';
+import { BLOCK_TYPE, DATA_TYPE, ShaderDefinition } from './GLSLShaderGenerator';
 
-const FRAG = `
-precision highp float;
-
-uniform vec4 fc[2];
-varying vec4 vUV;
-uniform sampler2D fs0;
-
-vec4 colorTransform(vec4 color) {
-
-	color.xyz = color.xyz / color.www;
-    color = color * fc[0] + fc[1];
-	color.xyz = color.xyz * color.www;
-
-	return color;
+export interface IUniform {
+	type: string;
+	size?: number;
+	name: string;
+	data?: number[] | Float32Array,
+	_location?: WebGLUniformLocation
 }
 
-void main() {
-	vec4 color = texture2D(fs0, vUV.xy);
-	color = colorTransform(color);
-    gl_FragColor = color;
-}
-`;
+const FRAG = new ShaderDefinition([
+	'precision highp float;',
+	{ type: BLOCK_TYPE.UNIFORM, is: DATA_TYPE.SAMPLER, name: 'fs0' },
+	{ type: BLOCK_TYPE.UNIFORM, is: DATA_TYPE.VEC4, size: 2, name: 'fc', def: 'colorTransform' },
+	`
+	varying vec2 vUV;
+
+	void main() {
+		vec4 color = texture2D(fs0, vUV);	
+	`,
+	{
+		def: 'colorTransform',
+		body:
+	`
+		if(color.w > 0.0) {
+			color.xyz = color.xyz / color.www;
+		}
+		color = color * fc[0] + fc[1];
+		color.xyz = color.xyz * color.www;
+	` },
+	`	
+		gl_FragColor = color;
+	}
+	`
+]);
 
 const VERT = `
 precision highp float;
 
 uniform vec4 vc[6];
-vec4 vt0;
+
 attribute vec4 va0;
 attribute vec4 va1;
-varying vec4 vUV;
-vec4 outpos;
+
+varying vec2 vUV;
 
 void main() {
-    vt0 = vec4(va0);
-    vUV.x = dot(vec4(va1), vec4(vc[0]));
-    vUV.y = dot(vec4(va1), vec4(vc[1]));
-    vUV.zw = va1.ww;
 
-	outpos.x = dot(vec4(vt0), vec4(vc[2]));
-    outpos.y = dot(vec4(vt0), vec4(vc[3]));
-    outpos.z = dot(vec4(vt0), vec4(vc[4]));
-	outpos.w = dot(vec4(vt0), vec4(vc[5]));
+    vUV.x = dot(va1, vc[0]);
+    vUV.y = dot(va1, vc[1]);
 
-    gl_Position = vec4(outpos.x, outpos.y, outpos.z*2.0 - outpos.w, outpos.w);
+	vec4 outpos;
+
+	outpos.x = dot(va0, vc[2]);
+    outpos.y = dot(va0, vc[3]);
+    outpos.z = dot(va0, vc[4]);
+	outpos.w = dot(va0, vc[5]);
+
+	outpos.z = outpos.z * 2.0 - outpos.w;
+
+    gl_Position = outpos;
 }
 `;
-
-export interface IUniform {
-	type: '1i' | '4f' | '4f' | '3f' | '2f' | '1f',
-	vector?: boolean;
-	name: string;
-	data: number[] | Float32Array,
-	_location?: WebGLUniformLocation
-}
 
 export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 	protected _renderMaterial: _Render_BasicGlslMaterial;
@@ -85,7 +92,7 @@ export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 
 	private _fragUniforms: IUniform[] = [
 		{
-			name: 'fc', type: '4f', data: new Float32Array(4 * 2), vector: true
+			name: 'fc', type: '4f', data: new Float32Array(4 * 2)
 		},
 		{
 			name: 'fs0', type: '1i', data:[0],
@@ -94,7 +101,7 @@ export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 
 	private _vertUniforms: IUniform[] = [
 		{
-			name: 'vc', type: '4f', data: new Float32Array(4 * 6), vector: true
+			name: 'vc', type: '4f', data: new Float32Array(4 * 6)
 		},
 	]
 
@@ -106,12 +113,12 @@ export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 		return this._vertUniforms;
 	}
 
-	get vertexCode() {
+	get vertexCode(): string {
 		return VERT;
 	}
 
-	get fragmentCode() {
-		return FRAG;
+	get fragmentCode(): string {
+		return FRAG.generate(['']).body;
 	}
 
 	public get shader(): GLSLShaderBase {
