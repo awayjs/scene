@@ -49,7 +49,7 @@ export class MovieClip extends Sprite {
 		MovieClip._movieClips = [];
 	}
 
-	public symbolID: number=0;
+	public symbolID: number = 0;
 	public preventScript: boolean = false;
 	private _timeline: Timeline;
 
@@ -86,7 +86,7 @@ export class MovieClip extends Sprite {
 	private _parentSoundVolume: number;
 
 	private _soundVolume: number;
-	private _skipFramesForStream: number=0;
+	private _skipFramesForStream: number = 0;
 
 	public buttonEnabled: boolean = true;
 
@@ -221,9 +221,9 @@ export class MovieClip extends Sprite {
 		if (this.scenes.length == 0) {
 			return {
 				name: 'Scene1',
-				offset:0,
-				labels:[],
-				numFrames:this.timeline.numFrames,
+				offset: 0,
+				labels: [],
+				numFrames: this.timeline.numFrames,
 			};
 		}
 		let currentScene = this.scenes[0];
@@ -314,8 +314,8 @@ export class MovieClip extends Sprite {
 				return "initial";
 			}
 		}
-        return "initial";
-        */
+		return "initial";
+		*/
 	}
 
 	public queueFrameScripts(timeline: Timeline, frame_idx: number, scriptPass1: boolean) {
