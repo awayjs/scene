@@ -55,7 +55,6 @@ export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 	activeElements: _Stage_ElementsBase;
 	usesPremultipliedAlpha: boolean;
 	useBothSides: boolean;
-	usesColorTransform: boolean;
 	alphaThreshold: number;
 	numUsedTextures: number;
 	numUsedStreams: number;
@@ -75,6 +74,7 @@ export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 		return this._programData;
 	}
 
+	public usesColorTransform: boolean = true;
 	public usesUVTransform = true;
 	public writeDepth = true;
 	public depthCompareMode = ContextGLCompareMode.LESS_EQUAL;
@@ -334,6 +334,8 @@ export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 		this._invalidProgram = false;
 		this.reset();
 
+		this.pass.updateProgram();
+
 		this._initConstantData();
 
 		const frag = this.pass.fragmentCode;
@@ -347,6 +349,10 @@ export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 			this._programData = data;
 			this._programData.usages++;
 		}
+	}
+
+	public syncUniforms() {
+		this.pass.syncUniforms();
 	}
 
 }

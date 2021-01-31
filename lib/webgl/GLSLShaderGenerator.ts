@@ -9,20 +9,11 @@ export const enum DATA_TYPE {
 	VEC3 = 'vec3',
 	VEC2 = 'vec2',
 	FLOAT = 'float',
+	MAT2 = 'mat3',
 	MAT3 = 'mat3',
 	MAT4 = 'mat4',
 	SAMPLER = 'sampler2D'
 }
-
-const DATA_EL_SIZE = {
-	[DATA_TYPE.VEC4] : 4,
-	[DATA_TYPE.VEC3] : 3,
-	[DATA_TYPE.VEC2] : 2,
-	[DATA_TYPE.FLOAT]: 1,
-	[DATA_TYPE.MAT3]: 9,
-	[DATA_TYPE.MAT4]: 16,
-	[DATA_TYPE.SAMPLER]: 1,
-};
 
 export interface IShaderBlock {
 	type?: BLOCK_TYPE;
@@ -36,6 +27,8 @@ export interface IUniformBlock extends IShaderBlock {
 	is: DATA_TYPE;
 	size?: number;
 	name: string;
+	wasChanged?: boolean;
+	ignoreForUpload?: boolean;
 }
 
 export interface IAttrBlock extends IShaderBlock {
@@ -50,12 +43,82 @@ export interface ITextBlock {
 	def?: string
 }
 
+export interface IShaderVaraint {
+	body: string,
+	uniforms: Record<string, GLSLUniform>,
+	attrs: Record<string, IAttrBlock>,
+	cacheKey: string;
+}
+
+export class GLSLUniform implements IUniformBlock {
+	readonly type: BLOCK_TYPE.UNIFORM;
+	private _data?: number[] | Float32Array;
+	public is: DATA_TYPE;
+	public size: number = 1;
+	public name: string;
+	public wasChanged: boolean = true;
+	public def?: string;
+	public ignoreForUpload: boolean = false;
+
+	private _default: number[] | Float32Array;
+	private _updatedAfterReset = false;
+
+	constructor (simple: Omit<IUniformBlock, 'type' | 'skip'>) {
+
+		this._default = simple.data?.slice();
+		this._data = simple.data?.slice();
+		this.name = simple.name;
+		this.def = simple.def;
+		this.size = simple.size;
+		this.is = simple.is;
+		this.ignoreForUpload = !!simple.ignoreForUpload;
+	}
+
+	reset() {
+		if (this._default && this._updatedAfterReset) {
+			this._data = this._default.slice();
+		}
+	}
+
+	set data (data: number[] | Float32Array) {
+		this.set(data, true);
+	}
+
+	get data() {
+		return this._data;
+	}
+
+	set (newData: number | number[] | Float32Array, useCopy = true): boolean {
+		const value = typeof newData === 'number' ? [newData] : newData;
+		const inconsistence = this._data && this._data.length !== value.length;
+
+		if (!this._data || inconsistence) {
+			if (inconsistence && this._data) {
+				// eslint-disable-next-line max-len
+				console.warn(`[GLSLUniform] Inconsistented data length of ${this.name} of type ${this.is}. Expected: ${this._data.length}, Actual: ${value.length}`);
+			}
+
+			this._data = (useCopy ? value.slice() : value);
+
+			this.wasChanged = true;
+			this._updatedAfterReset = true;
+			return true;
+		}
+
+		this.wasChanged = false;
+
+		for (let i = 0; i < this._data.length; i++) {
+			this.wasChanged = this._data[i] !== newData[i];
+			this._data[i] = newData[i];
+		}
+
+		this._updatedAfterReset = this.wasChanged;
+		return this.wasChanged;
+	}
+}
+
 export class ShaderDefinition {
-	private _cache: Record<string, {
-		body: string,
-		uniforms: Record<string, IUniformBlock>,
-		attrs: Record<string, IAttrBlock>
-	}> = {};
+	private _cache: Record<string, IShaderVaraint> = {};
 
 	private _deifines: string[] = [];
 
@@ -64,7 +127,7 @@ export class ShaderDefinition {
 	}
 
 	constructor(
-		protected _declare: Array<IUniformBlock | IAttrBlock | ITextBlock | string>
+		protected _declare: Array<IUniformBlock | GLSLUniform | IAttrBlock | ITextBlock | string>
 	) {
 		this.validate();
 	}
@@ -98,21 +161,18 @@ export class ShaderDefinition {
 		}
 
 		const source: string[] = [];
-		const uniforms: Record<string, IUniformBlock> = {};
+		const uniforms: Record<string, GLSLUniform> = {};
 		const attrs: Record<string, IAttrBlock> = {};
 
-		for (const block of this._declare) {
+		for (let i = 0; i < this._declare.length; i++) {
+			let block = this._declare[i];
+
 			if (typeof block === 'string') {
 				source.push(block);
 				continue;
 			}
 
 			if (block.def && !defines.includes(block.def)) {
-				continue;
-			}
-
-			if (block.body) {
-				source.push(block.body);
 				continue;
 			}
 
@@ -126,14 +186,24 @@ export class ShaderDefinition {
 				source.push(
 					`${block.type} ${block.is} ${block.name}${size};`);
 
-				uniforms[block.name] = block;
+				if (!(block  instanceof GLSLUniform)) {
+					block = new GLSLUniform(block);
+				}
+
+				uniforms[block.name] = <GLSLUniform> block;
+				continue;
+			}
+
+			if (block.body) {
+				source.push(block.body);
 			}
 		}
 
 		this._cache[key] = {
 			body: source.join('\n'),
 			attrs,
-			uniforms
+			uniforms,
+			cacheKey: key
 		};
 
 		return this._cache[key];
