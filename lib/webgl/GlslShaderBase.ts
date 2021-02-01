@@ -1,12 +1,9 @@
 import {
 	AbstractionBase,
-	ColorTransform,
 	IAbstractionClass,
 	IAbstractionPool,
 	IAsset,
 	IAssetClass,
-	Matrix,
-	Matrix3D,
 } from '@awayjs/core';
 
 import {
@@ -34,10 +31,8 @@ export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 	private static _abstractionClassPool: Record<string, IAbstractionClass> = {};
 	public readonly supportModernAPI = true;
 
-	vertexConstantData: Float32Array;
-	fragmentConstantData: Float32Array;
-	viewMatrix: any;
-	sceneMatrix: any;
+	public viewMatrix: any;
+	public sceneMatrix: any;
 
 	/**
 	 *
@@ -159,6 +154,9 @@ export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 			data.program = prog;
 		}
 
+		// redefine
+		this.viewMatrix = this.pass.viewMatrix;
+
 		//set program data
 		stage.context.setProgram(data.program);
 		stage.context.setCulling(ContextGLTriangleFace.NONE, this.view.projection.coordinateSystem);
@@ -185,126 +183,7 @@ export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 		this.activeElements = null;
 	}
 
-	public _setRenderState(renderState: _Render_RenderableBase): void {
-
-		//const viewMatrixIndex = 8;
-		const uvMatrixIndex = 0;
-		const colorTransformIndex = 0;
-
-		let rawData: Float32Array;
-
-		if (this.usesUVTransform) {
-			const uvMatrix: Matrix = renderState.uvMatrix;
-
-			if (uvMatrix) {
-				this.vertexConstantData.set(uvMatrix.rawData, uvMatrixIndex);
-			} else {
-				this.vertexConstantData.set([1, 0, 0, 1, 0, 0], uvMatrixIndex);
-			}
-		}
-		if (this.usesColorTransform) {
-
-			const colorTransform: ColorTransform = renderState.sourceEntity._iAssignedColorTransform();
-
-			if (colorTransform) {
-				//TODO: AWDParser to write normalised color offsets
-				rawData = colorTransform._rawData;
-				this.fragmentConstantData[colorTransformIndex] = rawData[0];
-				this.fragmentConstantData[colorTransformIndex + 1] = rawData[1];
-				this.fragmentConstantData[colorTransformIndex + 2] = rawData[2];
-				this.fragmentConstantData[colorTransformIndex + 3] = rawData[3];
-				this.fragmentConstantData[colorTransformIndex + 4] = rawData[4] / 255;
-				this.fragmentConstantData[colorTransformIndex + 5] = rawData[5] / 255;
-				this.fragmentConstantData[colorTransformIndex + 6] = rawData[6] / 255;
-				this.fragmentConstantData[colorTransformIndex + 7] = rawData[7] / 255;
-			} else {
-				this.fragmentConstantData[colorTransformIndex] = 1;
-				this.fragmentConstantData[colorTransformIndex + 1] = 1;
-				this.fragmentConstantData[colorTransformIndex + 2] = 1;
-				this.fragmentConstantData[colorTransformIndex + 3] = 1;
-				this.fragmentConstantData[colorTransformIndex + 4] = 0;
-				this.fragmentConstantData[colorTransformIndex + 5] = 0;
-				this.fragmentConstantData[colorTransformIndex + 6] = 0;
-				this.fragmentConstantData[colorTransformIndex + 7] = 0;
-			}
-		}
-	}
-
-	/**
-     * Initializes the unchanging constant data for this shader object.
-     */
-	protected _initConstantData(): void {
-
-		//Updates the amount of used register indices.
-		let usedVC = 0;
-		let usedFC = 0;
-
-		this.pass.vertUniforms.forEach(u => {
-			if (u.type !== '1i') {
-				usedVC += u.data.length;
-			}
-		});
-
-		this.pass.fragUniforms.forEach(u => {
-			if (u.type !== '1i') {
-				usedFC += u.data.length;
-			}
-		});
-
-		this.numUsedStreams = 0;
-		this.numUsedTextures = this.pass.fragUniforms.filter((e) => e.type === '1i').length;
-
-		if (!this.vertexConstantData || this.vertexConstantData.length !== usedVC)
-			this.vertexConstantData = new Float32Array(usedVC);
-
-		if (!this.fragmentConstantData || this.fragmentConstantData.length !== usedFC)
-			this.fragmentConstantData = new Float32Array(usedFC);
-
-		const viewMatrix = 8;
-		const uvMatrix = 0;
-		const colorTransform = 0;
-
-		//Initialies viewMatrix
-		if (viewMatrix >= 0 && !this.pass.viewMatrix) {
-
-			const data = new Float32Array(this.vertexConstantData.buffer, viewMatrix * 4, 16);
-
-			if (!this.viewMatrix) {
-				this.viewMatrix = new Matrix3D(data);
-			} else {
-				this.viewMatrix._rawData = data;
-			}
-
-		} else {
-			this.viewMatrix = this.pass.viewMatrix;
-		}
-
-		//Initializes the default UV transformation matrix.
-		if (uvMatrix >= 0) {
-			this.vertexConstantData[uvMatrix] = 1;
-			this.vertexConstantData[uvMatrix + 1] = 0;
-			this.vertexConstantData[uvMatrix + 2] = 0;
-			this.vertexConstantData[uvMatrix + 3] = 0;
-			this.vertexConstantData[uvMatrix + 4] = 0;
-			this.vertexConstantData[uvMatrix + 5] = 1;
-			this.vertexConstantData[uvMatrix + 6] = 0;
-			this.vertexConstantData[uvMatrix + 7] = 0;
-		}
-
-		//Initializes the default colorTransform.
-		if (colorTransform >= 0) {
-			this.fragmentConstantData[colorTransform] = 1;
-			this.fragmentConstantData[colorTransform + 1] = 1;
-			this.fragmentConstantData[colorTransform + 2] = 1;
-			this.fragmentConstantData[colorTransform + 3] = 1;
-			this.fragmentConstantData[colorTransform + 4] = 0;
-			this.fragmentConstantData[colorTransform + 5] = 0;
-			this.fragmentConstantData[colorTransform + 6] = 0;
-			this.fragmentConstantData[colorTransform + 7] = 0;
-		}
-
-		// init constant data in pass
-		this.pass._initConstantData();
+	public _setRenderState(_renderState: _Render_RenderableBase): void {
 	}
 
 	public invalidateProgram() {
@@ -325,8 +204,6 @@ export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 		this.reset();
 
 		this.pass.updateProgram();
-
-		this._initConstantData();
 
 		const frag = this.pass.fragmentCode;
 		const ver = this.pass.vertexCode;

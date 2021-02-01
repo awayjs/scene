@@ -50,7 +50,7 @@ export class _Render_BasicGlslMaterial extends _Render_MaterialBase {
 			this._material.blendMode != BlendMode.NORMAL ||
 			this._material.alphaBlending ||
 			(this._material.colorTransform && this._material.colorTransform.alphaMultiplier < 1));
-		this._pass.preserveAlpha = this._material.preserveAlpha;//this._pRequiresBlending;
+		//this._pass.preserveAlpha = this._material.preserveAlpha;//this._pRequiresBlending;
 		this._pass.shader.setBlendMode(
 			(this._material.blendMode == BlendMode.NORMAL && this.requiresBlending)
 				? BlendMode.LAYER

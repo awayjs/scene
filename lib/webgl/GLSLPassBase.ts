@@ -25,14 +25,6 @@ import {
 	ShaderDefinition
 } from './GLSLShaderGenerator';
 
-export interface IUniform {
-	type: string;
-	size?: number;
-	name: string;
-	data?: number[] | Float32Array,
-	_location?: WebGLUniformLocation
-}
-
 const enum BASIC_SHADER_U {
 	SAMPLER = 'fs0',
 	COLOR_TRANSFORM = 'fc',
@@ -189,13 +181,14 @@ const VERT = new ShaderDefinition([
 
 	void main() {
 	
+		// transpose uvMatrix 
 		mat3 m = mat3 ( 
-			uUvMatrix[0].x, uUvMatrix[0].y, 0, //
-			uUvMatrix[0].z, uUvMatrix[1].x, 0, //
-			uUvMatrix[1].y, uUvMatrix[1].z, 1.0
+			uUvMatrix[0][0], uUvMatrix[0][1], 0, //
+			uUvMatrix[0][2], uUvMatrix[1][0], 0, //
+			uUvMatrix[1][1], uUvMatrix[1][2], 1.0
 		);
 
-		vUV = ( m * vec3(va1.xy, 1.0)).xy;
+		vUV = ( m * va1.xyw ).xy;
 
 		vec4 outpos = uSceneMatrix * va0 ;
 
@@ -215,24 +208,6 @@ export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 	protected _shader: GLSLShaderBase;
 	public name = 'GLSLPassBase';
 
-	private _preserveAlpha: boolean = true;
-	private _forceSeparateMVP: boolean = false;
-
-	private _fragUniforms: IUniform[] = [
-		{
-			name: 'fc', type: '4f', data: new Float32Array(4 * 2)
-		},
-		{
-			name: 'fs0', type: '1i', data:[0],
-		}
-	];
-
-	private _vertUniforms: IUniform[] = [
-		{
-			name: 'vc', type: '4f', data: new Float32Array(4 * 6)
-		},
-	]
-
 	private _fragVariant: IShaderVaraint;
 	private _vertVariant: IShaderVaraint;
 	private _lastProgFocusId: number = -1;
@@ -242,11 +217,11 @@ export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 	}
 
 	get fragUniforms() {
-		return this._fragUniforms;
+		return this._fragVariant.uniforms;
 	}
 
 	get vertUniforms() {
-		return this._vertUniforms;
+		return this._vertVariant.uniforms;
 	}
 
 	get vertexCode(): string {
@@ -259,40 +234,6 @@ export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 
 	public get shader(): GLSLShaderBase {
 		return this._shader;
-	}
-
-	/**
-	 * Indicates whether the output alpha value should remain unchanged compared to the material's original alpha.
-	 */
-	public get preserveAlpha(): boolean {
-		return this._preserveAlpha;
-	}
-
-	public set preserveAlpha(value: boolean) {
-		if (this._preserveAlpha == value)
-			return;
-
-		this._preserveAlpha = value;
-
-		this.invalidate();
-	}
-
-	/**
-	 * Indicates whether the screen projection should be calculated by forcing a separate scene matrix and
-	 * view-projection matrix. This is used to prevent rounding errors when using multiple passes with different
-	 * projection code.
-	 */
-	public get forceSeparateMVP(): boolean {
-		return this._forceSeparateMVP;
-	}
-
-	public set forceSeparateMVP(value: boolean) {
-		if (this._forceSeparateMVP == value)
-			return;
-
-		this._forceSeparateMVP = value;
-
-		this.invalidate();
 	}
 
 	/**
@@ -322,34 +263,13 @@ export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 		this.name = 'GLSLPassBase_' + defines.join('_');
 	}
 
-	_includeDependencies(_shader: GLSLShaderBase): void {
-		//
-	}
-
 	/**
 	 * Marks the shader program as invalid, so it will be recompiled before the next render.
 	 */
 	public invalidate(): void {
 		this._shader.invalidateProgram();
 
-		const texture = this._renderMaterial.material.getTextureAt(0);
-		this._texture = texture ? texture.getAbstraction<_GLSLShader_ImageTexture2D>(this._shader) : null;
-
 		this.dispatchEvent(new PassEvent(PassEvent.INVALIDATE, <IPass> <any> this));
-	}
-
-	/**
-	 * Cleans up any resources used by the current object.
-	 */
-	public dispose(): void {
-		this._renderMaterial = null;
-		this._renderElements = null;
-		this._stage = null;
-
-		if (this._shader) {
-			this._shader.dispose();
-			this._shader = null;
-		}
 	}
 
 	public _setRenderState(renderState: _Render_RenderableBase): void {
@@ -361,34 +281,22 @@ export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 		this.setUWhenExist(BASIC_SHADER_U.COLOR_TRANSFORM, ct && mat.useColorTransform ? ct._rawData : null);
 		this.setUWhenExist(BASIC_SHADER_U.MATRIX_UV, renderState.uvMatrix.rawData);
 
+		const texture = this._renderMaterial.material.getTextureAt(0);
+		this._texture = texture ? texture.getAbstraction<_GLSLShader_ImageTexture2D>(this._shader) : null;
+
+		this._texture.activate();
+
 		// autosynced from matrix
 		// this.setUWhenExist(BASIC_SHADER_U.MATRIX_SCENE, renderState.uvMatrix);
 	}
 
 	public _activate(): void {
 		this._shader._activate();
-		this._texture.activate();
+		//this._texture.activate();
 	}
 
 	public _deactivate(): void {
 		this._shader._deactivate();
-	}
-	/*
-	public _includeDependencies(shader: IShaderBase): void {
-		shader.alphaThreshold = (<MaterialBase> this._renderMaterial.material).alphaThreshold;
-		shader.useImageRect = (<MaterialBase> this._renderMaterial.material).imageRect;
-		shader.usesCurves = (<MaterialBase> this._renderMaterial.material).curves;
-		shader.useBothSides = (<MaterialBase> this._renderMaterial.material).bothSides;
-		shader.usesUVTransform = (<MaterialBase> this._renderMaterial.material).animateUVs;
-		shader.usesColorTransform = (<MaterialBase> this._renderMaterial.material).useColorTransform;
-
-		if (this._forceSeparateMVP)
-			this._shader.globalPosDependencies++;
-	}
-	*/
-
-	public _initConstantData(): void {
-
 	}
 
 	public syncUniforms() {
@@ -417,6 +325,20 @@ export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 		this._lastProgFocusId = prog.focusId;
 	}
 
+	/**
+	 * Cleans up any resources used by the current object.
+	 */
+	public dispose(): void {
+		this._renderMaterial = null;
+		this._renderElements = null;
+		this._stage = null;
+
+		if (this._shader) {
+			this._shader.dispose();
+			this._shader = null;
+		}
+	}
+
 	private setUWhenExist (name: string, data: any = null, clone = true): number[] | Float32Array {
 		const fu = this._fragVariant.uniforms[name];
 		const vu = this._vertVariant.uniforms[name];
@@ -433,4 +355,8 @@ export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 
 		return null;
 	}
+
+
+	_includeDependencies(_shader: GLSLShaderBase): void {}
+	_initConstantData(): void {}
 }
