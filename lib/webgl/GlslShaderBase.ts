@@ -32,8 +32,8 @@ import { GLSLPassBase } from './GLSLPassBase';
 export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 
 	private static _abstractionClassPool: Record<string, IAbstractionClass> = {};
-	vertexConstantData: any;
-	fragmentConstantData: any;
+	vertexConstantData: Float32Array;
+	fragmentConstantData: Float32Array;
 	viewMatrix: any;
 	sceneMatrix: any;
 
@@ -195,21 +195,9 @@ export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 			const uvMatrix: Matrix = renderState.uvMatrix;
 
 			if (uvMatrix) {
-				//transpose
-				rawData = uvMatrix.rawData;
-				this.vertexConstantData[uvMatrixIndex] = rawData[0];
-				this.vertexConstantData[uvMatrixIndex + 1] = rawData[2];
-				this.vertexConstantData[uvMatrixIndex + 3] = rawData[4];
-				this.vertexConstantData[uvMatrixIndex + 4] = rawData[1];
-				this.vertexConstantData[uvMatrixIndex + 5] = rawData[3];
-				this.vertexConstantData[uvMatrixIndex + 7] = rawData[5];
+				this.vertexConstantData.set(uvMatrix.rawData, uvMatrixIndex);
 			} else {
-				this.vertexConstantData[uvMatrixIndex] = 1;
-				this.vertexConstantData[uvMatrixIndex + 1] = 0;
-				this.vertexConstantData[uvMatrixIndex + 3] = 0;
-				this.vertexConstantData[uvMatrixIndex + 4] = 0;
-				this.vertexConstantData[uvMatrixIndex + 5] = 1;
-				this.vertexConstantData[uvMatrixIndex + 7] = 0;
+				this.vertexConstantData.set([1, 0, 0, 1, 0, 0], uvMatrixIndex);
 			}
 		}
 		if (this.usesColorTransform) {

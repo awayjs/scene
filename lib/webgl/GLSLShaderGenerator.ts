@@ -29,6 +29,7 @@ export interface IUniformBlock extends IShaderBlock {
 	name: string;
 	wasChanged?: boolean;
 	ignoreForUpload?: boolean;
+	mapper?: (data: number[] | Float32Array, target: number[] | Float32Array) => boolean;
 }
 
 export interface IAttrBlock extends IShaderBlock {
@@ -59,8 +60,9 @@ export class GLSLUniform implements IUniformBlock {
 	public wasChanged: boolean = true;
 	public def?: string;
 	public ignoreForUpload: boolean = false;
+	public mapper: (data: number[] | Float32Array, target: number[] | Float32Array) => boolean = null;
 
-	private _default: number[] | Float32Array;
+	protected _default: number[] | Float32Array;
 	private _updatedAfterReset = false;
 
 	constructor (simple: Omit<IUniformBlock, 'type' | 'skip'>) {
@@ -90,7 +92,7 @@ export class GLSLUniform implements IUniformBlock {
 
 	set (newData: number | number[] | Float32Array, useCopy = true): boolean {
 		const value = typeof newData === 'number' ? [newData] : newData;
-		const inconsistence = this._data && this._data.length !== value.length;
+		const inconsistence = this._data && this._data.length !== value.length && !this.mapper;
 
 		if (!this._data || inconsistence) {
 			if (inconsistence && this._data) {
@@ -99,6 +101,7 @@ export class GLSLUniform implements IUniformBlock {
 			}
 
 			this._data = (useCopy ? value.slice() : value);
+			this.mapper && this.mapper(value, this._data);
 
 			this.wasChanged = true;
 			this._updatedAfterReset = true;
@@ -107,9 +110,14 @@ export class GLSLUniform implements IUniformBlock {
 
 		this.wasChanged = false;
 
-		for (let i = 0; i < this._data.length; i++) {
-			this.wasChanged = this._data[i] !== newData[i];
-			this._data[i] = newData[i];
+		// default mapper
+		if (!this.mapper) {
+			for (let i = 0; i < this._data.length; i++) {
+				this.wasChanged = this._data[i] !== newData[i];
+				this._data[i] = newData[i];
+			}
+		} else {
+			this.wasChanged = this.mapper(value, this._data);
 		}
 
 		this._updatedAfterReset = this.wasChanged;
@@ -120,10 +128,10 @@ export class GLSLUniform implements IUniformBlock {
 export class ShaderDefinition {
 	private _cache: Record<string, IShaderVaraint> = {};
 
-	private _deifines: string[] = [];
+	private _defines: string[] = [];
 
 	public get defines() {
-		return this._deifines;
+		return this._defines;
 	}
 
 	constructor(
@@ -133,13 +141,13 @@ export class ShaderDefinition {
 	}
 
 	protected validate() {
-		this._deifines = [];
+		this._defines = [];
 
 		this._declare.forEach((e) =>  {
 			if (typeof e === 'string' || !e.def) return;
 
-			if (!this._deifines.includes(e.def))
-				this._deifines.push(e.def);
+			if (!this._defines.includes(e.def))
+				this._defines.push(e.def);
 		});
 	}
 
@@ -151,7 +159,7 @@ export class ShaderDefinition {
 			return entry;
 		}
 
-		defines = defines.filter((e) => this._deifines.includes(e));
+		defines = defines.filter((e) => this._defines.includes(e));
 		key = defines.join('_');
 
 		entry = this._cache[key];
