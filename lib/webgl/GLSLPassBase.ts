@@ -51,7 +51,7 @@ const MAPPERS = {
 				val /= 0xff;
 			}
 
-			changed = target[i] !== val;
+			changed = changed || target[i] !== val;
 			target[i] = val;
 		}
 
@@ -65,6 +65,8 @@ class MatrixLike extends GLSLUniform {
 
 		this._default = new Float32Array(16);
 		this._default[0] = this._default[5] = this._default[10] = this._default[15] = 1;
+
+		this._data = this._default.slice();
 	}
 
 	copyFrom(matrix3D: Matrix3D, _transpose: boolean) {
@@ -114,20 +116,19 @@ const VERT = new ShaderDefinition([
 	'precision highp float;',
 	{
 		type: BLOCK_TYPE.UNIFORM,
-		is: DATA_TYPE.VEC4,
+		is: DATA_TYPE.VEC3,
 		name: BASIC_SHADER_U.MATRIX_UV,
 		size: 2,
-		data: new Float32Array(2 * 4),
+		data: new Float32Array([1, 0, 0, 1, 0, 0]),
 		def: 'modern'
 	},
-	{
+	new MatrixLike({
 		type: BLOCK_TYPE.UNIFORM,
 		is: DATA_TYPE.MAT4,
 		name: BASIC_SHADER_U.MATRIX_SCENE,
 		size: 1,
-		data: new Float32Array(4 * 4),
 		def: 'modern'
-	},
+	}),
 	{
 		type: BLOCK_TYPE.UNIFORM,
 		is: DATA_TYPE.VEC4,
@@ -189,14 +190,14 @@ const VERT = new ShaderDefinition([
 	void main() {
 	
 		mat3 m = mat3 ( 
-			uUvMatrix[0].x, uUvMatrix[0].y, uUvMatrix[1].x, //
-			uUvMatrix[0].z, uUvMatrix[0].w, uUvMatrix[1].y, //
-			0.0, 0.0, 0.0
+			uUvMatrix[0].x, uUvMatrix[0].y, 0, //
+			uUvMatrix[0].z, uUvMatrix[1].x, 0, //
+			uUvMatrix[1].y, uUvMatrix[1].z, 1.0
 		);
 
-		vUV = ( vec3(va1.xy, 1.0) * m).xy;
+		vUV = ( m * vec3(va1.xy, 1.0)).xy;
 
-		vec4 outpos = va0 * uSceneMatrix;
+		vec4 outpos = uSceneMatrix * va0 ;
 
 		outpos.z = outpos.z * 2.0 - outpos.w;
 
@@ -236,7 +237,9 @@ export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 	private _vertVariant: IShaderVaraint;
 	private _lastProgFocusId: number = -1;
 
-	private viewMatrix: Matrix3D;
+	public get viewMatrix() {
+		return this._vertVariant.uniforms[BASIC_SHADER_U.MATRIX_SCENE];
+	}
 
 	get fragUniforms() {
 		return this._fragUniforms;
@@ -311,14 +314,12 @@ export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 	}
 
 	public updateProgram() {
-		const defines = ['colorTransform', 'legacy'];
+		const defines = ['colorTransform', 'modern'];
 
 		this._fragVariant = FRAG.generate(defines);
 		this._vertVariant = VERT.generate(defines);
 
 		this.name = 'GLSLPassBase_' + defines.join('_');
-
-		this.viewMatrix = new Matrix3D();
 	}
 
 	_includeDependencies(_shader: GLSLShaderBase): void {
@@ -357,12 +358,11 @@ export class GLSLPassBase extends EventDispatcher implements ISimplePass {
 		const mat = <MaterialBase> this._renderMaterial.material;
 		const ct = renderState.sourceEntity._iAssignedColorTransform();
 
-		if (ct && mat.useColorTransform) {
-			this.setUWhenExist(BASIC_SHADER_U.COLOR_TRANSFORM, ct._rawData);
-		} else {
-			this.setUWhenExist(BASIC_SHADER_U.COLOR_TRANSFORM, null);
-		}
+		this.setUWhenExist(BASIC_SHADER_U.COLOR_TRANSFORM, ct && mat.useColorTransform ? ct._rawData : null);
+		this.setUWhenExist(BASIC_SHADER_U.MATRIX_UV, renderState.uvMatrix.rawData);
 
+		// autosynced from matrix
+		// this.setUWhenExist(BASIC_SHADER_U.MATRIX_SCENE, renderState.uvMatrix);
 	}
 
 	public _activate(): void {

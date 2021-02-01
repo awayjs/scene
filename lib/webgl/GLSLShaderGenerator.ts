@@ -52,8 +52,7 @@ export interface IShaderVaraint {
 }
 
 export class GLSLUniform implements IUniformBlock {
-	readonly type: BLOCK_TYPE.UNIFORM;
-	private _data?: number[] | Float32Array;
+	readonly type = BLOCK_TYPE.UNIFORM;
 	public is: DATA_TYPE;
 	public size: number = 1;
 	public name: string;
@@ -63,6 +62,8 @@ export class GLSLUniform implements IUniformBlock {
 	public mapper: (data: number[] | Float32Array, target: number[] | Float32Array) => boolean = null;
 
 	protected _default: number[] | Float32Array;
+	protected _data?: number[] | Float32Array;
+
 	private _updatedAfterReset = false;
 
 	constructor (simple: Omit<IUniformBlock, 'type' | 'skip'>) {
@@ -113,7 +114,7 @@ export class GLSLUniform implements IUniformBlock {
 		// default mapper
 		if (!this.mapper) {
 			for (let i = 0; i < this._data.length; i++) {
-				this.wasChanged = this._data[i] !== newData[i];
+				this.wasChanged = this.wasChanged || this._data[i] !== newData[i];
 				this._data[i] = newData[i];
 			}
 		} else {
@@ -194,7 +195,7 @@ export class ShaderDefinition {
 				source.push(
 					`${block.type} ${block.is} ${block.name}${size};`);
 
-				if (!(block  instanceof GLSLUniform)) {
+				if (!(block instanceof GLSLUniform)) {
 					block = new GLSLUniform(block);
 				}
 

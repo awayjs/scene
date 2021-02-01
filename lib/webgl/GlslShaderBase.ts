@@ -32,6 +32,8 @@ import { GLSLPassBase } from './GLSLPassBase';
 export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 
 	private static _abstractionClassPool: Record<string, IAbstractionClass> = {};
+	public readonly supportModernAPI = true;
+
 	vertexConstantData: Float32Array;
 	fragmentConstantData: Float32Array;
 	viewMatrix: any;
@@ -263,7 +265,7 @@ export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 		const colorTransform = 0;
 
 		//Initialies viewMatrix
-		if (viewMatrix >= 0) {
+		if (viewMatrix >= 0 && !this.pass.viewMatrix) {
 
 			const data = new Float32Array(this.vertexConstantData.buffer, viewMatrix * 4, 16);
 
@@ -273,8 +275,8 @@ export class GLSLShaderBase implements IAbstractionPool, IShaderBase  {
 				this.viewMatrix._rawData = data;
 			}
 
-		} else if (this.viewMatrix) {
-			this.viewMatrix = null;
+		} else {
+			this.viewMatrix = this.pass.viewMatrix;
 		}
 
 		//Initializes the default UV transformation matrix.
