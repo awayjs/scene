@@ -24,6 +24,7 @@ import {
 	IEntityTraverser,
 	IPickingEntity,
 	IPartitionEntity,
+	BoundsPicker,
 } from '@awayjs/view';
 
 import {
@@ -182,8 +183,6 @@ import { IFilter } from '../adapters/IFilter';
  */
 export class DisplayObject extends AssetBase implements IBitmapDrawable, IRenderEntity, IPickingEntity {
 
-	private _partition: PartitionBase;
-
 	private _animator: IAnimator;
 	public _material: IMaterial;
 	public _style: Style;
@@ -212,7 +211,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 	public pickObjectFromTimeline: boolean;
 
-	public _implicitPartition: PartitionBase;
+	//public _implicitPartition: PartitionBase;
 
 	private _sceneTransformChanged: DisplayObjectEvent;
 	private _sceneChanged: DisplayObjectEvent;
@@ -220,13 +219,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 	private _scenePosition: Vector3D = new Vector3D();
 	private _scenePositionDirty: boolean;
-	private _explicitVisibility: boolean = true;
-	private _explicitMaskId: number = -1;
-	public _explicitMasks: Array<DisplayObject>;
-	private _implicitVisibility: boolean = true;
-	public _implicitMaskId: number = -1;
+	private _visible: boolean = true;
+	private _maskId: number = -1;
+	public _masks: Array<DisplayObject>;
+
 	public _maskOwners: Array<IPartitionEntity>;
-	private _explicitMouseEnabled: boolean = true;
+	private _mouseEnabled: boolean = true;
 	private _implicitMouseEnabled: boolean = true;
 	public _pImplicitColorTransform: ColorTransform;
 	private _listenToSceneTransformChanged: boolean;
@@ -238,8 +236,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	private _orientationMatrix: Matrix3D = new Matrix3D();
 
 	private _defaultBoundingVolume: BoundingVolumeType;
-
-	private _isDragEntity: boolean;
 
 	public cursorType: string;
 
@@ -689,23 +685,23 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (this._maskMode == value)
 			return;
 
-		let parent: PartitionBase;
+		// let parent: PartitionBase;
 
-		if (this._partition && (parent = this._partition.parent))
-			parent.removeChild(this._partition);
+		// if (this._partition && (parent = this._partition.parent))
+		// 	parent.removeChild(this._partition);
 
-		if (this._implicitPartition)
-			this._implicitPartition.clearEntity(this);
+		// if (this._implicitPartition)
+		// 	this._implicitPartition.clearEntity(this);
 
 		this._maskMode = value;
 
-		if (this._partition && parent)
-			parent.addChild(this._partition);
+		// if (this._partition && parent)
+		// 	parent.addChild(this._partition);
 
-		if (this._implicitPartition)
-			this._implicitPartition.invalidateEntity(this);
+		// if (this._implicitPartition)
+		// 	this._implicitPartition.invalidateEntity(this);
 
-		this._explicitMaskId = value ? this.id : -1;
+		this._maskId = value ? this.id : -1;
 
 		this._updateMaskMode();
 	}
@@ -721,13 +717,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (this._pickObject == value)
 			return;
 
-		if (this._pickObject)
-			this._pickObject.partition = null;
-
 		this._pickObject = value.pickObjectFromTimeline ? value.clone() : value;
 
 		if (this._pickObject) {
-			this._pickObject.partition = new BasicPartition(this._pickObject);
 			this._pickObject.mouseChildren = false;
 			this._pickObject.mouseEnabled = false;
 
@@ -752,14 +744,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 * functionality.</p>
 	 */
 	public get mouseEnabled(): boolean {
-		return this._explicitMouseEnabled;
+		return this._mouseEnabled;
 	}
 
 	public set mouseEnabled(value: boolean) {
-		if (this._explicitMouseEnabled == value)
+		if (this._mouseEnabled == value)
 			return;
 
-		this._explicitMouseEnabled = value;
+		this._mouseEnabled = value;
 	}
 
 	/**
@@ -825,24 +817,24 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		return this._parent;
 	}
 
-	/**
-	 *
-	 */
-	public get partition(): PartitionBase {
-		return this._partition;
-	}
+	// /**
+	//  *
+	//  */
+	// public get partition(): PartitionBase {
+	// 	return this._partition;
+	// }
 
-	public set partition(value: PartitionBase) {
-		if (this._partition == value)
-			return;
+	// public set partition(value: PartitionBase) {
+	// 	if (this._partition == value)
+	// 		return;
 
-		if (this._partition && this._partition.parent)
-			this._partition.parent.removeChild(this._partition);
+	// 	if (this._partition && this._partition.parent)
+	// 		this._partition.parent.removeChild(this._partition);
 
-		this._partition = value;
+	// 	this._partition = value;
 
-		this._setPartition(this._parent ? this._parent._implicitPartition : null);
-	}
+	// 	this._setPartition(this._parent ? this._parent._implicitPartition : null);
+	// }
 
 	/**
 	 * Defines the local point around which the object rotates.
@@ -1308,13 +1300,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 		this._boundsVisible = value;
 
-		if (this._boundsVisible && !this.partition)
-			this.partition = new BasicPartition(this);
+		// if (this._boundsVisible && !this.partition)
+		// 	this.partition = BasicPartition.getRootPartition(this);
 
 		this.invalidate();
 	}
 
-	public getBoundsPrimitive(pickGroup: PickGroup): DisplayObject {
+	public getBoundsPrimitive(picker: BoundsPicker): DisplayObject {
 		if (this._boundsPrimitive == null) {
 			switch (this._defaultBoundingVolume) {
 				case BoundingVolumeType.BOX:
@@ -1339,7 +1331,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		}
 
 		if (this._boundsPrefabDirty)
-			this._updateBoundsPrefab(pickGroup);
+			this._updateBoundsPrefab(picker);
 
 		if (this._boundsPrimitiveDirty)
 			this._updateBoundsPrimitive();
@@ -1395,27 +1387,27 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 * InteractiveObject instance, it cannot be clicked.
 	 */
 	public get visible(): boolean {
-		return this._explicitVisibility;
+		return this._visible;
 	}
 
 	public set visible(value: boolean) {
-		if (this._explicitVisibility == value)
+		if (this._visible == value)
 			return;
 
-		this._explicitVisibility = value;
+		this._visible = value;
 
 		this._invalidateHierarchicalProperties(HierarchicalProperties.VISIBLE);
 	}
 
 	public get masks(): Array<DisplayObject> {
-		return this._explicitMasks;
+		return this._masks;
 	}
 
 	public set masks(value: Array<DisplayObject>) {
-		if (this._explicitMasks == value)
+		if (this._masks == value)
 			return;
 
-		this._explicitMasks = value;
+		this._masks = value;
 
 		//make sure maskMode is set to true for all masks
 		if (value != null && value.length) {
@@ -1587,7 +1579,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 		displayObject.boundsVisible = this._boundsVisible;
 		displayObject.name = this._pName;
-		displayObject.mouseEnabled = this._explicitMouseEnabled;
+		displayObject.mouseEnabled = this._mouseEnabled;
 		displayObject.extra = this.extra;
 		displayObject.maskMode = this._maskMode;
 		displayObject.castsShadows = this.castsShadows;
@@ -1597,8 +1589,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		displayObject.avm1Symbol = this.avm1Symbol;
 		displayObject.isAVMScene = this.isAVMScene;
 
-		if (this._explicitMasks)
-			displayObject.masks = this._explicitMasks;
+		if (this._masks)
+			displayObject.masks = this._masks;
 
 		if (this._animator)
 			displayObject.animator = this._animator.clone();
@@ -1640,7 +1632,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		//this._concatenatedMatrix3D = null;
 		//this._inverseSceneTransform = null;
 
-		this._explicitMasks = null;
+		this._masks = null;
 
 		// if (this._partition) {
 		// 	this._partition.dispose();
@@ -1792,24 +1784,30 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 * @internal
 	 */
 	public _setParent(parent: DisplayObjectContainer): void {
+		if (this._parent == parent)
+			return;
+
+		//can this be optimised for cases where displayobject is not switching partitions?
+		this.clear();
+
 		//if there is a new parent, the addChild(partition) will remove from the previous partition
 		// if (!parent && this._partition)
 		// 	this._parent._implicitPartition.removeChild(this._partition);
 
-		if (this._partition) {
-			//if there is a new parent, the addChild(partition) will remove from the previous partition
-			if (!parent && (this._parent && this._parent._implicitPartition)) {
-				this._parent._implicitPartition.removeChild(this._partition);
+		// if (this._partition) {
+		// 	//if there is a new parent, the addChild(partition) will remove from the previous partition
+		// 	if (!parent && (this._parent && this._parent._implicitPartition)) {
+		// 		this._parent._implicitPartition.removeChild(this._partition);
 
-				this.clear();
-			} else if (this._implicitPartition && this._implicitPartition == this._partition && this.isEntity()) {
-				this._implicitPartition.invalidateEntity(this);
-			}
-		}
+		// 		this.clear();
+		// 	} else if (this._implicitPartition && this._implicitPartition == this._partition && this.isEntity()) {
+		// 		this._implicitPartition.invalidateEntity(this);
+		// 	}
+		// }
 
 		this._parent = parent;
 
-		this._setPartition((parent && parent._implicitPartition) ? parent._implicitPartition : null);
+		// this._setPartition((parent && parent._implicitPartition) ? parent._implicitPartition : null);
 
 		this._invalidateHierarchicalProperties(HierarchicalProperties.ALL);
 	}
@@ -1845,37 +1843,37 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		return false;
 	}
 
-	/**
-	 * @protected
-	 */
-	public _setPartition(parentPartition: PartitionBase): boolean {
-		if (parentPartition && this._partition == null)
-			this._partition = parentPartition.getPartition(this) || this._partition;
+	// /**
+	//  * @protected
+	//  */
+	// public _setPartition(parentPartition: PartitionBase): boolean {
+	// 	if (parentPartition && this._partition == null)
+	// 		this._partition = parentPartition.getPartition(this) || this._partition;
 
-		//add partition as a child of parentPartition
-		if (this._partition && parentPartition)
-			parentPartition.addChild(this._partition);
+	// 	//add partition as a child of parentPartition
+	// 	if (this._partition && parentPartition)
+	// 		parentPartition.addChild(this._partition);
 
-		// assign parent partition if _partition is null
-		const partition: PartitionBase = this._partition || parentPartition;
+	// 	// assign parent partition if _partition is null
+	// 	const partition: PartitionBase = this._partition || parentPartition;
 
-		if (this._implicitPartition == partition)
-			return true;
+	// 	if (this._implicitPartition == partition)
+	// 		return true;
 
-		//gc any old abstraction objects
-		if (this._implicitPartition)
-			this.clear();
+	// 	//gc any old abstraction objects
+	// 	if (this._implicitPartition)
+	// 		this.clear();
 
-		this._implicitPartition = partition;
+	// 	this._implicitPartition = partition;
 
-		//register entity with new partition
-		if (this._implicitPartition && this.isEntity())
-			this._implicitPartition.invalidateEntity(this);
+	// 	//register entity with new partition
+	// 	if (this._implicitPartition && this.isEntity())
+	// 		this._implicitPartition.invalidateEntity(this);
 
-		this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
+	// 	this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
 
-		return false;
-	}
+	// 	return false;
+	// }
 
 	/**
 	 * @protected
@@ -1945,31 +1943,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	/**
 	 * @internal
 	 */
-	public _iIsVisible(): boolean {
-		if (this._hierarchicalPropsDirty & HierarchicalProperties.VISIBLE)
-			this._updateVisible();
-
-		return this._implicitVisibility;
-	}
-
-	/**
-	 * @internal
-	 */
 	public get maskId(): number {
-		if (this._hierarchicalPropsDirty & HierarchicalProperties.MASK_ID)
-			this._updateMaskId();
-
-		return this._implicitMaskId;
-	}
-
-	/**
-	 * @internal
-	 */
-	public get maskOwners(): Array<IPartitionEntity> {
-		if (this._hierarchicalPropsDirty & HierarchicalProperties.MASKS)
-			this._updateMaskOwners();
-
-		return this._maskOwners;
+		return this._maskId;
 	}
 
 	public _iAssignedColorTransform(): ColorTransform {
@@ -1977,43 +1952,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 			this._updateColorTransform();
 
 		return this._pImplicitColorTransform || (this._pImplicitColorTransform = new ColorTransform());
-	}
-
-	public _startDrag(): void {
-		this._isDragEntity = true;
-	}
-
-	public _stopDrag(): void {
-		this._isDragEntity = false;
-	}
-
-	public isDragEntity(): boolean {
-		return this._isDragEntity;
-	}
-
-	/**
-	 * @internal
-	 */
-	public _iIsMouseEnabled(): boolean {
-		if (this._hierarchicalPropsDirty & HierarchicalProperties.MOUSE_ENABLED)
-			this._updateMouseEnabled();
-
-		return this._implicitMouseEnabled && this._explicitMouseEnabled;
-	}
-
-	public isDescendant(displayObject: DisplayObject): boolean {
-		let parent: DisplayObject = this;
-		while (parent.parent) {
-			parent = parent.parent;
-			if (parent == displayObject)
-				return true;
-		}
-
-		return false;
-	}
-
-	public isAncestor(displayObject: DisplayObject): boolean {
-		return displayObject.isDescendant(this);
 	}
 
 	public _acceptTraverser(traverser: IEntityTraverser): void {
@@ -2032,6 +1970,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 				this.masks.push(this._scrollRectSprite);
 			}
 		}
+	}
+
+	public _addedToPartition(partition: PartitionBase) {
+		if (this.isEntity())
+			partition.invalidateEntity(this);
 	}
 
 	/**
@@ -2087,44 +2030,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		this._transform.invalidateMatrix3D();
 	}
 
-	public _updateMouseEnabled(): void {
-		this._implicitMouseEnabled = (this._parent)
-			? this._parent.mouseChildren && this._parent._implicitMouseEnabled
-			: true;
-
-		this._hierarchicalPropsDirty ^= HierarchicalProperties.MOUSE_ENABLED;
-	}
-
-	private _updateVisible(): void {
-		this._implicitVisibility = (this._parent)
-			? this._explicitVisibility && this._parent._iIsVisible()
-			: this._explicitVisibility;
-
-		this._hierarchicalPropsDirty ^= HierarchicalProperties.VISIBLE;
-	}
-
-	private _updateMaskId(): void {
-		this._implicitMaskId = (this._explicitMaskId != -1)
-			? this._explicitMaskId
-			: (this._parent && this._parent.maskId != -1)
-				? this._parent.maskId
-				: -1;
-
-		this._hierarchicalPropsDirty ^= HierarchicalProperties.MASK_ID;
-	}
-
-	private _updateMaskOwners(): void {
-		this._maskOwners = (this._parent && this._parent.maskOwners && this.maskId == -1)
-			? this._explicitMasks
-				? this._parent.maskOwners.concat([this])
-				: this._parent.maskOwners.concat()
-			: (this._explicitMasks != null)
-				? [this]
-				: null;
-
-		this._hierarchicalPropsDirty ^= HierarchicalProperties.MASKS;
-	}
-
 	private _updateColorTransform(): void {
 		if (!this._pImplicitColorTransform)
 			this._pImplicitColorTransform = new ColorTransform();
@@ -2145,9 +2050,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		this._hierarchicalPropsDirty ^= HierarchicalProperties.COLOR_TRANSFORM;
 	}
 
-	private _updateBoundsPrefab(pickGroup: PickGroup): void {
+	private _updateBoundsPrefab(picker: BoundsPicker): void {
 		if (this._boundsPrefab instanceof PrimitiveCubePrefab) {
-			const picker = pickGroup.getBoundsPicker(this.partition);
 			const box = (<BoundingBox> picker.getBoundingVolume(null, this._defaultBoundingVolume)).getBox();
 
 			//TODO: if box is null, no prefab should be visible
@@ -2165,7 +2069,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 		} else if (this._boundsPrefab instanceof PrimitiveSpherePrefab) {
 
-			const picker = pickGroup.getBoundsPicker(this.partition);
 			const sphere: Sphere = (<BoundingSphere> picker.getBoundingVolume(
 				null,
 				this._defaultBoundingVolume)).getSphere();
@@ -2199,13 +2102,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 			this.mouseEnabled = false;
 
 		this._invalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
-	}
-
-	public invalidate(): void {
-		super.invalidate();
-
-		if (this._implicitPartition && this.isEntity())
-			this._implicitPartition.invalidateEntity(this);
 	}
 
 	public clear(): void {

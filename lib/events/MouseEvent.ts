@@ -1,6 +1,6 @@
 import { Point, Vector3D, EventBase } from '@awayjs/core';
 
-import { IPartitionEntity, IPickingEntity, ITraversable, View } from '@awayjs/view';
+import { EntityNode, IContainerNode, INode, IPartitionEntity, IPickingEntity, ITraversable, View } from '@awayjs/view';
 
 import { IMaterial } from '@awayjs/renderer';
 
@@ -11,7 +11,7 @@ import { IMaterial } from '@awayjs/renderer';
 export class MouseEvent extends EventBase {
 	// Private.
 	public _iParentEvent: MouseEvent;
-	public commonAncestor: IPickingEntity;
+	public commonAncestor: INode;
 
 	/**
 	 * Defines the value of the type property of a mouseOver3d event object.
@@ -122,12 +122,12 @@ export class MouseEvent extends EventBase {
 	/**
 	 * The entity inside which the event took place.
 	 */
-	public entity: IPartitionEntity;
+	public entity: EntityNode;
 
 	/**
 	 * The entity of the picker inside which the event took place.
 	 */
-	public pickerEntity: IPickingEntity;
+	public pickerEntity: IContainerNode;
 
 	/**
 	 * The traversable owner inside which the event took place.
@@ -258,14 +258,14 @@ export class MouseEvent extends EventBase {
 	 * The position in scene space where the event took place
 	 */
 	public get scenePosition(): Vector3D {
-		return this.entity.transform.concatenatedMatrix3D.transformVector(this.position);
+		return this.entity.entity.transform.concatenatedMatrix3D.transformVector(this.position);
 	}
 
 	/**
 	 * The normal in scene space where the event took place
 	 */
 	public get sceneNormal(): Vector3D {
-		const sceneNormal: Vector3D = this.entity.transform.concatenatedMatrix3D.deltaTransformVector(this.normal);
+		const sceneNormal: Vector3D = this.entity.entity.transform.concatenatedMatrix3D.deltaTransformVector(this.normal);
 		sceneNormal.normalize();
 
 		return sceneNormal;

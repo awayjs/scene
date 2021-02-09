@@ -13,20 +13,20 @@ export class SceneGraphNode extends NodeBase {
 	 * @param traverser
 	 */
 	public acceptTraverser(traverser: IPartitionTraverser): void {
-		if (this._partition.root == this._entity)
-			this._partition.updateEntities();
+		if (this.partition.rootNode == this)
+			this.partition.updateEntities();
 
 		//get the sub-traverser for the partition, if different, terminate this traversal
-		if (traverser.partition != this._partition && traverser != traverser.getTraverser(this._partition))
+		if (traverser.partition != this.partition && traverser != traverser.getTraverser(this.partition))
 			return;
 
 		if (!traverser.enterNode(this))
 			return;
 
 		let i: number;
-		const len = (<DisplayObjectContainer> this._entity)._children.length;
+		const len = (<DisplayObjectContainer> this.entity)._children.length;
 		for (i = len - 1; i >= 0; i--)
-			this._enitityIDsToNodes[(<DisplayObjectContainer> this._entity)._children[i].id].acceptTraverser(traverser);
+			this._enitityIDsToNodes[(<DisplayObjectContainer> this.entity)._children[i].id].acceptTraverser(traverser);
 
 		if (this._graphicsNode) {
 			this._graphicsNode.acceptTraverser(traverser);
@@ -38,17 +38,13 @@ export class SceneGraphNode extends NodeBase {
 	 * @param node
 	 * @internal
 	 */
-	public iAddNode(node: EntityNode): void {
+	public addNode(node: EntityNode): void {
 		node.parent = this;
-		if (this._entity == node.entity) {
+		if (this.entity == node.entity) {
 			this._graphicsNode = node;
 		} else {
 			this._enitityIDsToNodes[node.entity.id] = node;
 		}
-	}
-
-	public isVisible(): boolean {
-		return this._entity._iIsVisible();
 	}
 
 	/**
@@ -56,7 +52,9 @@ export class SceneGraphNode extends NodeBase {
 	 * @param node
 	 * @internal
 	 */
-	public iRemoveNode(node: EntityNode): void {
+	public removeNode(node: EntityNode): void {
+		node.parent = null;
+
 		if (this._graphicsNode == node) {
 			this._graphicsNode = null;
 		} else {

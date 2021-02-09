@@ -7,9 +7,8 @@ import { Stage, BitmapImage2D } from '@awayjs/stage';
 import { DefaultRenderer, RenderGroup, RendererType } from '@awayjs/renderer';
 
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
-import { SceneGraphPartition } from '../partition/SceneGraphPartition';
 
-import { View } from '@awayjs/view';
+import { BasicPartition, NodePool, View } from '@awayjs/view';
 import { Sprite } from '../display/Sprite';
 import { Shape } from '@awayjs/graphics';
 
@@ -29,10 +28,8 @@ export class FNTGenerator {
 
 		//create the view
 		this._root = new DisplayObjectContainer();
-		this._renderer = <DefaultRenderer> RenderGroup.getInstance(
-			new View(projection, stage, null, null, null, true), RendererType.DEFAULT).getRenderer(
-			new SceneGraphPartition(this._root));
-		this._root.partition = this._renderer.partition;
+		this._renderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, stage, null, null, null, true), RendererType.DEFAULT).getRenderer(NodePool.getRootNode(this._root, BasicPartition).partition);
+		//this._root.partition = this._renderer.partition;
 
 		//setup the projection
 		this._renderer.view.projection = projection;

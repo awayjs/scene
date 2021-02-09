@@ -26,7 +26,7 @@ import { DisplayObject } from '../display/DisplayObject';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 import { SceneGraphPartition } from '../partition/SceneGraphPartition';
 
-import { View } from '@awayjs/view';
+import { PartitionPool, View } from '@awayjs/view';
 import { MaterialBase, MethodMaterial } from '@awayjs/materials';
 import { Billboard } from '../display/Billboard';
 import { Settings } from '../Settings';
@@ -411,11 +411,11 @@ export class SceneImage2D extends BitmapImage2D {
 		//create the view
 		SceneImage2D._root = new DisplayObjectContainer();
 		SceneImage2D._renderer = <DefaultRenderer> RenderGroup.getInstance(
-			new View(projection, this._stage, null, null, null, true),
-			RendererType.DEFAULT)
-			.getRenderer(new SceneGraphPartition(SceneImage2D._root));
+			new View(projection, this._stage, null, null, null, true), RendererType.DEFAULT)
+			.getRenderer(PartitionPool
+							.getRootPartition(SceneGraphPartition, SceneImage2D._root));
 
-		SceneImage2D._root.partition = SceneImage2D._renderer.partition;
+		//SceneImage2D._root.partition = SceneImage2D._renderer.partition;
 
 		//SceneImage2D._renderer.antiAlias = Settings.ALLOW_FORCE_MSAA;
 		//setup the projection
@@ -440,11 +440,11 @@ export class SceneImage2D extends BitmapImage2D {
 		//create the view
 		SceneImage2D._billboardRoot = new DisplayObjectContainer();
 		SceneImage2D._billboardRenderer = <DefaultRenderer> RenderGroup.getInstance(
-			new View(projection,this._stage, null, null, null, true),
-			RendererType.DEFAULT)
-			.getRenderer(new SceneGraphPartition(SceneImage2D._billboardRoot));
+			new View(projection,this._stage, null, null, null, true), RendererType.DEFAULT)
+			.getRenderer(PartitionPool
+							.getRootPartition(SceneGraphPartition, SceneImage2D._billboardRoot));
 
-		SceneImage2D._billboardRoot.partition = SceneImage2D._billboardRenderer.partition;
+		//SceneImage2D._billboardRoot.partition = SceneImage2D._billboardRenderer.partition;
 
 		//SceneImage2D._renderer.antiAlias = Settings.ALLOW_FORCE_MSAA;
 		//setup the projection

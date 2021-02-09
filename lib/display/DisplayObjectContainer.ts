@@ -101,10 +101,6 @@ export class DisplayObjectContainer extends DisplayObject {
 	 * functionality.</p>
 	 */
 	public get mouseChildren(): boolean {
-		//ensure the update of _implicitMouseEnabled for cases where child _implicitMouseEnabled is calculated
-		if (this._hierarchicalPropsDirty & HierarchicalProperties.MOUSE_ENABLED)
-			this._updateMouseEnabled();
-
 		return this._mouseChildren;
 	}
 
@@ -564,26 +560,33 @@ export class DisplayObjectContainer extends DisplayObject {
 		if (super._invalidateHierarchicalProperties(propDirty))
 			return true;
 
-		const len: number = this._children.length;
-		for (let i: number = 0; i < len; ++i)
+		for (let i: number = 0; i < this._children.length; ++i)
 			this._children[i]._invalidateHierarchicalProperties(propDirty);
 
 		return false;
 	}
 
-	/**
-	 * @internal
-	 */
-	public _setPartition(parentPartition: PartitionBase): boolean {
-		if (super._setPartition(parentPartition))
-			return true;
+	
+	public _addedToPartition(partition: PartitionBase) {
+		super._addedToPartition(partition);
 
-		const len: number = this._children.length;
-		for (let i: number = 0; i < len; ++i)
-			this._children[i]._setPartition(this._implicitPartition);
-
-		return false;
+		for (let i: number = 0; i < this._children.length; ++i)
+			this._children[i]._addedToPartition(partition.getPartition(this._children[i]));
 	}
+
+	// /**
+	//  * @internal
+	//  */
+	// public _setPartition(parentPartition: PartitionBase): boolean {
+	// 	if (super._setPartition(parentPartition))
+	// 		return true;
+
+	// 	const len: number = this._children.length;
+	// 	for (let i: number = 0; i < len; ++i)
+	// 		this._children[i]._setPartition(this._implicitPartition);
+
+	// 	return false;
+	// }
 
 	/**
 	 * @private

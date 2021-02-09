@@ -5,7 +5,6 @@ export { IMovieClipAdapter } from './lib/adapters/IMovieClipAdapter';
 export { IFilter } from './lib/adapters/IFilter';
 
 export { AlignmentMode } from './lib/base/AlignmentMode';
-export { HierarchicalProperties } from './lib/base/HierarchicalProperties';
 export { IBitmapDrawable } from './lib/base/IBitmapDrawable';
 export { OrientationMode } from './lib/base/OrientationMode';
 export { IFrameScript } from './lib/base/IFrameScript';

@@ -1,4 +1,5 @@
-import { IPartitionEntity, PartitionBase } from '@awayjs/view';
+import { IAbstractionClass } from '@awayjs/core';
+import { IPartitionEntity, PartitionBase, PartitionPool } from '@awayjs/view';
 
 import { SceneGraphNode } from './SceneGraphNode';
 
@@ -6,14 +7,8 @@ import { SceneGraphNode } from './SceneGraphNode';
  * @class away.partition.Partition
  */
 export class SceneGraphPartition extends PartitionBase {
-	constructor(root: IPartitionEntity, isScene: boolean = false) {
-		super(root, isScene);
-
-		this._rootNode = new SceneGraphNode(root, this);
-	}
-
-	public getPartition(entity: IPartitionEntity): PartitionBase {
-		//get a new partition for every displayobjectcontainer
-		return new SceneGraphPartition(entity);
+	
+	protected _getRootNode(): SceneGraphNode {
+		return new SceneGraphNode(<IPartitionEntity> this._asset, this);
 	}
 }

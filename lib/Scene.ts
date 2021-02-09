@@ -7,6 +7,7 @@ import {
 	TabPicker,
 	RaycastPicker,
 	PickGroup,
+	PartitionPool,
 } from '@awayjs/view';
 import { RendererBase, RenderGroup, RendererType } from '@awayjs/renderer';
 
@@ -75,10 +76,10 @@ export class Scene {
 		if (this._camera) {
 			this._camera.clear();
 			this._partition.invalidateEntity(this._camera);
-			this._camera.partition = this._partition;
+			//this._camera.partition = this._partition;
 		}
 
-		this._partition.root.partition = this._partition;
+		//this._partition.root.partition = this._partition;
 
 		//this._disposeRenderer();
 	}
@@ -132,7 +133,7 @@ export class Scene {
 
 		this._rendererType = rendererType || RendererType.DEFAULT;
 		this.view = view || new View();
-		this.partition = partition || new BasicPartition(new DisplayObjectContainer());
+		this.partition = partition || (PartitionPool.getRootPartition(BasicPartition, new DisplayObjectContainer()));
 		this.camera = camera || new Camera();
 
 		//			if (this._shareContext)
@@ -146,10 +147,6 @@ export class Scene {
 			this._renderer = RenderGroup.getInstance(this._view, this._rendererType).getRenderer(this._partition);
 
 		return this._renderer;
-	}
-
-	public get root(): DisplayObjectContainer {
-		return <DisplayObjectContainer> this._partition.root;
 	}
 
 	public get mouseX(): number {
@@ -246,7 +243,7 @@ export class Scene {
 			this._view.projection = this._camera.projection;
 
 		this._partition.invalidateEntity(this._camera);
-		this._camera.partition = this._partition;
+		//this._camera.partition = this._partition;
 	}
 
 	/**

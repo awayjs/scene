@@ -2,7 +2,7 @@ import { AssetEvent } from '@awayjs/core';
 
 import { BlendMode, ImageCube } from '@awayjs/stage';
 
-import { PickingCollision, PartitionBase, BoundingVolumeType } from '@awayjs/view';
+import { PickingCollision, PartitionBase, BoundingVolumeType, INode } from '@awayjs/view';
 
 import { IAnimationSet, IMaterial, ITexture, RenderableEvent,
 	MaterialEvent, Style, StyleEvent, IRenderEntity, RenderGroup } from '@awayjs/renderer';
@@ -337,7 +337,7 @@ export class _Render_Skybox extends _Render_RenderableBase {
 }
 
 import { Plane3D } from '@awayjs/core';
-import { IEntityTraverser, EntityNode, IPartitionEntity, PickGroup } from '@awayjs/view';
+import { IEntityTraverser, EntityNode, PickGroup } from '@awayjs/view';
 
 /**
  * SkyboxNode is a space partitioning leaf node that contains a Skybox object.
@@ -351,9 +351,9 @@ export class SkyboxNode extends EntityNode {
 	 * @param numPlanes
 	 * @returns {boolean}
 	 */
-	public isInFrustum(rootEntity: IPartitionEntity, planes: Array<Plane3D>,
+	public isInFrustum(rootEntity: INode, planes: Array<Plane3D>,
 		numPlanes: number, pickGroup: PickGroup): boolean {
-		if (!this.isVisible())
+		if (this.isInvisible())
 			return false;
 
 		//a skybox is always in view unless its visibility is set to false

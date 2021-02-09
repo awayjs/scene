@@ -1,7 +1,7 @@
 import { Vector3D } from '@awayjs/core';
 import { Stage } from '@awayjs/stage';
 
-import { PickingCollision, RaycastPicker, IPartitionEntity, IPickingEntity } from '@awayjs/view';
+import { PickingCollision, RaycastPicker, ContainerNode, INode, IPartitionContainer } from '@awayjs/view';
 
 import { KeyboardEvent } from '../events/KeyboardEvent';
 import { MouseEvent } from '../events/MouseEvent';
@@ -26,7 +26,7 @@ export class MouseManager {
 
 	private _mouseDragCollision: PickingCollision;     // entity hit on mouse-down
 	private _mouseDragging: boolean;            // true while mosue is dragged
-	private _currentFocusEntity: IPickingEntity;       // entity currently in focus
+	private _currentFocusEntity: IPartitionContainer;       // entity currently in focus
 
 	public allowKeyInput: boolean=true;
 
@@ -203,7 +203,7 @@ export class MouseManager {
 
 	}
 
-	public setFocus(obj: IPickingEntity) {
+	public setFocus(obj: IPartitionContainer) {
 		if (this._currentFocusEntity == obj) {
 			return;
 		}
@@ -221,10 +221,10 @@ export class MouseManager {
 		return this._currentFocusEntity;
 	}
 
-	private dispatchEvent(event: MouseEvent, dispatcher: IPartitionEntity) {
+	private dispatchEvent(event: MouseEvent, dispatcher: ContainerNode) {
 		if (!this._eventBubbling) {
 			if (dispatcher) {
-				dispatcher.dispatchEvent(event);
+				dispatcher.entity.dispatchEvent(event);
 				FrameScriptManager.execute_queue();
 			}
 			return;
@@ -234,8 +234,8 @@ export class MouseManager {
 			if (event.commonAncestor && dispatcher == event.commonAncestor) {
 				return;
 			}
-			if (dispatcher._iIsMouseEnabled()) {
-				dispatcher.dispatchEvent(event);
+			if (!dispatcher.isMouseDisabled()) {
+				dispatcher.entity.dispatchEvent(event);
 				FrameScriptManager.execute_queue();
 			}
 			if (!event._iAllowedToPropagate) {
@@ -247,7 +247,7 @@ export class MouseManager {
 	}
 
 	private setupAndDispatchEvent(event: MouseEvent, sourceEvent,
-		collision: PickingCollision, commonAncestor: IPickingEntity = null) {
+		collision: PickingCollision, commonAncestor: ContainerNode = null) {
 
 		if (sourceEvent) {
 			event.delta = sourceEvent.wheelDelta;
@@ -277,7 +277,7 @@ export class MouseManager {
 			return;
 
 		let event: MouseEvent;
-		let dispatcher: IPickingEntity;
+		let dispatcher: ContainerNode;
 		const len: number = this._queuedEvents.length;
 		// Dispatch all queued events.
 		/*var logEvents="";
@@ -315,12 +315,12 @@ export class MouseManager {
 
 				//  in FP6, a mouseclick on non focus-able object still steal the focus
 				//  in newer FP they only steal the focus if the the new hit is focusable
-				if (this._allowFocusOnUnfocusable || (this._mouseDragCollision
-					&& this._mouseDragCollision.pickerEntity.tabEnabled)) {
+				if (this._allowFocusOnUnfocusable
+					 || this._mouseDragCollision?.pickerEntity.entity.tabEnabled) {
 					if (this._currentFocusEntity)
 						this._currentFocusEntity.setFocus(false, true);
 
-					this._currentFocusEntity = this._mouseDragCollision?.pickerEntity;
+					this._currentFocusEntity = this._mouseDragCollision?.pickerEntity.entity;
 
 					if (this._currentFocusEntity)
 						this._currentFocusEntity.setFocus(true, true);
@@ -338,8 +338,8 @@ export class MouseManager {
 				// @todo: at this point the object under the mouse might have been changed,
 				// so we need to recheck the collision ?
 
-				let upEntity: IPartitionEntity = null;
-				let upPickerEntity: IPickingEntity = null;
+				let upEntity: INode = null;
+				let upPickerEntity: ContainerNode = null;
 				if (this._isAVM1Dragging && this._mouseDragCollision) {
 					// avm1dragging is in process, dispatch the mouse-up on this.
 					// mouseDragEntity instead of the current collision
@@ -417,8 +417,8 @@ export class MouseManager {
 		this._rollOut.commonAncestor = null;
 		this._rollOver.commonAncestor = null;
 
-		const collisionEntity: IPickingEntity = collision?.pickerEntity;
-		const prevCollisionEntity: IPickingEntity = this._prevCollision?.pickerEntity;
+		const collisionEntity: ContainerNode = collision?.pickerEntity;
+		const prevCollisionEntity: ContainerNode = this._prevCollision?.pickerEntity;
 
 		if (collisionEntity != prevCollisionEntity) {
 
@@ -449,18 +449,18 @@ export class MouseManager {
 			}
 			if (prevCollisionEntity && collisionEntity) {
 				// rollout / rollover find common ancester and only bubble up to that point
-				const parentsPrev: IPickingEntity[] = [];
-				let parent: IPickingEntity = prevCollisionEntity;
-				while (parent && !parent.isAVMScene) {
+				const parentsPrev: ContainerNode[] = [];
+				let parent: ContainerNode = prevCollisionEntity;
+				while (parent && !parent.entity.isAVMScene) {
 					parentsPrev.push(parent);
-					parent = <IPickingEntity> parent.parent;
+					parent = parent.parent;
 				}
-				let commonAncestor: IPickingEntity = null;
+				let commonAncestor: ContainerNode = null;
 				parent = collisionEntity;
-				while (parent && !parent.isAVMScene) {
+				while (parent && !parent.entity.isAVMScene) {
 					const oldParentIdx = parentsPrev.indexOf(parent);
 					if (oldParentIdx == -1) {
-						parent = <IPickingEntity> parent.parent;
+						parent = parent.parent;
 					} else {
 						commonAncestor = parent;
 						parent = null;
@@ -505,7 +505,9 @@ export class MouseManager {
 		// set cursor if not dragging mouse
 		if (!this._mouseDragging)
 			document.body.style.cursor =
-				this._showCursor ? (collisionEntity ? collisionEntity.getMouseCursor() : 'initial') : 'none';
+				this._showCursor
+					? (collisionEntity ? collisionEntity.entity.getMouseCursor() : 'initial')
+					: 'none';
 
 		this._updateDirty = false;
 	}
@@ -684,7 +686,7 @@ export class MouseManager {
 	// Private.
 	// ---------------------------------------------------------------------
 	private setUpEvent(event: MouseEvent,
-		collision: PickingCollision, commonAncestor: IPickingEntity = null): MouseEvent {
+			collision: PickingCollision, commonAncestor: ContainerNode = null): MouseEvent {
 		event._iAllowedToImmediatlyPropagate = true;
 		event._iAllowedToPropagate = true;
 		// 2D properties.
