@@ -2301,9 +2301,6 @@ export class TextField extends DisplayObjectContainer {
 				break;
 			}
 		}
-		if (this._wordWrap) {
-			this._words_amount_prev -= 5;
-		}
 	}
 
 	private adjustPositionForAutoSize(newWidth: number) {
@@ -2809,7 +2806,6 @@ export class TextField extends DisplayObjectContainer {
 					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
 				}
 			}
-			textShape.verts.length = 0;
 		}
 	}
 
