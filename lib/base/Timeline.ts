@@ -440,9 +440,7 @@ export class Timeline {
 			const frame_recipe = this.frame_recipe[new_keyFrameIndex];
 
 			if (frame_recipe & 1) {
-				for (let i: number = target_mc.numChildren - 1; i >= 0; i--)
-					if (target_mc._children[i]._avmDepthID < 0)
-						target_mc.removeChildAt(i);
+				(<IMovieClipAdapter>target_mc.adapter).removeAllTimelineChilds();
 			} else if (frame_recipe & 2) {
 				this.remove_childs_continous(target_mc, frame_command_idx++);
 			}

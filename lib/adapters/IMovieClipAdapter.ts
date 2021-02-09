@@ -15,6 +15,8 @@ export interface IMovieClipAdapter extends IDisplayObjectAdapter
 
 	removeTimelineChildAt(value: number): void;
 
+	removeAllTimelineChilds(): void;
+
 	queueFrameScripts(timeline: Timeline, frame_idx: number, scriptPass1: boolean);
 
 	getChildForDraw(value: DisplayObject): DisplayObject;

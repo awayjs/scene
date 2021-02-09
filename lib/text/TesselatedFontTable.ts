@@ -750,7 +750,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 		// drop verts to the state of previous word because last word may be wrapped or changed
 		// @todo this not supports selectable text for now
-		textShape.verts.length = tf.last_word_vertices_count || 0;
+		if (tf._words_amount_prev != 0)	{
+			textShape.verts.length = tf.last_word_vertices_count || 0;
+		}
 
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
