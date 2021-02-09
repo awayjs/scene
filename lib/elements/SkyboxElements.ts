@@ -86,7 +86,7 @@ export class _Stage_SkyboxElements extends _Stage_TriangleElements {
 
 	public draw(renderable: _Render_RenderableBase, shader: ShaderBase, count: number, offset: number): void {
 		let index: number = shader.scenePositionIndex;
-		const camPos: Vector3D = shader.view.projection.transform.concatenatedMatrix3D.position;
+		const camPos: Vector3D = shader.view.projection.transform.matrix3D.position;
 		shader.vertexConstantData[index++] = 2 * camPos.x;
 		shader.vertexConstantData[index++] = 2 * camPos.y;
 		shader.vertexConstantData[index++] = 2 * camPos.z;

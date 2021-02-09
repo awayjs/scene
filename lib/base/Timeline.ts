@@ -2,7 +2,6 @@ import { WaveAudio, ColorTransform, IAsset, Matrix3D } from '@awayjs/core';
 import { Graphics } from '@awayjs/graphics';
 import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
 import { IMovieClipAdapter } from '../adapters/IMovieClipAdapter';
-import { HierarchicalProperties } from '../base/HierarchicalProperties';
 import { MovieClip } from '../display/MovieClip';
 import { Sprite } from '../display/Sprite';
 import { MorphSprite } from '../display/MorphSprite';
@@ -14,6 +13,7 @@ import { IFilter } from '../adapters/IFilter';
 import { BlendMode } from '@awayjs/stage';
 import { ISymbolDecoder } from './ISymbolDecoder';
 import { IFrameScript } from './IFrameScript';
+import { HierarchicalProperty } from '@awayjs/view';
 
 const BLEND_MODES = [
 	'', BlendMode.NORMAL, BlendMode.LAYER,
@@ -624,7 +624,7 @@ export class Timeline {
 
 		child.transform.invalidateComponents();
 
-		child._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+		child._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
 
 	public update_mtx_pos(child: DisplayObject, target_mc: MovieClip, i: number): void {

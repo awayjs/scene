@@ -4,9 +4,7 @@ export { IDisplayObjectAdapter } from './lib/adapters/IDisplayObjectAdapter';
 export { IMovieClipAdapter } from './lib/adapters/IMovieClipAdapter';
 export { IFilter } from './lib/adapters/IFilter';
 
-export { AlignmentMode } from './lib/base/AlignmentMode';
 export { IBitmapDrawable } from './lib/base/IBitmapDrawable';
-export { OrientationMode } from './lib/base/OrientationMode';
 export { IFrameScript } from './lib/base/IFrameScript';
 export { ISymbolDecoder } from './lib/base/ISymbolDecoder';
 export { Timeline } from './lib/base/Timeline';
@@ -36,7 +34,6 @@ export { TextSprite } from './lib/display/TextSprite';
 export { CastError } from './lib/errors/CastError';
 
 export { CameraEvent } from './lib/events/CameraEvent';
-export { DisplayObjectEvent } from './lib/events/DisplayObjectEvent';
 export { FocusEvent } from './lib/events/FocusEvent';
 export { KeyboardEvent } from './lib/events/KeyboardEvent';
 export { MouseEvent } from './lib/events/MouseEvent';
@@ -55,9 +52,6 @@ export { DefaultFontManager } from './lib/managers/DefaultFontManager';
 export { DeviceFontManager } from './lib/managers/DeviceFontManager';
 export { IInputRecorder } from './lib/managers/IInputRecorder';
 export { MouseManager } from './lib/managers/MouseManager';
-
-export { SceneGraphNode } from './lib/partition/SceneGraphNode';
-export { SceneGraphPartition } from './lib/partition/SceneGraphPartition';
 
 export { PrefabBase }	from './lib/prefabs/PrefabBase';
 export { PrimitiveCapsulePrefab } from './lib/prefabs/PrimitiveCapsulePrefab';

@@ -22,9 +22,14 @@ import {
 	BasicPartition,
 	PickGroup,
 	IEntityTraverser,
-	IPickingEntity,
 	IPartitionEntity,
 	BoundsPicker,
+	ContainerNode,
+	HeirarchicalEvent,
+	HierarchicalProperty,
+	ContainerEvent,
+	AlignmentMode,
+	OrientationMode
 } from '@awayjs/view';
 
 import {
@@ -38,19 +43,16 @@ import {
 
 import { ElementsType } from '@awayjs/graphics';
 
-import { HierarchicalProperties } from '../base/HierarchicalProperties';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 import { ControllerBase } from '../controllers/ControllerBase';
-import { AlignmentMode } from '../base/AlignmentMode';
-import { OrientationMode } from '../base/OrientationMode';
 import { IBitmapDrawable } from '../base/IBitmapDrawable';
-import { DisplayObjectEvent } from '../events/DisplayObjectEvent';
 import { FocusEvent } from '../events/FocusEvent';
 
 import { PrimitiveCubePrefab } from '../prefabs/PrimitiveCubePrefab';
 import { PrimitiveSpherePrefab } from '../prefabs/PrimitiveSpherePrefab';
 import { PrimitivePrefabBase } from '../prefabs/PrimitivePrefabBase';
 import { IFilter } from '../adapters/IFilter';
+import { IPartitionClass } from '@awayjs/view';
 
 /**
  * The DisplayObject class is the base class for all objects that can be
@@ -181,12 +183,11 @@ import { IFilter } from '../adapters/IFilter';
  *                         display is not rendering. This is the case when the
  *                         content is either minimized or obscured. </p>
  */
-export class DisplayObject extends AssetBase implements IBitmapDrawable, IRenderEntity, IPickingEntity {
+export class DisplayObject extends AssetBase implements IBitmapDrawable, IRenderEntity, IPartitionEntity {
 
 	private _animator: IAnimator;
 	public _material: IMaterial;
 	public _style: Style;
-	private _queuedEvents: Array<EventBase> = new Array<EventBase>();
 	private _loader: Loader;
 	private _mouseX: number;
 	private _mouseY: number;
@@ -195,8 +196,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	private _boundsPrefab: PrimitivePrefabBase;
 	private _boundsPrefabDirty: boolean;
 	private _boundsPrimitive: DisplayObject;
-	private _boundsPrimitiveDirty: boolean;
-	private _pickObjectDirty: boolean;
 	private _pName: string;
 
 	protected _scrollRect: Rectangle;
@@ -204,8 +203,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	public static _scrollRectSpriteClass: any;
 
 	protected _parent: DisplayObjectContainer;
-	private _concatenatedMatrix3D: Matrix3D = new Matrix3D();
-	private _tempTransform: Matrix3D;
 	public _sessionID: number = -1;
 	public _avmDepthID: number = -1;
 
@@ -213,28 +210,18 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 	//public _implicitPartition: PartitionBase;
 
-	private _sceneTransformChanged: DisplayObjectEvent;
-	private _sceneChanged: DisplayObjectEvent;
+	private _alignmentMode: AlignmentMode = AlignmentMode.REGISTRATION_POINT;
 	protected _transform: Transform;
-
-	private _scenePosition: Vector3D = new Vector3D();
-	private _scenePositionDirty: boolean;
 	private _visible: boolean = true;
 	private _maskId: number = -1;
 	public _masks: Array<DisplayObject>;
 
-	public _maskOwners: Array<IPartitionEntity>;
 	private _mouseEnabled: boolean = true;
-	private _implicitMouseEnabled: boolean = true;
-	public _pImplicitColorTransform: ColorTransform;
-	private _listenToSceneTransformChanged: boolean;
 	private _matrix3DDirty: boolean;
 
 	private _eulers: Vector3D;
 
 	public _registrationMatrix3D: Matrix3D;
-	private _orientationMatrix: Matrix3D = new Matrix3D();
-
 	private _defaultBoundingVolume: BoundingVolumeType;
 
 	public cursorType: string;
@@ -257,6 +244,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	public isSlice9ScaledSprite: boolean=false;
 	public avm1Symbol: any;
 	public isAVMScene: boolean=false;
+
+	public partitionClass:IPartitionClass;
 
 	public static focusEvent: FocusEvent=new FocusEvent(FocusEvent.FOCUS_IN);
 
@@ -336,13 +325,24 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 		this._inheritColorTransform = value;
 
-		this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+		this._invalidateHierarchicalProperty(HierarchicalProperty.COLOR_TRANSFORM);
 	}
 
 	/**
 	 *
 	 */
-	public alignmentMode: string = AlignmentMode.REGISTRATION_POINT;
+	public get alignmentMode(): AlignmentMode {
+		return this._alignmentMode;
+	}
+	
+	public set alignmentMode(value: AlignmentMode) {
+		if (this._alignmentMode == value)
+			return;
+
+		this._alignmentMode = value;
+
+		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
+	}
 
 	/**
 	 * Indicates the alpha transparency value of the object specified. Valid
@@ -617,10 +617,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		return 0;
 	}
 
-	public get isRenderable(): boolean {
-		return this._renderMode && this._iAssignedColorTransform()._isRenderable();
-	}
-
 	/**
 	 * Returns a LoaderInfo object containing information about loading the file
 	 * to which this display object belongs. The <code>loaderInfo</code> property
@@ -707,9 +703,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	}
 
 	public get pickObject(): DisplayObjectContainer {
-		if (this._pickObject && this._pickObjectDirty)
-			this._updatePickObject();
-
 		return this._pickObject;
 	}
 
@@ -722,8 +715,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (this._pickObject) {
 			this._pickObject.mouseChildren = false;
 			this._pickObject.mouseEnabled = false;
-
-			this._updatePickObject();
 		}
 	}
 
@@ -797,7 +788,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	/**
 	 *
 	 */
-	public orientationMode: string = OrientationMode.DEFAULT;
+	public orientationMode: OrientationMode = OrientationMode.DEFAULT;
 
 	/**
 	 * Indicates the DisplayObjectContainer object that contains this display
@@ -871,7 +862,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 		this._registrationMatrix3D.invalidatePosition();
 
-		this._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
 
 	/**
@@ -907,7 +898,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 			this._registrationMatrix3D._rawData[10] = value.z;
 		}
 
-		this._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
 
 	/**
@@ -1169,34 +1160,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	}
 
 	/**
-	 *
-	 */
-	public get scenePosition(): Vector3D {
-		if (this._scenePositionDirty) {
-			if (this._registrationMatrix3D && this.alignmentMode == AlignmentMode.REGISTRATION_POINT) {
-				this._scenePosition.x = -this._registrationMatrix3D._rawData[12];
-				this._scenePosition.y = -this._registrationMatrix3D._rawData[13];
-				this._scenePosition.z = -this._registrationMatrix3D._rawData[14];
-				this._scenePosition = this._transform.concatenatedMatrix3D.transformVector(
-					this._scenePosition,
-					this._scenePosition);
-				/*
-				this._scenePosition.decrementBy(
-					new Vector3D(
-						this._registrationPoint.x*this._scaleX,
-						this._registrationPoint.y*this._scaleY,
-						this._registrationPoint.z*this._scaleZ));
-				*/
-			} else {
-				this._transform.concatenatedMatrix3D.copyColumnTo(3, this._scenePosition);
-			}
-
-			this._scenePositionDirty = false;
-		}
-		return this._scenePosition;
-	}
-
-	/**
 	 * The scroll rectangle bounds of the display object. The display object is
 	 * cropped to the size defined by the rectangle, and it scrolls within the
 	 * rectangle when you change the <code>x</code> and <code>y</code> properties
@@ -1327,14 +1290,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 			}
 
 			this._boundsPrefabDirty = true;
-			this._boundsPrimitiveDirty = true;
 		}
 
 		if (this._boundsPrefabDirty)
 			this._updateBoundsPrefab(picker);
-
-		if (this._boundsPrimitiveDirty)
-			this._updateBoundsPrimitive();
 
 		return this._boundsPrimitive;
 	}
@@ -1396,7 +1355,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 		this._visible = value;
 
-		this._invalidateHierarchicalProperties(HierarchicalProperties.VISIBLE);
+		this._invalidateHierarchicalProperty(HierarchicalProperty.VISIBLE);
 	}
 
 	public get masks(): Array<DisplayObject> {
@@ -1416,7 +1375,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 				value[i].maskMode = true;
 		}
 
-		this._invalidateHierarchicalProperties(HierarchicalProperties.MASKS);
+		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 	}
 
 	/**
@@ -1518,13 +1477,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		this._onInvalidatePropertiesDelegate = (event: StyleEvent) => this._onInvalidateProperties(event);
 
 		//creation of associated transform object
-		this._transform = new Transform(null, this._concatenatedMatrix3D);
+		this._transform = new Transform(null);
 
 		//setup transform listeners
 		this._transform.addEventListener(
 			TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3D.bind(this));
-		this._transform.addEventListener(
-			TransformEvent.UPDATE_CONCATENATED_MATRIX3D, this._onUpdateConcatenatedMatrix3D.bind(this));
 		this._transform.addEventListener(
 			TransformEvent.INVALIDATE_COLOR_TRANSFORM, this._onInvalidateColorTransform.bind(this));
 
@@ -1540,19 +1497,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 	public isEntity(): boolean {
 		return this._scrollRect ? true : false;
-	}
-
-	/**
-	 *
-	 */
-	public addEventListener(type: string, listener: (event: EventBase) => void): void {
-		super.addEventListener(type, listener);
-
-		switch (type) {
-			case DisplayObjectEvent.SCENETRANSFORM_CHANGED:
-				this._listenToSceneTransformChanged = true;
-				break;
-		}
 	}
 
 	/**
@@ -1654,35 +1598,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	}
 
 	/**
-	 * Converts a three-dimensional point of the three-dimensional display
-	 * object's(local) coordinates to a three-dimensional point in the Scene
-	 * (global) coordinates.
-	 *
-	 * <p>This method allows you to convert any given <i>x</i>, <i>y</i> and
-	 * <i>z</i> coordinates from values that are relative to the origin(0,0,0) of
-	 * a specific display object(local coordinates) to values that are relative to
-	 * the origin of the Scene(global coordinates).</p>
-	 *
-	 * <p>To use this method, first create an instance of the Point class. The
-	 * <i>x</i> and <i>y</i> values that you assign represent local coordinates
-	 * because they relate to the origin of the display object.</p>
-	 *
-	 * <p>You then pass the Vector3D instance that you created as the parameter to
-	 * the <code>localToGlobal3D()</code> method. The method returns a new
-	 * Vector3D object with <i>x</i>, <i>y</i> and <i>z</i> values that relate to
-	 * the origin of the Scene instead of the origin of the display object.</p>
-	 *
-	 * @param position A Vector3D object containing either a three-dimensional
-	 *                position or the coordinates of the three-dimensional
-	 *                display object.
-	 * @return A Vector3D object representing a three-dimensional position in
-	 *         the Scene.
-	 */
-	public localToGlobal3D(position: Vector3D): Vector3D {
-		return this._transform.concatenatedMatrix3D.transformVector(position);
-	}
-
-	/**
 	 * Moves the local point around which the object rotates.
 	 *
 	 * @param    dx        The amount of movement along the local x axis.
@@ -1700,7 +1615,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		this._registrationMatrix3D._rawData[13] -= dy / this._transform.scale.y;
 		this._registrationMatrix3D._rawData[14] -= dz / this._transform.scale.z;
 
-		this._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
 
 	public reset(): void {
@@ -1714,49 +1629,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		this.masks = null;
 
 		this.maskMode = false;
-	}
-
-	/**
-	 *
-	 */
-	public getRenderSceneTransform(cameraTransform: Matrix3D): Matrix3D {
-
-		if (this.orientationMode == OrientationMode.CAMERA_PLANE) {
-			const comps: Array<Vector3D> = cameraTransform.decompose();
-			comps[0].copyFrom(this.scenePosition);
-			comps[3].copyFrom(this._transform.scale);
-			this._orientationMatrix.recompose(comps);
-
-			//add in case of registration point
-			if (this._registrationMatrix3D) {
-				this._orientationMatrix.prepend(this._registrationMatrix3D);
-
-				if (this.alignmentMode != AlignmentMode.REGISTRATION_POINT)
-					this._orientationMatrix.appendTranslation(
-						-this._registrationMatrix3D._rawData[12] * this._transform.scale.x,
-						-this._registrationMatrix3D._rawData[13] * this._transform.scale.y,
-						-this._registrationMatrix3D._rawData[14] * this._transform.scale.z);
-			}
-
-			return this._orientationMatrix;
-		}
-		return this._transform.concatenatedMatrix3D;
-	}
-
-	/**
-	 *
-	 */
-	public removeEventListener(type: string, listener: (event: EventBase) => void): void {
-		super.removeEventListener(type, listener);
-
-		if (this.hasEventListener(type))
-			return;
-
-		switch (type) {
-			case DisplayObjectEvent.SCENETRANSFORM_CHANGED:
-				this._listenToSceneTransformChanged = true;
-				break;
-		}
 	}
 
 	/**
@@ -1784,11 +1656,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 * @internal
 	 */
 	public _setParent(parent: DisplayObjectContainer): void {
-		if (this._parent == parent)
-			return;
+		// if (this._parent == parent)
+		// 	return;
 
 		//can this be optimised for cases where displayobject is not switching partitions?
-		this.clear();
+		//this.clear();
 
 		//if there is a new parent, the addChild(partition) will remove from the previous partition
 		// if (!parent && this._partition)
@@ -1809,38 +1681,19 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 		// this._setPartition((parent && parent._implicitPartition) ? parent._implicitPartition : null);
 
-		this._invalidateHierarchicalProperties(HierarchicalProperties.ALL);
+		//this._invalidateHierarchicalProperty(HierarchicalProperty.ALL);
 	}
 
-	public _invalidateHierarchicalProperties(propDirty: number): boolean {
-		const newPropDirty: number = (this._hierarchicalPropsDirty ^ propDirty) & propDirty;
-		if (!newPropDirty)
-			return true;
+	public _invalidateHierarchicalProperty(propDirty: HierarchicalProperty): void {
+		this.dispatchEvent(new HeirarchicalEvent(HeirarchicalEvent.INVALIDATE_PROPERTY, propDirty));
+	}
 
-		this._hierarchicalPropsDirty |= propDirty;
-
-		if (newPropDirty & HierarchicalProperties.SCENE_TRANSFORM) {
-			this.transform.invalidateConcatenatedMatrix3D();
-
-			this._scenePositionDirty = true;
-			this._boundsPrimitiveDirty = true;
-			this._pickObjectDirty = true;
-
-			if (this._implicitPartition && this.isEntity())
-				this._implicitPartition.invalidateEntity(this);
-
-			if (this._listenToSceneTransformChanged) {
-				if (!this._sceneTransformChanged) {
-					this._sceneTransformChanged = new DisplayObjectEvent(
-						DisplayObjectEvent.SCENETRANSFORM_CHANGED,
-						this);
-				}
-
-				this.queueDispatch(this._sceneTransformChanged);
-			}
-		}
-
-		return false;
+	public _invalidateEntity(): void {
+		this.dispatchEvent(new ContainerEvent(ContainerEvent.INVALIDATE_ENTITY, this));
+	}
+	
+	public _clearEntity(): void {
+		this.dispatchEvent(new ContainerEvent(ContainerEvent.CLEAR_ENTITY, this));
 	}
 
 	// /**
@@ -1876,68 +1729,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	// }
 
 	/**
-	 * @protected
-	 */
-	public _onUpdateConcatenatedMatrix3D(event: TransformEvent): void {
-		// call getBoxBounds() if absolute size need to update transform
-		// if (this._absoluteDimension) {
-		// 	var box:Box = this.getBoxBounds();
-		// 	if(box){
-		// 		if (this._width != null)
-		// 			this._setScaleX(this._width/box.width);
-
-		// 		if (this._height != null)
-		// 			this._setScaleY(this._height/box.height);
-
-		// 		if (this._depth != null)
-		// 			this._setScaleZ(this._depth/box.depth);
-		// 	}
-		// }
-
-		this._concatenatedMatrix3D.copyFrom(this._transform.matrix3D);
-
-		if (this._registrationMatrix3D) {
-
-			this._concatenatedMatrix3D.prepend(this._registrationMatrix3D);
-
-			if (this.alignmentMode != AlignmentMode.REGISTRATION_POINT) {
-				this._concatenatedMatrix3D.appendTranslation(
-					-this._registrationMatrix3D._rawData[12] * this._transform.scale.x,
-					-this._registrationMatrix3D._rawData[13] * this._transform.scale.y,
-					-this._registrationMatrix3D._rawData[14] * this._transform.scale.z);
-			}
-		}
-
-		if (this._parent) { // && this._partition == this._parent.partition{
-
-			this._concatenatedMatrix3D.append(this._parent._transform.concatenatedMatrix3D);
-		}
-
-		if (this.scrollRect) {
-			this._concatenatedMatrix3D.prependTranslation(-this.scrollRect.x, -this.scrollRect.y, 0);
-		}
-
-		this._matrix3DDirty = false;
-
-		this._hierarchicalPropsDirty ^= HierarchicalProperties.SCENE_TRANSFORM;
-
-		if (this._iController)
-			this._iController.updateController();
-	}
-
-	/**
 	 *
 	 */
 	public _iInternalUpdate(): void {
 		if (this._iController)
 			this._iController.update();
-
-		// Dispatch all queued events.
-		const len: number = this._queuedEvents.length;
-		for (let i: number = 0; i < len; ++i)
-			this.dispatchEvent(this._queuedEvents[i]);
-
-		this._queuedEvents.length = 0;
 	}
 
 	/**
@@ -1945,13 +1741,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 */
 	public get maskId(): number {
 		return this._maskId;
-	}
-
-	public _iAssignedColorTransform(): ColorTransform {
-		if (this._hierarchicalPropsDirty & HierarchicalProperties.COLOR_TRANSFORM)
-			this._updateColorTransform();
-
-		return this._pImplicitColorTransform || (this._pImplicitColorTransform = new ColorTransform());
 	}
 
 	public _acceptTraverser(traverser: IEntityTraverser): void {
@@ -1972,35 +1761,20 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		}
 	}
 
-	public _addedToPartition(partition: PartitionBase) {
-		if (this.isEntity())
-			partition.invalidateEntity(this);
-	}
-
 	/**
 	 * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
 	 *
 	 * @private
 	 */
 	private _onInvalidateMatrix3D(event: TransformEvent): void {
-		if (this._matrix3DDirty)
-			return;
-
-		this._matrix3DDirty = true;
-
-		this._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
 
 	/**
 	 * @private
 	 */
 	private _onInvalidateColorTransform(event: TransformEvent): void {
-		this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-	}
-
-	private queueDispatch(event: EventBase): void {
-		// Store event to be dispatched later.
-		this._queuedEvents.push(event);
+		this._invalidateHierarchicalProperty(HierarchicalProperty.COLOR_TRANSFORM);
 	}
 
 	protected _setScaleX(val: number): void {
@@ -2028,26 +1802,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		this._transform.scale.z = val;
 
 		this._transform.invalidateMatrix3D();
-	}
-
-	private _updateColorTransform(): void {
-		if (!this._pImplicitColorTransform)
-			this._pImplicitColorTransform = new ColorTransform();
-
-		if (this._inheritColorTransform && this._parent && this._parent._iAssignedColorTransform()) {
-			this._pImplicitColorTransform.copyFrom(this._parent._iAssignedColorTransform());
-
-			this._pImplicitColorTransform.prepend(this._transform.colorTransform);
-		} else {
-			this._pImplicitColorTransform.copyFrom(this._transform.colorTransform);
-		}
-
-		if (this.blendMode === BlendMode.OVERLAY) {
-			// apply 0.5 alpha for object with `overlay` because we not support it now
-			this._pImplicitColorTransform.alphaMultiplier *= 0.5;
-		}
-
-		this._hierarchicalPropsDirty ^= HierarchicalProperties.COLOR_TRANSFORM;
 	}
 
 	private _updateBoundsPrefab(picker: BoundsPicker): void {
@@ -2086,29 +1840,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		}
 	}
 
-	private _updatePickObject(): void {
-		if (this._pickObject.pickObjectFromTimeline)
-			this._pickObject.transform.matrix3D = this.transform.concatenatedMatrix3D;
-	}
-
-	private _updateBoundsPrimitive(): void {
-		this._boundsPrimitiveDirty = false;
-
-		this._boundsPrimitive.transform.matrix3D = this.transform.concatenatedMatrix3D;
-	}
-
 	public _updateMaskMode(): void {
-		if (this.maskMode)
-			this.mouseEnabled = false;
+		if (this._maskMode)
+			this._mouseEnabled = false;
 
-		this._invalidateHierarchicalProperties(HierarchicalProperties.MASK_ID);
-	}
-
-	public clear(): void {
-		super.clear();
-
-		this._pImplicitColorTransform = null;
-		this._maskOwners = null;
+		this._invalidateHierarchicalProperty(HierarchicalProperty.MASK_ID);
 	}
 
 	public _invalidateMaterial(): void {

@@ -24,9 +24,8 @@ import { DefaultRenderer, RenderGroup, RendererType, Style } from '@awayjs/rende
 
 import { DisplayObject } from '../display/DisplayObject';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
-import { SceneGraphPartition } from '../partition/SceneGraphPartition';
 
-import { PartitionPool, View } from '@awayjs/view';
+import { BasicPartition, NodePool, View } from '@awayjs/view';
 import { MaterialBase, MethodMaterial } from '@awayjs/materials';
 import { Billboard } from '../display/Billboard';
 import { Settings } from '../Settings';
@@ -412,8 +411,8 @@ export class SceneImage2D extends BitmapImage2D {
 		SceneImage2D._root = new DisplayObjectContainer();
 		SceneImage2D._renderer = <DefaultRenderer> RenderGroup.getInstance(
 			new View(projection, this._stage, null, null, null, true), RendererType.DEFAULT)
-			.getRenderer(PartitionPool
-							.getRootPartition(SceneGraphPartition, SceneImage2D._root));
+			.getRenderer(NodePool
+							.getRootNode(SceneImage2D._root, BasicPartition).partition);
 
 		//SceneImage2D._root.partition = SceneImage2D._renderer.partition;
 
@@ -441,8 +440,8 @@ export class SceneImage2D extends BitmapImage2D {
 		SceneImage2D._billboardRoot = new DisplayObjectContainer();
 		SceneImage2D._billboardRenderer = <DefaultRenderer> RenderGroup.getInstance(
 			new View(projection,this._stage, null, null, null, true), RendererType.DEFAULT)
-			.getRenderer(PartitionPool
-							.getRootPartition(SceneGraphPartition, SceneImage2D._billboardRoot));
+			.getRenderer(NodePool
+							.getRootNode(SceneImage2D._billboardRoot, BasicPartition).partition);
 
 		//SceneImage2D._billboardRoot.partition = SceneImage2D._billboardRenderer.partition;
 

@@ -1,6 +1,6 @@
 import { Point, Vector3D, EventBase } from '@awayjs/core';
 
-import { EntityNode, IContainerNode, INode, IPartitionEntity, IPickingEntity, ITraversable, View } from '@awayjs/view';
+import { EntityNode, ContainerNode, INode, ITraversable, View } from '@awayjs/view';
 
 import { IMaterial } from '@awayjs/renderer';
 
@@ -127,7 +127,7 @@ export class MouseEvent extends EventBase {
 	/**
 	 * The entity of the picker inside which the event took place.
 	 */
-	public pickerEntity: IContainerNode;
+	public pickerEntity: ContainerNode;
 
 	/**
 	 * The traversable owner inside which the event took place.
@@ -258,14 +258,14 @@ export class MouseEvent extends EventBase {
 	 * The position in scene space where the event took place
 	 */
 	public get scenePosition(): Vector3D {
-		return this.entity.entity.transform.concatenatedMatrix3D.transformVector(this.position);
+		return this.entity.parent.getMatrix3D().transformVector(this.position);
 	}
 
 	/**
 	 * The normal in scene space where the event took place
 	 */
 	public get sceneNormal(): Vector3D {
-		const sceneNormal: Vector3D = this.entity.entity.transform.concatenatedMatrix3D.deltaTransformVector(this.normal);
+		const sceneNormal: Vector3D = this.entity.parent.getMatrix3D().deltaTransformVector(this.normal);
 		sceneNormal.normalize();
 
 		return sceneNormal;

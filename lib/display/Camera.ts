@@ -59,7 +59,7 @@ export class Camera extends DisplayObjectContainer {
 	 */
 	public project(position: Vector3D, target: Vector3D = null): Vector3D {
 		return this._projection.project(
-			this._transform.inverseConcatenatedMatrix3D.transformVector(position, target), target);
+			this._transform.inverseMatrix3D.transformVector(position, target), target);
 	}
 
 	/**
@@ -71,7 +71,7 @@ export class Camera extends DisplayObjectContainer {
 	 * @return The scene position of the given screen coordinates.
 	 */
 	public unproject(nX: number, nY: number, sZ: number, target: Vector3D = null): Vector3D {
-		return this._transform.concatenatedMatrix3D.transformVector(this._projection.unproject(nX, nY, sZ, target));
+		return this._transform.matrix3D.transformVector(this._projection.unproject(nX, nY, sZ, target));
 	}
 
 	protected _getDefaultBoundingVolume(): BoundingVolumeType {

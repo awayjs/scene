@@ -1,7 +1,7 @@
 import { AbstractMethodError } from '@awayjs/core';
+import { HierarchicalProperty } from '@awayjs/view';
 
 import { DisplayObject } from '../display/DisplayObject';
-import { HierarchicalProperties } from '../base/HierarchicalProperties';
 
 export class ControllerBase {
 	public _pControllerDirty: boolean;
@@ -14,7 +14,7 @@ export class ControllerBase {
 
 	public pNotifyUpdate(): void {
 		if (this._pTargetObject)
-			this._pTargetObject._invalidateHierarchicalProperties(HierarchicalProperties.SCENE_TRANSFORM);
+			this._pTargetObject._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
 
 	public get targetObject(): DisplayObject {
