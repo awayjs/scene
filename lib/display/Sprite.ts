@@ -189,8 +189,8 @@ export class Sprite extends DisplayObjectContainer {
 		const isEntity: boolean = this.isEntity();
 
 		if (this._isEntity != isEntity) {
-			if (!isEntity && this._implicitPartition)
-				this._implicitPartition.clearEntity(this);
+			if (!isEntity)
+				this._clearEntity();
 
 			this._isEntity = isEntity;
 		}

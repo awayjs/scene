@@ -2,19 +2,18 @@ import { Vector3D } from '@awayjs/core';
 
 import { DisplayObject } from '../display/DisplayObject';
 import { ControllerBase } from '../controllers/ControllerBase';
-import { DisplayObjectEvent } from '../events/DisplayObjectEvent';
 
 export class LookAtController extends ControllerBase {
 	public _pLookAtPosition: Vector3D;
 	public _pLookAtObject: DisplayObject;
 	public _pOrigin: Vector3D = new Vector3D(0.0, 0.0, 0.0);
 
-	private _onLookAtObjectChangedDelegate: (event: DisplayObjectEvent) => void;
+	// private _onLookAtObjectChangedDelegate: (event: DisplayObjectEvent) => void;
 
 	constructor(targetObject: DisplayObject = null, lookAtObject: DisplayObject = null) {
 		super(targetObject);
 
-		this._onLookAtObjectChangedDelegate = (event: DisplayObjectEvent) => this.onLookAtObjectChanged(event);
+		// this._onLookAtObjectChangedDelegate = (event: DisplayObjectEvent) => this.onLookAtObjectChanged(event);
 
 		if (lookAtObject)
 			this.lookAtObject = lookAtObject;
@@ -28,8 +27,8 @@ export class LookAtController extends ControllerBase {
 
 	public set lookAtPosition(val: Vector3D) {
 		if (this._pLookAtObject) {
-			this._pLookAtObject.removeEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED,
-				this._onLookAtObjectChangedDelegate);
+			// this._pLookAtObject.removeEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED,
+			// 	this._onLookAtObjectChangedDelegate);
 			this._pLookAtObject = null;
 		}
 
@@ -48,15 +47,15 @@ export class LookAtController extends ControllerBase {
 		if (this._pLookAtObject == val)
 			return;
 
-		if (this._pLookAtObject)
-			this._pLookAtObject.removeEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED,
-				this._onLookAtObjectChangedDelegate);
+		// if (this._pLookAtObject)
+		// 	this._pLookAtObject.removeEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED,
+		// 		this._onLookAtObjectChangedDelegate);
 
 		this._pLookAtObject = val;
 
-		if (this._pLookAtObject)
-			this._pLookAtObject.addEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED,
-				this._onLookAtObjectChangedDelegate);
+		// if (this._pLookAtObject)
+		// 	this._pLookAtObject.addEventListener(DisplayObjectEvent.SCENETRANSFORM_CHANGED,
+		// 		this._onLookAtObjectChangedDelegate);
 
 		this.pNotifyUpdate();
 	}
@@ -67,11 +66,11 @@ export class LookAtController extends ControllerBase {
 			if (this._pLookAtPosition)
 				this._pTargetObject.lookAt(this._pLookAtPosition);
 			else if (this._pLookAtObject)
-				this._pTargetObject.lookAt(this._pLookAtObject.transform.concatenatedMatrix3D.position);
+				this._pTargetObject.lookAt(this._pLookAtObject.transform.matrix3D.position);
 		}
 	}
 
-	private onLookAtObjectChanged(event: DisplayObjectEvent): void {
-		this.pNotifyUpdate();
-	}
+	// private onLookAtObjectChanged(event: DisplayObjectEvent): void {
+	// 	this.pNotifyUpdate();
+	// }
 }

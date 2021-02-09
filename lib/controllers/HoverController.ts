@@ -299,7 +299,7 @@ export class HoverController extends LookAtController {
 			if (this._pLookAtPosition)
 				this._pTargetObject.lookAt(this._pLookAtPosition, this._upAxis);
 			else if (this._pLookAtObject)
-				this._pTargetObject.lookAt(this._pLookAtObject.transform.concatenatedMatrix3D.position, this._upAxis);
+				this._pTargetObject.lookAt(this._pLookAtObject.transform.matrix3D.position, this._upAxis);
 		}
 	}
 }

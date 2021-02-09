@@ -1,8 +1,6 @@
 import { Point, ArgumentError, RangeError } from '@awayjs/core';
 
-import { PartitionBase, EntityNode } from '@awayjs/view';
-
-import { HierarchicalProperties } from '../base/HierarchicalProperties';
+import { PartitionBase, EntityNode, HierarchicalProperty, IPartitionContainer, ContainerEvent } from '@awayjs/view';
 
 import { DisplayObject } from './DisplayObject';
 //import {Sprite} from "./Sprite";
@@ -29,7 +27,7 @@ import { DisplayObject } from './DisplayObject';
  * <i>ActionScript 3.0 Developer's Guide</i>.</p>
  */
 
-export class DisplayObjectContainer extends DisplayObject {
+export class DisplayObjectContainer extends DisplayObject implements IPartitionContainer {
 	public static assetType: string = '[asset DisplayObjectContainer]';
 
 	private _mouseChildren: boolean = true;
@@ -110,7 +108,7 @@ export class DisplayObjectContainer extends DisplayObject {
 
 		this._mouseChildren = value;
 
-		this._invalidateHierarchicalProperties(HierarchicalProperties.MOUSE_ENABLED);
+		this._invalidateHierarchicalProperty(HierarchicalProperty.MOUSE_ENABLED);
 	}
 
 	/**
@@ -229,12 +227,15 @@ export class DisplayObjectContainer extends DisplayObject {
 	 *              list.
 	 */
 	public addChildAt(child: DisplayObject, index: number): DisplayObject {
-		//console.log("[DisplayObjectContainer]", this.name, "addChildAt", child, index);
-		if (child.parent) {
+		if (child.parent)
 			child.parent.removeChild(child);
-		}
+
 		this._children.splice(index, 0, child);
+
 		child._setParent(this);
+
+		this.dispatchEvent(new ContainerEvent(ContainerEvent.ADD_CHILD_AT, child, index));
+
 		return child;
 	}
 
@@ -553,27 +554,6 @@ export class DisplayObjectContainer extends DisplayObject {
 
 	}
 
-	/**
-	 * @protected
-	 */
-	public _invalidateHierarchicalProperties(propDirty: number): boolean {
-		if (super._invalidateHierarchicalProperties(propDirty))
-			return true;
-
-		for (let i: number = 0; i < this._children.length; ++i)
-			this._children[i]._invalidateHierarchicalProperties(propDirty);
-
-		return false;
-	}
-
-	
-	public _addedToPartition(partition: PartitionBase) {
-		super._addedToPartition(partition);
-
-		for (let i: number = 0; i < this._children.length; ++i)
-			this._children[i]._addedToPartition(partition.getPartition(this._children[i]));
-	}
-
 	// /**
 	//  * @internal
 	//  */
@@ -597,6 +577,8 @@ export class DisplayObjectContainer extends DisplayObject {
 		const child: DisplayObject = this._children.splice(index, 1)[0];
 
 		child._setParent(null);
+
+		this.dispatchEvent(new ContainerEvent(ContainerEvent.REMOVE_CHILD_AT, child, index));
 
 		return child;
 	}

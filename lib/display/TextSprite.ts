@@ -1,8 +1,7 @@
 ﻿import { Sprite } from './Sprite';
 import { TextField } from './TextField';
 import { TesselatedFontTable } from '../text/TesselatedFontTable';
-import { HierarchicalProperties } from '../base/HierarchicalProperties';
-import { IEntityTraverser } from '@awayjs/view';
+import { HierarchicalProperty, IEntityTraverser } from '@awayjs/view';
 
 /**
  * TextSprite is used for masked text.
@@ -17,7 +16,7 @@ export class TextSprite extends Sprite {
 
 		if (tf._textFormat && !tf._textFormat.font_table.isAsset(TesselatedFontTable) && !tf._textFormat.material) {
 			this.transform.colorTransform.color = (tf.textColor != null) ? tf.textColor : tf._textFormat.color;
-			this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
+			this._invalidateHierarchicalProperty(HierarchicalProperty.COLOR_TRANSFORM);
 		}
 
 		this._graphics._acceptTraverser(traverser);

@@ -7,7 +7,9 @@ import {
 	TabPicker,
 	RaycastPicker,
 	PickGroup,
-	PartitionPool,
+	NodePool,
+	INode,
+	ContainerNode,
 } from '@awayjs/view';
 import { RendererBase, RenderGroup, RendererType } from '@awayjs/renderer';
 
@@ -133,7 +135,7 @@ export class Scene {
 
 		this._rendererType = rendererType || RendererType.DEFAULT;
 		this.view = view || new View();
-		this.partition = partition || (PartitionPool.getRootPartition(BasicPartition, new DisplayObjectContainer()));
+		this.partition = partition || NodePool.getRootNode(new DisplayObjectContainer(), BasicPartition).partition;
 		this.camera = camera || new Camera();
 
 		//			if (this._shareContext)
@@ -157,35 +159,32 @@ export class Scene {
 		return this._mouseY;
 	}
 
-	public getLocalMouseX(entity: DisplayObject): number {
-		return entity
-			.transform
-			.inverseConcatenatedMatrix3D
+	public getLocalMouseX(node: ContainerNode): number {
+		return node
+			.getInverseMatrix3D()
 			.transformVector(
 				this._view.unproject(
 					this._view.stage.screenX, this._view.stage.screenY, 1000))
 			.x;
 	}
 
-	public getLocalMouseY(entity: DisplayObject): number {
-		return entity
-			.transform
-			.inverseConcatenatedMatrix3D
+	public getLocalMouseY(node: ContainerNode): number {
+		return node
+			.getInverseMatrix3D()
 			.transformVector(
 				this._view.unproject(
 					this._view.stage.screenX, this._view.stage.screenY, 1000))
 			.y;
 	}
 
-	public getLocalTouchPoints(entity: DisplayObject): Array<TouchPoint> {
+	public getLocalTouchPoints(node: ContainerNode): Array<TouchPoint> {
 		let localPosition: Vector3D;
 		const localTouchPoints: Array<TouchPoint> = new Array<TouchPoint>();
 
 		const len: number = this._view.stage.touchPoints.length;
 		for (let i: number = 0; i < len; i++) {
-			localPosition = entity
-				.transform
-				.inverseConcatenatedMatrix3D
+			localPosition = node
+				.getInverseMatrix3D()
 				.transformVector(
 					this._view.unproject(
 						this._view.stage.touchPoints[i].x, this._view.stage.touchPoints[i].y, 1000));

@@ -340,8 +340,7 @@ export class TextField extends DisplayObjectContainer {
 		this.setSelection(0, 0);
 
 		this._glyphsDirty = true;
-		if (this._implicitPartition)
-			this._implicitPartition.invalidateEntity(this);
+		this._invalidateEntity();
 	}
 
 	private enableInput(enable: boolean = true) {
@@ -364,8 +363,9 @@ export class TextField extends DisplayObjectContainer {
 		}
 	}
 
-	public findCharIdxForMouse(event): number {
-		const myPoint = this.textChild.transform.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
+	public findCharIdxForMouse(event:MouseEvent): number {
+		const myPoint = event.entity.parent.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
+		myPoint.y -= this.textChild.y;
 		let lineIdx = this.getLineIndexAtPoint(myPoint.x, myPoint.y);
 		let charIdx = this.getCharIndexAtPoint(myPoint.x, myPoint.y, lineIdx);
 
@@ -831,8 +831,8 @@ export class TextField extends DisplayObjectContainer {
 		const isEntity: boolean = this.isEntity();
 
 		if (this._isEntity != isEntity) {
-			if (!isEntity && this._implicitPartition)
-				this._implicitPartition.clearEntity(this);
+			if (!isEntity)
+				this._clearEntity();
 
 			this._isEntity = isEntity;
 		}
@@ -1112,8 +1112,8 @@ export class TextField extends DisplayObjectContainer {
 		//console.log("set text", value, "on" , this);
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
-		else if (this._implicitPartition)
-			this._implicitPartition.invalidateEntity(this);
+		else
+			this._invalidateEntity();
 
 		this.newTextFormat = this._textFormats[this._textFormats.length - 1];
 
@@ -1497,9 +1497,8 @@ export class TextField extends DisplayObjectContainer {
 		//console.log("set text", value, "on" , this);
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
-
-		else if (this._implicitPartition)
-			this._implicitPartition.invalidateEntity(this);
+		else
+			this._invalidateEntity();
 
 	}
 
@@ -1515,8 +1514,8 @@ export class TextField extends DisplayObjectContainer {
 
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
-		else if (this._implicitPartition)
-			this._implicitPartition.invalidateEntity(this);
+		else
+			this._invalidateEntity();
 
 	}
 
@@ -1558,8 +1557,8 @@ export class TextField extends DisplayObjectContainer {
 
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
-		else if (this._implicitPartition)
-			this._implicitPartition.invalidateEntity(this);
+		else
+			this._invalidateEntity();
 	}
 
 	/**
@@ -1670,8 +1669,7 @@ export class TextField extends DisplayObjectContainer {
 
 		this._glyphsDirty = true;
 
-		if (this._implicitPartition)
-			this._implicitPartition.invalidateEntity(this);
+		this._invalidateEntity();
 	}
 
 	private getTextColorForTextFormat(format: TextFormat) {
@@ -1752,8 +1750,7 @@ export class TextField extends DisplayObjectContainer {
 		this._type = value;
 		this._textDirty = true;
 
-		if (this._implicitPartition)
-			this._implicitPartition.invalidateEntity(this);
+		this._invalidateEntity();
 
 		if (value == TextFieldType.INPUT) {
 			//this._selectable=true;
@@ -2860,8 +2857,8 @@ export class TextField extends DisplayObjectContainer {
 		this._textDirty = true;
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
-		else if (this._implicitPartition)
-			this._implicitPartition.invalidateEntity(this);
+		else
+			this._invalidateEntity();
 	}
 
 	/**
@@ -2873,8 +2870,8 @@ export class TextField extends DisplayObjectContainer {
 		this._textDirty = true;
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
-		else if (this._implicitPartition)
-			this._implicitPartition.invalidateEntity(this);
+		else
+			this._invalidateEntity();
 	}
 
 	/**
