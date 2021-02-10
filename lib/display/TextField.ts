@@ -364,7 +364,7 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	public findCharIdxForMouse(event:MouseEvent): number {
-		const myPoint = event.entity.parent.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
+		const myPoint = event.entityNode.parent.globalToLocal(new Point(event.scenePosition.x, event.scenePosition.y));
 		myPoint.y -= this.textChild.y;
 		let lineIdx = this.getLineIndexAtPoint(myPoint.x, myPoint.y);
 		let charIdx = this.getCharIndexAtPoint(myPoint.x, myPoint.y, lineIdx);
