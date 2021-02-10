@@ -10,6 +10,7 @@ import {
 	NodePool,
 	INode,
 	ContainerNode,
+	EntityNode,
 } from '@awayjs/view';
 import { RendererBase, RenderGroup, RendererType } from '@awayjs/renderer';
 
@@ -77,7 +78,7 @@ export class Scene {
 
 		if (this._camera) {
 			this._camera.clear();
-			this._partition.invalidateEntity(this._camera);
+			this._partition.invalidateEntity(this._camera.getAbstraction<EntityNode>(this._partition));
 			//this._camera.partition = this._partition;
 		}
 
@@ -241,7 +242,7 @@ export class Scene {
 		if (this._view)
 			this._view.projection = this._camera.projection;
 
-		this._partition.invalidateEntity(this._camera);
+		this._partition.invalidateEntity(this._camera.getAbstraction<EntityNode>(this._partition));
 		//this._camera.partition = this._partition;
 	}
 

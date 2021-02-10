@@ -122,12 +122,12 @@ export class MouseEvent extends EventBase {
 	/**
 	 * The entity inside which the event took place.
 	 */
-	public entity: EntityNode;
+	public entityNode: EntityNode;
 
 	/**
 	 * The entity of the picker inside which the event took place.
 	 */
-	public pickerEntity: ContainerNode;
+	public rootNode: ContainerNode;
 
 	/**
 	 * The traversable owner inside which the event took place.
@@ -235,8 +235,8 @@ export class MouseEvent extends EventBase {
 		result.screenY = this.screenY;
 
 		result.view = this.view;
-		result.entity = this.entity;
-		result.pickerEntity = this.pickerEntity;
+		result.entityNode = this.entityNode;
+		result.rootNode = this.rootNode;
 		result.traversable = this.traversable;
 		result.material = this.material;
 		result.uv = this.uv;
@@ -258,14 +258,14 @@ export class MouseEvent extends EventBase {
 	 * The position in scene space where the event took place
 	 */
 	public get scenePosition(): Vector3D {
-		return this.entity.parent.getMatrix3D().transformVector(this.position);
+		return this.entityNode.parent.getMatrix3D().transformVector(this.position);
 	}
 
 	/**
 	 * The normal in scene space where the event took place
 	 */
 	public get sceneNormal(): Vector3D {
-		const sceneNormal: Vector3D = this.entity.parent.getMatrix3D().deltaTransformVector(this.normal);
+		const sceneNormal: Vector3D = this.entityNode.parent.getMatrix3D().deltaTransformVector(this.normal);
 		sceneNormal.normalize();
 
 		return sceneNormal;
