@@ -31,7 +31,7 @@ export class DisplayObjectContainer extends DisplayObject implements IPartitionC
 	public static assetType: string = '[asset DisplayObjectContainer]';
 
 	private _mouseChildren: boolean = true;
-	public _children: Array<DisplayObject> = new Array<DisplayObject>();
+	protected _children: Array<DisplayObject> = new Array<DisplayObject>();
 
 	public doingSwap: boolean = false;
 
