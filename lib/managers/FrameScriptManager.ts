@@ -221,8 +221,10 @@ export class FrameScriptManager {
 			// constructor already has run. we need to still do recursion on childs
 			for (let i = 0; i < mc.numChildren; i++) {
 				const child: DisplayObject = mc.getChildAt(i);
-				if (child.parent)
-					FrameScriptManager.execute_as3_constructors_recursiv(<MovieClip>child[i]);
+
+				if (child.parent) {
+					FrameScriptManager.execute_as3_constructors_recursiv(<MovieClip>child);
+				}
 			}
 		}
 
