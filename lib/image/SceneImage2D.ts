@@ -546,10 +546,7 @@ export class SceneImage2D extends BitmapImage2D {
 		const isCrop = rect !== this._rect && !this._rect.equals(rect);
 
 		this._stage.setRenderTarget(this, true);
-
-		if (isCrop) {
-			this._stage.setScissor(rect);
-		}
+		this._stage.setScissor(rect);
 
 		// we shure that color is fully filled when there are not any crops
 		this._lastUsedFill = isCrop ? null : color;
@@ -561,10 +558,7 @@ export class SceneImage2D extends BitmapImage2D {
 			alpha
 		);
 
-		if (isCrop) {
-			this._stage.setScissor(null);
-		}
-
+		this._stage.setScissor(null);
 		this.pushDirtyRegion(rect);
 	}
 
