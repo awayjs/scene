@@ -1,14 +1,16 @@
-﻿import { AssetEvent, Vector3D } from '@awayjs/core';
+﻿import { AssetEvent, Box, Matrix, Vector3D } from '@awayjs/core';
 
 import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
 
 import { IMaterial } from '@awayjs/renderer';
 
-import { Graphics } from '@awayjs/graphics';
+import { Graphics, Shape } from '@awayjs/graphics';
 
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 import { PrefabBase } from '../prefabs/PrefabBase';
 import { DisplayObject } from './DisplayObject';
+import { Stage } from '@awayjs/stage';
+import { SceneImage2D } from '../image/SceneImage2D';
 
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
@@ -19,6 +21,11 @@ export class Sprite extends DisplayObjectContainer {
 	private _isEntity: boolean = false;
 
 	public _iSourcePrefab: PrefabBase;
+
+	private _isBitmapCacheUsed: boolean = false;
+	private _bitmapCacheImage: SceneImage2D;
+	private _bitmapCacheShape: Shape;
+	private _bitmapCacheGraphics: Graphics;
 
 	private static _sprites: Array<Sprite> = new Array<Sprite>();
 
@@ -122,6 +129,78 @@ export class Sprite extends DisplayObjectContainer {
 		return Boolean(this._scrollRect || (this._graphics && this._graphics.count));
 	}
 
+	public dropBitmapCache() {
+		this._bitmapCacheImage && this._bitmapCacheImage.dispose();
+		this._bitmapCacheGraphics && this._bitmapCacheGraphics.dispose();
+		this._bitmapCacheShape && this._bitmapCacheShape.dispose();
+
+		this._isBitmapCacheUsed = false;
+		this.cacheAsBitmap = false;
+		this._bitmapCacheImage = null;
+		this._bitmapCacheGraphics = null;
+		this._bitmapCacheShape = null;
+	}
+
+	public generateBitmapCache(rect: Box, stage: Stage) {
+		this._isBitmapCacheUsed = false;
+
+		const PADDING = 8;
+
+		const width = Math.ceil(rect.width) + PADDING;
+		const height = Math.ceil(rect.height) + PADDING;
+		const x = Math.floor(rect.x) - PADDING / 2;
+		const y = Math.floor(rect.y) - PADDING / 2;
+
+		if (!this._bitmapCacheGraphics) {
+			this._bitmapCacheGraphics = Graphics.getGraphics();
+		}
+
+		const graphics = this._bitmapCacheGraphics;
+
+		if (
+			!this._bitmapCacheImage ||
+			this._bitmapCacheImage.width !== width ||
+			this._bitmapCacheImage.height !== height
+		) {
+			if (this._bitmapCacheImage) {
+				this._bitmapCacheImage.dispose();
+			}
+
+			if (this._bitmapCacheShape) {
+				this._bitmapCacheShape.dispose();
+				this._bitmapCacheShape = null;
+			}
+
+			this._bitmapCacheImage = SceneImage2D.getImage(
+				width,
+				height,
+				true,
+				0,
+				false,
+				stage,
+				false
+			);
+		}
+
+		const m = new Matrix(1, 0, 0, 1, -x, -y);
+
+		this._bitmapCacheImage.draw(this, m);
+
+		m.rawData[4] = x;
+		m.rawData[5] = y;
+
+		if (!this._bitmapCacheShape) {
+			graphics.beginBitmapFill(this._bitmapCacheImage, m, false, true);
+			graphics.drawRect(x, y, width, height);
+			graphics.endFill();
+
+			this._bitmapCacheShape = graphics.getShapeAt(0);
+		}
+
+		this._isBitmapCacheUsed = true;
+		this.cacheAsBitmap = true;
+	}
+
 	/**
 	 * @inheritDoc
 	 */
@@ -206,6 +285,13 @@ export class Sprite extends DisplayObjectContainer {
 	 */
 	public _acceptTraverser(traverser: IEntityTraverser): void {
 		super._acceptTraverser(traverser);
+
+		// PickEnity is bounds
+		if (this._isBitmapCacheUsed) {
+			this._bitmapCacheGraphics._acceptTraverser(traverser);
+			return;
+		}
+
 		this.graphics._acceptTraverser(traverser);
 	}
 
