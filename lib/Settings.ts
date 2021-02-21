@@ -9,7 +9,7 @@ export const Settings: ISceneSettings = {
 	/**
 	 * @description Force MSAA for rendering to image bitmap (WebGL2), 0 - disable, 1-16 - msaa quality
 	 */
-	ALLOW_FORCE_MSAA: 12,
+	ALLOW_FORCE_MSAA: 8,
 	/**
 	 * @description Image size start from it MSAA is runned for image (without temporary copy)
 	 */
@@ -22,5 +22,5 @@ export const Settings: ISceneSettings = {
 	/**
 	 * @description Generate texture cache when cacheAsBitmap is assigned
 	 */
-	IMMEDIATE_CACHE_AS_BITMAP: true
+	IMMEDIATE_CACHE_AS_BITMAP: false
 };
