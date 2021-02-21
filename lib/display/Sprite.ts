@@ -1,16 +1,17 @@
 ﻿import { AssetEvent, Box, Matrix, Vector3D } from '@awayjs/core';
 
-import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
+import { IEntityTraverser, PartitionBase, EntityNode, HierarchicalProperty } from '@awayjs/view';
 
-import { IMaterial } from '@awayjs/renderer';
+import { IMaterial, RendererBase } from '@awayjs/renderer';
 
 import { Graphics, Shape } from '@awayjs/graphics';
 
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 import { PrefabBase } from '../prefabs/PrefabBase';
 import { DisplayObject } from './DisplayObject';
-import { Stage } from '@awayjs/stage';
+import { StageManager } from '@awayjs/stage';
 import { SceneImage2D } from '../image/SceneImage2D';
+import { Settings } from '../Settings';
 
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
@@ -22,7 +23,8 @@ export class Sprite extends DisplayObjectContainer {
 
 	public _iSourcePrefab: PrefabBase;
 
-	private _isBitmapCacheUsed: boolean = false;
+	private _requestCacheAsBitmap: boolean = false;
+	private _cacheAsBitmap: boolean = false;
 	private _bitmapCacheImage: SceneImage2D;
 	private _bitmapCacheShape: Shape;
 	private _bitmapCacheGraphics: Graphics;
@@ -112,8 +114,10 @@ export class Sprite extends DisplayObjectContainer {
 		this._onGraphicsInvalidateDelegate = (event: AssetEvent) => this._onGraphicsInvalidate(event);
 
 		this.graphics = graphics || Graphics.getGraphics();
-
 		this.material = material;
+
+		this.dropBitmapCache = this.dropBitmapCache.bind(this);
+		this.generateBitmapCache = this.generateBitmapCache.bind(this);
 	}
 
 	public _setParent(parent: DisplayObjectContainer): void {
@@ -129,23 +133,75 @@ export class Sprite extends DisplayObjectContainer {
 		return Boolean(this._scrollRect || (this._graphics && this._graphics.count));
 	}
 
+	get_cacheAsBitmapInternal() {
+		return this._requestCacheAsBitmap;
+	}
+
+	set_cacheAsBitmapInternal(value: boolean) {
+		if (this._cacheAsBitmap === value) return;
+
+		// we set flag, because a propery can be spammed to many times in one frame
+		this._requestCacheAsBitmap = value;
+
+		const run = Settings.IMMEDIATE_CACHE_AS_BITMAP;
+
+		// drop cache, or it will droped in next traverser pass
+		if (!value) {
+			this.dropBitmapCache();
+		}
+
+		// we can't render in traverser pass until a render process
+		// we can doing this is immediate
+		// or at end of frame
+		if (value) {
+			if (run) {
+				this.generateBitmapCache();
+			} else {
+				StageManager
+					.getInstance()
+					.getStageAt(0)
+					.requiestFrameEnd(this.generateBitmapCache);
+			}
+		}
+
+	}
+
 	public dropBitmapCache() {
+		if (this._requestCacheAsBitmap === this._cacheAsBitmap) {
+			return;
+		}
+
 		this._bitmapCacheImage && this._bitmapCacheImage.dispose();
 		this._bitmapCacheGraphics && this._bitmapCacheGraphics.dispose();
 		this._bitmapCacheShape && this._bitmapCacheShape.dispose();
 
-		this._isBitmapCacheUsed = false;
-		this.cacheAsBitmap = false;
+		this._cacheAsBitmap = false;
 		this._bitmapCacheImage = null;
 		this._bitmapCacheGraphics = null;
 		this._bitmapCacheShape = null;
+		this._requestCacheAsBitmap = false;
+
+		this._invalidateHierarchicalProperty(HierarchicalProperty.CACHE_AS_BITMAP);
 	}
 
-	public generateBitmapCache(rect: Box, stage: Stage) {
-		this._isBitmapCacheUsed = false;
+	public generateBitmapCache() {
+		if (this._requestCacheAsBitmap === this._cacheAsBitmap) {
+			return;
+		}
+
+		if (this._cacheAsBitmap) {
+			return;
+		}
+
+		const stage = StageManager.getInstance().getStageAt(0);
+		// unsafe, but there are not other way =(
+		const rect: Box = (<any> this.adapter).getBoundsInternal(null);
+
+		// remove flag to allow render real scene tree in cache
+		this._cacheAsBitmap = false;
+		this._requestCacheAsBitmap = false;
 
 		const PADDING = 8;
-
 		const width = Math.ceil(rect.width) + PADDING;
 		const height = Math.ceil(rect.height) + PADDING;
 		const x = Math.floor(rect.x) - PADDING / 2;
@@ -197,8 +253,8 @@ export class Sprite extends DisplayObjectContainer {
 			this._bitmapCacheShape = graphics.getShapeAt(0);
 		}
 
-		this._isBitmapCacheUsed = true;
-		this.cacheAsBitmap = true;
+		this._cacheAsBitmap = this._requestCacheAsBitmap = true;
+		this._invalidateHierarchicalProperty(HierarchicalProperty.CACHE_AS_BITMAP);
 	}
 
 	/**
@@ -284,14 +340,16 @@ export class Sprite extends DisplayObjectContainer {
 	 * @internal
 	 */
 	public _acceptTraverser(traverser: IEntityTraverser): void {
-		super._acceptTraverser(traverser);
+		const isRenderPhase = traverser instanceof RendererBase;
 
-		// PickEnity is bounds
-		if (this._isBitmapCacheUsed) {
+		// render it if cached
+		if (this._cacheAsBitmap && isRenderPhase && this._cacheAsBitmap === this._requestCacheAsBitmap) {
 			this._bitmapCacheGraphics._acceptTraverser(traverser);
 			return;
 		}
 
+		// default phase, when cache is not exist
+		super._acceptTraverser(traverser);
 		this.graphics._acceptTraverser(traverser);
 	}
 

@@ -1,30 +1,24 @@
 import {
 	Transform,
 	TransformEvent,
-	ColorTransform,
 	Sphere,
 	MathConsts,
 	Matrix3D,
 	Rectangle,
 	Vector3D,
 	AssetBase,
-	EventBase,
 	Loader,
 } from '@awayjs/core';
 
 import { BlendMode } from '@awayjs/stage';
 
 import {
-	PartitionBase,
 	BoundingBox,
 	BoundingSphere,
 	BoundingVolumeType,
-	BasicPartition,
-	PickGroup,
 	IEntityTraverser,
 	IPartitionEntity,
 	BoundsPicker,
-	ContainerNode,
 	HeirarchicalEvent,
 	HierarchicalProperty,
 	ContainerEvent,
@@ -245,7 +239,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	public avm1Symbol: any;
 	public isAVMScene: boolean=false;
 
-	public partitionClass:IPartitionClass;
+	public partitionClass: IPartitionClass;
 
 	public static focusEvent: FocusEvent=new FocusEvent(FocusEvent.FOCUS_IN);
 
@@ -334,7 +328,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	public get alignmentMode(): AlignmentMode {
 		return this._alignmentMode;
 	}
-	
+
 	public set alignmentMode(value: AlignmentMode) {
 		if (this._alignmentMode == value)
 			return;
@@ -480,7 +474,21 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 * performance increases when the movie clip is translated(when its <i>x</i>
 	 * and <i>y</i> position is changed).</p>
 	 */
-	public cacheAsBitmap: boolean;
+
+	public get cacheAsBitmap() {
+		return this.get_cacheAsBitmapInternal();
+	}
+
+	public set cacheAsBitmap(v: boolean) {
+		this.set_cacheAsBitmapInternal(v);
+	}
+
+	protected get_cacheAsBitmapInternal() {
+		return false;
+	}
+
+	protected set_cacheAsBitmapInternal(_value: boolean) {
+	}
 
 	/**
 	 *
@@ -1691,7 +1699,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	public _invalidateEntity(): void {
 		this.dispatchEvent(new ContainerEvent(ContainerEvent.INVALIDATE_ENTITY, this));
 	}
-	
+
 	public _clearEntity(): void {
 		this.dispatchEvent(new ContainerEvent(ContainerEvent.CLEAR_ENTITY, this));
 	}
