@@ -686,7 +686,7 @@ export class MouseManager {
 	// Private.
 	// ---------------------------------------------------------------------
 	private setUpEvent(event: MouseEvent,
-			collision: PickingCollision, commonAncestor: ContainerNode = null): MouseEvent {
+		collision: PickingCollision, commonAncestor: ContainerNode = null): MouseEvent {
 		event._iAllowedToImmediatlyPropagate = true;
 		event._iAllowedToPropagate = true;
 		// 2D properties.

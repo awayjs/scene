@@ -8,7 +8,6 @@ import {
 	RaycastPicker,
 	PickGroup,
 	NodePool,
-	INode,
 	ContainerNode,
 	EntityNode,
 } from '@awayjs/view';
@@ -18,7 +17,6 @@ import { Camera } from './display/Camera';
 import { CameraEvent } from './events/CameraEvent';
 import { MouseManager } from './managers/MouseManager';
 import { DisplayObjectContainer } from './display/DisplayObjectContainer';
-import { DisplayObject } from './display/DisplayObject';
 import { MaterialManager } from '@awayjs/graphics';
 import { MethodMaterial, ImageTexture2D } from '@awayjs/materials';
 import { TouchPoint } from '@awayjs/stage';
@@ -300,8 +298,6 @@ export class Scene {
 
 		if (this.beforeRenderCallback)
 			this.beforeRenderCallback();
-
-		const stage = this._view.stage;
 
 		//render the contents of the scene
 		this.renderer.render();
