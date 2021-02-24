@@ -689,21 +689,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (this._maskMode == value)
 			return;
 
-		// let parent: PartitionBase;
-
-		// if (this._partition && (parent = this._partition.parent))
-		// 	parent.removeChild(this._partition);
-
-		// if (this._implicitPartition)
-		// 	this._implicitPartition.clearEntity(this);
-
 		this._maskMode = value;
-
-		// if (this._partition && parent)
-		// 	parent.addChild(this._partition);
-
-		// if (this._implicitPartition)
-		// 	this._implicitPartition.invalidateEntity(this);
 
 		this._maskId = value ? this.id : -1;
 
@@ -815,25 +801,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	public get parent(): DisplayObjectContainer {
 		return this._parent;
 	}
-
-	// /**
-	//  *
-	//  */
-	// public get partition(): PartitionBase {
-	// 	return this._partition;
-	// }
-
-	// public set partition(value: PartitionBase) {
-	// 	if (this._partition == value)
-	// 		return;
-
-	// 	if (this._partition && this._partition.parent)
-	// 		this._partition.parent.removeChild(this._partition);
-
-	// 	this._partition = value;
-
-	// 	this._setPartition(this._parent ? this._parent._implicitPartition : null);
-	// }
 
 	/**
 	 * Defines the local point around which the object rotates.
@@ -1489,9 +1456,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 		//setup transform listeners
 		this._transform.addEventListener(
-			TransformEvent.INVALIDATE_MATRIX3D, this._onInvalidateMatrix3D.bind(this));
+			TransformEvent.INVALIDATE_MATRIX3D,
+			(event: TransformEvent) => this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM)
+		);
+
 		this._transform.addEventListener(
-			TransformEvent.INVALIDATE_COLOR_TRANSFORM, this._onInvalidateColorTransform.bind(this));
+			TransformEvent.INVALIDATE_COLOR_TRANSFORM,
+			(event: TransformEvent) => this._invalidateHierarchicalProperty(HierarchicalProperty.COLOR_TRANSFORM)
+		);
 
 		//bounding volume dictonary
 
@@ -1572,25 +1544,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		}
 
 		this._pickObject = null;
-		//this._pos = null;
-		//this._rot = null;
-		//this._sca = null;
-		//this._ske = null;
-		//this._transformComponents = null;
-		//this._transform.dispose();
-		//this._transform = null;
-		//
-		//this._matrix3D = null;
-		//this._concatenatedMatrix3D = null;
-		//this._inverseSceneTransform = null;
 
 		this._masks = null;
-
-		// if (this._partition) {
-		// 	this._partition.dispose();
-		// 	this._partition = null;
-		// }
-
 	}
 
 	/**
@@ -1664,32 +1619,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 * @internal
 	 */
 	public _setParent(parent: DisplayObjectContainer): void {
-		// if (this._parent == parent)
-		// 	return;
-
-		//can this be optimised for cases where displayobject is not switching partitions?
-		//this.clear();
-
-		//if there is a new parent, the addChild(partition) will remove from the previous partition
-		// if (!parent && this._partition)
-		// 	this._parent._implicitPartition.removeChild(this._partition);
-
-		// if (this._partition) {
-		// 	//if there is a new parent, the addChild(partition) will remove from the previous partition
-		// 	if (!parent && (this._parent && this._parent._implicitPartition)) {
-		// 		this._parent._implicitPartition.removeChild(this._partition);
-
-		// 		this.clear();
-		// 	} else if (this._implicitPartition && this._implicitPartition == this._partition && this.isEntity()) {
-		// 		this._implicitPartition.invalidateEntity(this);
-		// 	}
-		// }
-
 		this._parent = parent;
-
-		// this._setPartition((parent && parent._implicitPartition) ? parent._implicitPartition : null);
-
-		//this._invalidateHierarchicalProperty(HierarchicalProperty.ALL);
 	}
 
 	public _invalidateHierarchicalProperty(propDirty: HierarchicalProperty): void {
@@ -1703,38 +1633,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	public _clearEntity(): void {
 		this.dispatchEvent(new ContainerEvent(ContainerEvent.CLEAR_ENTITY, this));
 	}
-
-	// /**
-	//  * @protected
-	//  */
-	// public _setPartition(parentPartition: PartitionBase): boolean {
-	// 	if (parentPartition && this._partition == null)
-	// 		this._partition = parentPartition.getPartition(this) || this._partition;
-
-	// 	//add partition as a child of parentPartition
-	// 	if (this._partition && parentPartition)
-	// 		parentPartition.addChild(this._partition);
-
-	// 	// assign parent partition if _partition is null
-	// 	const partition: PartitionBase = this._partition || parentPartition;
-
-	// 	if (this._implicitPartition == partition)
-	// 		return true;
-
-	// 	//gc any old abstraction objects
-	// 	if (this._implicitPartition)
-	// 		this.clear();
-
-	// 	this._implicitPartition = partition;
-
-	// 	//register entity with new partition
-	// 	if (this._implicitPartition && this.isEntity())
-	// 		this._implicitPartition.invalidateEntity(this);
-
-	// 	this.dispatchEvent(new DisplayObjectEvent(DisplayObjectEvent.PARTITION_CHANGED, this));
-
-	// 	return false;
-	// }
 
 	/**
 	 *
@@ -1767,22 +1665,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 				this.masks.push(this._scrollRectSprite);
 			}
 		}
-	}
-
-	/**
-	 * Invalidates the 3D transformation matrix, causing it to be updated upon the next request
-	 *
-	 * @private
-	 */
-	private _onInvalidateMatrix3D(event: TransformEvent): void {
-		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
-	}
-
-	/**
-	 * @private
-	 */
-	private _onInvalidateColorTransform(event: TransformEvent): void {
-		this._invalidateHierarchicalProperty(HierarchicalProperty.COLOR_TRANSFORM);
 	}
 
 	protected _setScaleX(val: number): void {
@@ -1874,9 +1756,4 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	protected _getDefaultBoundingVolume(): BoundingVolumeType {
 		return BoundingVolumeType.BOX_BOUNDS_FAST;
 	}
-
-	// private _updateAbsoluteDimension():void
-	// {
-	// 	this._absoluteDimension = Boolean(this._width != null || this._height != null || this._depth != null);
-	// }
 }
