@@ -1026,7 +1026,22 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 *
 	 * @throws ArgumentError If you pass an invalid argument to the method.
 	 */
-	public scale9Grid: Rectangle;
+	private _scale9Grid: Rectangle;
+	public get scale9Grid(): Rectangle {
+		return this.get_scale9gridInternal();
+	}
+
+	public set scale9Grid(rect: Rectangle) {
+		this.set_scale9gridInternal(rect);
+	}
+
+	get_scale9gridInternal() {
+		return this._scale9Grid;
+	}
+
+	set_scale9gridInternal (rect: Rectangle) {
+		this._scale9Grid = rect;
+	}
 
 	/**
 	 * Indicates the horizontal scale(percentage) of the object as applied from
@@ -1507,11 +1522,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		displayObject.extra = this.extra;
 		displayObject.maskMode = this._maskMode;
 		displayObject.castsShadows = this.castsShadows;
-		displayObject.isSlice9ScaledMC = this.isSlice9ScaledMC;
 		displayObject.assetNamespace = this.assetNamespace;
 		displayObject._symbol = this._symbol;
 		displayObject.avm1Symbol = this.avm1Symbol;
 		displayObject.isAVMScene = this.isAVMScene;
+
+		displayObject.isSlice9ScaledMC = this.isSlice9ScaledMC;
+		displayObject.scale9Grid = this.scale9Grid?.clone();
 
 		if (this._masks)
 			displayObject.masks = this._masks;

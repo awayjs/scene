@@ -3,6 +3,7 @@ export interface ISceneSettings {
 	ALLOW_APPROXIMATION: number;
 	MSAA_MINIMAL_IMAGE_SIZE: number;
 	IMMEDIATE_CACHE_AS_BITMAP: boolean;
+	USE_UNSAFE_CACHE_AS_BITMAP: boolean;
 }
 
 export const Settings: ISceneSettings = {
@@ -22,5 +23,10 @@ export const Settings: ISceneSettings = {
 	/**
 	 * @description Generate texture cache when cacheAsBitmap is assigned
 	 */
-	IMMEDIATE_CACHE_AS_BITMAP: false
+	IMMEDIATE_CACHE_AS_BITMAP: false,
+
+	/**
+	 * @description Currently cache-as-bitmap is unsafe feature, and produce a lot of bugs
+	 */
+	USE_UNSAFE_CACHE_AS_BITMAP: false,
 };

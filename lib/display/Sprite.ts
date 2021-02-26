@@ -1,4 +1,4 @@
-﻿import { AssetEvent, Box, Matrix, Vector3D } from '@awayjs/core';
+﻿import { AssetEvent, Box, Matrix, Rectangle, Vector3D } from '@awayjs/core';
 
 import { IEntityTraverser, PartitionBase, EntityNode, HierarchicalProperty } from '@awayjs/view';
 
@@ -127,21 +127,58 @@ export class Sprite extends DisplayObjectContainer {
 			this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
 		else
 			this._graphics.removeEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
+
+		if (this._requestCacheAsBitmap) {
+
+			this.set_cacheAsBitmapInternal(true);
+
+			console.log('Restore cache');
+		}
 	}
 
 	public isEntity(): boolean {
-		return Boolean(this._scrollRect || (this._graphics && this._graphics.count));
+		return (
+			!!this._scrollRect
+			|| (this._graphics && this._graphics.count > 0)
+			|| (this._bitmapCacheGraphics && this._bitmapCacheGraphics.count > 0)
+		);
+	}
+
+	set_scale9gridInternal (rect: Rectangle) {
+		//this._scale9Grid = rect;
+
+		super.set_scale9gridInternal(rect);
+		this.set_cacheAsBitmapInternal(!!rect);
 	}
 
 	get_cacheAsBitmapInternal() {
+		if (!Settings.USE_UNSAFE_CACHE_AS_BITMAP) {
+			return false;
+		}
+
 		return this._requestCacheAsBitmap;
 	}
 
 	set_cacheAsBitmapInternal(value: boolean) {
+
+		if (!Settings.USE_UNSAFE_CACHE_AS_BITMAP) {
+			return;
+		}
+
 		if (this._cacheAsBitmap === value) return;
+
+		console.warn(
+			'[Sprite] You use unsafe feature `cacheAsBitmap`, disable it for supress bugs',
+			'Settings.USE_UNSAFE_CACHE_AS_BITMAP'
+		);
 
 		// we set flag, because a propery can be spammed to many times in one frame
 		this._requestCacheAsBitmap = value;
+
+		if (!this.parent && value) {
+			console.warn('[Sprite] There are not parent, supress cache');
+			return;
+		}
 
 		const run = Settings.IMMEDIATE_CACHE_AS_BITMAP;
 
@@ -171,9 +208,9 @@ export class Sprite extends DisplayObjectContainer {
 			return;
 		}
 
+		this._bitmapCacheShape && this._bitmapCacheShape.dispose();
 		this._bitmapCacheImage && this._bitmapCacheImage.dispose();
 		this._bitmapCacheGraphics && this._bitmapCacheGraphics.dispose();
-		this._bitmapCacheShape && this._bitmapCacheShape.dispose();
 
 		this._cacheAsBitmap = false;
 		this._bitmapCacheImage = null;
@@ -195,7 +232,7 @@ export class Sprite extends DisplayObjectContainer {
 
 		const stage = StageManager.getInstance().getStageAt(0);
 		// unsafe, but there are not other way =(
-		const rect: Box = (<any> this.adapter).getBoundsInternal(null);
+		const rect: Rectangle = (<any> this.adapter).getBoundsInternal(null);
 
 		// remove flag to allow render real scene tree in cache
 		this._cacheAsBitmap = false;
@@ -206,6 +243,13 @@ export class Sprite extends DisplayObjectContainer {
 		const height = Math.ceil(rect.height) + PADDING;
 		const x = Math.floor(rect.x) - PADDING / 2;
 		const y = Math.floor(rect.y) - PADDING / 2;
+
+		rect.x = x;
+		rect.y = y;
+		rect.width = width;
+		rect.height = height;
+
+		const scale9grid = this.get_scale9gridInternal();
 
 		if (!this._bitmapCacheGraphics) {
 			this._bitmapCacheGraphics = Graphics.getGraphics();
@@ -246,11 +290,9 @@ export class Sprite extends DisplayObjectContainer {
 		m.rawData[5] = y;
 
 		if (!this._bitmapCacheShape) {
-			graphics.beginBitmapFill(this._bitmapCacheImage, m, false, true);
-			graphics.drawRect(x, y, width, height);
-			graphics.endFill();
+			this._bitmapCacheShape = Graphics.getShapeForBitmap(this._bitmapCacheImage, rect);
+			graphics.addShape(this._bitmapCacheShape);
 
-			this._bitmapCacheShape = graphics.getShapeAt(0);
 		}
 
 		this._cacheAsBitmap = this._requestCacheAsBitmap = true;
