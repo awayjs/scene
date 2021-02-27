@@ -238,7 +238,7 @@ export class Sprite extends DisplayObjectContainer {
 		this._cacheAsBitmap = false;
 		this._requestCacheAsBitmap = false;
 
-		const PADDING = 8;
+		const PADDING = 0;
 		const width = Math.ceil(rect.width) + PADDING;
 		const height = Math.ceil(rect.height) + PADDING;
 		const x = Math.floor(rect.x) - PADDING / 2;
@@ -290,9 +290,23 @@ export class Sprite extends DisplayObjectContainer {
 		m.rawData[5] = y;
 
 		if (!this._bitmapCacheShape) {
-			this._bitmapCacheShape = Graphics.getShapeForBitmap(this._bitmapCacheImage, rect);
+			this._bitmapCacheShape = Graphics.getShapeForBitmap(this._bitmapCacheImage, rect, !!scale9grid);
 			graphics.addShape(this._bitmapCacheShape);
+		}
 
+		if (scale9grid) {
+			//@ts-ignore
+			this._bitmapCacheShape.slice = new Rectangle(
+				scale9grid.x,
+				scale9grid.y,
+				// this is not a width, this is right corner
+				scale9grid.width - scale9grid.x,
+				scale9grid.height - scale9grid.y,
+			);
+			//@ts-ignore
+			this._bitmapCacheShape.scaleX = this.scaleX;
+			//@ts-ignore
+			this._bitmapCacheShape.scaleY = this.scaleY;
 		}
 
 		this._cacheAsBitmap = this._requestCacheAsBitmap = true;
