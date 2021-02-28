@@ -63,7 +63,7 @@ export class SceneImage2D extends BitmapImage2D {
 				&& e.height === height
 				&& e.transparent === transparent
 				&& e.powerOfTwo === powerOfTwo
-				&& (msaa === (e._antialiasQuality > 0))
+				&& (msaa === e.canUseMSAAInternaly)
 			) {
 				index = i;
 				break;
@@ -96,6 +96,8 @@ export class SceneImage2D extends BitmapImage2D {
 		if (!msaa) {
 			result._msaaNeedDrop = true;
 			result._antialiasQuality = 0;
+		} else {
+			result._enforceMSAASupport = true;
 		}
 
 		return result;
@@ -133,14 +135,6 @@ export class SceneImage2D extends BitmapImage2D {
 	private static _billboardRoot: DisplayObjectContainer;
 	private static _billboard: Billboard;
 
-	// regions that already updated by getPixel, getPixels methods
-	private _updateRegions: Rectangle[] = [];
-
-	private _dirtyRegions: Rectangle[] = [];
-	private _maxDirtyArea: Rectangle = null;
-	// when all SceneImageBitmap is updated
-	private _fullDirty: boolean = false;
-	// legacy
 	private _imageDataDirty: boolean;
 
 	private _asyncRead: Promise<boolean>;
@@ -153,11 +147,14 @@ export class SceneImage2D extends BitmapImage2D {
 
 	protected _msaaNeedDrop: boolean = false;
 
+	protected _enforceMSAASupport: boolean = false;
+
 	protected _dropMSAA() {
 		if (this._msaaNeedDrop || !this.canUseMSAAInternaly) {
 			return;
 		}
 
+		this._enforceMSAASupport = false;
 		this._msaaNeedDrop = true;
 
 		// force dispose texture and buffers
@@ -174,6 +171,9 @@ export class SceneImage2D extends BitmapImage2D {
 	}
 
 	public get canUseMSAAInternaly () {
+		if (this._enforceMSAASupport) {
+			return true;
+		}
 
 		let minW = Settings.MSAA_MINIMAL_IMAGE_SIZE;
 		let minH = Settings.MSAA_MINIMAL_IMAGE_SIZE;
@@ -230,8 +230,7 @@ export class SceneImage2D extends BitmapImage2D {
 		this._stage.setRenderTarget(null);
 
 		if (!async) {
-			this.resetDirty();
-
+			this._imageDataDirty = false;
 			// we store pixel buffer already as PMA.
 			// we should prevent unpack what already is PMA
 			this._unpackPMA = false;
@@ -239,7 +238,7 @@ export class SceneImage2D extends BitmapImage2D {
 		}
 
 		return this._asyncRead.then((_status: boolean) => {
-			this.resetDirty();
+			this._imageDataDirty = false;
 			this._unpackPMA = false;
 			this._asyncRead = null;
 
@@ -276,82 +275,6 @@ export class SceneImage2D extends BitmapImage2D {
 		}
 
 		return data;
-	}
-
-	/*
-	public get data(): Uint8ClampedArray {
-		this.syncData();
-
-		return this._data || super.getDataInternal(true);
-	}*/
-
-	/**
-	 * Marks region as dirty for optiomisation for getPixel* methods
-	 */
-	private pushDirtyRegion(rect: Rectangle): void {
-		this._imageDataDirty = true;
-
-		if (this._fullDirty) {
-			if (this._updateRegions && this._updateRegions.length) {
-				this._updateRegions.length = 0;
-			}
-			return;
-		}
-
-		const eq = rect.equals(this._rect);
-
-		if (!this._dirtyRegions) {
-			this._dirtyRegions = [];
-		}
-
-		if (!eq) {
-			this._dirtyRegions.push(rect);
-		} else {
-			this._dirtyRegions = [this._rect];
-			this._fullDirty = true;
-		}
-
-		if (!this._maxDirtyArea || eq) {
-			this._maxDirtyArea = rect.clone();
-		} else {
-			const rr = rect._rawData;
-			const ma = this._maxDirtyArea;
-			const mr = ma._rawData;
-
-			mr[0] = rr[0] < mr[0] ? rr[0] : mr[0];
-			mr[1] = rr[1] < mr[1] ? rr[1] : mr[1];
-
-			ma.right = ma.right < rect.right ? ma.right : rect.right;
-			ma.bottom = ma.bottom < rect.bottom ? ma.bottom : rect.bottom;
-
-			//clamp
-			if (mr[0] < 0) (mr[0] = 0);
-			if (mr[1] < 0) (mr[1] = 0);
-			if (mr[2] > this.width) (mr[2] = this.width);
-			if (mr[3] > this.height) (mr[3] = this.height);
-		}
-
-		if (this._updateRegions) {
-			for (let i = this._updateRegions.length - 1; i >= 0; i--) {
-				if (this._updateRegions[i].intersects(rect)) {
-					this._updateRegions.splice(i, 1);
-				}
-			}
-		}
-
-	}
-
-	/**
-	 *
-	 */
-	private resetDirty() {
-		this._dirtyRegions = [];
-		this._updateRegions = [];
-
-		this._maxDirtyArea = null;
-		this._fullDirty = false;
-
-		this._imageDataDirty = false;
 	}
 
 	/**
@@ -488,10 +411,6 @@ export class SceneImage2D extends BitmapImage2D {
 		this.unmarkToUnload();
 		this.unuseWeakRef();
 
-		this._dirtyRegions = null;
-		this._updateRegions = null;
-		this._maxDirtyArea = null;
-
 		// drop buffer, because is big
 		this._data = null;
 		this._locked = false;
@@ -557,7 +476,7 @@ export class SceneImage2D extends BitmapImage2D {
 		);
 
 		this._stage.setScissor(null);
-		this.pushDirtyRegion(rect);
+		this._imageDataDirty = true;
 	}
 
 	/**
@@ -637,7 +556,7 @@ export class SceneImage2D extends BitmapImage2D {
 			SceneImage2D.tryStoreImage(tmp, true);
 		}
 
-		this.pushDirtyRegion(new Rectangle(destPoint.x, destPoint.y, sourceRect.width, sourceRect.height));
+		this._imageDataDirty = true;
 	}
 
 	public threshold(
@@ -668,7 +587,6 @@ export class SceneImage2D extends BitmapImage2D {
 			SceneImage2D.tryStoreImage(tmp, true);
 		}
 
-		this.pushDirtyRegion(new Rectangle(destPoint.x, destPoint.y, sourceRect.width, sourceRect.height));
 		this._imageDataDirty = true;
 	}
 
@@ -685,8 +603,6 @@ export class SceneImage2D extends BitmapImage2D {
 
 		this._stage.colorTransform(this, tmp, rect, colorTransform);
 		this._stage.copyPixels(tmp, this, rect, new Point(0,0), null, null, false);
-
-		this.pushDirtyRegion(new Rectangle(rect.x, rect.y, rect.width, rect.height));
 
 		this._imageDataDirty = true;
 
@@ -828,9 +744,6 @@ export class SceneImage2D extends BitmapImage2D {
 		}
 
 		this._lastUsedFill = null;
-
-		//TODO implement passing real updated region
-		this.pushDirtyRegion(this._rect);
 		this._imageDataDirty = true;
 	}
 

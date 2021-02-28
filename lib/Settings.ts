@@ -29,10 +29,10 @@ export const Settings: ISceneSettings = {
 	/**
 	 * @description Currently cache-as-bitmap is unsafe feature, and produce a lot of bugs
 	 */
-	USE_UNSAFE_CACHE_AS_BITMAP: false,
+	USE_UNSAFE_CACHE_AS_BITMAP: true,
 
 	/**
 	 * @description Currently cache-as-bitmap is unsafe feature, and produce a lot of bugs
 	 */
-	USE_UNSAFE_SCALE_9_SLICE: false,
+	USE_UNSAFE_SCALE_9_SLICE: true,
 };
