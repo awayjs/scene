@@ -4,7 +4,7 @@ import { IEntityTraverser, PartitionBase, EntityNode, HierarchicalProperty } fro
 
 import { IMaterial, RendererBase } from '@awayjs/renderer';
 
-import { Graphics, Shape, TriangleElements } from '@awayjs/graphics';
+import { Graphics, Shape } from '@awayjs/graphics';
 
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 import { PrefabBase } from '../prefabs/PrefabBase';
@@ -12,8 +12,6 @@ import { DisplayObject } from './DisplayObject';
 import { StageManager } from '@awayjs/stage';
 import { SceneImage2D } from '../image/SceneImage2D';
 import { Settings } from '../Settings';
-import { PassBase } from '@awayjs/materials';
-
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
  * state. It consists out of Graphices, which in turn correspond to SubGeometries. Graphices allow different parts
@@ -253,15 +251,15 @@ export class Sprite extends DisplayObjectContainer {
 
 		const scale9grid = this.get_scale9gridInternal();
 
-		const PADDING = this.scale9Grid ? 0 : 4;
+		const PADDING = this.scale9Grid ? 2 : 4;
 
 		const width = rect.width + PADDING;
 		const height = rect.height + PADDING;
 		const x = rect.x - PADDING / 2;
 		const y = rect.y - PADDING / 2;
 
-		rect.x = x;
-		rect.y = y;
+		rect.x = x | 0;
+		rect.y = y | 0;
 		rect.width = width | 0;
 		rect.height = height | 0;
 
