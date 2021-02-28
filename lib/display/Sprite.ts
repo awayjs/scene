@@ -4,7 +4,7 @@ import { IEntityTraverser, PartitionBase, EntityNode, HierarchicalProperty } fro
 
 import { IMaterial, RendererBase } from '@awayjs/renderer';
 
-import { Graphics, Shape } from '@awayjs/graphics';
+import { Graphics, Shape, TriangleElements } from '@awayjs/graphics';
 
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 import { PrefabBase } from '../prefabs/PrefabBase';
@@ -12,6 +12,7 @@ import { DisplayObject } from './DisplayObject';
 import { StageManager } from '@awayjs/stage';
 import { SceneImage2D } from '../image/SceneImage2D';
 import { Settings } from '../Settings';
+import { PassBase } from '@awayjs/materials';
 
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
@@ -147,6 +148,17 @@ export class Sprite extends DisplayObjectContainer {
 	set_scale9gridInternal (rect: Rectangle) {
 		//this._scale9Grid = rect;
 
+		if (!Settings.USE_UNSAFE_SCALE_9_SLICE) {
+			return;
+		}
+
+		console.warn(
+			'[Sprite] You use unsafe feature `scale9slice` it force `cacheAsBitmap` for this node' +
+			'disable it for supress bugs',
+			'Settings.USE_UNSAFE_SCALE_9_SLICE',
+			this.id
+		);
+
 		super.set_scale9gridInternal(rect);
 		this.set_cacheAsBitmapInternal(!!rect);
 	}
@@ -161,7 +173,7 @@ export class Sprite extends DisplayObjectContainer {
 
 	set_cacheAsBitmapInternal(value: boolean) {
 
-		if (!Settings.USE_UNSAFE_CACHE_AS_BITMAP) {
+		if (!Settings.USE_UNSAFE_CACHE_AS_BITMAP && !this.scale9Grid) {
 			return;
 		}
 
@@ -169,7 +181,8 @@ export class Sprite extends DisplayObjectContainer {
 
 		console.warn(
 			'[Sprite] You use unsafe feature `cacheAsBitmap`, disable it for supress bugs',
-			'Settings.USE_UNSAFE_CACHE_AS_BITMAP'
+			'Settings.USE_UNSAFE_CACHE_AS_BITMAP',
+			this.id
 		);
 
 		// we set flag, because a propery can be spammed to many times in one frame
@@ -238,18 +251,19 @@ export class Sprite extends DisplayObjectContainer {
 		this._cacheAsBitmap = false;
 		this._requestCacheAsBitmap = false;
 
-		const PADDING = 0;
-		const width = Math.ceil(rect.width) + PADDING;
-		const height = Math.ceil(rect.height) + PADDING;
-		const x = Math.floor(rect.x) - PADDING / 2;
-		const y = Math.floor(rect.y) - PADDING / 2;
+		const scale9grid = this.get_scale9gridInternal();
+
+		const PADDING = this.scale9Grid ? 0 : 4;
+
+		const width = rect.width + PADDING;
+		const height = rect.height + PADDING;
+		const x = rect.x - PADDING / 2;
+		const y = rect.y - PADDING / 2;
 
 		rect.x = x;
 		rect.y = y;
-		rect.width = width;
-		rect.height = height;
-
-		const scale9grid = this.get_scale9gridInternal();
+		rect.width = width | 0;
+		rect.height = height | 0;
 
 		if (!this._bitmapCacheGraphics) {
 			this._bitmapCacheGraphics = Graphics.getGraphics();
@@ -295,18 +309,13 @@ export class Sprite extends DisplayObjectContainer {
 		}
 
 		if (scale9grid) {
-			//@ts-ignore
-			this._bitmapCacheShape.slice = new Rectangle(
-				scale9grid.x,
-				scale9grid.y,
-				// this is not a width, this is right corner
-				scale9grid.width - scale9grid.x,
-				scale9grid.height - scale9grid.y,
-			);
-			//@ts-ignore
-			this._bitmapCacheShape.scaleX = this.scaleX;
-			//@ts-ignore
-			this._bitmapCacheShape.scaleY = this.scaleY;
+			const slice: Shape & {
+				slice: Rectangle, scaleX: number, scaleY: number, padding: number
+			} = <any> this._bitmapCacheShape;
+
+			slice.slice = this.scale9Grid;
+			slice.scaleX = this.scaleX;
+			slice.scaleY = this.scaleY;
 		}
 
 		this._cacheAsBitmap = this._requestCacheAsBitmap = true;

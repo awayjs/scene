@@ -4,6 +4,7 @@ export interface ISceneSettings {
 	MSAA_MINIMAL_IMAGE_SIZE: number;
 	IMMEDIATE_CACHE_AS_BITMAP: boolean;
 	USE_UNSAFE_CACHE_AS_BITMAP: boolean;
+	USE_UNSAFE_SCALE_9_SLICE: boolean;
 }
 
 export const Settings: ISceneSettings = {
@@ -29,4 +30,9 @@ export const Settings: ISceneSettings = {
 	 * @description Currently cache-as-bitmap is unsafe feature, and produce a lot of bugs
 	 */
 	USE_UNSAFE_CACHE_AS_BITMAP: false,
+
+	/**
+	 * @description Currently cache-as-bitmap is unsafe feature, and produce a lot of bugs
+	 */
+	USE_UNSAFE_SCALE_9_SLICE: false,
 };
