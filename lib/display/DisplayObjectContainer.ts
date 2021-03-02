@@ -532,12 +532,24 @@ export class DisplayObjectContainer extends DisplayObject implements IPartitionC
 		if (index1 >= this._children.length || index2 >= this._children.length)
 			throw ('[scene/DisplayobjectContainer] - swapChildrenAt - Range Error');
 
-		[this._children[index2], this._children[index1]] = [this._children[index1], this._children[index2]];
+		let child1: DisplayObject;
+		let child2: DisplayObject;
 
-		this._children[index1]._setParent(null);
-		this._children[index1]._setParent(this);
-		this._children[index2]._setParent(null);
-		this._children[index2]._setParent(this);
+		if (index1 < index2) {
+			child2 = this.removeChildAt(index2);
+			child1 = this.removeChildAt(index1);
+
+			this.addChildAt(child2, index1);
+			this.addChildAt(child1, index2);
+		} else {
+			child1 = this.removeChildAt(index1);
+			child2 = this.removeChildAt(index2);
+
+			this.addChildAt(child1, index2);
+			this.addChildAt(child2, index1);
+		}
+		this.removeChildAt(index1);
+
 		// dirty code to check if this is a movieclip, and if so handle the sessionID_childs:
 		if ((<any> this)._sessionID_childs) {
 			if (this._children[index1]._sessionID >= 0) {
