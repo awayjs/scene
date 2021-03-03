@@ -946,7 +946,7 @@ export class SceneImage2D extends BitmapImage2D {
 			renderer.view.height = this.height;
 		}
 
-		var sourceNode: ContainerNode = rootNode.addChildAt(source, 0);
+		const sourceNode: ContainerNode = rootNode.addChildAt(source, 0);
 		sourceNode.transformDisabled = true;
 
 		root.transform.colorTransform = colorTransform;
