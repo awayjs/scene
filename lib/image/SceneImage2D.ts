@@ -25,7 +25,7 @@ import { DefaultRenderer, RenderGroup, RendererType, Style } from '@awayjs/rende
 import { DisplayObject } from '../display/DisplayObject';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 
-import { BasicPartition, NodePool, View } from '@awayjs/view';
+import { BasicPartition, ContainerNode, NodePool, View } from '@awayjs/view';
 import { MaterialBase, MethodMaterial } from '@awayjs/materials';
 import { Billboard } from '../display/Billboard';
 import { Settings } from '../Settings';
@@ -132,6 +132,7 @@ export class SceneImage2D extends BitmapImage2D {
 	private static _renderer: DefaultRenderer;
 	private static _billboardRenderer: DefaultRenderer;
 	private static _root: DisplayObjectContainer;
+	private static _rootNode: ContainerNode;
 	private static _billboardRoot: DisplayObjectContainer;
 	private static _billboard: Billboard;
 
@@ -332,9 +333,12 @@ export class SceneImage2D extends BitmapImage2D {
 
 		//create the view
 		SceneImage2D._root = new DisplayObjectContainer();
-		SceneImage2D._renderer = <DefaultRenderer> RenderGroup.getInstance(
-			new View(projection, this._stage, null, null, null, true), RendererType.DEFAULT)
-			.getRenderer(NodePool.getRootNode(SceneImage2D._root, BasicPartition).partition);
+		SceneImage2D._rootNode = NodePool.getRootNode(SceneImage2D._root, BasicPartition);
+		SceneImage2D._renderer =
+			<DefaultRenderer> RenderGroup.getInstance(
+				new View(projection, this._stage, null, null, null, true),
+				RendererType.DEFAULT
+			).getRenderer(SceneImage2D._rootNode.partition);
 
 		//SceneImage2D._root.partition = SceneImage2D._renderer.partition;
 
@@ -888,26 +892,8 @@ export class SceneImage2D extends BitmapImage2D {
 		}
 
 		const root = SceneImage2D._root;
+		const rootNode = SceneImage2D._rootNode;
 		const renderer = SceneImage2D._renderer;
-		const oldVisible = source.visible;
-		const oldParent = source.parent;
-
-		if (oldParent)
-			(<DisplayObjectContainer>oldParent.adapter).getChildForDraw(source);
-
-		const sTrans = source.transform;
-
-		// clone TRS separatenly, because matrix saving/restoring is bugged, ex
-		// this works for all knowed cases
-
-		for (let i = 0; i < 4; i++) {
-			TMP_RAW[0 + i] = sTrans.position._rawData[i];
-			TMP_RAW[4 + i] = sTrans.rotation._rawData[i];
-			TMP_RAW[8 + i] = sTrans.scale._rawData[i];
-		}
-
-		// same as matrix
-		TMP_COLOR_MATRIX.copyRawDataFrom(source.transform.colorTransform._rawData);
 
 		// need correcting a root because maybe flipped around Z
 		const zFlip = source.transform.matrix3D._rawData[10];
@@ -960,13 +946,10 @@ export class SceneImage2D extends BitmapImage2D {
 			renderer.view.height = this.height;
 		}
 
-		root.removeChildren(0, root.numChildren);
-		root.addChild(source);
-		root.transform.colorTransform = colorTransform;
+		var sourceNode: ContainerNode = rootNode.addChildAt(source, 0);
+		sourceNode.transformDisabled = true;
 
-		source.transform.matrix3D = null;
-		source.visible = true;
-		source.transform.colorTransform = null;
+		root.transform.colorTransform = colorTransform;
 
 		blendMode = blendMode || (<string>source.blendMode) || '';
 		root.blendMode = this._mapBlendMode(blendMode);
@@ -981,21 +964,7 @@ export class SceneImage2D extends BitmapImage2D {
 
 		renderer.antiAlias = 0;
 
-		source.visible = oldVisible;
-		//source.transform.matrix3D = TMP_MATRIX3D;
-
-		sTrans.moveTo(TMP_RAW[0 + 0], TMP_RAW[0 + 1], TMP_RAW[0 + 2]);
-		sTrans.rotateTo(TMP_RAW[4 + 0], TMP_RAW[4 + 1], TMP_RAW[4 + 2]);
-		sTrans.scaleTo(TMP_RAW[8 + 0], TMP_RAW[8 + 1], TMP_RAW[8 + 2]);
-
-		source.transform.colorTransform = TMP_COLOR_MATRIX;
-
-		root.removeChild(source);
-
-		if (oldParent) {
-			(<DisplayObjectContainer>oldParent.adapter).returnChildAfterDraw(source);
-		}
-
+		rootNode.removeChildAt(0);
 		if (nativeMSAA) {
 			// becasue we copy MSAA into no msaa, it should passed as BLIT
 			this._stage.copyPixels(target, this,  this._rect, TMP_POINT, null, null, false);
