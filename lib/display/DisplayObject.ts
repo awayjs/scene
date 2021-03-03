@@ -211,7 +211,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	public _masks: Array<DisplayObject>;
 
 	private _mouseEnabled: boolean = true;
-	private _matrix3DDirty: boolean;
 
 	private _eulers: Vector3D;
 
@@ -224,11 +223,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	protected _tabEnabled: boolean;
 	protected _tabIndex: number;
 
-	private _inheritColorTransform: boolean = true;
 	private _maskMode: boolean = false;
 	private _pickObject: DisplayObjectContainer;
-
-	private _renderMode: boolean = true;
 
 	public _hierarchicalPropsDirty: number;
 
@@ -307,19 +303,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		else
 			DisplayObject.focusEvent.type = FocusEvent.FOCUS_OUT;
 		this.dispatchEnterFrame(DisplayObject.focusEvent);
-	}
-
-	public get inheritColorTransform(): boolean {
-		return this._inheritColorTransform;
-	}
-
-	public set inheritColorTransform(value: boolean) {
-		if (this._inheritColorTransform == value)
-			return;
-
-		this._inheritColorTransform = value;
-
-		this._invalidateHierarchicalProperty(HierarchicalProperty.COLOR_TRANSFORM);
 	}
 
 	/**

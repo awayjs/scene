@@ -140,8 +140,6 @@ export class MovieClip extends Sprite {
 		this.cursorType = 'pointer';
 		//this.debugVisible=true;
 
-		this.inheritColorTransform = true;
-
 		this._onMouseOver = (event: MouseEvent) => {
 			if (this.buttonEnabled)
 				this.currentFrameIndex = 1;
