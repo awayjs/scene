@@ -12,7 +12,7 @@ export class TextSprite extends Sprite {
 
 	public _acceptTraverser(traverser: IEntityTraverser): void {
 		const tf: TextField = this.parentTextField;
-		tf.reConstruct(true);
+		//tf.reConstruct(true);
 
 		if (tf._textFormat && !tf._textFormat.font_table.isAsset(TesselatedFontTable) && !tf._textFormat.material) {
 			this.transform.colorTransform.color = (tf.textColor != null) ? tf.textColor : tf._textFormat.color;
