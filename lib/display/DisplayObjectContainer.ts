@@ -586,7 +586,7 @@ export class DisplayObjectContainer extends DisplayObject implements IPartitionC
 		return child;
 	}
 
-	public _updateMaskMode(): void {
+	protected _updateMaskMode(): void {
 		if (this.maskMode)
 			this.mouseChildren = false;
 

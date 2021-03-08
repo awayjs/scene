@@ -23,7 +23,8 @@ import {
 	HierarchicalProperty,
 	ContainerEvent,
 	AlignmentMode,
-	OrientationMode
+	OrientationMode,
+	BasicPartition
 } from '@awayjs/view';
 
 import {
@@ -196,7 +197,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	private _scrollRect: Rectangle;
 	private _scrollRectPrimitive: Sprite;
 	private _scrollRectPrimitiveDirty: boolean;
-	public isScrollRectMask: boolean;
 
 	protected _parent: DisplayObjectContainer;
 	public _sessionID: number = -1;
@@ -1746,9 +1746,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		}
 	}
 
-	public _updateMaskMode(): void {
-		if (this._maskMode)
+	protected _updateMaskMode(): void {
+		if (this._maskMode) {
 			this._mouseEnabled = false;
+			this.partitionClass = BasicPartition;
+		}
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.MASK_ID);
 	}
