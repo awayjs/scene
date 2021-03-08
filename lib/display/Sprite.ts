@@ -137,8 +137,7 @@ export class Sprite extends DisplayObjectContainer {
 
 	public isEntity(): boolean {
 		return (
-			!!this._scrollRect
-			|| (this._graphics && this._graphics.count > 0)
+			(this._graphics && this._graphics.count > 0)
 			|| (this._bitmapCacheGraphics && this._bitmapCacheGraphics.count > 0)
 		);
 	}
@@ -425,5 +424,4 @@ export class Sprite extends DisplayObjectContainer {
 	}
 }
 
-DisplayObject._scrollRectSpriteClass = Sprite;
 PartitionBase.registerAbstraction(EntityNode, Sprite);

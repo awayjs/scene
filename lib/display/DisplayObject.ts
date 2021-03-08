@@ -47,6 +47,7 @@ import { PrimitiveSpherePrefab } from '../prefabs/PrimitiveSpherePrefab';
 import { PrimitivePrefabBase } from '../prefabs/PrimitivePrefabBase';
 import { IFilter } from '../adapters/IFilter';
 import { IPartitionClass } from '@awayjs/view';
+import { Sprite } from './Sprite';
 
 /**
  * The DisplayObject class is the base class for all objects that can be
@@ -192,9 +193,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	private _boundsPrimitive: DisplayObject;
 	private _pName: string;
 
-	protected _scrollRect: Rectangle;
-	protected _scrollRectSprite: DisplayObject;
-	public static _scrollRectSpriteClass: any;
+	private _scrollRect: Rectangle;
+	private _scrollRectPrimitive: Sprite;
+	private _scrollRectPrimitiveDirty: boolean;
 
 	protected _parent: DisplayObjectContainer;
 	public _sessionID: number = -1;
@@ -1159,13 +1160,18 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	}
 
 	public set scrollRect(value: Rectangle) {
+		if (this._scrollRect == value)
+			return;
+
 		this._scrollRect = value;
-		if (!value && this._scrollRectSprite) {
-			const idx = this.masks.indexOf(this._scrollRectSprite);
+
+		if (!value && this._scrollRectPrimitive) {
+			const idx = this.masks.indexOf(this._scrollRectPrimitive);
 			this.masks.splice(idx, 1);
-			this._scrollRectSprite = null;
+			this._scrollRectPrimitive = null;
 		}
-		this._transform.invalidatePosition();
+
+		this._scrollRectPrimitiveDirty = true;
 	}
 
 	/**
@@ -1240,6 +1246,27 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		// 	this.partition = BasicPartition.getRootPartition(this);
 
 		this.invalidate();
+	}
+
+	public getScrollRectPrimitive(): DisplayObject {
+		if (this._scrollRectPrimitiveDirty) {
+			this._scrollRectPrimitiveDirty = false;
+
+			if (!this._scrollRectPrimitive) {
+				this._scrollRectPrimitive = new Sprite();
+				this._scrollRectPrimitive.maskMode = true;
+				if (!this.masks)
+					this.masks = [];
+				this.masks.push(this._scrollRectPrimitive);
+			}
+				
+			this._scrollRectPrimitive.graphics.clear();
+			this._scrollRectPrimitive.graphics.beginFill(0x0000ff, 1);
+			this._scrollRectPrimitive.graphics.drawRect(0,0,this._scrollRect.width,this._scrollRect.height);
+			this._scrollRectPrimitive.graphics.endFill();
+		}
+
+		return this._scrollRectPrimitive;
 	}
 
 	public getBoundsPrimitive(picker: BoundsPicker): DisplayObject {
@@ -1474,7 +1501,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	}
 
 	public isEntity(): boolean {
-		return this._scrollRect ? true : false;
+		return false;
 	}
 
 	/**
@@ -1651,20 +1678,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 
 	public _acceptTraverser(traverser: IEntityTraverser): void {
 
-		if (this._scrollRect) {
-			if (!this._scrollRectSprite) {
-				this._scrollRectSprite = <any> new DisplayObject._scrollRectSpriteClass();
-				(<any> this._scrollRectSprite).graphics.beginFill(0x0000ff, 1);
-				(<any> this._scrollRectSprite).graphics.drawRect(0,0,this._scrollRect.width,this._scrollRect.height);
-				(<any> this._scrollRectSprite).graphics.endFill();
-				this._scrollRectSprite._setParent(this.parent);
-				this.transform.copyRawDataTo(this._scrollRectSprite.transform);
-				this._scrollRectSprite.maskMode = true;
-				if (!this.masks)
-					this.masks = [];
-				this.masks.push(this._scrollRectSprite);
-			}
-		}
 	}
 
 	protected _setScaleX(val: number): void {
