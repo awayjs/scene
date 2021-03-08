@@ -1259,7 +1259,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 					this.masks = [];
 				this.masks.push(this._scrollRectPrimitive);
 			}
-				
+
 			this._scrollRectPrimitive.graphics.clear();
 			this._scrollRectPrimitive.graphics.beginFill(0x0000ff, 1);
 			this._scrollRectPrimitive.graphics.drawRect(0,0,this._scrollRect.width,this._scrollRect.height);

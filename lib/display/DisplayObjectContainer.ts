@@ -484,7 +484,7 @@ export class DisplayObjectContainer extends DisplayObject implements IPartitionC
 
 		this.removeChildAt(original_idx);
 
-		this.addChildAt(child, (original_idx < index)? index - 1 : index);
+		this.addChildAt(child, (original_idx < index) ? index - 1 : index);
 
 		if (child._sessionID >= 0 && (<any> this)._sessionID_childs) {
 			delete (<any> this)._sessionID_childs[child._sessionID];
