@@ -196,6 +196,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	private _scrollRect: Rectangle;
 	private _scrollRectPrimitive: Sprite;
 	private _scrollRectPrimitiveDirty: boolean;
+	public isScrollRectMask: boolean;
 
 	protected _parent: DisplayObjectContainer;
 	public _sessionID: number = -1;
@@ -1160,8 +1161,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	}
 
 	public set scrollRect(value: Rectangle) {
-		if (this._scrollRect == value)
-			return;
+		// @todo: check if rectangle has same values as previous
+		//if (this._scrollRect == value)
+		//	return;
 
 		this._scrollRect = value;
 
@@ -1171,6 +1173,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 			this._scrollRectPrimitive = null;
 		}
 
+		this._transform.invalidatePosition();
 		this._scrollRectPrimitiveDirty = true;
 	}
 
