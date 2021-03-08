@@ -19,10 +19,6 @@ export interface IMovieClipAdapter extends IDisplayObjectAdapter
 
 	queueFrameScripts(timeline: Timeline, frame_idx: number, scriptPass1: boolean);
 
-	getChildForDraw(value: DisplayObject): DisplayObject;
-
-	returnChildAfterDraw(value: DisplayObject);
-
 	constructFrame(timeline: Timeline, start_construct_idx: number,
 		target_keyframe_idx: number, jump_forward: boolean,
 		frame_idx: number, queue_pass2: boolean, queue_script: boolean);

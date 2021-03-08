@@ -153,16 +153,6 @@ export class DisplayObjectContainer extends DisplayObject implements IPartitionC
 			this._children[i].advanceFrame();
 	}
 
-	public getChildForDraw(child: DisplayObject): DisplayObject {
-		child._setParent(null);
-		return child;
-	}
-
-	public returnChildAfterDraw(child: DisplayObject): DisplayObject {
-		child._setParent(this);
-		return child;
-	}
-
 	/**
 	 * Adds a child DisplayObject instance to this DisplayObjectContainer
 	 * instance. The child is added to the front(top) of all other children in
@@ -489,11 +479,12 @@ export class DisplayObjectContainer extends DisplayObject implements IPartitionC
 		if (index > this._children.length)
 			throw new RangeError('Parameter index is out of range of the child list');
 
-		this._children.splice(original_idx, 1);
-		this._children.splice(index, 0, child);
+		if (original_idx == index)
+			return;
 
-		child._setParent(null);
-		child._setParent(this);
+		this.removeChildAt(original_idx);
+
+		this.addChildAt(child, (original_idx < index)? index - 1 : index);
 
 		if (child._sessionID >= 0 && (<any> this)._sessionID_childs) {
 			delete (<any> this)._sessionID_childs[child._sessionID];
