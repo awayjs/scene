@@ -246,17 +246,52 @@ export class TextField extends DisplayObjectContainer {
 	public isStatic: boolean=false;
 
 	public updateMaskMode() {
-		if (this._textWidth > this._width || this._textHeight > this._height) {
-			if (this.scrollRect) {
-				const scrollRect = this.scrollRect;
-				scrollRect.setTo(this.textOffsetX, this.textOffsetY, this._width, this._height);
-				this.scrollRect = scrollRect;
-			} else {
-				this.scrollRect = new Rectangle(this.textOffsetX, this.textOffsetY, this._width, this._height);
+		// mask needed
+		if (this.inMaskMode) {
+			if (this._maskWidth != this._width || this._maskHeight != this._height ||
+					this._maskTextOffsetX != this.textOffsetX || this._maskTextOffsetY != this.textOffsetY) {
+
+				this._maskWidth = this._width;
+				this._maskHeight = this._height;
+				this._maskTextOffsetX = this.textOffsetX;
+				this._maskTextOffsetY = this.textOffsetY;
+				this.maskChild.graphics.clear();
+				this.maskChild.graphics.beginFill(0xffffff);
+				this.maskChild.graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, this._height);
+				this.maskChild.graphics.endFill();
 			}
-		} else {
-			this.scrollRect = null;
+			this._graphics.clear();
 		}
+		if (!this.inMaskMode) {
+			// 	masking already setup
+			// 	just make sure the mask has correct size
+			this.inMaskMode = true;
+			if (!this.maskChild)
+				this.maskChild = new Sprite();
+			if (!this.textChild)
+				this.textChild = new TextSprite();
+			this.textChild.mouseEnabled = false;
+			this.textChild.parentTextField = this;
+			this.maskChild.mouseEnabled = false;
+			this.maskChild.graphics.beginFill(0xffffff);
+			this.maskChild.graphics.drawRect(this.textOffsetX, this.textOffsetY, this._width, this._height);
+			this.maskChild.graphics.endFill();
+			this.addChild(this.maskChild);
+			this.addChild(this.textChild);
+			this.maskChild.maskMode = true;
+			//this.textChild.masks = [this.maskChild];
+
+			this._graphics.clear();
+			this.targetGraphics = this.textChild.graphics;
+			return;
+		}
+		// only use masking if needed:
+		if (this._textWidth > this._width || this._textHeight > this._height) {
+			this.textChild.masks = [this.maskChild];
+		} else {
+			this.textChild.masks = null;
+		}
+		return;
 	}
 
 	public getMouseCursor(): string {
@@ -1525,7 +1560,18 @@ export class TextField extends DisplayObjectContainer {
 	 * @internal
 	 */
 	public _acceptTraverser(traverser: IEntityTraverser): void {
-		this._graphics._acceptTraverser(traverser);
+		if (!this.maskMode) {
+			//if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
+			//	traverser[this.cursorShape.elements.traverseName](this.cursorShape);
+			//}
+			this._graphics._acceptTraverser(traverser);
+			//if(this.showSelection && this._isInFocus && this.bgShapeSelect){
+			//	traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
+			//}
+			//if(this.bgShape){// && this.background){
+			//	traverser[this.bgShape.elements.traverseName](this.bgShape);
+			//}
+		}
 	}
 
 	/**
