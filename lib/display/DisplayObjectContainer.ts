@@ -539,7 +539,6 @@ export class DisplayObjectContainer extends DisplayObject implements IPartitionC
 			this.addChildAt(child1, index2);
 			this.addChildAt(child2, index1);
 		}
-		this.removeChildAt(index1);
 
 		// dirty code to check if this is a movieclip, and if so handle the sessionID_childs:
 		if ((<any> this)._sessionID_childs) {
