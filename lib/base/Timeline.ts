@@ -594,6 +594,9 @@ export class Timeline {
 	}
 
 	public update_name(child: DisplayObject, target_mc: MovieClip, i: number): void {
+		if (this.properties_stream_strings[i].indexOf('instance') == 0) {
+			return;
+		}
 		(<IMovieClipAdapter>target_mc.adapter).unregisterScriptObject(child);
 		child.name = this.properties_stream_strings[i];
 		(<IMovieClipAdapter> target_mc.adapter).registerScriptObject(child);
