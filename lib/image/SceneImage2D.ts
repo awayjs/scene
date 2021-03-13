@@ -31,8 +31,6 @@ import { Billboard } from '../display/Billboard';
 import { Settings } from '../Settings';
 
 // empty matrix for transfrorm reset
-const TMP_COLOR_MATRIX = new ColorTransform();
-const TMP_RAW: number[] = [];
 const TMP_POINT = new Point(0,0);
 const TMP_RECT = new Rectangle();
 
@@ -594,6 +592,54 @@ export class SceneImage2D extends BitmapImage2D {
 		this._imageDataDirty = true;
 	}
 
+	public applyFilter (source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point, filter: any): boolean {
+		if (!Settings.USE_UNSAFE_FILTER) {
+			return false;
+		}
+
+		this.dropAllReferences(false);
+
+		const renderToSelf = source === this;
+
+		let result = false;
+
+		if (!renderToSelf) {
+			return this._stage.filterManager.applyFilter (source, this, filter.filterName, filter);
+		} else {
+
+			const pad = 4;
+			const tmp = SceneImage2D.getImage(
+				source.width + pad * 2, source.height + pad * 2, true, null, false, this._stage);
+
+			// require 2 textures for padding
+			const tmp2 = SceneImage2D.getImage(
+				source.width + pad * 2, source.height + pad * 2, true, null, false, this._stage);
+
+			TMP_POINT.setTo(pad, pad);
+			TMP_RECT.setTo(0,0, sourceRect.width, sourceRect.height);
+
+			// temporary paddding implemenataton
+			// copy to TMP for apply padding
+			this._stage.copyPixels(this, tmp, TMP_RECT, TMP_POINT, null, null, false);
+
+			// apply filter
+			result = this._stage.filterManager.applyFilter (tmp, tmp2, filter.filterName, filter);
+
+			if (result) {
+				// copy to destination with shift padding
+				TMP_RECT.setTo(pad,pad, sourceRect.width, sourceRect.height);
+				this._stage.copyPixels(tmp2, this, TMP_RECT, destPoint, null, null, false);
+			}
+
+			// push temp back
+			SceneImage2D.tryStoreImage(tmp, false);
+			SceneImage2D.tryStoreImage(tmp2, false);
+		}
+
+		this._imageDataDirty = true;
+		return result;
+	}
+
 	public colorTransform(rect: Rectangle, colorTransform: ColorTransform): void {
 
 		this._lastUsedFill = null;
@@ -990,6 +1036,8 @@ export class SceneImage2D extends BitmapImage2D {
 		//SceneImage2D.scene=null;
 
 	}
+
+	public reset() {}
 }
 
 Stage.registerAbstraction(_Stage_BitmapImage2D, SceneImage2D);

@@ -5,6 +5,7 @@ export interface ISceneSettings {
 	IMMEDIATE_CACHE_AS_BITMAP: boolean;
 	USE_UNSAFE_CACHE_AS_BITMAP: boolean;
 	USE_UNSAFE_SCALE_9_SLICE: boolean;
+	USE_UNSAFE_FILTER: boolean;
 }
 
 export const Settings: ISceneSettings = {
@@ -35,4 +36,9 @@ export const Settings: ISceneSettings = {
 	 * @description Currently cache-as-bitmap is unsafe feature, and produce a lot of bugs
 	 */
 	USE_UNSAFE_SCALE_9_SLICE: false,
+
+	/**
+	 * @description Use applyFilter for SceneImage2D
+	 */
+	USE_UNSAFE_FILTER: false,
 };
