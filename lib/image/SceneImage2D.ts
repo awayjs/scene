@@ -528,8 +528,8 @@ export class SceneImage2D extends BitmapImage2D {
 		this.dropAllReferences();
 		this.unmarkToUnload();
 
-		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
-		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
+		//this._stage.context.setCulling(ContextGLTriangleFace.NONE);
+		//this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
 
 		// need drop alpha from source when target is not has alpha
 		mergeAlpha = this.transparent !== source.transparent || mergeAlpha;
@@ -539,25 +539,7 @@ export class SceneImage2D extends BitmapImage2D {
 			this._initalFillColor = null;
 		}
 
-		if (source !== this) {
-			this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
-		} else {
-			const tmp = SceneImage2D.getTemp(source.width, source.height, this._stage, false);
-
-			if (tmp._antialiasQuality > 0) {
-				throw 'Using MSAA texture for copy pixel!';
-			}
-
-			TMP_POINT.setTo(0,0);
-			TMP_RECT.setTo(0,0, sourceRect.width, sourceRect.height);
-
-			this._stage.copyPixels(source, tmp, sourceRect, TMP_POINT, alphaBitmapData, alphaPoint, false);
-			this._stage.copyPixels(tmp, this, TMP_RECT, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
-			// push temp back
-
-			SceneImage2D.tryStoreImage(tmp, true);
-		}
-
+		this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
 		this._imageDataDirty = true;
 	}
 
@@ -569,74 +551,25 @@ export class SceneImage2D extends BitmapImage2D {
 		this.dropAllReferences();
 		this.unmarkToUnload();
 
-		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
-		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ZERO);
-
-		const renderToSelf = source === this;
-
-		if (!renderToSelf) {
-			this._stage.threshold(source, this, sourceRect, destPoint, operation, threshold, color, mask, copySource);
-		} else {
-			const tmp = SceneImage2D.getTemp(source.width, source.height, this._stage);
-
-			TMP_POINT.setTo(0,0);
-			TMP_RECT.setTo(0,0, sourceRect.width, sourceRect.height);
-
-			this._stage.threshold(source, tmp, sourceRect, TMP_POINT, operation, threshold, color, mask, copySource);
-			this._stage.copyPixels(tmp, this, TMP_RECT, destPoint, null, null, false);
-
-			// push temp back
-			SceneImage2D.tryStoreImage(tmp, true);
-		}
-
+		this._stage.threshold(source, this, sourceRect, destPoint, operation, threshold, color, mask, copySource);
 		this._imageDataDirty = true;
 	}
 
 	public applyFilter (source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point, filter: any): boolean {
-		if (!Settings.USE_UNSAFE_FILTER) {
+		if (!Settings.USE_UNSAFE_FILTER || !filter.filterName) {
 			return false;
 		}
 
 		this.dropAllReferences(false);
 
-		const renderToSelf = source === this;
+		const result = this._stage.filterManager.applyFilter (
+			source,
+			this,
+			sourceRect,
+			destPoint,
+			filter.filterName, filter);
 
-		let result = false;
-
-		if (!renderToSelf) {
-			return this._stage.filterManager.applyFilter (source, this, filter.filterName, filter);
-		} else {
-
-			const pad = 4;
-			const tmp = SceneImage2D.getImage(
-				source.width + pad * 2, source.height + pad * 2, true, null, false, this._stage);
-
-			// require 2 textures for padding
-			const tmp2 = SceneImage2D.getImage(
-				source.width + pad * 2, source.height + pad * 2, true, null, false, this._stage);
-
-			TMP_POINT.setTo(pad, pad);
-			TMP_RECT.setTo(0,0, sourceRect.width, sourceRect.height);
-
-			// temporary paddding implemenataton
-			// copy to TMP for apply padding
-			this._stage.copyPixels(this, tmp, TMP_RECT, TMP_POINT, null, null, false);
-
-			// apply filter
-			result = this._stage.filterManager.applyFilter (tmp, tmp2, filter.filterName, filter);
-
-			if (result) {
-				// copy to destination with shift padding
-				TMP_RECT.setTo(pad,pad, sourceRect.width, sourceRect.height);
-				this._stage.copyPixels(tmp2, this, TMP_RECT, destPoint, null, null, false);
-			}
-
-			// push temp back
-			SceneImage2D.tryStoreImage(tmp, false);
-			SceneImage2D.tryStoreImage(tmp2, false);
-		}
-
-		this._imageDataDirty = true;
+		this._imageDataDirty = result;
 		return result;
 	}
 
@@ -646,17 +579,23 @@ export class SceneImage2D extends BitmapImage2D {
 		this.dropAllReferences();
 		this.unmarkToUnload();
 
-		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
-		this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ZERO);
+		//this._stage.context.setCulling(ContextGLTriangleFace.NONE);
+		//this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ZERO);
 
-		const tmp = SceneImage2D.getTemp(rect.x + rect.width, rect.y + rect.height, this._stage);
+		//const tmp = SceneImage2D.getTemp(rect.x + rect.width, rect.y + rect.height, this._stage);
 
-		this._stage.colorTransform(this, tmp, rect, colorTransform);
-		this._stage.copyPixels(tmp, this, rect, new Point(0,0), null, null, false);
+		//@ts-ignore
+		//spector.startCapture(document.querySelector('canvas'));
+
+		this._stage.colorTransform(this, this, rect, colorTransform);
+		//@ts-ignore
+		//spector.stopCapture();
+
+		//this._stage.copyPixels(tmp, this, rect, new Point(0,0), null, null, false);
 
 		this._imageDataDirty = true;
 
-		SceneImage2D.tryStoreImage(tmp, true);
+		//SceneImage2D.tryStoreImage(tmp, true);
 	}
 
 	public setPixel(x: number, y: number, color: number) {
