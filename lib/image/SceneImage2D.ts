@@ -528,9 +528,6 @@ export class SceneImage2D extends BitmapImage2D {
 		this.dropAllReferences();
 		this.unmarkToUnload();
 
-		//this._stage.context.setCulling(ContextGLTriangleFace.NONE);
-		//this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ONE_MINUS_SOURCE_ALPHA);
-
 		// need drop alpha from source when target is not has alpha
 		mergeAlpha = this.transparent !== source.transparent || mergeAlpha;
 
@@ -574,28 +571,14 @@ export class SceneImage2D extends BitmapImage2D {
 	}
 
 	public colorTransform(rect: Rectangle, colorTransform: ColorTransform): void {
-
-		this._lastUsedFill = null;
 		this.dropAllReferences();
 		this.unmarkToUnload();
 
-		//this._stage.context.setCulling(ContextGLTriangleFace.NONE);
-		//this._stage.context.setBlendFactors(ContextGLBlendFactor.ONE, ContextGLBlendFactor.ZERO);
-
-		//const tmp = SceneImage2D.getTemp(rect.x + rect.width, rect.y + rect.height, this._stage);
-
-		//@ts-ignore
-		//spector.startCapture(document.querySelector('canvas'));
+		this._lastUsedFill = null;
 
 		this._stage.colorTransform(this, this, rect, colorTransform);
-		//@ts-ignore
-		//spector.stopCapture();
-
-		//this._stage.copyPixels(tmp, this, rect, new Point(0,0), null, null, false);
 
 		this._imageDataDirty = true;
-
-		//SceneImage2D.tryStoreImage(tmp, true);
 	}
 
 	public setPixel(x: number, y: number, color: number) {

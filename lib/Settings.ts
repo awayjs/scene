@@ -40,5 +40,5 @@ export const Settings: ISceneSettings = {
 	/**
 	 * @description Use applyFilter for SceneImage2D
 	 */
-	USE_UNSAFE_FILTER: false,
+	USE_UNSAFE_FILTER: true,
 };
