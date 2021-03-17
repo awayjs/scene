@@ -553,7 +553,7 @@ export class SceneImage2D extends BitmapImage2D {
 	}
 
 	public applyFilter (source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point, filter: any): boolean {
-		if (!Settings.USE_UNSAFE_FILTER || !filter.filterName) {
+		if (!Settings.USE_UNSAFE_FILTER || !filter || !filter.filterName) {
 			return false;
 		}
 
