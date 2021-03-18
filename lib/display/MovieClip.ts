@@ -508,7 +508,7 @@ export class MovieClip extends Sprite {
 		//update's advanceFrame function, unless advanceFrame has
 		//already been executed
 
-		this._timeline.gotoFrame(this, value, queue_script, false, true);
+		this._timeline.gotoFrame(this, value, queue_script, false, false);
 	}
 
 	public addButtonListeners(): void {
