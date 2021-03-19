@@ -1,10 +1,10 @@
 import { Vector3D } from '@awayjs/core';
 import { Stage } from '@awayjs/stage';
 
-import { PickingCollision, RaycastPicker, ContainerNode, INode, IPartitionContainer, EntityNode } from '@awayjs/view';
+import { PickingCollision, RaycastPicker, ContainerNode, IPartitionContainer, EntityNode } from '@awayjs/view';
 
 import { KeyboardEvent } from '../events/KeyboardEvent';
-import { MouseEvent } from '../events/MouseEvent';
+import { MouseEvent as AwayMouseEvent } from '../events/MouseEvent';
 import { FrameScriptManager } from '../managers/FrameScriptManager';
 
 import { IInputRecorder } from './IInputRecorder';
@@ -38,26 +38,26 @@ export class MouseManager {
 	private _showCursor: boolean;
 
 	private _nullVector: Vector3D = new Vector3D();
-	private _queuedEvents: Array<MouseEvent> = new Array<MouseEvent>();
+	private _queuedEvents: Array<AwayMouseEvent> = new Array<AwayMouseEvent>();
 
 	private _mouseMoveEvent;
-	private _mouseUp: MouseEvent = new MouseEvent(MouseEvent.MOUSE_UP);
-	private _mouseUpOutside: MouseEvent = new MouseEvent(MouseEvent.MOUSE_UP_OUTSIDE);
-	private _mouseClick: MouseEvent = new MouseEvent(MouseEvent.CLICK);
-	private _mouseOut: MouseEvent = new MouseEvent(MouseEvent.MOUSE_OUT);
-	private _dragOut: MouseEvent = new MouseEvent(MouseEvent.DRAG_OUT);
-	private _dragOver: MouseEvent = new MouseEvent(MouseEvent.DRAG_OVER);
-	private _mouseDown: MouseEvent = new MouseEvent(MouseEvent.MOUSE_DOWN);
-	private _mouseMove: MouseEvent = new MouseEvent(MouseEvent.MOUSE_MOVE);
-	private _mouseOver: MouseEvent = new MouseEvent(MouseEvent.MOUSE_OVER);
-	private _mouseWheel: MouseEvent = new MouseEvent(MouseEvent.MOUSE_WHEEL);
-	private _mouseDoubleClick: MouseEvent = new MouseEvent(MouseEvent.DOUBLE_CLICK);
-	private _rollOver: MouseEvent = new MouseEvent(MouseEvent.ROLL_OVER);
-	private _rollOut: MouseEvent = new MouseEvent(MouseEvent.ROLL_OUT);
+	private _mouseUp: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_UP);
+	private _mouseUpOutside: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_UP_OUTSIDE);
+	private _mouseClick: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.CLICK);
+	private _mouseOut: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_OUT);
+	private _dragOut: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DRAG_OUT);
+	private _dragOver: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DRAG_OVER);
+	private _mouseDown: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_DOWN);
+	private _mouseMove: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_MOVE);
+	private _mouseOver: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_OVER);
+	private _mouseWheel: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_WHEEL);
+	private _mouseDoubleClick: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DOUBLE_CLICK);
+	private _rollOver: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.ROLL_OVER);
+	private _rollOut: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.ROLL_OUT);
 
-	private _dragMove: MouseEvent = new MouseEvent(MouseEvent.DRAG_MOVE);
-	private _dragStart: MouseEvent = new MouseEvent(MouseEvent.DRAG_START);
-	private _dragStop: MouseEvent = new MouseEvent(MouseEvent.DRAG_STOP);
+	private _dragMove: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DRAG_MOVE);
+	private _dragStart: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DRAG_START);
+	private _dragStop: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DRAG_STOP);
 
 	private _useSoftkeyboard: boolean = false;
 
@@ -108,7 +108,7 @@ export class MouseManager {
 		this.onKeyUp = this.onKeyUp.bind(this);
 
 		this.buttonEnabledDirty = false;
-		this._isTouch = (('ontouchstart' in window) || navigator.msMaxTouchPoints > 0);
+		this._isTouch = (('ontouchstart' in self) || navigator.msMaxTouchPoints > 0);
 		this._showCursor = true;
 		this._mouseDragging = false;
 
@@ -131,6 +131,9 @@ export class MouseManager {
 
 		window.addEventListener('keydown', this.onKeyDown);
 		window.addEventListener('keyup', this.onKeyUp);
+
+		// supress context menu
+		window.addEventListener('contextmenu', e => e.preventDefault());
 	}
 
 	public set useSoftkeyboard(value: boolean) {
@@ -221,7 +224,7 @@ export class MouseManager {
 		return this._focusContainer;
 	}
 
-	private dispatchEvent(event: MouseEvent, dispatcher: ContainerNode) {
+	private dispatchEvent(event: AwayMouseEvent, dispatcher: ContainerNode) {
 		if (!this._eventBubbling) {
 			if (dispatcher) {
 				dispatcher.container.dispatchEvent(event);
@@ -246,7 +249,7 @@ export class MouseManager {
 		}
 	}
 
-	private setupAndDispatchEvent(event: MouseEvent, sourceEvent,
+	private setupAndDispatchEvent(event: AwayMouseEvent, sourceEvent,
 		collision: PickingCollision, commonAncestor: ContainerNode = null) {
 
 		if (sourceEvent) {
@@ -276,7 +279,7 @@ export class MouseManager {
 		if (!forcePicker && !this._updateDirty)
 			return;
 
-		let event: MouseEvent;
+		let event: AwayMouseEvent;
 		let dispatcher: ContainerNode;
 		const len: number = this._queuedEvents.length;
 		// Dispatch all queued events.
@@ -291,7 +294,7 @@ export class MouseManager {
 
 			this.setUpEvent(event, collision);
 
-			if (event.type == MouseEvent.MOUSE_DOWN) {
+			if (event.type == AwayMouseEvent.MOUSE_DOWN) {
 				this._mouseDragging = true;
 
 				// no event-bubbling. dispatch on stage first
@@ -315,8 +318,7 @@ export class MouseManager {
 
 				//  in FP6, a mouseclick on non focus-able object still steal the focus
 				//  in newer FP they only steal the focus if the the new hit is focusable
-				if (this._allowFocusOnUnfocusable
-					 || this._mouseDragCollision?.rootNode.container.tabEnabled) {
+				if (this._allowFocusOnUnfocusable || this._mouseDragCollision?.rootNode.container.tabEnabled) {
 					if (this._focusContainer)
 						this._focusContainer.setFocus(false, true);
 
@@ -329,7 +331,7 @@ export class MouseManager {
 				if (this._mouseDragCollision)
 					this.setupAndDispatchEvent(this._dragStart, event, this._mouseDragCollision);
 
-			} else if (event.type == MouseEvent.MOUSE_UP) {
+			} else if (event.type == AwayMouseEvent.MOUSE_UP) {
 
 				// no event-bubbling. dispatch on stage first
 				if (!this._eventBubbling)
@@ -385,7 +387,7 @@ export class MouseManager {
 				this._mouseDragging = false;
 				this._isAVM1Dragging = false;
 
-			} else if (event.type == MouseEvent.MOUSE_MOVE) {
+			} else if (event.type == AwayMouseEvent.MOUSE_MOVE) {
 
 				// no event-bubbling. dispatch on stage first
 				if (!this._eventBubbling) {
@@ -685,8 +687,8 @@ export class MouseManager {
 	// ---------------------------------------------------------------------
 	// Private.
 	// ---------------------------------------------------------------------
-	private setUpEvent(event: MouseEvent,
-		collision: PickingCollision, commonAncestor: ContainerNode = null): MouseEvent {
+	private setUpEvent(event: AwayMouseEvent,
+		collision: PickingCollision, commonAncestor: ContainerNode = null): AwayMouseEvent {
 		event._iAllowedToImmediatlyPropagate = true;
 		event._iAllowedToPropagate = true;
 		// 2D properties.
@@ -724,7 +726,7 @@ export class MouseManager {
 		return event;
 	}
 
-	private queueDispatch(event: MouseEvent, sourceEvent): void {
+	private queueDispatch(event: AwayMouseEvent, sourceEvent): void {
 		// Store event to be dispatched later.
 		event.delta = sourceEvent.wheelDelta;
 		event.ctrlKey = sourceEvent.ctrlKey;
@@ -783,7 +785,7 @@ export class MouseManager {
 
 	}
 
-	public onMouseMove(event): void {
+	public onMouseMove(event: MouseEvent | TouchEvent): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this._isTouch = (event.type != 'mousemove');
 
@@ -792,78 +794,98 @@ export class MouseManager {
 		this.queueDispatch(this._mouseMove, this._mouseMoveEvent = event);
 	}
 
-	public onMouseOut(event): void {
+	public onMouseOut(event: MouseEvent): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this.updateColliders(event);
 
 		this.queueDispatch(this._mouseOut, event);
 	}
 
-	public onMouseOver(event): void {
+	public onMouseOver(event: MouseEvent): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this.updateColliders(event);
 
 		this.queueDispatch(this._mouseOver, event);
 	}
 
-	public onClick(event): void {
+	public onClick(event: MouseEvent): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this.updateColliders(event);
-
 		this.queueDispatch(this._mouseClick, event);
 	}
 
-	public onDoubleClick(event): void {
+	public onDoubleClick(event: MouseEvent): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this.updateColliders(event);
+
+		// prevent middle and second button
+		if (event instanceof MouseEvent && event.buttons & 0b110) {
+			event.preventDefault();
+		}
 
 		this.queueDispatch(this._mouseDoubleClick, event);
 	}
 
 	private _isDown: boolean = false;
 
-	public onMouseDown(event): void {
-		this._isTouch = (event.type != 'mousedown');
+	public onMouseDown(event: MouseEvent | TouchEvent): void {
+		this._isTouch = (event.type !== 'mousedown');
 		if (this._isDown) {
 			return;
 		}
+
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this._isDown = true;
 
 		this.updateColliders(event);
 
-		//console.log("collisionNode", collisionNode);
-		if (this._isTouch) {
+		let prevent = this._isTouch;
+
+		// prevent middle and second button
+		if (event instanceof MouseEvent && event.buttons & 0b110) {
+			prevent = true;
+		}
+
+		if (prevent) {
 			event.preventDefault();
 			this._stage.container.focus();
 		}
+
 		this.queueDispatch(this._mouseDown, event);
 	}
 
-	public onMouseUp(event): void {
+	public onMouseUp(event: MouseEvent | TouchEvent): void {
 		if (!this._isDown) {
 			return;
 		}
+
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this._isDown = false;
 
 		this.updateColliders(event);
 
-		if (this._isTouch) {
+		let prevent = this._isTouch;
+		// prevent middle and second button
+		if (event instanceof MouseEvent && event.button === 1) {
+			prevent = true;
+		}
+
+		if (prevent) {
 			event.preventDefault();
 			this._stage.container.focus();
 		}
+
 		this.queueDispatch(this._mouseUp, event);
 	}
 
-	public onMouseWheel(event): void {
+	public onMouseWheel(event: WheelEvent): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this.updateColliders(event);
 
 		this.queueDispatch(this._mouseWheel, event);
 	}
 
-	private updateColliders(event): void {
+	private updateColliders(event: Event): void {
 		this._stage.interactionHandler(event);
 
 		this._updateDirty = true;
