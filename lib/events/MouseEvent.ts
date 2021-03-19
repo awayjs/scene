@@ -180,6 +180,11 @@ export class MouseEvent extends EventBase {
 	public delta: number;
 
 	/**
+	 * Current button that fire event
+	 */
+	public button: 0 | 1 | 2 | 3 = 0;
+
+	/**
 	 * Create a new MouseEvent object.
 	 * @param type The type of the MouseEvent.
 	 */
@@ -250,6 +255,7 @@ export class MouseEvent extends EventBase {
 
 		result._iParentEvent = this;
 		result._iAllowedToPropagate = this._iAllowedToPropagate;
+		result.button = this.button;
 
 		return result;
 	}

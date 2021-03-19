@@ -167,7 +167,7 @@ export class MouseManager {
 		window.removeEventListener('mouseup', this.onMouseUp);
 		container.removeEventListener('touchend', this.onMouseUp);
 		container.removeEventListener('touchend', this.onClick);
-		container.removeEventListener('mousewheel', this.onMouseWheel);
+		container.removeEventListener('wheel', this.onMouseWheel);
 		container.removeEventListener('mouseover', this.onMouseOver);
 		container.removeEventListener('mouseout', this.onMouseOut);
 		window.removeEventListener('keydown', this.onKeyDown);
@@ -726,12 +726,13 @@ export class MouseManager {
 		return event;
 	}
 
-	private queueDispatch(event: AwayMouseEvent, sourceEvent): void {
+	private queueDispatch(event: AwayMouseEvent, sourceEvent: MouseEvent | TouchEvent | WheelEvent): void {
 		// Store event to be dispatched later.
-		event.delta = sourceEvent.wheelDelta;
+		event.delta = (sourceEvent instanceof WheelEvent) ? sourceEvent.deltaY : 0;
 		event.ctrlKey = sourceEvent.ctrlKey;
 		event.altKey = sourceEvent.altKey;
 		event.shiftKey = sourceEvent.shiftKey;
+		event.button = (sourceEvent instanceof MouseEvent) ? <0> sourceEvent.button : 0;
 
 		this._queuedEvents.push(event);
 	}
