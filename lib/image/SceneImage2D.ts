@@ -767,7 +767,7 @@ export class SceneImage2D extends BitmapImage2D {
 			Settings.ALLOW_FORCE_MSAA > 1 && // because a quality is more that 1
 			!internal); // and not internal
 
-		let target: SceneImage2D = this;
+		let target: Image2D = this;
 
 		// lazy filling
 		if (!nativeMSAA  && this._initalFillColor !== null) {
@@ -815,7 +815,7 @@ export class SceneImage2D extends BitmapImage2D {
 			root.transform.moveTo(0, this._rect.height,0);
 		}
 
-		renderer.antiAlias = (internal ? this.antialiasQuality :  target.antialiasQuality) || 0;
+		renderer.antiAlias = (internal ? this.antialiasQuality :  (<any>target).antialiasQuality) || 0;
 		renderer.view.target = target;
 
 		renderer.view.projection.scale = 1000 / this._rect.height;
