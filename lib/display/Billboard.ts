@@ -1,7 +1,23 @@
-import { PickingCollision, PartitionBase, PickEntity, _Pick_PickableBase, EntityNode } from '@awayjs/view';
-import { RenderableEvent, MaterialEvent, IMaterial, ITexture, StyleEvent } from '@awayjs/renderer';
+import {
+	PickingCollision,
+	PartitionBase,
+	PickEntity,
+	_Pick_PickableBase,
+	EntityNode,
+} from '@awayjs/view';
+import {
+	RenderableEvent,
+	MaterialEvent,
+	IMaterial,
+	StyleEvent,
+} from '@awayjs/renderer';
 import { Rectangle, Matrix3D, Box, Vector3D, Sphere } from '@awayjs/core';
-import { ImageSampler, Image2D, ImageUtils, ContextGLTriangleFace } from '@awayjs/stage';
+import {
+	ImageSampler,
+	Image2D,
+	ImageUtils,
+	ContextGLTriangleFace,
+} from '@awayjs/stage';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 
 /**
@@ -163,7 +179,7 @@ export class Billboard extends DisplayObjectContainer {
 		this.scaleY = this._height / this._billboardRect.height;
 	}
 
-	constructor(material: IMaterial, pixelSnapping: string = 'auto', smoothing: boolean = false) {
+	constructor(material: IMaterial, _pixelSnapping: string = 'auto', smoothing: boolean = false) {
 		super();
 
 		this._onInvalidateTextureDelegate = (event: MaterialEvent) => this._onInvalidateTexture(event);
@@ -204,14 +220,29 @@ export class Billboard extends DisplayObjectContainer {
 		traverser.applyTraversable(this);
 	}
 
+	public get image(): Image2D {
+		const texture = this.material.getTextureAt(0);
+
+		if (!texture) {
+			return null;
+		}
+
+		let image = this._style?.getImageAt(texture);
+		if (image) {
+			return <Image2D> image;
+		}
+
+		image = this.material.style?.getImageAt(texture);
+		if (image) {
+			return <Image2D> image;
+		}
+
+		return <Image2D> texture.getImageAt(0);
+	}
+
 	private _updateDimensions(): void {
-		const texture: ITexture = this.material.getTextureAt(0);
-		const image = texture ?
-			<Image2D> (
-				this._style?.getImageAt(texture)
-				|| this.material.style?.getImageAt(texture)
-				|| texture.getImageAt(0))
-			: null;
+		const texture = this.material.getTextureAt(0);
+		const image = this.image;
 
 		if (image) {
 			this._sampler = <ImageSampler> (

@@ -1,3 +1,11 @@
+
+import { BasicPartition, ContainerNode, NodePool, View } from '@awayjs/view';
+import { MaterialBase, MethodMaterial } from '@awayjs/materials';
+import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
+import { DisplayObject } from '../display/DisplayObject';
+import { Billboard } from '../display/Billboard';
+import { Settings } from '../Settings';
+
 import {
 	ColorTransform,
 	Matrix,
@@ -15,73 +23,30 @@ import { Stage,
 	_Stage_BitmapImage2D,
 	BlendMode,
 	ContextWebGL,
-	ContextGLBlendFactor,
-	ContextGLTriangleFace,
-	ImageUtils
+	Image2D
 } from '@awayjs/stage';
 
-import { DefaultRenderer, RenderGroup, RendererType, Style } from '@awayjs/renderer';
-
-import { DisplayObject } from '../display/DisplayObject';
-import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
-
-import { BasicPartition, ContainerNode, NodePool, View } from '@awayjs/view';
-import { MaterialBase, MethodMaterial } from '@awayjs/materials';
-import { Billboard } from '../display/Billboard';
-import { Settings } from '../Settings';
+import {
+	DefaultRenderer,
+	RenderGroup,
+	RendererType,
+	Style,
+} from '@awayjs/renderer';
 
 // empty matrix for transfrorm reset
 const TMP_POINT = new Point(0,0);
-const TMP_RECT = new Rectangle();
 
 /**
  *
  */
 export class SceneImage2D extends BitmapImage2D {
 	public static assetType: string = '[image SceneImage2D]';
-	private static MAX_POOL_SIZE = 30;
-	private static MAX_GROW_SIZE = 300; // x10 of start value
-	private static _pool: SceneImage2D[] = [];
 
 	public static getImage(
 		width: number, height: number, transparent: boolean = true,
 		fillColor: number = 0xffffffff,
-		powerOfTwo: boolean = true, stage: Stage = null, msaa = false) {
-
-		if (width > ImageUtils.MAX_SIZE || height > ImageUtils.MAX_SIZE) {
-			throw `Try to create image greater that ${ImageUtils.MAX_SIZE}, ${width}x${height}`;
-		}
-
-		let index = -1;
-		for (let i = 0; i < this._pool.length; i++) {
-			const e = this._pool[i];
-
-			if ((!stage || e._stage === stage)
-				&& e.width === width
-				&& e.height === height
-				&& e.transparent === transparent
-				&& e.powerOfTwo === powerOfTwo
-				&& (msaa === e.canUseMSAAInternaly)
-			) {
-				index = i;
-				break;
-			}
-		}
-
-		if (index > -1) {
-			const e = this._pool.splice(index, 1)[0];
-
-			if (fillColor !== null)
-				e.fillRect(e.rect, fillColor);
-			return e;
-		} else {
-			if (this._pool.length === this.MAX_POOL_SIZE && this.MAX_POOL_SIZE < this.MAX_GROW_SIZE) {
-
-				// GROW POOL WHEN THERE ARE NOT needed image size
-				this.MAX_POOL_SIZE += this .MAX_POOL_SIZE * 0.25 | 0;
-			}
-		}
-
+		powerOfTwo: boolean = true, stage: Stage = null, msaa = false
+	) {
 		const result = new SceneImage2D(
 			width,
 			height,
@@ -101,30 +66,15 @@ export class SceneImage2D extends BitmapImage2D {
 		return result;
 	}
 
-	public static tryStoreImage(image: SceneImage2D, force = false): boolean {
-		if (this._pool.length <= this.MAX_POOL_SIZE || force) {
-			this._pool.push(image);
-			return true;
-		}
-
-		return false;
+	public static tryStoreImage(image: Image2D, stage: Stage): void {
+		stage.filterManager.pushTemp(image);
 	}
 
-	private static TMP_STEP = [128, 256, 512, 1024, 2048, 4096];
 	private static getTemp(width: number, height: number, stage: Stage, msaa = false) {
+		const image = stage.filterManager.popTemp(width, height, msaa && Settings.ALLOW_FORCE_MSAA > 1);
 
-		const max = Math.max(width, height);
-
-		let size = this.TMP_STEP[0];
-
-		for (let i = 0; i < this.TMP_STEP.length; i++) {
-			if (max <= this.TMP_STEP[i]) {
-				size = this.TMP_STEP[i];
-				break;
-			}
-		}
-
-		return this.getImage(size, size, true, null, true, stage, msaa);
+		image.antialiasQuality = msaa ? Settings.ALLOW_FORCE_MSAA : 0;
+		return image;
 	}
 
 	private static _renderer: DefaultRenderer;
@@ -417,10 +367,7 @@ export class SceneImage2D extends BitmapImage2D {
 		this._data = null;
 		this._locked = false;
 
-		if (!this.wasUpload || !SceneImage2D.tryStoreImage(this, false)) {
-			super.dispose();
-		}
-
+		super.dispose();
 		//todo
 	}
 
@@ -809,22 +756,21 @@ export class SceneImage2D extends BitmapImage2D {
 		if (!SceneImage2D._renderer)
 			this.createRenderer();
 
+		const root = SceneImage2D._root;
+		const rootNode = SceneImage2D._rootNode;
+		const renderer = SceneImage2D._renderer;
+
 		// if need use MSAA, we create temporary image and draw to it
 		const internal = this.canUseMSAAInternaly;
 		const nativeMSAA = (
 			this._stage.context.glVersion === 2 && // can be used because a webgl2
 			Settings.ALLOW_FORCE_MSAA > 1 && // because a quality is more that 1
 			!internal); // and not internal
-		const emulatedMSAA = (
-			!nativeMSAA && // doesn't suport real MSAA
-			Settings.ALLOW_APPROXIMATION > 1 // allowed to use approximation
-			&& !internal); // and not internal MSAA
 
 		let target: SceneImage2D = this;
-		let scaleRatio = 1;
 
 		// lazy filling
-		if (!nativeMSAA && !emulatedMSAA  && this._initalFillColor !== null) {
+		if (!nativeMSAA  && this._initalFillColor !== null) {
 			this.fillRect(this._rect, this._initalFillColor);
 			this._initalFillColor = null;
 		}
@@ -833,35 +779,17 @@ export class SceneImage2D extends BitmapImage2D {
 			target = SceneImage2D.getTemp(this.width, this.height, this._stage, true);
 
 			if (this._lastUsedFill !== null) {
-				target.fillRect(target._rect, this._lastUsedFill);
+				// bitmap was filled plain, go clear TMP to this color too
+				renderer.disableClear = false;
+				renderer.view.backgroundColor = this._lastUsedFill;
+				renderer.view.backgroundAlpha = (this._lastUsedFill >>> 24 & 0xff) / 0xff;
+				//target.fillRect(target._rect, this._lastUsedFill);
 			} else {
 				// copy from source to tmp
 				TMP_POINT.setTo(0,0);
-				// we cant use mergeAlpha = false, becasue RT is MSAA
-				// MSAA texture is immutable
-				//target.fillRect(target._rect, 0x0);
-				this._stage.copyPixels(this, target, this._rect, TMP_POINT, null, null, true);
-			}
-
-		} else if (emulatedMSAA) {
-
-			scaleRatio = Settings.ALLOW_APPROXIMATION;
-			target = SceneImage2D.getTemp(
-				this.width * scaleRatio,
-				this.height * scaleRatio, this._stage, false);
-
-			if (this._lastUsedFill !== null) {
-				target.fillRect(target._rect, this._lastUsedFill);
-			} else {
-				// copy from source to tmp
-				// BUT FOR THIS REQUIRED THAT SAMPLER IS LINEAR
-				this.fastScaledNativeCopy(this, target, this._rect);
+				this._stage.copyPixels(this, target, this._rect, TMP_POINT, null, null, false);
 			}
 		}
-
-		const root = SceneImage2D._root;
-		const rootNode = SceneImage2D._rootNode;
-		const renderer = SceneImage2D._renderer;
 
 		// need correcting a root because maybe flipped around Z
 		const zFlip = source.transform.matrix3D._rawData[10];
@@ -887,32 +815,17 @@ export class SceneImage2D extends BitmapImage2D {
 			root.transform.moveTo(0, this._rect.height,0);
 		}
 
-		renderer.antiAlias = (internal ? this.antialiasQuality :  target._antialiasQuality) || 0;
+		renderer.antiAlias = (internal ? this.antialiasQuality :  target.antialiasQuality) || 0;
 		renderer.view.target = target;
 
 		renderer.view.projection.scale = 1000 / this._rect.height;
 
-		if (emulatedMSAA) {
-
-			const thisRatio = (this._rect.width / this._rect.height);
-			const targetRatio = 1; // TMP should be quad;
-
-			// because we render a rect with ratio !=1 in rect with ratio === 1, apply needed
-			renderer.view.projection.ratio = thisRatio / targetRatio;
-
-			renderer.view.x = 0;
-			renderer.view.y = 0;
-			renderer.view.width = target.width;
-			renderer.view.height = target.height;
-		} else {
-
-			// shift view, because target can be more
-			renderer.view.projection.ratio = (this._rect.width / this._rect.height);
-			renderer.view.x = -(target.width - this.width);
-			renderer.view.y = -(target.height - this.height);
-			renderer.view.width = this.width;
-			renderer.view.height = this.height;
-		}
+		// shift view, because target can be more
+		renderer.view.projection.ratio = (this._rect.width / this._rect.height);
+		renderer.view.x = -(target.width - this.width);
+		renderer.view.y = -(target.height - this.height);
+		renderer.view.width = this.width;
+		renderer.view.height = this.height;
 
 		const sourceNode: ContainerNode = rootNode.addChildAt(source, 0);
 		sourceNode.transformDisabled = true;
@@ -931,32 +844,16 @@ export class SceneImage2D extends BitmapImage2D {
 		renderer.render();
 
 		renderer.antiAlias = 0;
+		renderer.disableClear = true;
 
 		rootNode.removeChildAt(0);
+
 		if (nativeMSAA) {
 			// becasue we copy MSAA into no msaa, it should passed as BLIT
 			this._stage.copyPixels(target, this,  this._rect, TMP_POINT, null, null, false);
 
-			// clean before push
-			// should works without this, but i don't know why bugged
-			target.fillRect(target._rect, 0x0);
-
-			SceneImage2D.tryStoreImage(target, true);
-
-		} else if (emulatedMSAA) {
-
-			// copy with downsale
-			this.fastScaledNativeCopy(target, this, target._rect);
-
-			// clean before push
-			// should works without this, but i don't know why bugged
-			target.fillRect(target._rect, 0x0);
-			SceneImage2D.tryStoreImage(target, true);
+			SceneImage2D.tryStoreImage(target, this._stage);
 		}
-
-		//SceneImage2D.scene.dispose();
-		//SceneImage2D.scene=null;
-
 	}
 
 	public reset() {}
