@@ -666,7 +666,7 @@ export class SceneImage2D extends BitmapImage2D {
 		this._imageDataDirty = true;
 	}
 
-	private _mapBlendMode(blendMode: string = ''): string {
+	private _mapSuppotedBlendMode(blendMode: string = ''): string {
 		switch (blendMode) {
 			case null:
 			case '':
@@ -685,10 +685,12 @@ export class SceneImage2D extends BitmapImage2D {
 
 	private _drawAsBitmap(
 		source: BitmapImage2D, matrix?: Matrix, colorTransform?: ColorTransform,
-		blendMode?: string, clipRect?: Rectangle, smoothing?: boolean) {
+		blendMode?: string, _clipRect?: Rectangle, smoothing?: boolean
+	) {
 
-		if (!SceneImage2D._billboardRenderer)
+		if (!SceneImage2D._billboardRenderer) {
 			this.createBillboardRenderer();
+		}
 
 		if (this._initalFillColor !== null) {
 			this.fillRect(this._rect, this._initalFillColor);
@@ -706,7 +708,10 @@ export class SceneImage2D extends BitmapImage2D {
 		renderer.view.projection.scale = 1000 / this.rect.height;
 
 		billboard.material.style.image = source;
-		billboard.material.blendMode = this._mapBlendMode(blendMode);
+
+		// not all blend modes can be used for rendering
+		billboard.material.blendMode = this._mapSuppotedBlendMode(blendMode);
+
 		(<MaterialBase> billboard.material).useColorTransform = !!colorTransform;
 
 		if (matrix) {
@@ -735,59 +740,61 @@ export class SceneImage2D extends BitmapImage2D {
 		renderer.render();
 	}
 
-	private fastScaledNativeCopy(
-		from: SceneImage2D, to: SceneImage2D, sourceRect: Rectangle = null) {
-
-		const context = <ContextWebGL> this._stage.context;
-		const tex = context._texContext;
-
-		this._stage.setScissor(null);
-		this._stage.setRenderTarget(from, false);
-
-		const target = to.getAbstraction<_Stage_BitmapImage2D>(this._stage).getTexture();
-
-		tex.unsafeCopyToTexture(<any>target, sourceRect || to._rect, TMP_POINT, true);
-	}
-
 	private _drawAsDisplay(
 		source: DisplayObject, matrix?: Matrix, colorTransform?: ColorTransform,
-		blendMode?: string, clipRect?: Rectangle, smoothing?: boolean) {
+		blendMode: string = '', _clipRect?: Rectangle, _smoothing?: boolean
+	) {
+		// default global blend mode
+		blendMode = blendMode || BlendMode.LAYER;
 
-		if (!SceneImage2D._renderer)
+		if (!SceneImage2D._renderer) {
 			this.createRenderer();
+		}
 
 		const root = SceneImage2D._root;
 		const rootNode = SceneImage2D._rootNode;
 		const renderer = SceneImage2D._renderer;
 
-		// if need use MSAA, we create temporary image and draw to it
+		// when we should use MSAA, we will create temporary image and draw to it
 		const internal = this.canUseMSAAInternaly;
 		const nativeMSAA = (
 			this._stage.context.glVersion === 2 && // can be used because a webgl2
 			Settings.ALLOW_FORCE_MSAA > 1 && // because a quality is more that 1
 			!internal); // and not internal
 
+		// target image for rendering.
 		let target: Image2D = this;
 
 		// lazy filling
+		// we require fill image with initial color, becuase we not doing this immediate
 		if (!nativeMSAA  && this._initalFillColor !== null) {
 			this.fillRect(this._rect, this._initalFillColor);
 			this._initalFillColor = null;
 		}
 
-		if (nativeMSAA) {
-			target = SceneImage2D.getTemp(this.width, this.height, this._stage, true);
+		// we should run compositor when blendMode !== LAYER (default)
+		// or when we use MSAA + fill is not flat.
+		const useBlend = blendMode !== BlendMode.LAYER || this._lastUsedFill === null;
+		const useTemp = useBlend || nativeMSAA;
 
+		if (useTemp) {
+			target = SceneImage2D.getTemp(this.width, this.height, this._stage, nativeMSAA);
+
+			// because target image is stupid filled - it not require merging
 			if (this._lastUsedFill !== null) {
 				// bitmap was filled plain, go clear TMP to this color too
 				renderer.disableClear = false;
 				renderer.view.backgroundColor = this._lastUsedFill;
 				renderer.view.backgroundAlpha = (this._lastUsedFill >>> 24 & 0xff) / 0xff;
-				//target.fillRect(target._rect, this._lastUsedFill);
 			} else {
+				// we clear TMP and render to it, prepare to composing
+				renderer.disableClear = false;
+				renderer.view.backgroundColor = 0x0;
+				renderer.view.backgroundAlpha = 0;
+
 				// copy from source to tmp
-				TMP_POINT.setTo(0,0);
-				this._stage.copyPixels(this, target, this._rect, TMP_POINT, null, null, false);
+				// TMP_POINT.setTo(0,0);
+				// this._stage.copyPixels(this, target, this._rect, TMP_POINT, null, null, false);
 			}
 		}
 
@@ -831,9 +838,8 @@ export class SceneImage2D extends BitmapImage2D {
 		sourceNode.transformDisabled = true;
 
 		root.transform.colorTransform = colorTransform;
-
-		blendMode = blendMode || (<string>source.blendMode) || '';
-		root.blendMode = this._mapBlendMode(blendMode);
+		// anyway we not support this =))
+		root.blendMode = this._mapSuppotedBlendMode(blendMode);
 
 		//save snapshot if unlocked
 		//if (!this._locked)
@@ -843,14 +849,22 @@ export class SceneImage2D extends BitmapImage2D {
 		//render
 		renderer.render();
 
+		// reset render to default value
 		renderer.antiAlias = 0;
 		renderer.disableClear = true;
 
 		rootNode.removeChildAt(0);
 
-		if (nativeMSAA) {
+		if (useTemp) {
 			// becasue we copy MSAA into no msaa, it should passed as BLIT
-			this._stage.copyPixels(target, this,  this._rect, TMP_POINT, null, null, false);
+			this._stage.filterManager.copyPixels(
+				target,
+				this,
+				this._rect,
+				TMP_POINT,
+				useBlend,
+				blendMode // apply blend mode if this needed.
+			);
 
 			SceneImage2D.tryStoreImage(target, this._stage);
 		}
