@@ -113,7 +113,6 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 		this._invalidateHierarchicalProperty(HierarchicalProperty.MOUSE_ENABLED);
 	}
 
-	
 	/**
 	 * Defines the animator of the display object.  Default value is <code>null</code>.
 	 */

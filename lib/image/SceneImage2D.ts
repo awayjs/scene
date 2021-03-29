@@ -28,7 +28,6 @@ import { Stage,
 
 import { DefaultRenderer, RenderGroup, Style } from '@awayjs/renderer';
 
-
 // empty matrix for transfrorm reset
 const TMP_POINT = new Point(0,0);
 
