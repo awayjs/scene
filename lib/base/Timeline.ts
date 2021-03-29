@@ -8,7 +8,7 @@ import { MorphSprite } from '../display/MorphSprite';
 import { DisplayObject } from '../display/DisplayObject';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 import { IFrameLabel } from './IFrameLabel';
-import { TimelineActionType } from './TimelineActionType';
+import { TimelineActionType as AType } from './TimelineActionType';
 import { IFilter } from '../adapters/IFilter';
 import { BlendMode } from '@awayjs/stage';
 import { ISymbolDecoder } from './ISymbolDecoder';
@@ -29,9 +29,28 @@ function mapBlendIdToString(id: number = 1): string {
 	return BLEND_MODES[id] || BLEND_MODES[1];
 }
 
+type TApplyFunction = (timeline: Timeline, child: DisplayObject, ratget: MovieClip, i: number) => void;
 export class Timeline {
+	public static readonly applyFunctionMap: Record<AType, TApplyFunction > = {
+		[AType.UPDATE_MTX]: Timeline.update_mtx_all,
+		[AType.UPDATE_CMTX]: Timeline.update_colortransform,
+		[AType.UPDATE_MASKS]: Timeline.update_masks,
+		[AType.UPDATE_NAME]: Timeline.update_name,
+		[AType.UPDATE_BUTTON_NAME]: Timeline.update_button_name,
+		[AType.UPDATE_VISIBLE]: Timeline.update_visibility,
+		[AType.UPDATE_BLENDMODE]: Timeline.update_blendmode,
+		[AType.UPDATE_RENDERMODE]: Timeline.update_rendermode,
+		[AType.UPDATE_FILTERS]: Timeline.update_filters,
+		[AType.UPDATE_SCALE_ROT]: Timeline.update_mtx_scale_rot,
+		[AType.UPDATE_POS]: Timeline.update_mtx_pos,
+		[AType.ENABLE_MASKMODE]: Timeline.enable_maskmode,
+		[AType.REMOVE_MASK]: Timeline.remove_masks,
+		[AType.SWAP_GRAPHICS]: Timeline.swap_graphics,
+		[AType.SET_RATIO]: Timeline.set_ratio,
+		[AType.START_AUDIO]: Timeline.start_audio
+	};
+
 	private _symbolDecoder: ISymbolDecoder;
-	private _functions: Array<(child: DisplayObject, target_mc: MovieClip, i: number) => void> = [];
 	private _blocked: boolean;
 
 	public _update_indices: number[] = [];
@@ -116,25 +135,6 @@ export class Timeline {
 		this._framescripts = {};
 		this._framescripts_translated = {};
 		this.keyframe_to_frameidx = {};
-
-		//cache functions
-		this._functions[TimelineActionType.UPDATE_MTX] =  this.update_mtx_all.bind(this);
-		this._functions[TimelineActionType.UPDATE_CMTX] =  this.update_colortransform.bind(this);
-		this._functions[TimelineActionType.UPDATE_MASKS] =  this.update_masks.bind(this);
-		this._functions[TimelineActionType.UPDATE_NAME] =  this.update_name.bind(this);
-		this._functions[TimelineActionType.UPDATE_BUTTON_NAME] =  this.update_button_name.bind(this);
-		this._functions[TimelineActionType.UPDATE_VISIBLE] =  this.update_visibility.bind(this);
-		this._functions[TimelineActionType.UPDATE_BLENDMODE] =  this.update_blendmode.bind(this);
-		this._functions[TimelineActionType.UPDATE_RENDERMODE] =  this.update_rendermode.bind(this);
-		this._functions[TimelineActionType.UPDATE_FILTERS] =  this.update_filters.bind(this);
-		this._functions[TimelineActionType.UPDATE_SCALE_ROT] =  this.update_mtx_scale_rot.bind(this);
-		this._functions[TimelineActionType.UPDATE_POS] =  this.update_mtx_pos.bind(this);
-		this._functions[TimelineActionType.ENABLE_MASKMODE] =  this.enable_maskmode.bind(this);
-		this._functions[TimelineActionType.REMOVE_MASK] =  this.remove_masks.bind(this);
-		this._functions[TimelineActionType.SWAP_GRAPHICS] =  this.swap_graphics.bind(this);
-		this._functions[TimelineActionType.SET_RATIO] =  this.set_ratio.bind(this);
-		this._functions[TimelineActionType.START_AUDIO] =  this.start_audio.bind(this);
-
 	}
 
 	public get symbolDecoder(): ISymbolDecoder {
@@ -514,71 +514,83 @@ export class Timeline {
 	}
 
 	public update_childs(target_mc: MovieClip, frame_command_idx: number, frameIdx: number = -1): void {
-		let p: number;
-		let props_start_idx: number;
-		let props_end_index: number;
-		const start_index: number = this.command_index_stream[frame_command_idx];
-		const end_index: number = start_index + this.command_length_stream[frame_command_idx];
-		let child: DisplayObject;
-		for (let i: number = start_index; i < end_index; i++) {
-			child = target_mc.getTimelineChildAtSessionID(this.update_child_stream[i]);
-			if (child) {
-				// check if the child is blocked by script for transform
-				this._blocked = Boolean(child._adapter && (<IDisplayObjectAdapter> child.adapter).isBlockedByScript());
 
-				props_start_idx = this.update_child_props_indices_stream[i];
-				props_end_index = props_start_idx + this.update_child_props_length_stream[i];
-				for (p = props_start_idx; p < props_end_index; p++)
-					this._functions[this.property_type_stream[p]](child, target_mc, this.property_index_stream[p]);
+		const start = this.command_index_stream[frame_command_idx];
+		const end = start + this.command_length_stream[frame_command_idx];
 
-			} else {
-				//console.log("timeline: child not found");
+		for (let i = start; i < end; i++) {
+			const child = target_mc.getTimelineChildAtSessionID(this.update_child_stream[i]);
+
+			if (!child) {
+				continue;
+			}
+
+			// check if the child is blocked by script for transform
+			this._blocked = !!(child._adapter && (<IDisplayObjectAdapter> child.adapter).isBlockedByScript());
+
+			const propsStart = this.update_child_props_indices_stream[i];
+			const propsEnd = propsStart + this.update_child_props_length_stream[i];
+
+			for (let p = propsStart; p < propsEnd; p++) {
+				Timeline.applyFunctionMap[this.property_type_stream[p]] (
+					this,
+					child,
+					target_mc,
+					this.property_index_stream[p]
+				);
 			}
 		}
 	}
 
-	public update_mtx_all(child: DisplayObject, target_mc: MovieClip, i: number): void {
-		if (this._blocked || (<any>child).noTimelineUpdate)
+	public static update_mtx_all(timeline: Timeline, child: DisplayObject, _target_mc: MovieClip, i: number): void {
+		if (timeline._blocked || (<any>child).noTimelineUpdate)
 			return;
 
 		i *= 6;
+
 		const new_matrix: Matrix3D = child.transform.matrix3D;
-		new_matrix._rawData[0] = this.properties_stream_f32_mtx_all[i++];
-		new_matrix._rawData[1] = this.properties_stream_f32_mtx_all[i++];
-		new_matrix._rawData[4] = this.properties_stream_f32_mtx_all[i++];
-		new_matrix._rawData[5] = this.properties_stream_f32_mtx_all[i++];
-		new_matrix._rawData[12] = this.properties_stream_f32_mtx_all[i++];
-		new_matrix._rawData[13] = this.properties_stream_f32_mtx_all[i];
+		const props_stream = timeline.properties_stream_f32_mtx_all;
+
+		new_matrix._rawData[0] = props_stream[i++];
+		new_matrix._rawData[1] = props_stream[i++];
+		new_matrix._rawData[4] = props_stream[i++];
+		new_matrix._rawData[5] = props_stream[i++];
+		new_matrix._rawData[12] = props_stream[i++];
+		new_matrix._rawData[13] = props_stream[i];
 
 		child.transform.invalidateComponents();
 	}
 
-	public update_colortransform(child: DisplayObject, target_mc: MovieClip, i: number): void {
+	public static update_colortransform(
+		timeline: Timeline,child: DisplayObject, _target_mc: MovieClip, i: number
+	): void {
+
 		if (child._adapter && (<IDisplayObjectAdapter> child.adapter).isColorTransformByScript())
 			return;
 
 		i *= 8;
-		const new_ct: ColorTransform =
-			child.transform.colorTransform || (child.transform.colorTransform = new ColorTransform());
-		new_ct._rawData[0] = this.properties_stream_f32_ct[i++];
-		new_ct._rawData[1] = this.properties_stream_f32_ct[i++];
-		new_ct._rawData[2] = this.properties_stream_f32_ct[i++];
-		new_ct._rawData[3] = this.properties_stream_f32_ct[i++];
-		new_ct._rawData[4] = this.properties_stream_f32_ct[i++];
-		new_ct._rawData[5] = this.properties_stream_f32_ct[i++];
-		new_ct._rawData[6] = this.properties_stream_f32_ct[i++];
-		new_ct._rawData[7] = this.properties_stream_f32_ct[i];
+		const props_stream = timeline.properties_stream_f32_ct;
+		const new_ct = child.transform.colorTransform || (child.transform.colorTransform = new ColorTransform());
+
+		new_ct._rawData[0] = props_stream[i++];
+		new_ct._rawData[1] = props_stream[i++];
+		new_ct._rawData[2] = props_stream[i++];
+		new_ct._rawData[3] = props_stream[i++];
+		new_ct._rawData[4] = props_stream[i++];
+		new_ct._rawData[5] = props_stream[i++];
+		new_ct._rawData[6] = props_stream[i++];
+		new_ct._rawData[7] = props_stream[i];
 
 		child.transform.invalidateColorTransform();
 	}
 
-	public update_masks(child: DisplayObject, target_mc: MovieClip, i: number): void {
-		// an object could have multiple groups of masks, in case a graphic clip was merged into the timeline
+	public static update_masks(timeline: Timeline, child: DisplayObject, target_mc: MovieClip, i: number): void {
+		// an object could have amultiple groups of masks, in case a graphic clip was merged into the timeline
 		// this is not implmeented in the runtime yet
 		// for now, a second mask-groupd would overwrite the first one
 		let mask: DisplayObject;
 		const masks: Array<DisplayObject> = new Array<DisplayObject>();
-		const numMasks: number = this.properties_stream_int[i++];
+		const numMasks: number = timeline.properties_stream_int[i++];
 
 		if (numMasks == 0) {
 			child.masks = null;
@@ -587,73 +599,85 @@ export class Timeline {
 		//mask may not exist if a goto command moves the playhead to a point in the timeline after
 		//one of the masks in a mask array has already been removed. Therefore a check is needed.
 		for (let m: number = 0; m < numMasks; m++)
-			if ((mask = target_mc.getTimelineChildAtSessionID(this.properties_stream_int[i++])))
+			if ((mask = target_mc.getTimelineChildAtSessionID(timeline.properties_stream_int[i++])))
 				masks.push(mask);
 
 		child.masks = masks;
 	}
 
-	public update_name(child: DisplayObject, target_mc: MovieClip, i: number): void {
-		if (this.properties_stream_strings[i].indexOf('instance') == 0) {
+	public static update_name(timeline: Timeline, child: DisplayObject, target_mc: MovieClip, i: number): void {
+		if (timeline.properties_stream_strings[i].indexOf('instance') == 0) {
 			return;
 		}
+
 		(<IMovieClipAdapter>target_mc.adapter).unregisterScriptObject(child);
-		child.name = this.properties_stream_strings[i];
+		child.name = timeline.properties_stream_strings[i];
 		(<IMovieClipAdapter> target_mc.adapter).registerScriptObject(child);
 	}
 
-	public update_button_name(target: DisplayObject, sourceMovieClip: MovieClip, i: number): void {
-		target.name = this.properties_stream_strings[i];
+	public static update_button_name(
+		timeline: Timeline, target: DisplayObject, sourceMovieClip: MovieClip, i: number
+	): void {
+
+		target.name = timeline.properties_stream_strings[i];
 		(<MovieClip> target).addButtonListeners();
 		(<IMovieClipAdapter> sourceMovieClip.adapter).registerScriptObject(target);
 	}
 
-	public update_visibility(child: DisplayObject, target_mc: MovieClip, i: number): void {
-		if (!child._adapter || !(<IDisplayObjectAdapter> child.adapter).isVisibilityByScript())
-			child.visible = Boolean(i);
+	public static update_visibility(_timeline: Timeline, child: DisplayObject, target_mc: MovieClip, i: number): void {
+		if (!child._adapter || !(<IDisplayObjectAdapter> child.adapter).isVisibilityByScript()) {
+			child.visible = !!i;
+		}
 	}
 
-	public update_mtx_scale_rot(child: DisplayObject, target_mc: MovieClip, i: number): void {
-		if (this._blocked || (<any>child).noTimelineUpdate)
+	public static update_mtx_scale_rot(
+		timeline: Timeline, child: DisplayObject, _target_mc: MovieClip, i: number
+	): void {
+
+		if (timeline._blocked || (<any>child).noTimelineUpdate) {
 			return;
+		}
 
 		i *= 4;
 
 		const new_matrix: Matrix3D = child.transform.matrix3D;
-		new_matrix._rawData[0] = this.properties_stream_f32_mtx_scale_rot[i++];
-		new_matrix._rawData[1] = this.properties_stream_f32_mtx_scale_rot[i++];
-		new_matrix._rawData[4] = this.properties_stream_f32_mtx_scale_rot[i++];
-		new_matrix._rawData[5] = this.properties_stream_f32_mtx_scale_rot[i];
+		const props_stream = timeline.properties_stream_f32_mtx_scale_rot;
+
+		new_matrix._rawData[0] = props_stream[i++];
+		new_matrix._rawData[1] = props_stream[i++];
+		new_matrix._rawData[4] = props_stream[i++];
+		new_matrix._rawData[5] = props_stream[i];
 
 		child.transform.invalidateComponents();
 
 		child._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
 
-	public update_mtx_pos(child: DisplayObject, target_mc: MovieClip, i: number): void {
-		if (this._blocked || (<any>child).noTimelineUpdate)
+	public static update_mtx_pos(timeline: Timeline, child: DisplayObject, target_mc: MovieClip, i: number): void {
+		if (timeline._blocked || (<any>child).noTimelineUpdate)
 			return;
 
 		i *= 2;
 
-		const new_matrix: Matrix3D = child.transform.matrix3D;
-		new_matrix._rawData[12] = this.properties_stream_f32_mtx_pos[i++];
-		new_matrix._rawData[13] = this.properties_stream_f32_mtx_pos[i];
+		const new_matrix = child.transform.matrix3D;
+
+		new_matrix._rawData[12] = timeline.properties_stream_f32_mtx_pos[i++];
+		new_matrix._rawData[13] = timeline.properties_stream_f32_mtx_pos[i];
 
 		child.transform.invalidatePosition();
 	}
 
-	public enable_maskmode(child: DisplayObject, target_mc: MovieClip, i: number): void {
+	public static enable_maskmode(_timeline: Timeline, child: DisplayObject, _target_mc: MovieClip, _i: number): void {
 		child.maskMode = true;
 	}
 
-	public remove_masks(child: DisplayObject, target_mc: MovieClip, i: number): void {
+	public static remove_masks(_timeline: Timeline, child: DisplayObject, _target_mc: MovieClip, _i: number): void {
 		child.masks = null;
 	}
 
-	public update_filters(child: DisplayObject, target_mc: MovieClip, i: number): void {
-		const startFilter: number = this.properties_stream_int[i++];
-		const numFilter: number = this.properties_stream_int[i++];
+	public static update_filters(timeline: Timeline, child: DisplayObject, _target_mc: MovieClip, i: number): void {
+		const startFilter: number = timeline.properties_stream_int[i++];
+		const numFilter: number = timeline.properties_stream_int[i++];
 		const adapter = <IDisplayObjectAdapter>child.adapter;
 
 		if (numFilter === 0) {
@@ -661,37 +685,45 @@ export class Timeline {
 			return;
 		}
 
-		adapter.updateFilters(this.properties_stream_filters.slice(startFilter, startFilter + numFilter));
+		adapter.updateFilters(
+			timeline.properties_stream_filters.slice(startFilter, startFilter + numFilter)
+		);
 	}
 
-	public swap_graphics(child: DisplayObject, target_mc: MovieClip, i: number): void {
-		if (child.isAsset(Sprite)) {
-			const myGraphics: Graphics = <Graphics> this.graphicsPool[this.properties_stream_int[i]];
-			if (myGraphics.id == (<Sprite>child).graphics.id) {
-				// already the same graphics
-				return;
-			}
-			(<Sprite>child).graphics = myGraphics;
-		} else
+	public static swap_graphics(timeline: Timeline, child: DisplayObject, _target_mc: MovieClip, i: number): void {
+		if (!child.isAsset(Sprite)) {
 			console.warn('[Timeline] - swap_graphics - child is not a Sprite');
+			return;
+		}
 
+		const sprite = <Sprite>child;
+		const target = <Graphics> timeline.graphicsPool[timeline.properties_stream_int[i]];
+
+		if (target.id === sprite.graphics.id) {
+			// already the same graphics
+			return;
+		}
+
+		sprite.graphics = target;
 	}
 
-	public start_audio(child: DisplayObject, target_mc: MovieClip, i: number): void {
-	}
+	public static start_audio(_timeline: Timeline, _child: DisplayObject, _target_mc: MovieClip, _i: number): void {}
 
-	public set_ratio(child: DisplayObject, target_mc: MovieClip, i: number): void {
-		if (child.isAsset(MorphSprite))
-			(<MorphSprite>child).setRatio(this.properties_stream_int[i] / 0xffff);
-		else
+	public static set_ratio(_timeline: Timeline, child: DisplayObject, _target_mc: MovieClip, i: number): void {
+		if (!child.isAsset(MorphSprite)) {
 			console.warn('[Timeline] - set_ratio - child is not a MorphSprite');
+			return;
+		}
+
+		(<MorphSprite>child).setRatio(_timeline.properties_stream_int[i] / 0xffff);
 	}
 
-	public update_blendmode(child: DisplayObject, target_mc: MovieClip, i: number): void {
+	public static update_blendmode(_timeline: Timeline, child: DisplayObject, _target_mc: MovieClip, i: number): void {
 		child.blendMode = mapBlendIdToString(i);
 	}
 
-	public update_rendermode(child: DisplayObject, target_mc: MovieClip, i: number): void {
+	public static update_rendermode(
+		_timeline: Timeline, _child: DisplayObject, _target_mc: MovieClip, i: number): void {
 		console.log('update rendermode ' + i);
 	}
 
