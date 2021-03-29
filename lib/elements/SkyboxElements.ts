@@ -1,4 +1,4 @@
-import { TriangleElements } from '@awayjs/graphics';
+import { TriangleElements } from '@awayjs/renderer';
 
 /**
  * @class away.base.TriangleElements
@@ -18,9 +18,7 @@ import { RenderGroup } from '@awayjs/renderer';
 
 import { Matrix3D, Vector3D } from '@awayjs/core';
 
-import { _Stage_TriangleElements } from '@awayjs/graphics';
-
-import { ShaderBase, _Render_RenderableBase, _Render_ElementsBase } from '@awayjs/renderer';
+import { ShaderBase, _Render_RenderableBase, _Render_ElementsBase, _Stage_TriangleElements } from '@awayjs/renderer';
 
 /**
  * @class away.pool.LineMaterialPool

@@ -1,5 +1,7 @@
 import { Vector3D, getTimer } from '@awayjs/core';
 
+import { TouchPoint } from '@awayjs/stage';
+
 import {
 	View,
 	BasicPartition,
@@ -11,15 +13,17 @@ import {
 	ContainerNode,
 	EntityNode,
 } from '@awayjs/view';
-import { RendererBase, RenderGroup, RendererType } from '@awayjs/renderer';
+
+import { RendererBase, RenderGroup, ImageTexture2D, IRendererClass, DefaultRenderer } from '@awayjs/renderer';
+
+import { MaterialManager } from '@awayjs/graphics';
+
+import { MethodMaterial } from '@awayjs/materials';
 
 import { Camera } from './display/Camera';
 import { CameraEvent } from './events/CameraEvent';
 import { MouseManager } from './managers/MouseManager';
 import { DisplayObjectContainer } from './display/DisplayObjectContainer';
-import { MaterialManager } from '@awayjs/graphics';
-import { MethodMaterial, ImageTexture2D } from '@awayjs/materials';
-import { TouchPoint } from '@awayjs/stage';
 
 export class Scene {
 
@@ -38,7 +42,7 @@ export class Scene {
 	 ***************************************************************************
 	 */
 
-	private _rendererType: RendererType;
+	private _rendererClass: IRendererClass;
 	private _camera: Camera;
 	private _renderer: RendererBase;
 	private _partition: PartitionBase;
@@ -95,7 +99,7 @@ export class Scene {
 
 		if (this._view) {
 			if (this._renderer) {
-				RenderGroup.clearInstance(this._view, this._rendererType);
+				RenderGroup.clearInstance(this._view, this._rendererClass);
 				this._renderer = null;
 			}
 
@@ -128,11 +132,11 @@ export class Scene {
 	 *
 	 */
 	constructor(
-		partition: PartitionBase = null, camera: Camera = null, view: View = null, rendererType: RendererType = null) {
+		partition: PartitionBase = null, camera: Camera = null, view: View = null, rendererClass: IRendererClass = null) {
 
 		this._onProjectionChangedDelegate = (event: CameraEvent) => this._onProjectionChanged(event);
 
-		this._rendererType = rendererType || RendererType.DEFAULT;
+		this._rendererClass = rendererClass || DefaultRenderer;
 		this.view = view || new View();
 		this.partition = partition || NodePool.getRootNode(new DisplayObjectContainer(), BasicPartition).partition;
 		this.camera = camera || new Camera();
@@ -145,7 +149,7 @@ export class Scene {
 
 	public get renderer(): RendererBase {
 		if (!this._renderer)
-			this._renderer = RenderGroup.getInstance(this._view, this._rendererType).getRenderer(this._partition);
+			this._renderer = RenderGroup.getInstance(this._view, this._rendererClass).getRenderer(this._partition);
 
 		return this._renderer;
 	}
@@ -197,20 +201,20 @@ export class Scene {
 	/**
 	 *
 	 */
-	public get rendererType(): RendererType {
-		return this._rendererType;
+	public get rendererClass(): IRendererClass {
+		return this._rendererClass;
 	}
 
-	public set rendererType(value: RendererType) {
-		if (this._rendererType == value)
+	public set rendererType(value: IRendererClass) {
+		if (this._rendererClass == value)
 			return;
 
 		if (this._renderer) {
-			RenderGroup.clearInstance(this._view, this._rendererType);
+			RenderGroup.clearInstance(this._view, this._rendererClass);
 			this._renderer = null;
 		}
 
-		this._rendererType = value;
+		this._rendererClass = value;
 	}
 
 	/**
@@ -321,7 +325,7 @@ export class Scene {
 	 */
 	public dispose(): void {
 		if (this._renderer) {
-			RenderGroup.clearInstance(this._view, this._rendererType);
+			RenderGroup.clearInstance(this._view, this._rendererClass);
 			this._renderer = null;
 		}
 

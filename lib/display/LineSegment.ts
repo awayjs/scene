@@ -100,7 +100,7 @@ export class LineSegment extends DisplayObject {
 
 import { AssetEvent } from '@awayjs/core';
 
-import { LineElements } from '@awayjs/graphics';
+import { LineElements } from '@awayjs/renderer';
 
 import { _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase,
 	RenderEntity, MaterialUtils, Style } from '@awayjs/renderer';

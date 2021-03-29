@@ -5,26 +5,24 @@ import { BlendMode, ImageCube } from '@awayjs/stage';
 import { PickingCollision, PartitionBase, BoundingVolumeType, INode } from '@awayjs/view';
 
 import { IAnimationSet, IMaterial, ITexture, RenderableEvent,
-	MaterialEvent, Style, StyleEvent, IRenderEntity, RenderGroup } from '@awayjs/renderer';
+	MaterialEvent, Style, StyleEvent, IRenderContainer, ImageTextureCube, DefaultRenderer } from '@awayjs/renderer';
 
-import { ImageTextureCube } from '@awayjs/materials';
-
-import { DisplayObject } from './DisplayObject';
+import { DisplayObjectContainer } from './DisplayObjectContainer';
 
 /**
  * A Skybox class is used to render a sky in the scene. It's always considered static and 'at infinity', and as
  * such it's always centered at the camera's position and sized to exactly fit within the camera's frustum, ensuring
  * the sky box is always as large as possible without being clipped.
  */
-export class Skybox extends DisplayObject implements IMaterial {
+export class Skybox extends DisplayObjectContainer implements IMaterial {
 	private _textures: Array<ITexture> = new Array<ITexture>();
 
 	public static assetType: string = '[asset Skybox]';
 
 	private _texture: ImageTextureCube;
 	private _animationSet: IAnimationSet;
-	public _pBlendMode: string = BlendMode.NORMAL;
-	private _owners: Array<IRenderEntity>;
+	public _blendMode: string = BlendMode.NORMAL;
+	private _owners: Array<IRenderContainer>;
 	private _onTextureInvalidateDelegate: (event: AssetEvent) => void;
 
 	public animateUVs: boolean = false;
@@ -34,6 +32,10 @@ export class Skybox extends DisplayObject implements IMaterial {
 	public curves: boolean = false;
 
 	public imageRect: boolean = false;
+
+	public useColorTransform: boolean = false;
+
+	public alphaThreshold: number = 0;
 
 	/**
 	 *
@@ -54,14 +56,14 @@ export class Skybox extends DisplayObject implements IMaterial {
 	 * </ul>
 	 */
 	public get blendMode(): string {
-		return this._pBlendMode;
+		return this._blendMode;
 	}
 
 	public set blendMode(value: string) {
-		if (this._pBlendMode == value)
+		if (this._blendMode == value)
 			return;
 
-		this._pBlendMode = value;
+		this._blendMode = value;
 
 		this.invalidate();
 	}
@@ -71,7 +73,7 @@ export class Skybox extends DisplayObject implements IMaterial {
 	 *
 	 * @private
 	 */
-	public get iOwners(): Array<IRenderEntity> {
+	public get iOwners(): Array<IRenderContainer> {
 		return this._owners;
 	}
 
@@ -186,7 +188,7 @@ export class Skybox extends DisplayObject implements IMaterial {
 		traverser.applyTraversable(this);
 	}
 
-	public iAddOwner(owner: IRenderEntity): void {
+	public iAddOwner(owner: IRenderContainer): void {
 
 	}
 
@@ -196,7 +198,7 @@ export class Skybox extends DisplayObject implements IMaterial {
 	 *
 	 * @internal
 	 */
-	public iRemoveOwner(owner: IRenderEntity): void {
+	public iRemoveOwner(owner: IRenderContainer): void {
 
 	}
 
@@ -216,7 +218,7 @@ import { _Render_RenderableBase,
 
 import { ContextGLCompareMode, ShaderRegisterCache, ShaderRegisterData, AttributesBuffer } from '@awayjs/stage';
 
-import { _Render_MaterialPassBase } from '@awayjs/materials';
+import { _Render_MaterialPassBase } from '@awayjs/renderer';
 
 import { SkyboxElements, _Stage_SkyboxElements } from '../elements/SkyboxElements';
 
@@ -338,6 +340,7 @@ export class _Render_Skybox extends _Render_RenderableBase {
 
 import { Plane3D } from '@awayjs/core';
 import { IEntityTraverser, EntityNode, PickGroup } from '@awayjs/view';
+import { CacheRenderer } from '@awayjs/renderer/dist/lib/CacheRenderer';
 
 /**
  * SkyboxNode is a space partitioning leaf node that contains a Skybox object.
@@ -369,6 +372,7 @@ export class SkyboxNode extends EntityNode {
 	}
 }
 
-RenderGroup.registerDefaultMaterial(_Render_SkyboxMaterial, Skybox);
+CacheRenderer.registerMaterial(_Render_SkyboxMaterial, Skybox);
+DefaultRenderer.registerMaterial(_Render_SkyboxMaterial, Skybox);
 RenderEntity.registerRenderable(_Render_Skybox, Skybox);
 PartitionBase.registerAbstraction(SkyboxNode, Skybox);

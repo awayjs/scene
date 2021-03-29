@@ -1,4 +1,5 @@
 import { Point, ArgumentError, RangeError } from '@awayjs/core';
+import { IAnimator, IRenderContainer } from '@awayjs/renderer';
 
 import { PartitionBase, EntityNode, HierarchicalProperty, IPartitionContainer, ContainerEvent } from '@awayjs/view';
 
@@ -27,9 +28,10 @@ import { DisplayObject } from './DisplayObject';
  * <i>ActionScript 3.0 Developer's Guide</i>.</p>
  */
 
-export class DisplayObjectContainer extends DisplayObject implements IPartitionContainer {
+export class DisplayObjectContainer extends DisplayObject implements IRenderContainer {
 	public static assetType: string = '[asset DisplayObjectContainer]';
 
+	private _animator: IAnimator;
 	private _mouseChildren: boolean = true;
 	protected _children: Array<DisplayObject> = new Array<DisplayObject>();
 
@@ -109,6 +111,24 @@ export class DisplayObjectContainer extends DisplayObject implements IPartitionC
 		this._mouseChildren = value;
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.MOUSE_ENABLED);
+	}
+
+	
+	/**
+	 * Defines the animator of the display object.  Default value is <code>null</code>.
+	 */
+	 public get animator(): IAnimator {
+		return this._animator;
+	}
+
+	public set animator(value: IAnimator) {
+		if (this._animator)
+			this._animator.removeOwner(this);
+
+		this._animator = value;
+
+		if (this._animator)
+			this._animator.addOwner(this);
 	}
 
 	/**
@@ -251,6 +271,9 @@ export class DisplayObjectContainer extends DisplayObject implements IPartitionC
 
 		newInstance.mouseChildren = this._mouseChildren;
 
+		if (this._animator)
+			newInstance.animator = this._animator.clone();
+
 		const len: number = this._children.length;
 		for (let i: number = 0; i < len; ++i) {
 			const newChild = (<any> this._children[i].adapter).clone().adaptee;
@@ -278,6 +301,10 @@ export class DisplayObjectContainer extends DisplayObject implements IPartitionC
 	 *
 	 */
 	public disposeValues(): void {
+
+		if (this._animator)
+			this._animator.dispose();
+
 		for (let i: number = this._children.length - 1; i >= 0; i--)
 			this.removeChild(this._children[i]);
 		super.disposeValues();

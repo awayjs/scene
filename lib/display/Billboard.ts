@@ -304,10 +304,11 @@ import {
 	_Render_MaterialBase,
 	_Render_RenderableBase,
 	RenderEntity,
-	Style
+	Style,
+	TriangleElements,
+	_Stage_TriangleElements
 } from '@awayjs/renderer';
 
-import { TriangleElements, _Stage_TriangleElements } from '@awayjs/graphics';
 import { IEntityTraverser } from '@awayjs/view';
 
 /**

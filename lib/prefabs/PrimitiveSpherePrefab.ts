@@ -1,6 +1,4 @@
-import { ElementsType, LineElements, ElementsBase, TriangleElements } from '@awayjs/graphics';
-
-import { IMaterial } from '@awayjs/renderer';
+import { IMaterial, ElementsType, ElementsBase, TriangleElements, LineElements } from '@awayjs/renderer';
 
 import { PrimitivePrefabBase } from '../prefabs/PrimitivePrefabBase';
 

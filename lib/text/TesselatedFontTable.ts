@@ -2,11 +2,12 @@ import { Matrix, AssetBase, Point, Rectangle, ColorTransform, ColorUtils } from 
 
 import { ImageSampler, AttributesBuffer, Float2Attributes, AttributesView, BitmapImage2D } from '@awayjs/stage';
 
-import { GraphicsPath, Shape, TriangleElements, GraphicsFactoryFills,
-	GraphicsFactoryHelper, MaterialManager } from '@awayjs/graphics';
+import { Style, TriangleElements } from '@awayjs/renderer';
 
-import { Style } from '@awayjs/renderer';
+import { GraphicsPath, Shape, GraphicsFactoryFills, GraphicsFactoryHelper, MaterialManager } from '@awayjs/graphics';
+
 import { MaterialBase, MethodMaterial } from '@awayjs/materials';
+
 import { TesselatedFontChar } from './TesselatedFontChar';
 import { IFontTable } from './IFontTable';
 import { TextFormat } from './TextFormat';

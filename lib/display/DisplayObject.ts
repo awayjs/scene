@@ -28,15 +28,12 @@ import {
 } from '@awayjs/view';
 
 import {
-	IAnimator,
 	IMaterial,
 	Style,
 	StyleEvent,
-	IRenderEntity,
 	RenderableEvent,
+	ElementsType,
 } from '@awayjs/renderer';
-
-import { ElementsType } from '@awayjs/graphics';
 
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 import { ControllerBase } from '../controllers/ControllerBase';
@@ -179,9 +176,8 @@ import { Sprite } from './Sprite';
  *                         display is not rendering. This is the case when the
  *                         content is either minimized or obscured. </p>
  */
-export class DisplayObject extends AssetBase implements IBitmapDrawable, IRenderEntity, IPartitionEntity {
+export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartitionEntity {
 
-	private _animator: IAnimator;
 	public _material: IMaterial;
 	public _style: Style;
 	private _loader: Loader;
@@ -422,7 +418,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 * stretched and/or rotated results of that rendering are used to draw the
 	 * object to the main display.</p>
 	 *
-	 * <p>No internal bitmap is created unless the <code>cacheAsBitmap</code>
+	 * <p>No internal bitmap is created unless the <code>BBitmap</code>
 	 * property is set to <code>true</code>.</p>
 	 *
 	 * <p>After you set the <code>cacheAsBitmap</code> property to
@@ -459,20 +455,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	 * performance increases when the movie clip is translated(when its <i>x</i>
 	 * and <i>y</i> position is changed).</p>
 	 */
-
+	 private _bitmapCache: boolean;
 	public get cacheAsBitmap() {
-		return this.get_cacheAsBitmapInternal();
+		return this._bitmapCache;
 	}
 
 	public set cacheAsBitmap(v: boolean) {
-		this.set_cacheAsBitmapInternal(v);
-	}
-
-	protected get_cacheAsBitmapInternal() {
-		return false;
-	}
-
-	protected set_cacheAsBitmapInternal(_value: boolean) {
+		this._bitmapCache = v;
 	}
 
 	/**
@@ -1178,23 +1167,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 	}
 
 	/**
-	 * Defines the animator of the display object.  Default value is <code>null</code>.
-	 */
-	public get animator(): IAnimator {
-		return this._animator;
-	}
-
-	public set animator(value: IAnimator) {
-		if (this._animator)
-			this._animator.removeOwner(this);
-
-		this._animator = value;
-
-		if (this._animator)
-			this._animator.addOwner(this);
-	}
-
-	/**
 	 *
 	 */
 	public get material(): IMaterial {
@@ -1546,9 +1518,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 		if (this._masks)
 			displayObject.masks = this._masks;
 
-		if (this._animator)
-			displayObject.animator = this._animator.clone();
-
 		this._transform.copyRawDataTo(displayObject._transform);
 	}
 
@@ -1564,9 +1533,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IRender
 			this._parent.removeChild(this);
 
 		this.material = null;
-
-		if (this._animator)
-			this._animator.dispose();
 
 		if (this._adapter) {
 			this._adapter.dispose();

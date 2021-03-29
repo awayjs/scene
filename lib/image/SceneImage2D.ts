@@ -26,12 +26,8 @@ import { Stage,
 	Image2D
 } from '@awayjs/stage';
 
-import {
-	DefaultRenderer,
-	RenderGroup,
-	RendererType,
-	Style,
-} from '@awayjs/renderer';
+import { DefaultRenderer, RenderGroup, Style } from '@awayjs/renderer';
+
 
 // empty matrix for transfrorm reset
 const TMP_POINT = new Point(0,0);
@@ -283,10 +279,9 @@ export class SceneImage2D extends BitmapImage2D {
 		SceneImage2D._root = new DisplayObjectContainer();
 		SceneImage2D._rootNode = NodePool.getRootNode(SceneImage2D._root, BasicPartition);
 		SceneImage2D._renderer =
-			<DefaultRenderer> RenderGroup.getInstance(
-				new View(projection, this._stage, null, null, null, true),
-				RendererType.DEFAULT
-			).getRenderer(SceneImage2D._rootNode.partition);
+			<DefaultRenderer> RenderGroup
+				.getInstance(new View(projection, this._stage, null, null, null, true),	DefaultRenderer)
+				.getRenderer(SceneImage2D._rootNode.partition);
 
 		//SceneImage2D._root.partition = SceneImage2D._renderer.partition;
 
@@ -312,8 +307,8 @@ export class SceneImage2D extends BitmapImage2D {
 
 		//create the view
 		SceneImage2D._billboardRoot = new DisplayObjectContainer();
-		SceneImage2D._billboardRenderer = <DefaultRenderer> RenderGroup.getInstance(
-			new View(projection,this._stage, null, null, null, true), RendererType.DEFAULT)
+		SceneImage2D._billboardRenderer = <DefaultRenderer> RenderGroup
+			.getInstance(new View(projection,this._stage, null, null, null, true), DefaultRenderer)
 			.getRenderer(NodePool.getRootNode(SceneImage2D._billboardRoot, BasicPartition).partition);
 
 		//SceneImage2D._billboardRoot.partition = SceneImage2D._billboardRenderer.partition;

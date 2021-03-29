@@ -2,9 +2,9 @@ import { AbstractMethodError } from '@awayjs/core';
 
 import { AttributesBuffer } from '@awayjs/stage';
 
-import { Shape, ElementsType, ElementsBase, TriangleElements, LineElements } from '@awayjs/graphics';
+import { IMaterial, ElementsType, ElementsBase, TriangleElements, LineElements } from '@awayjs/renderer';
 
-import { IMaterial } from '@awayjs/renderer';
+import { Shape } from '@awayjs/graphics';
 
 import { DisplayObject } from '../display/DisplayObject';
 import { Sprite } from '../display/Sprite';

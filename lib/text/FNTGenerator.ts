@@ -4,7 +4,7 @@ import { PerspectiveProjection, CoordinateSystem, Transform, Vector3D } from '@a
 
 import { Stage, BitmapImage2D } from '@awayjs/stage';
 
-import { DefaultRenderer, RenderGroup, RendererType } from '@awayjs/renderer';
+import { DefaultRenderer, RenderGroup } from '@awayjs/renderer';
 
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 
@@ -28,8 +28,9 @@ export class FNTGenerator {
 
 		//create the view
 		this._root = new DisplayObjectContainer();
-		this._renderer = <DefaultRenderer> RenderGroup.getInstance(new View(projection, stage, null, null, null, true), RendererType.DEFAULT).getRenderer(NodePool.getRootNode(this._root, BasicPartition).partition);
-		//this._root.partition = this._renderer.partition;
+		this._renderer = RenderGroup
+			.getInstance(new View(projection, stage, null, null, null, true), DefaultRenderer)
+			.getRenderer(NodePool.getRootNode(this._root, BasicPartition).partition);
 
 		//setup the projection
 		this._renderer.view.projection = projection;

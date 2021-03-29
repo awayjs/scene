@@ -1,9 +1,14 @@
 import { ColorUtils, Matrix, Rectangle, Point, Vector3D, AssetEvent } from '@awayjs/core';
+
 import { ImageSampler, AttributesBuffer, AttributesView, Float2Attributes } from '@awayjs/stage';
+
 import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
-import { Style } from '@awayjs/renderer';
+
+import { Style, TriangleElements } from '@awayjs/renderer';
+
 import { MaterialBase } from '@awayjs/materials';
-import { Graphics, Shape, TriangleElements, GraphicsFactoryHelper, MaterialManager } from '@awayjs/graphics';
+
+import { Graphics, Shape, GraphicsFactoryHelper, MaterialManager } from '@awayjs/graphics';
 
 import { TesselatedFontTable } from '../text/TesselatedFontTable';
 import { AntiAliasType } from '../text/AntiAliasType';

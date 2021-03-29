@@ -115,8 +115,8 @@ export class Sprite extends DisplayObjectContainer {
 		this.graphics = graphics || Graphics.getGraphics();
 		this.material = material;
 
-		this.dropBitmapCache = this.dropBitmapCache.bind(this);
-		this.generateBitmapCache = this.generateBitmapCache.bind(this);
+		// this.dropBitmapCache = this.dropBitmapCache.bind(this);
+		// this.generateBitmapCache = this.generateBitmapCache.bind(this);
 	}
 
 	public _setParent(parent: DisplayObjectContainer): void {
@@ -127,197 +127,197 @@ export class Sprite extends DisplayObjectContainer {
 		else
 			this._graphics.removeEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
 
-		if (this._requestCacheAsBitmap) {
+		// if (this._requestCacheAsBitmap) {
 
-			this.set_cacheAsBitmapInternal(true);
+		// 	this.set_cacheAsBitmapInternal(true);
 
-			console.log('Restore cache');
-		}
+		// 	console.log('Restore cache');
+		// }
 	}
 
 	public isEntity(): boolean {
 		return (
 			(this._graphics && this._graphics.count > 0)
-			|| (this._bitmapCacheGraphics && this._bitmapCacheGraphics.count > 0)
+			// || (this._bitmapCacheGraphics && this._bitmapCacheGraphics.count > 0)
 		);
 	}
 
-	set_scale9gridInternal (rect: Rectangle) {
-		//this._scale9Grid = rect;
+	// set_scale9gridInternal (rect: Rectangle) {
+	// 	//this._scale9Grid = rect;
 
-		if (!Settings.USE_UNSAFE_SCALE_9_SLICE) {
-			return;
-		}
+	// 	if (!Settings.USE_UNSAFE_SCALE_9_SLICE) {
+	// 		return;
+	// 	}
 
-		console.warn(
-			'[Sprite] You use unsafe feature `scale9slice` it force `cacheAsBitmap` for this node' +
-			'disable it for supress bugs',
-			'Settings.USE_UNSAFE_SCALE_9_SLICE',
-			this.id
-		);
+	// 	console.warn(
+	// 		'[Sprite] You use unsafe feature `scale9slice` it force `cacheAsBitmap` for this node' +
+	// 		'disable it for supress bugs',
+	// 		'Settings.USE_UNSAFE_SCALE_9_SLICE',
+	// 		this.id
+	// 	);
 
-		super.set_scale9gridInternal(rect);
-		this.set_cacheAsBitmapInternal(!!rect);
-	}
+	// 	super.set_scale9gridInternal(rect);
+	// 	this.set_cacheAsBitmapInternal(!!rect);
+	// }
 
-	get_cacheAsBitmapInternal() {
-		if (!Settings.USE_UNSAFE_CACHE_AS_BITMAP) {
-			return false;
-		}
+	// get_cacheAsBitmapInternal() {
+	// 	if (!Settings.USE_UNSAFE_CACHE_AS_BITMAP) {
+	// 		return false;
+	// 	}
 
-		return this._requestCacheAsBitmap;
-	}
+	// 	return this._requestCacheAsBitmap;
+	// }
 
-	set_cacheAsBitmapInternal(value: boolean) {
+	// set_cacheAsBitmapInternal(value: boolean) {
 
-		if (!Settings.USE_UNSAFE_CACHE_AS_BITMAP && !this.scale9Grid) {
-			return;
-		}
+	// 	if (!Settings.USE_UNSAFE_CACHE_AS_BITMAP && !this.scale9Grid) {
+	// 		return;
+	// 	}
 
-		if (this._cacheAsBitmap === value) return;
+	// 	if (this._cacheAsBitmap === value) return;
 
-		console.warn(
-			'[Sprite] You use unsafe feature `cacheAsBitmap`, disable it for supress bugs',
-			'Settings.USE_UNSAFE_CACHE_AS_BITMAP',
-			this.id
-		);
+	// 	console.warn(
+	// 		'[Sprite] You use unsafe feature `cacheAsBitmap`, disable it for supress bugs',
+	// 		'Settings.USE_UNSAFE_CACHE_AS_BITMAP',
+	// 		this.id
+	// 	);
 
-		// we set flag, because a propery can be spammed to many times in one frame
-		this._requestCacheAsBitmap = value;
+	// 	// we set flag, because a propery can be spammed to many times in one frame
+	// 	this._requestCacheAsBitmap = value;
 
-		if (!this.parent && value) {
-			console.warn('[Sprite] There are not parent, supress cache');
-			return;
-		}
+	// 	if (!this.parent && value) {
+	// 		console.warn('[Sprite] There are not parent, supress cache');
+	// 		return;
+	// 	}
 
-		const run = Settings.IMMEDIATE_CACHE_AS_BITMAP;
+	// 	const run = Settings.IMMEDIATE_CACHE_AS_BITMAP;
 
-		// drop cache, or it will droped in next traverser pass
-		if (!value) {
-			this.dropBitmapCache();
-		}
+	// 	// drop cache, or it will droped in next traverser pass
+	// 	if (!value) {
+	// 		this.dropBitmapCache();
+	// 	}
 
-		// we can't render in traverser pass until a render process
-		// we can doing this is immediate
-		// or at end of frame
-		if (value) {
-			if (run) {
-				this.generateBitmapCache();
-			} else {
-				StageManager
-					.getInstance()
-					.getStageAt(0)
-					.requiestFrameEnd(this.generateBitmapCache);
-			}
-		}
+	// 	// we can't render in traverser pass until a render process
+	// 	// we can doing this is immediate
+	// 	// or at end of frame
+	// 	if (value) {
+	// 		if (run) {
+	// 			this.generateBitmapCache();
+	// 		} else {
+	// 			StageManager
+	// 				.getInstance()
+	// 				.getStageAt(0)
+	// 				.requiestFrameEnd(this.generateBitmapCache);
+	// 		}
+	// 	}
 
-	}
+	// }
 
-	public dropBitmapCache() {
-		if (this._requestCacheAsBitmap === this._cacheAsBitmap) {
-			return;
-		}
+	// public dropBitmapCache() {
+	// 	if (this._requestCacheAsBitmap === this._cacheAsBitmap) {
+	// 		return;
+	// 	}
 
-		this._bitmapCacheShape && this._bitmapCacheShape.dispose();
-		this._bitmapCacheImage && this._bitmapCacheImage.dispose();
-		this._bitmapCacheGraphics && this._bitmapCacheGraphics.dispose();
+	// 	this._bitmapCacheShape && this._bitmapCacheShape.dispose();
+	// 	this._bitmapCacheImage && this._bitmapCacheImage.dispose();
+	// 	this._bitmapCacheGraphics && this._bitmapCacheGraphics.dispose();
 
-		this._cacheAsBitmap = false;
-		this._bitmapCacheImage = null;
-		this._bitmapCacheGraphics = null;
-		this._bitmapCacheShape = null;
-		this._requestCacheAsBitmap = false;
+	// 	this._cacheAsBitmap = false;
+	// 	this._bitmapCacheImage = null;
+	// 	this._bitmapCacheGraphics = null;
+	// 	this._bitmapCacheShape = null;
+	// 	this._requestCacheAsBitmap = false;
 
-		this._invalidateHierarchicalProperty(HierarchicalProperty.CACHE_AS_BITMAP);
-	}
+	// 	this._invalidateHierarchicalProperty(HierarchicalProperty.CACHE_AS_BITMAP);
+	// }
 
-	public generateBitmapCache() {
-		if (this._requestCacheAsBitmap === this._cacheAsBitmap) {
-			return;
-		}
+	// public generateBitmapCache() {
+	// 	if (this._requestCacheAsBitmap === this._cacheAsBitmap) {
+	// 		return;
+	// 	}
 
-		if (this._cacheAsBitmap) {
-			return;
-		}
+	// 	if (this._cacheAsBitmap) {
+	// 		return;
+	// 	}
 
-		const stage = StageManager.getInstance().getStageAt(0);
-		// unsafe, but there are not other way =(
-		const rect: Rectangle = (<any> this.adapter).getBoundsInternal(null);
+	// 	const stage = StageManager.getInstance().getStageAt(0);
+	// 	// unsafe, but there are not other way =(
+	// 	const rect: Rectangle = (<any> this.adapter).getBoundsInternal(null);
 
-		// remove flag to allow render real scene tree in cache
-		this._cacheAsBitmap = false;
-		this._requestCacheAsBitmap = false;
+	// 	// remove flag to allow render real scene tree in cache
+	// 	this._cacheAsBitmap = false;
+	// 	this._requestCacheAsBitmap = false;
 
-		const scale9grid = this.get_scale9gridInternal();
+	// 	const scale9grid = this.get_scale9gridInternal();
 
-		const PADDING = this.scale9Grid ? 2 : 4;
+	// 	const PADDING = this.scale9Grid ? 2 : 4;
 
-		const width = rect.width + PADDING;
-		const height = rect.height + PADDING;
-		const x = rect.x - PADDING / 2;
-		const y = rect.y - PADDING / 2;
+	// 	const width = rect.width + PADDING;
+	// 	const height = rect.height + PADDING;
+	// 	const x = rect.x - PADDING / 2;
+	// 	const y = rect.y - PADDING / 2;
 
-		rect.x = x | 0;
-		rect.y = y | 0;
-		rect.width = width | 0;
-		rect.height = height | 0;
+	// 	rect.x = x | 0;
+	// 	rect.y = y | 0;
+	// 	rect.width = width | 0;
+	// 	rect.height = height | 0;
 
-		if (!this._bitmapCacheGraphics) {
-			this._bitmapCacheGraphics = Graphics.getGraphics();
-		}
+	// 	if (!this._bitmapCacheGraphics) {
+	// 		this._bitmapCacheGraphics = Graphics.getGraphics();
+	// 	}
 
-		const graphics = this._bitmapCacheGraphics;
+	// 	const graphics = this._bitmapCacheGraphics;
 
-		if (
-			!this._bitmapCacheImage ||
-			this._bitmapCacheImage.width !== width ||
-			this._bitmapCacheImage.height !== height
-		) {
-			if (this._bitmapCacheImage) {
-				this._bitmapCacheImage.dispose();
-			}
+	// 	if (
+	// 		!this._bitmapCacheImage ||
+	// 		this._bitmapCacheImage.width !== width ||
+	// 		this._bitmapCacheImage.height !== height
+	// 	) {
+	// 		if (this._bitmapCacheImage) {
+	// 			this._bitmapCacheImage.dispose();
+	// 		}
 
-			if (this._bitmapCacheShape) {
-				this._bitmapCacheShape.dispose();
-				this._bitmapCacheShape = null;
-			}
+	// 		if (this._bitmapCacheShape) {
+	// 			this._bitmapCacheShape.dispose();
+	// 			this._bitmapCacheShape = null;
+	// 		}
 
-			this._bitmapCacheImage = SceneImage2D.getImage(
-				width,
-				height,
-				true,
-				0,
-				false,
-				stage,
-				false
-			);
-		}
+	// 		this._bitmapCacheImage = SceneImage2D.getImage(
+	// 			width,
+	// 			height,
+	// 			true,
+	// 			0,
+	// 			false,
+	// 			stage,
+	// 			false
+	// 		);
+	// 	}
 
-		const m = new Matrix(1, 0, 0, 1, -x, -y);
+	// 	const m = new Matrix(1, 0, 0, 1, -x, -y);
 
-		this._bitmapCacheImage.draw(this, m);
+	// 	this._bitmapCacheImage.draw(this, m);
 
-		m.rawData[4] = x;
-		m.rawData[5] = y;
+	// 	m.rawData[4] = x;
+	// 	m.rawData[5] = y;
 
-		if (!this._bitmapCacheShape) {
-			this._bitmapCacheShape = Graphics.getShapeForBitmap(this._bitmapCacheImage, rect, !!scale9grid);
-			graphics.addShape(this._bitmapCacheShape);
-		}
+	// 	if (!this._bitmapCacheShape) {
+	// 		this._bitmapCacheShape = Graphics.getShapeForBitmap(this._bitmapCacheImage, rect, !!scale9grid);
+	// 		graphics.addShape(this._bitmapCacheShape);
+	// 	}
 
-		if (scale9grid) {
-			const slice: Shape & {
-				slice: Rectangle, scaleX: number, scaleY: number, padding: number
-			} = <any> this._bitmapCacheShape;
+	// 	if (scale9grid) {
+	// 		const slice: Shape & {
+	// 			slice: Rectangle, scaleX: number, scaleY: number, padding: number
+	// 		} = <any> this._bitmapCacheShape;
 
-			slice.slice = this.scale9Grid;
-			slice.scaleX = this.scaleX;
-			slice.scaleY = this.scaleY;
-		}
+	// 		slice.slice = this.scale9Grid;
+	// 		slice.scaleX = this.scaleX;
+	// 		slice.scaleY = this.scaleY;
+	// 	}
 
-		this._cacheAsBitmap = this._requestCacheAsBitmap = true;
-		this._invalidateHierarchicalProperty(HierarchicalProperty.CACHE_AS_BITMAP);
-	}
+	// 	this._cacheAsBitmap = this._requestCacheAsBitmap = true;
+	// 	this._invalidateHierarchicalProperty(HierarchicalProperty.CACHE_AS_BITMAP);
+	// }
 
 	/**
 	 * @inheritDoc
@@ -405,10 +405,10 @@ export class Sprite extends DisplayObjectContainer {
 		const isRenderPhase = traverser instanceof RendererBase;
 
 		// render it if cached
-		if (this._cacheAsBitmap && isRenderPhase && this._cacheAsBitmap === this._requestCacheAsBitmap) {
-			this._bitmapCacheGraphics._acceptTraverser(traverser);
-			return;
-		}
+		// if (this._cacheAsBitmap && isRenderPhase && this._cacheAsBitmap === this._requestCacheAsBitmap) {
+		// 	this._bitmapCacheGraphics._acceptTraverser(traverser);
+		// 	return;
+		// }
 
 		// default phase, when cache is not exist
 		super._acceptTraverser(traverser);

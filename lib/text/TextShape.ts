@@ -1,4 +1,6 @@
-import { Shape, TriangleElements } from '@awayjs/graphics';
+import { TriangleElements } from '@awayjs/renderer';
+
+import { Shape } from '@awayjs/graphics';
 
 import { MaterialBase } from '@awayjs/materials';
 

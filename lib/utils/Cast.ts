@@ -2,7 +2,7 @@ import { ByteArray } from '@awayjs/core';
 
 import { Image2D } from '@awayjs/stage';
 
-import { ImageTexture2D } from '@awayjs/materials';
+import { ImageTexture2D } from '@awayjs/renderer';
 
 import { CastError } from '../errors/CastError';
 
