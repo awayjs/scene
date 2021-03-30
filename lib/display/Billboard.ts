@@ -325,37 +325,55 @@ export class _Render_Billboard extends _Render_RenderableBase {
      * @returns {away.base.TriangleElements}
      */
 	protected _getStageElements(): _Stage_ElementsBase {
-		const width: number = (<Billboard> this._asset).billboardWidth;
-		const height: number = (<Billboard> this._asset).billboardHeight;
-		const billboardRect: Rectangle = (<Billboard> this._asset).billboardRect;
-
-		const id: string = width.toString() + height.toString() + billboardRect.toString();
+		const asset = <Billboard> this._asset;
+		const width = asset.billboardWidth;
+		const height = asset.billboardHeight;
+		const rect = asset.billboardRect;
+		const id = width.toString() + height.toString() + rect.toString();
 
 		this._id = id;
 
 		let elements: TriangleElements = _Render_Billboard._samplerElements[id];
 
 		if (!elements) {
+			const left = -rect.x;
+			const top = -rect.y;
+			const right = width - rect.x;
+			const bottom = height - rect.y;
+
 			elements = _Render_Billboard._samplerElements[id] = new TriangleElements(new AttributesBuffer(11, 4));
 			elements.autoDeriveNormals = false;
 			elements.autoDeriveTangents = false;
-			elements.setIndices([0, 1, 2, 0, 2, 3]);
+			/**
+			 * 2 tris with CCW order
+			 * 0(3) 2
+			 * _____
+			 *|\   |
+			 *|	\  |
+			 *|	 \ |
+			 *|___\|
+			 *4   1(5)
+			 *
+			 */
 			elements.setPositions(
-				[-billboardRect.x, height - billboardRect.y, 0,
-					width - billboardRect.x, height - billboardRect.y, 0,
-					width - billboardRect.x, -billboardRect.y, 0,
-					-billboardRect.x, -billboardRect.y, 0]);
+				[
+					left, top, 0,
+					right, bottom, 0,
+					right, top, 0,
 
-			elements.setNormals([1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]);
-			elements.setTangents([0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1]);
-			elements.setUVs([0, 1, 1, 1, 1, 0, 0, 0]);
-		} else {
+					left, top, 0,
+					left, bottom, 0,
+					right, bottom, 0
+				]);
+
+			elements.setUVs([0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1]);
+		}/* else {
 			elements.setPositions(
 				[-billboardRect.x, height - billboardRect.y, 0,
 					width - billboardRect.x, height - billboardRect.y, 0,
 					width - billboardRect.x, -billboardRect.y, 0,
 					-billboardRect.x, -billboardRect.y, 0]);
-		}
+		}*/
 
 		return elements.getAbstraction<_Stage_TriangleElements>(this._stage);
 	}
@@ -365,7 +383,7 @@ export class _Render_Billboard extends _Render_RenderableBase {
 		surfaceSelector: number = 0, mipmapSelector: number = 0, maskConfig: number = 0): void {
 
 		// disable cull, because for render to texture it is bugged
-		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
+		// this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 
 		super.executeRender(enableDepthAndStencil, surfaceSelector, mipmapSelector, maskConfig);
 	}
