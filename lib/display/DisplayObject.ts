@@ -46,6 +46,7 @@ import { PrimitivePrefabBase } from '../prefabs/PrimitivePrefabBase';
 import { IFilter } from '../adapters/IFilter';
 import { IPartitionClass } from '@awayjs/view';
 import { Sprite } from './Sprite';
+import { Settings } from '../Settings';
 
 /**
  * The DisplayObject class is the base class for all objects that can be
@@ -455,12 +456,21 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	 * performance increases when the movie clip is translated(when its <i>x</i>
 	 * and <i>y</i> position is changed).</p>
 	 */
-	 private _bitmapCache: boolean;
+	private _bitmapCache: boolean;
 	public get cacheAsBitmap() {
 		return this._bitmapCache;
 	}
 
 	public set cacheAsBitmap(v: boolean) {
+		if (!Settings.USE_UNSAFE_CACHE_AS_BITMAP) {
+			return;
+		}
+
+		console.warn(
+			'[@scene/DisplayObject] Unsafe cacheAsBitmap is enabled!' +
+			'You can disable it by `Settings.USE_UNSAFE_CACHE_AS_BITMAP = false`'
+			,this.id
+		);
 		this._bitmapCache = v;
 	}
 
@@ -1645,9 +1655,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		return this._maskId;
 	}
 
-	public _acceptTraverser(traverser: IEntityTraverser): void {
-
-	}
+	public _acceptTraverser(_traverser: IEntityTraverser): void {}
 
 	protected _setScaleX(val: number): void {
 		if (this.scaleX == val)
@@ -1733,7 +1741,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
 	}
 
-	protected _onInvalidateProperties(event: StyleEvent = null): void {
+	protected _onInvalidateProperties(_event: StyleEvent = null): void {
 		this._invalidateStyle();
 	}
 
