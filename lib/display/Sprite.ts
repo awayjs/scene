@@ -1,17 +1,10 @@
-﻿import { AssetEvent, Box, Matrix, Rectangle, Vector3D } from '@awayjs/core';
-
-import { IEntityTraverser, PartitionBase, EntityNode, HierarchicalProperty } from '@awayjs/view';
-
-import { IMaterial, RendererBase } from '@awayjs/renderer';
-
-import { Graphics, Shape } from '@awayjs/graphics';
-
+﻿import { AssetEvent, Vector3D } from '@awayjs/core';
+import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
+import { IMaterial } from '@awayjs/renderer';
+import { Graphics } from '@awayjs/graphics';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 import { PrefabBase } from '../prefabs/PrefabBase';
-import { DisplayObject } from './DisplayObject';
-import { StageManager } from '@awayjs/stage';
-import { SceneImage2D } from '../image/SceneImage2D';
-import { Settings } from '../Settings';
+
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
  * state. It consists out of Graphices, which in turn correspond to SubGeometries. Graphices allow different parts
@@ -21,12 +14,6 @@ export class Sprite extends DisplayObjectContainer {
 	private _isEntity: boolean = false;
 
 	public _iSourcePrefab: PrefabBase;
-
-	private _requestCacheAsBitmap: boolean = false;
-	private _cacheAsBitmap: boolean = false;
-	private _bitmapCacheImage: SceneImage2D;
-	private _bitmapCacheShape: Shape;
-	private _bitmapCacheGraphics: Graphics;
 
 	private static _sprites: Array<Sprite> = new Array<Sprite>();
 
@@ -136,188 +123,8 @@ export class Sprite extends DisplayObjectContainer {
 	}
 
 	public isEntity(): boolean {
-		return (
-			(this._graphics && this._graphics.count > 0)
-			// || (this._bitmapCacheGraphics && this._bitmapCacheGraphics.count > 0)
-		);
+		return (this._graphics && this._graphics.count > 0);
 	}
-
-	// set_scale9gridInternal (rect: Rectangle) {
-	// 	//this._scale9Grid = rect;
-
-	// 	if (!Settings.USE_UNSAFE_SCALE_9_SLICE) {
-	// 		return;
-	// 	}
-
-	// 	console.warn(
-	// 		'[Sprite] You use unsafe feature `scale9slice` it force `cacheAsBitmap` for this node' +
-	// 		'disable it for supress bugs',
-	// 		'Settings.USE_UNSAFE_SCALE_9_SLICE',
-	// 		this.id
-	// 	);
-
-	// 	super.set_scale9gridInternal(rect);
-	// 	this.set_cacheAsBitmapInternal(!!rect);
-	// }
-
-	// get_cacheAsBitmapInternal() {
-	// 	if (!Settings.USE_UNSAFE_CACHE_AS_BITMAP) {
-	// 		return false;
-	// 	}
-
-	// 	return this._requestCacheAsBitmap;
-	// }
-
-	// set_cacheAsBitmapInternal(value: boolean) {
-
-	// 	if (!Settings.USE_UNSAFE_CACHE_AS_BITMAP && !this.scale9Grid) {
-	// 		return;
-	// 	}
-
-	// 	if (this._cacheAsBitmap === value) return;
-
-	// 	console.warn(
-	// 		'[Sprite] You use unsafe feature `cacheAsBitmap`, disable it for supress bugs',
-	// 		'Settings.USE_UNSAFE_CACHE_AS_BITMAP',
-	// 		this.id
-	// 	);
-
-	// 	// we set flag, because a propery can be spammed to many times in one frame
-	// 	this._requestCacheAsBitmap = value;
-
-	// 	if (!this.parent && value) {
-	// 		console.warn('[Sprite] There are not parent, supress cache');
-	// 		return;
-	// 	}
-
-	// 	const run = Settings.IMMEDIATE_CACHE_AS_BITMAP;
-
-	// 	// drop cache, or it will droped in next traverser pass
-	// 	if (!value) {
-	// 		this.dropBitmapCache();
-	// 	}
-
-	// 	// we can't render in traverser pass until a render process
-	// 	// we can doing this is immediate
-	// 	// or at end of frame
-	// 	if (value) {
-	// 		if (run) {
-	// 			this.generateBitmapCache();
-	// 		} else {
-	// 			StageManager
-	// 				.getInstance()
-	// 				.getStageAt(0)
-	// 				.requiestFrameEnd(this.generateBitmapCache);
-	// 		}
-	// 	}
-
-	// }
-
-	// public dropBitmapCache() {
-	// 	if (this._requestCacheAsBitmap === this._cacheAsBitmap) {
-	// 		return;
-	// 	}
-
-	// 	this._bitmapCacheShape && this._bitmapCacheShape.dispose();
-	// 	this._bitmapCacheImage && this._bitmapCacheImage.dispose();
-	// 	this._bitmapCacheGraphics && this._bitmapCacheGraphics.dispose();
-
-	// 	this._cacheAsBitmap = false;
-	// 	this._bitmapCacheImage = null;
-	// 	this._bitmapCacheGraphics = null;
-	// 	this._bitmapCacheShape = null;
-	// 	this._requestCacheAsBitmap = false;
-
-	// 	this._invalidateHierarchicalProperty(HierarchicalProperty.CACHE_AS_BITMAP);
-	// }
-
-	// public generateBitmapCache() {
-	// 	if (this._requestCacheAsBitmap === this._cacheAsBitmap) {
-	// 		return;
-	// 	}
-
-	// 	if (this._cacheAsBitmap) {
-	// 		return;
-	// 	}
-
-	// 	const stage = StageManager.getInstance().getStageAt(0);
-	// 	// unsafe, but there are not other way =(
-	// 	const rect: Rectangle = (<any> this.adapter).getBoundsInternal(null);
-
-	// 	// remove flag to allow render real scene tree in cache
-	// 	this._cacheAsBitmap = false;
-	// 	this._requestCacheAsBitmap = false;
-
-	// 	const scale9grid = this.get_scale9gridInternal();
-
-	// 	const PADDING = this.scale9Grid ? 2 : 4;
-
-	// 	const width = rect.width + PADDING;
-	// 	const height = rect.height + PADDING;
-	// 	const x = rect.x - PADDING / 2;
-	// 	const y = rect.y - PADDING / 2;
-
-	// 	rect.x = x | 0;
-	// 	rect.y = y | 0;
-	// 	rect.width = width | 0;
-	// 	rect.height = height | 0;
-
-	// 	if (!this._bitmapCacheGraphics) {
-	// 		this._bitmapCacheGraphics = Graphics.getGraphics();
-	// 	}
-
-	// 	const graphics = this._bitmapCacheGraphics;
-
-	// 	if (
-	// 		!this._bitmapCacheImage ||
-	// 		this._bitmapCacheImage.width !== width ||
-	// 		this._bitmapCacheImage.height !== height
-	// 	) {
-	// 		if (this._bitmapCacheImage) {
-	// 			this._bitmapCacheImage.dispose();
-	// 		}
-
-	// 		if (this._bitmapCacheShape) {
-	// 			this._bitmapCacheShape.dispose();
-	// 			this._bitmapCacheShape = null;
-	// 		}
-
-	// 		this._bitmapCacheImage = SceneImage2D.getImage(
-	// 			width,
-	// 			height,
-	// 			true,
-	// 			0,
-	// 			false,
-	// 			stage,
-	// 			false
-	// 		);
-	// 	}
-
-	// 	const m = new Matrix(1, 0, 0, 1, -x, -y);
-
-	// 	this._bitmapCacheImage.draw(this, m);
-
-	// 	m.rawData[4] = x;
-	// 	m.rawData[5] = y;
-
-	// 	if (!this._bitmapCacheShape) {
-	// 		this._bitmapCacheShape = Graphics.getShapeForBitmap(this._bitmapCacheImage, rect, !!scale9grid);
-	// 		graphics.addShape(this._bitmapCacheShape);
-	// 	}
-
-	// 	if (scale9grid) {
-	// 		const slice: Shape & {
-	// 			slice: Rectangle, scaleX: number, scaleY: number, padding: number
-	// 		} = <any> this._bitmapCacheShape;
-
-	// 		slice.slice = this.scale9Grid;
-	// 		slice.scaleX = this.scaleX;
-	// 		slice.scaleY = this.scaleY;
-	// 	}
-
-	// 	this._cacheAsBitmap = this._requestCacheAsBitmap = true;
-	// 	this._invalidateHierarchicalProperty(HierarchicalProperty.CACHE_AS_BITMAP);
-	// }
 
 	/**
 	 * @inheritDoc
@@ -382,7 +189,7 @@ export class Sprite extends DisplayObjectContainer {
 	 *
 	 * @private
 	 */
-	protected _onGraphicsInvalidate(event: AssetEvent): void {
+	protected _onGraphicsInvalidate(_event: AssetEvent): void {
 		const isEntity: boolean = this.isEntity();
 
 		if (this._isEntity != isEntity) {
@@ -402,15 +209,6 @@ export class Sprite extends DisplayObjectContainer {
 	 * @internal
 	 */
 	public _acceptTraverser(traverser: IEntityTraverser): void {
-		const isRenderPhase = traverser instanceof RendererBase;
-
-		// render it if cached
-		// if (this._cacheAsBitmap && isRenderPhase && this._cacheAsBitmap === this._requestCacheAsBitmap) {
-		// 	this._bitmapCacheGraphics._acceptTraverser(traverser);
-		// 	return;
-		// }
-
-		// default phase, when cache is not exist
 		super._acceptTraverser(traverser);
 		this.graphics._acceptTraverser(traverser);
 	}

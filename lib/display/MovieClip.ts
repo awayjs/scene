@@ -140,31 +140,36 @@ export class MovieClip extends Sprite {
 		this.cursorType = 'pointer';
 		//this.debugVisible=true;
 
-		this._onMouseOver = (event: MouseEvent) => {
+		this._onMouseOver = (_event: MouseEvent) => {
 			if (this.buttonEnabled)
 				this.currentFrameIndex = 1;
 			else
 				this.currentFrameIndex = 0;
 		};
-		this._onMouseOut = (event: MouseEvent) => {
+
+		this._onMouseOut = (_event: MouseEvent) => {
 			this.currentFrameIndex = 0;
 		};
-		this._onMouseDown = (event: MouseEvent) => {
+
+		this._onMouseDown = (_event: MouseEvent) => {
 			if (this.buttonEnabled)
 				this.currentFrameIndex = 2;
 			else
 				this.currentFrameIndex = 0;
 		};
-		this._onMouseUp = (event: MouseEvent) => {
+
+		this._onMouseUp = (_event: MouseEvent) => {
 			this.currentFrameIndex = this.currentFrameIndex == 0 ? 0 : 1;
 		};
-		this._onDragOver = (event: MouseEvent) => {
+
+		this._onDragOver = (_event: MouseEvent) => {
 			if (this.buttonEnabled)
 				this.currentFrameIndex = 2;
 			else
 				this.currentFrameIndex = 0;
 		};
-		this._onDragOut = (event: MouseEvent) => {
+
+		this._onDragOut = (_event: MouseEvent) => {
 			this.currentFrameIndex = 1;
 		};
 

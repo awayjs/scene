@@ -1,10 +1,7 @@
 import { Point, ArgumentError, RangeError } from '@awayjs/core';
 import { IAnimator, IRenderContainer } from '@awayjs/renderer';
-
-import { PartitionBase, EntityNode, HierarchicalProperty, IPartitionContainer, ContainerEvent } from '@awayjs/view';
-
+import { PartitionBase, EntityNode, HierarchicalProperty, ContainerEvent } from '@awayjs/view';
 import { DisplayObject } from './DisplayObject';
-//import {Sprite} from "./Sprite";
 
 /**
  * The DisplayObjectContainer class is the base class for all objects that can
@@ -116,7 +113,7 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 	/**
 	 * Defines the animator of the display object.  Default value is <code>null</code>.
 	 */
-	 public get animator(): IAnimator {
+	public get animator(): IAnimator {
 		return this._animator;
 	}
 
@@ -581,20 +578,6 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 		}
 
 	}
-
-	// /**
-	//  * @internal
-	//  */
-	// public _setPartition(parentPartition: PartitionBase): boolean {
-	// 	if (super._setPartition(parentPartition))
-	// 		return true;
-
-	// 	const len: number = this._children.length;
-	// 	for (let i: number = 0; i < len; ++i)
-	// 		this._children[i]._setPartition(this._implicitPartition);
-
-	// 	return false;
-	// }
 
 	/**
 	 * @private
