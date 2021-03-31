@@ -462,15 +462,20 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	}
 
 	public set cacheAsBitmap(v: boolean) {
+		if (v === this._bitmapCache) {
+			return;
+		}
+
 		if (!Settings.USE_UNSAFE_CACHE_AS_BITMAP) {
 			return;
 		}
 
-		console.warn(
+		v && console.warn(
 			'[@scene/DisplayObject] Unsafe cacheAsBitmap is enabled!' +
 			'You can disable it by `Settings.USE_UNSAFE_CACHE_AS_BITMAP = false`'
 			,this.id
 		);
+
 		this._bitmapCache = v;
 	}
 
@@ -588,9 +593,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	 *                       See the <code>ShaderInput.input</code> property for
 	 *                       more information.
 	 */
-	//		public filters:Array<Dynamic>;
 
-	public updateFilters(newFilters: IFilter[]) {
+	public filters: Array<IFilter>;
+
+	public updateFilters(_newFilters: IFilter[]) {
 		console.warn('[scene/DisplayObject] - updateFilters is just a stub');
 	}
 
