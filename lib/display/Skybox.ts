@@ -340,7 +340,7 @@ export class _Render_Skybox extends _Render_RenderableBase {
 
 import { Plane3D } from '@awayjs/core';
 import { IEntityTraverser, EntityNode, PickGroup } from '@awayjs/view';
-import { CacheRenderer } from '@awayjs/renderer/dist/lib/CacheRenderer';
+// import { CacheRenderer } from '@awayjs/renderer';
 
 /**
  * SkyboxNode is a space partitioning leaf node that contains a Skybox object.
@@ -372,7 +372,7 @@ export class SkyboxNode extends EntityNode {
 	}
 }
 
-CacheRenderer.registerMaterial(_Render_SkyboxMaterial, Skybox);
+//CacheRenderer.registerMaterial(_Render_SkyboxMaterial, Skybox);
 DefaultRenderer.registerMaterial(_Render_SkyboxMaterial, Skybox);
 RenderEntity.registerRenderable(_Render_Skybox, Skybox);
 PartitionBase.registerAbstraction(SkyboxNode, Skybox);
