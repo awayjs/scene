@@ -594,7 +594,19 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	 *                       more information.
 	 */
 
-	public filters: Array<IFilter>;
+	private _filters: Array<IFilter> = null;
+
+	public set filters(v: Array<IFilter>) {
+		if (!Settings.USE_UNSAFE_FILTERS) {
+			return;
+		}
+
+		this._filters = v;
+	}
+
+	public get filters() {
+		return this._filters;
+	}
 
 	public updateFilters(_newFilters: IFilter[]) {
 		console.warn('[scene/DisplayObject] - updateFilters is just a stub');

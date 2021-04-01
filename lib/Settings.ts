@@ -2,10 +2,9 @@ export interface ISceneSettings {
 	ALLOW_FORCE_MSAA: number;
 	ALLOW_APPROXIMATION: number;
 	MSAA_MINIMAL_IMAGE_SIZE: number;
-	IMMEDIATE_CACHE_AS_BITMAP: boolean;
 	USE_UNSAFE_CACHE_AS_BITMAP: boolean;
 	USE_UNSAFE_SCALE_9_SLICE: boolean;
-	USE_UNSAFE_FILTER: boolean;
+	USE_UNSAFE_FILTERS: boolean;
 }
 
 export const Settings: ISceneSettings = {
@@ -23,11 +22,6 @@ export const Settings: ISceneSettings = {
 	ALLOW_APPROXIMATION: 0, // PLZ not enable yet, not works
 
 	/**
-	 * @description Generate texture cache when cacheAsBitmap is assigned
-	 */
-	IMMEDIATE_CACHE_AS_BITMAP: false,
-
-	/**
 	 * @description Currently cache-as-bitmap is unsafe feature, and produce a lot of bugs
 	 */
 	USE_UNSAFE_CACHE_AS_BITMAP: false,
@@ -38,7 +32,7 @@ export const Settings: ISceneSettings = {
 	USE_UNSAFE_SCALE_9_SLICE: false,
 
 	/**
-	 * @description Use applyFilter for SceneImage2D
+	 * @description Use applyFilter for SceneImage2D or scene graph
 	 */
-	USE_UNSAFE_FILTER: false,
+	USE_UNSAFE_FILTERS: false,
 };
