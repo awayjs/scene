@@ -602,6 +602,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		}
 
 		this._filters = v;
+		this._invalidateStyle();
 	}
 
 	public get filters() {
