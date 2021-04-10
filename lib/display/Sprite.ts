@@ -52,13 +52,6 @@ export class Sprite extends DisplayObjectContainer {
 	public get graphics(): Graphics {
 		if (this._iSourcePrefab)
 			this._iSourcePrefab._iValidate();
-
-		if (this.isSlice9ScaledSprite) {
-			//var comps:Array<Vector3D> = this.transform.concatenatedMatrix3D.decompose();
-
-			this._graphics.updateSlice9(this.parent.scaleX, this.parent.scaleY);
-		}
-
 		return this._graphics;
 	}
 
