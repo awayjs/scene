@@ -746,7 +746,7 @@ export class MouseManager {
 
 		//console.log("Keydown", event);
 		if (this.allowKeyInput) {
-			event.preventDefault();
+			//event.preventDefault();
 			if (this._focusContainer || this._stage) {
 				//console.log("dispatch keydown on ", this._focusContainer);
 				const newEvent: KeyboardEvent = new KeyboardEvent(KeyboardEvent.KEYDOWN, event.key, event.code);
@@ -768,7 +768,7 @@ export class MouseManager {
 
 		//console.log("Keyup", event);
 		if (this.allowKeyInput) {
-			event.preventDefault();
+			//event.preventDefault();
 
 			if (this._focusContainer || this._stage) {
 				//console.log("dispatch keydown on ", this._focusContainer);
