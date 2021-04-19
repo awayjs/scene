@@ -204,6 +204,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	//public _implicitPartition: PartitionBase;
 
 	private _alignmentMode: AlignmentMode = AlignmentMode.REGISTRATION_POINT;
+	private _scale9Grid: Rectangle;
 	protected _transform: Transform;
 	private _visible: boolean = true;
 	private _maskId: number = -1;
@@ -1029,21 +1030,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	 *
 	 * @throws ArgumentError If you pass an invalid argument to the method.
 	 */
-	private _scale9Grid: Rectangle;
 	public get scale9Grid(): Rectangle {
-		return this.get_scale9gridInternal();
-	}
-
-	public set scale9Grid(rect: Rectangle) {
-		this.set_scale9gridInternal(rect);
-	}
-
-	get_scale9gridInternal() {
 		return this._scale9Grid;
 	}
 
-	set_scale9gridInternal (rect: Rectangle) {
-		this._scale9Grid = rect;
+	public set scale9Grid(value: Rectangle) {
+		this._scale9Grid = value;
+
+		this._invalidateHierarchicalProperty(HierarchicalProperty.SCALE9);
 	}
 
 	/**
