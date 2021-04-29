@@ -751,7 +751,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		// drop verts to the state of previous word because last word may be wrapped or changed
 		// @todo this not supports selectable text for now
 		if (tf._words_amount_prev != 0)	{
-			textShape.verts.length = tf.last_word_vertices_count || 0;
+			textShape.length = tf.last_word_vertices_count || 0;
 		}
 
 		// loop over all the words and create the text data for it
@@ -762,7 +762,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			}
 			if (w == w_len - 5) {
 				// last word in current text. Lets save length of textShape.vets BEFORE the last word verts applied.
-				tf.last_word_vertices_count = textShape.verts.length;
+				tf.last_word_vertices_count = textShape.length;
 			}
 			startIdx = tf.words[w];
 			x = tf.words[w + 1];
@@ -816,6 +816,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 							const x2: number = x1 + ((charGlyph.char_width * size_multiply) * charGlyph.fnt_rect.width);
 							const y1: number = y + ((this._font_em_size * size_multiply) * charGlyph.fnt_rect.y);
 							const y2: number = y1 + ((this._font_em_size * size_multiply) * charGlyph.fnt_rect.height);
+
+							throw 'Invalid implementation, verts not raw array';
+							/*
 							ctmpTShape.verts[ctmpTShape.verts.length] = x1;
 							ctmpTShape.verts[ctmpTShape.verts.length] = y1;
 							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x;
@@ -845,6 +848,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 							ctmpTShape.verts[ctmpTShape.verts.length] = y2;
 							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
 							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
+							*/
 
 						} else {
 							const charVertices = charGlyph.fill_data;

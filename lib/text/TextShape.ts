@@ -13,14 +13,46 @@ export class TextShape {
 	public shape: Shape;
 	public fntMaterial: MaterialBase;
 	public elements: TriangleElements;
-	public length: number = 0;
+
+	private _length: number = 0;
+	public get length() {
+		return this._length;
+	}
+
+	public set length(val: number) {
+		if (val > this._length) {
+			return;
+		}
+
+		if (val === 0) {
+			this.verts.length = 0;
+			return;
+		}
+
+		let index = 0;
+		let size = val;
+
+		for (index = 0; index < this.verts.length; index++) {
+			if (this.verts[index].length > size) {
+				break;
+			}
+
+			size -= this.verts[index].length;
+		}
+
+		// resize buffer
+		this.verts[index] = this.verts[index].subarray(0, size);
+		this.verts.length = index + 1;
+
+		this._length = val;
+	}
 
 	constructor() {
 		this.verts = [];
 	}
 
 	public addChunk(buffer: Float32Array) {
-		this.length += buffer.length;
+		this._length += buffer.length;
 		this.verts.push(buffer);
 	}
 
