@@ -590,6 +590,16 @@ export class TextFormat extends AssetBase {
 		return clonedFormat;
 	}
 
+	public equal(format: TextFormat) {
+		for (const field of PUBLIC_FIELDS) {
+			if (this[field] !== format[field]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	public applyToFormat(format: TextFormat) {
 
 		for (const field of PUBLIC_FIELDS) {

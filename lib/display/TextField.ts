@@ -3315,6 +3315,10 @@ export class TextField extends DisplayObjectContainer {
 
 			const len = this._textFormats.length;
 
+			if (this._textFormats.length === 1 && this._textFormats[0].equal(format)) {
+				return;
+			}
+
 			// easy: apply the format to all formats in the list
 			for (let i = 0; i < len; i++) {
 				this._textFormats[i] = this._textFormats[i].clone();
