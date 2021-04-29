@@ -2682,19 +2682,26 @@ export class TextField extends DisplayObjectContainer {
 		for (const key in this.textShapes) {
 			textShape = this.textShapes[key];
 
-			const attr_length: number = 2;//(tess_fontTable.usesCurves)?3:2;
-			const attributesView: AttributesView = new AttributesView(Float32Array, attr_length);
-			attributesView.set(textShape.verts);
+			// this textShapeshape is for FNT font
+			const dim = 2;
+			const attributesView: AttributesView = new AttributesView(Float32Array, dim, textShape.length / 2);
+			const buffer = new Float32Array(attributesView.attributesBuffer.buffer);
+
+			let offset = 0;
+			for (const chunk of textShape.verts) {
+				buffer.set(chunk, offset);
+				offset += chunk.length;
+			}
+
 			const vertexBuffer: AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
 			attributesView.dispose();
 
 			textShape.elements = new TriangleElements(vertexBuffer);
 			textShape.elements.setPositions(new Float2Attributes(vertexBuffer));
-			//if(tess_fontTable.usesCurves){
-			//	this._textElements.setCustomAttributes("curves", new Byte4Attributes(vertexBuffer, false));
-			//}
+
 			textShape.shape = <Shape> this.targetGraphics.addShape(Shape.getShape(textShape.elements));
 			textShape.shape.usages++;
+
 			const sampler: ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
 			if (textShape.format.material && this._textColor == 0) {
@@ -2755,9 +2762,16 @@ export class TextField extends DisplayObjectContainer {
 			}
 
 			// this textShapeshape is for FNT font
-			const attr_length: number = textShape.fntMaterial ? 4 : 2;
-			const attributesView: AttributesView = new AttributesView(Float32Array, attr_length);
-			attributesView.set(textShape.verts);
+			const dim = textShape.fntMaterial ? 4 : 2;
+			const attributesView: AttributesView = new AttributesView(Float32Array, dim, textShape.length / 2);
+			const buffer = new Float32Array(attributesView.attributesBuffer.buffer);
+
+			let offset = 0;
+			for (const chunk of textShape.verts) {
+				buffer.set(chunk, offset);
+				offset += chunk.length;
+			}
+
 			const vertexBuffer: AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
 			attributesView.dispose();
 

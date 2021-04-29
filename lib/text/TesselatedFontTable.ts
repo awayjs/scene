@@ -615,72 +615,73 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 	}
 
 	public buildTextLineFromIndices(
-		tf: TextField,
+		field: TextField,
 		format: TextFormat,
 		x: number, y: number,
 		indices: number[],
 		advance: number[]): Point {
 
-		const textShape: TextShape = tf.getTextShapeForIdentifierAndFormat(format.color.toString(), format);
-
+		const textShape = field.getTextShapeForIdentifierAndFormat(format.color.toString(), format);
 		const origin_x = x;
-		y -= this._ascent * this._size_multiply;//this.getLineHeight();
-		let charGlyph: TesselatedFontChar;
-		let char_vertices: AttributesBuffer;
-		let buffer: Float32Array;
-		let v: number;
-		let size_multiply: number;
+		const size_multiply = this._size_multiply;
+		const indicesCount = indices.length;
 
-		let idx: number = 0;
-		let i: number = 0;
-		const i_len: number = indices.length;
+		y -= this._ascent * this._size_multiply;//this.getLineHeight();
 
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
-		for (i = 0; i < i_len; i++) {
-			idx = indices[i];
-
-			charGlyph = this._glyphIdxToChar[idx];
-			size_multiply = this._size_multiply;
+		for (let i = 0; i < indicesCount; i++) {
+			const idx = indices[i];
+			const charGlyph = this._glyphIdxToChar[idx];
 
 			if (!charGlyph) {
+				x += advance[i];
 				//console.log("no glyph found at idx", idx, "todo: support fallback fonts");
-			} else {
-				if (charGlyph.fill_data == null) {
+				continue;
+			}
 
-					if (charGlyph.fill_data_path.commands[0][0] == 1
-						&& charGlyph.fill_data_path.data[0][0] == 0
-						&& charGlyph.fill_data_path.data[0][1] == 0) {
+			if (charGlyph.fill_data === null) {
 
-						charGlyph.fill_data_path.data[0].shift();
-						charGlyph.fill_data_path.data[0].shift();
-						charGlyph.fill_data_path.commands[0].shift();
-						charGlyph.fill_data_path.commands[0][0] = 2;
-					}
-					charGlyph.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(charGlyph.fill_data_path, true);
+				if (charGlyph.fill_data_path.commands[0][0] == 1
+					&& charGlyph.fill_data_path.data[0][0] == 0
+					&& charGlyph.fill_data_path.data[0][1] == 0) {
+
+					charGlyph.fill_data_path.data[0].shift();
+					charGlyph.fill_data_path.data[0].shift();
+					charGlyph.fill_data_path.commands[0].shift();
+					charGlyph.fill_data_path.commands[0][0] = 2;
 				}
-				char_vertices = charGlyph.fill_data;
-				if (char_vertices) {
-					buffer = new Float32Array(char_vertices.buffer);
-					if (this.usesCurves) {
-						for (v = 0; v < char_vertices.count; v++) {
-							textShape.verts[textShape.verts.length] = buffer[v * 3] * size_multiply + x;
-							textShape.verts[textShape.verts.length] = buffer[v * 3 + 1] * size_multiply + y;
-							textShape.verts[textShape.verts.length] = buffer[v * 3 + 2];
-						}
-					} else {
-						for (v = 0; v < char_vertices.count; v++) {
-							textShape.verts[textShape.verts.length] = buffer[v * 2] * size_multiply + x;
-							textShape.verts[textShape.verts.length] = buffer[v * 2 + 1] * size_multiply + y;
-						}
 
+				charGlyph.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(charGlyph.fill_data_path, true);
+			}
+
+			const charVertices = charGlyph.fill_data;
+
+			if (charVertices) {
+				const buffer = new Float32Array(charVertices.buffer).slice();
+				const count = charVertices.count;
+
+				textShape.addChunk(buffer);
+
+				if (this.usesCurves) {
+
+					for (let v = 0; v < count; v++) {
+						buffer[v * 3] = buffer[v * 3] * size_multiply + x;
+						buffer[v * 3 + 1] = buffer[v * 3 + 1] * size_multiply + y;
+						buffer[v * 3 + 2] = buffer[v * 3 + 2];
+					}
+				} else {
+					for (let v = 0; v < count; v++) {
+						buffer[v * 2] = buffer[v * 2] * size_multiply + x;
+						buffer[v * 2 + 1] = buffer[v * 2 + 1] * size_multiply + y;
 					}
 				}
 			}
+
 			x += advance[i];// * size_multiply;
 		}
-		return new Point(x - origin_x, this.getLineHeight());
 
+		return new Point(x - origin_x, this.getLineHeight());
 	}
 
 	public fillTextRun(tf: TextField, format: TextFormat, startWord: number, wordCnt: number) {
@@ -714,18 +715,16 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		let charGlyph: TesselatedFontChar;
 		let w: number = 0;
 		const w_len: number = startWord + wordCnt * 5;
-		let char_vertices: AttributesBuffer;
 		let c: number = 0;
 		let amount_of_chars_in_text: number = 0;
 		let x: number = 0;
 		let y: number = 0;
 		let startIdx: number = 0;
-		let buffer: Float32Array;
-		let v: number;
 		let size_multiply: number;
 		let select_start: number = tf.selectionBeginIndex;
 		let select_end: number = tf.selectionEndIndex;
 		let start_x: number = 0;
+
 		if (tf.selectable) {
 			newFormat = format.clone();
 			newFormat.color = 0xffffff;
@@ -848,18 +847,22 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
 
 						} else {
-							char_vertices = charGlyph.fill_data;
-							buffer = new Float32Array(char_vertices.buffer);
+							const charVertices = charGlyph.fill_data;
+							const buffer = new Float32Array(charVertices.buffer).slice();
+							const count = charVertices.count;
+
+							curTShape.addChunk(buffer);
+
 							if (this.usesCurves) {
-								for (v = 0; v < char_vertices.count; v++) {
-									curTShape.verts[curTShape.verts.length] = (buffer[v * 3] * size_multiply) + x;
-									curTShape.verts[curTShape.verts.length] = (buffer[v * 3 + 1] * size_multiply) + y;
-									curTShape.verts[curTShape.verts.length] = buffer[v * 3 + 2];
+								for (let v = 0; v < count; v++) {
+									buffer[v * 3] = buffer[v * 3] * size_multiply + x;
+									buffer[v * 3 + 1] = buffer[v * 3 + 1] * size_multiply + y;
+									buffer[v * 3 + 2] = buffer[v * 3 + 2];
 								}
 							} else {
-								for (v = 0; v < char_vertices.count; v++) {
-									curTShape.verts[curTShape.verts.length] = ((buffer[v * 2]) * size_multiply) + x;
-									curTShape.verts[curTShape.verts.length] = ((buffer[v * 2 + 1]) * size_multiply) + y;
+								for (let v = 0; v < count; v++) {
+									buffer[v * 2] = buffer[v * 2] * size_multiply + x;
+									buffer[v * 2 + 1] = buffer[v * 2 + 1] * size_multiply + y;
 								}
 							}
 
@@ -877,23 +880,25 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			const half_thickness: number = 0.25 * tf.internalScale.y;
 			const topY: number = y + this.getUnderLineHeight() + half_thickness;
 			const bottomY: number = y + this.getUnderLineHeight() - half_thickness;
+
 			if (tf.selectable && newFormat.underline && (startWord + 1) < tf.words.length) {
-				curTShape.verts[curTShape.verts.length] = start_x;
-				curTShape.verts[curTShape.verts.length] = bottomY;
-				curTShape.verts[curTShape.verts.length] = start_x;
-				curTShape.verts[curTShape.verts.length] = topY;
-				curTShape.verts[curTShape.verts.length] = x;
-				curTShape.verts[curTShape.verts.length] = topY;
-				curTShape.verts[curTShape.verts.length] = x;
-				curTShape.verts[curTShape.verts.length] = topY;
-				curTShape.verts[curTShape.verts.length] = x;
-				curTShape.verts[curTShape.verts.length] = bottomY;
-				curTShape.verts[curTShape.verts.length] = start_x;
-				curTShape.verts[curTShape.verts.length] = bottomY;
+				const underBuff = new Float32Array(12);
+
+				underBuff[0] = start_x;
+				underBuff[1] = bottomY;
+				underBuff[2] = start_x;
+				underBuff[3] = topY;
+				underBuff[4] = x;
+				underBuff[5] = topY;
+				underBuff[6] = x;
+				underBuff[7] = topY;
+				underBuff[8] = x;
+				underBuff[9] = bottomY;
+				underBuff[10] = start_x;
+				underBuff[11] = bottomY;
 			}
 
 		}
-		buffer = null;
 	}
 
 	public createPointGlyph_9679(): TesselatedFontChar {
