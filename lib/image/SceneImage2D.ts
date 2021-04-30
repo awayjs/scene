@@ -405,7 +405,7 @@ export class SceneImage2D extends BitmapImage2D {
 		const alpha = this._transparent ? argb[0] / 255 : 1;
 		const isCrop = rect !== this._rect && !this._rect.equals(rect);
 
-		this._stage.setRenderTarget(this, true);
+		this._stage.setRenderTarget(this, true, 0, 0, true);
 		this._stage.setScissor(rect);
 
 		// we shure that color is fully filled when there are not any crops
