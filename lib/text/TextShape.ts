@@ -32,18 +32,23 @@ export class TextShape {
 		let index = 0;
 		let size = val;
 
-		for (index = 0; index < this.verts.length; index++) {
+		while (index < this.verts.length) {
 			if (this.verts[index].length > size) {
 				break;
 			}
-
 			size -= this.verts[index].length;
+			index++;
 		}
 
-		// resize buffer
-		this.verts[index] = this.verts[index].subarray(0, size);
-		this.verts.length = index + 1;
+		if (size > 0) {
+			// resize buffer
+			this.verts[index - 1] = this.verts[index - 1].subarray(0, size);
+		} else {
+			// remove empty array
+			index--;
+		}
 
+		this.verts.length = index;
 		this._length = val;
 	}
 
