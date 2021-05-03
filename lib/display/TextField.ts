@@ -43,11 +43,11 @@ const enum CHAR_CODES {
 
 const MNEMOS = [
 	{
-		test: /\&apos;/g,
+		test: /&apos;/g,
 		replace: '\''
 	},
 	{
-		test: /\&gt;/g,
+		test: /&gt;/g,
 		replace: '>'
 	}
 ];
@@ -147,7 +147,7 @@ export class TextField extends DisplayObjectContainer {
 		TextField._textFields = [];
 	}
 
-	private static _onChangedEvent=new TextfieldEvent(TextfieldEvent.CHANGED);
+	private static _onChangedEvent = new TextfieldEvent(TextfieldEvent.CHANGED);
 
 	public textOffsetX: number = 0;
 	public textOffsetY: number = 0;
@@ -341,11 +341,11 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	private enableInput(enable: boolean = true) {
-
 		if (this.cursorIntervalID >= 0) {
 			window.clearInterval(this.cursorIntervalID);
 			this.cursorIntervalID = -1;
 		}
+
 		if (enable && this._isInFocus && this.selectable) {
 			this.drawSelectionGraphics();
 			const myThis = this;
@@ -1254,12 +1254,15 @@ export class TextField extends DisplayObjectContainer {
 		value = value.replace(/\^/g, '');
 
 		// make sure all "-" are escaped if they are not used to define a range
+		// eslint-disable-next-line no-useless-escape
 		value = value.replace(/([^a-zA-Z0-9])\-/g, '$1\\-');
 
 		// escape all special chars so that regex will be valid
 		//todo: should be able to do the following with a single regex:
 		value = value.replace(/\./g, '\\.');
+		// eslint-disable-next-line no-useless-escape
 		value = value.replace(/\</g, '\\<');
+		// eslint-disable-next-line no-useless-escape
 		value = value.replace(/\>/g, '\\>');
 		value = value.replace(/\+/g, '\\+');
 		value = value.replace(/\*/g, '\\*');
@@ -1271,11 +1274,15 @@ export class TextField extends DisplayObjectContainer {
 		value = value.replace(/\)/g, '\\)');
 		value = value.replace(/\{/g, '\\{');
 		value = value.replace(/\}/g, '\\}');
+		// eslint-disable-next-line no-useless-escape
 		value = value.replace(/\=/g, '\\=');
+		// eslint-disable-next-line no-useless-escape
 		value = value.replace(/\!/g, '\\!');
+		// eslint-disable-next-line no-useless-escape
 		value = value.replace(/\:/g, '\\:');
 		value = value.replace(/\|/g, '\\|');
 		value = value.replace(/\//g, '\\/');
+		// eslint-disable-next-line no-useless-escape
 		value = value.replace(/\%/g, '\\%');
 
 		this._restrictRegex = new RegExp('[^' + value + ']', 'g');
@@ -1858,6 +1865,7 @@ export class TextField extends DisplayObjectContainer {
 		this.updateSelectionByMouseDelegate = (event: any) => this.updateSelectionByMouse(event);
 
 		this._onGraphicsInvalidateDelegate = (event: AssetEvent) => this._onGraphicsInvalidate(event);
+		this._onClipboardPasteDelegate = (event: ClipboardEvent) => this.onClipboardPaste(event);
 
 		this.cursorIntervalID = -1;
 
@@ -3515,108 +3523,123 @@ export class TextField extends DisplayObjectContainer {
 
 	public addChar(char: string, isShift: boolean = false, isCTRL: boolean = false, isAlt: boolean = false) {
 
-		//console.log("addChar")
+		let changed = false;
 		const oldText = this._iText;
+
 		if (!this._selectionBeginIndex) {
 			this._selectionBeginIndex = 0;
 		}
+
 		if (!this._selectionEndIndex) {
 			this._selectionEndIndex = 0;
 		}
+
 		if (this._selectionEndIndex < this._selectionBeginIndex) {
 			const tmpStart: number = this._selectionEndIndex;
 			this._selectionEndIndex = this._selectionBeginIndex;
 			this._selectionBeginIndex = tmpStart;
 		}
-		//console.log("textfield.onKey char", String.fromCharCode(keyEvent.charCode));
-		// todo: correctly implement text-cursor, and delete / add from its position
-		if (char == 'Backspace' || char == 'Delete') {
-			this.deleteSelectedText(char);
-		} else if (char == 'ArrowRight') {
-			if (!isShift && this._selectionEndIndex != this._selectionBeginIndex) {
-				if (this._selectionEndIndex > this._selectionBeginIndex)
-					this._selectionBeginIndex = this._selectionEndIndex;
-				else
-					this._selectionEndIndex = this._selectionBeginIndex;
-			} else {
-				if (this._selectionEndIndex > this._selectionBeginIndex) {
-					this._selectionEndIndex += 1;
-					if (!isShift)
-						this._selectionBeginIndex = this._selectionEndIndex;
-				} else {
-					this._selectionBeginIndex += 1;
-					if (!isShift)
-						this._selectionEndIndex = this._selectionBeginIndex;
 
-				}
-			}
-			//this._selectionEndIndex=this._selectionBeginIndex;
-		} else if (char == 'ArrowLeft') {
-			if (!isShift && this._selectionEndIndex != this._selectionBeginIndex) {
-				if (this._selectionEndIndex > this._selectionBeginIndex)
-					this._selectionEndIndex = this._selectionBeginIndex;
-				else
-					this._selectionBeginIndex = this._selectionEndIndex;
-			} else {
-				if (this._selectionEndIndex > this._selectionBeginIndex) {
-					this._selectionBeginIndex -= 1;
-					if (!isShift)
-						this._selectionEndIndex = this._selectionBeginIndex;
-				} else {
-					this._selectionEndIndex -= 1;
-					if (!isShift)
+		if (!isAlt && !isCTRL) {
+			if (char == 'Backspace' || char == 'Delete') {
+				this.deleteSelectedText(char);
+				changed = true;
+			} else if (char == 'ArrowRight') {
+				if (!isShift && this._selectionEndIndex != this._selectionBeginIndex) {
+					if (this._selectionEndIndex > this._selectionBeginIndex) {
 						this._selectionBeginIndex = this._selectionEndIndex;
-
-				}
-			}
-			//this._selectionEndIndex=this._selectionBeginIndex;
-		} else if (char == 'Enter' && this.multiline) {
-			this._insertNewText('\n');
-		} else if (char.length == 1) {
-			if (this._restrictRegex) {
-				const chartest1 = char.replace(this._restrictRegex, '');
-				if (chartest1.length < char.length) {
-					const chartest2 = char.toUpperCase().replace(this._restrictRegex, '');
-					const chartest3 = char.toLowerCase().replace(this._restrictRegex, '');
-					char = chartest2;
-					if (chartest2.length < chartest3.length) {
-						char = chartest3;
+					} else {
+						this._selectionEndIndex = this._selectionBeginIndex;
 					}
-					if (chartest1.length > char.length) {
-						char = chartest1;
+				} else {
+					if (this._selectionEndIndex > this._selectionBeginIndex) {
+						this._selectionEndIndex += 1;
+						if (!isShift)
+							this._selectionBeginIndex = this._selectionEndIndex;
+					} else {
+						this._selectionBeginIndex += 1;
+						if (!isShift)
+							this._selectionEndIndex = this._selectionBeginIndex;
+
 					}
 				}
-				if (char == '')
-					return;
+
+				changed = true;
+				//this._selectionEndIndex=this._selectionBeginIndex;
+			} else if (char == 'ArrowLeft') {
+				if (!isShift && this._selectionEndIndex != this._selectionBeginIndex) {
+					if (this._selectionEndIndex > this._selectionBeginIndex)
+						this._selectionEndIndex = this._selectionBeginIndex;
+					else
+						this._selectionBeginIndex = this._selectionEndIndex;
+				} else {
+					if (this._selectionEndIndex > this._selectionBeginIndex) {
+						this._selectionBeginIndex -= 1;
+						if (!isShift)
+							this._selectionEndIndex = this._selectionBeginIndex;
+					} else {
+						this._selectionEndIndex -= 1;
+						if (!isShift)
+							this._selectionBeginIndex = this._selectionEndIndex;
+
+					}
+				}
+
+				changed = true;
+				//this._selectionEndIndex=this._selectionBeginIndex;
+			} else if (char == 'Enter' && this.multiline) {
+				this._insertNewText('\n');
+				changed = true;
+			} else if (char.length == 1) {
+				if (this._restrictRegex) {
+					const chartest1 = char.replace(this._restrictRegex, '');
+					if (chartest1.length < char.length) {
+						const chartest2 = char.toUpperCase().replace(this._restrictRegex, '');
+						const chartest3 = char.toLowerCase().replace(this._restrictRegex, '');
+						char = chartest2;
+						if (chartest2.length < chartest3.length) {
+							char = chartest3;
+						}
+						if (chartest1.length > char.length) {
+							char = chartest1;
+						}
+					}
+					if (char == '')
+						return;
+				}
+				if (this.newTextFormat.font_table) {
+
+					const table = this.newTextFormat.font_table;
+					const symbol = char.charCodeAt(0).toString();
+					let exist = false;
+
+					exist = (exist || table.hasChar(symbol));
+					exist = (exist || table.hasChar(symbol.toLowerCase()));
+					exist = (exist || table.hasChar(symbol.toUpperCase()));
+
+					if (!exist) {
+
+						console.log('Char not found', symbol);
+						return;
+					}
+				}
+
+				this._insertNewText(char);
+				changed = true;
+			} else if (char.length > 1) {
+				console.log('invalid keyboard input: ', char);
 			}
-			if (this.newTextFormat.font_table) {
 
-				const table = this.newTextFormat.font_table;
-				const symbol = char.charCodeAt(0).toString();
-				let exist = false;
+			if (changed) {
+				this._glyphsDirty = true;
+				//this.reConstruct();
+				//this.drawSelectionGraphics();
+				this.invalidate();
 
-				exist = (exist || table.hasChar(symbol));
-				exist = (exist || table.hasChar(symbol.toLowerCase()));
-				exist = (exist || table.hasChar(symbol.toUpperCase()));
-
-				if (!exist) {
-
-					console.log('Char not found', symbol);
-					return;
+				if (oldText !== this._iText) {
+					this.dispatchEvent(TextField._onChangedEvent);
 				}
 			}
-			this._insertNewText(char);
-		} else if (char.length > 1) {
-			console.log('invalid keyboard input: ', char);
-		}
-
-		this._glyphsDirty = true;
-		this.reConstruct();
-		this.drawSelectionGraphics();
-		this.invalidate();
-
-		if (oldText !== this._iText) {
-			this.dispatchEvent(TextField._onChangedEvent);
 		}
 
 		if (char && char.length > 0 && this.adapter != this) {
