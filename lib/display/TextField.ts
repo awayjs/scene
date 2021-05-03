@@ -134,6 +134,7 @@ const MNEMOS = [
 export class TextField extends DisplayObjectContainer {
 	private _isEntity: boolean = false;
 	private _onGraphicsInvalidateDelegate: (event: AssetEvent) => void;
+	private _onClipboardPasteDelegate: (event: ClipboardEvent) => void;
 
 	private static _textFields: Array<TextField> = [];
 
@@ -358,6 +359,15 @@ export class TextField extends DisplayObjectContainer {
 				myThis.invalidate();
 			}, 500);
 		}
+
+		// FFUUU, this not working because we prevent events, and Ctrl + V/C not bubbled to document
+		// will use mannual handling a Ctrl + V/C
+		/*
+		if (enable) {
+			document.addEventListener('paste', this._onClipboardPasteDelegate);
+		} else {
+			document.removeEventListener('paste', this._onClipboardPasteDelegate);
+		}*/
 	}
 
 	public findCharIdxForMouse(event: MouseEvent): number {
@@ -2126,6 +2136,23 @@ export class TextField extends DisplayObjectContainer {
 
 	}
 
+	private onClipboardPaste(event: ClipboardEvent) {
+		const paste = (event.clipboardData || (<any>self).clipboardData).getData('text');
+
+		if (!paste) {
+			return;
+		}
+
+		event.preventDefault();
+
+		if (this._selectionBeginIndex > 0 || this._selectionEndIndex > this.length) {
+			this.replaceSelectedText(paste);
+			return;
+		}
+
+		this.text = paste;
+	}
+
 	private buildParagraphs() {
 		const thisText = this._iText.toString();
 		const f_len = this._textFormatsIdx.length;
@@ -3638,6 +3665,24 @@ export class TextField extends DisplayObjectContainer {
 
 				if (oldText !== this._iText) {
 					this.dispatchEvent(TextField._onChangedEvent);
+				}
+			}
+		} else {
+			/**
+			* @todo THIS IS SHIT!!! This won't working on MacOS, because it use another Ctrl + V/C
+			* @see `enableInput` setter for right implementation
+			*/
+			if (isCTRL && !isShift && char === 'v') {
+				// paste
+				// try do it
+				if (navigator.clipboard.readText) {
+					navigator.clipboard.readText()
+						.then(e => {
+							this.replaceSelectedText(e);
+						})
+						.catch((e)=>{
+							console.warn('[TextField] Can\'t paste text:', e.message);
+						});
 				}
 			}
 		}
