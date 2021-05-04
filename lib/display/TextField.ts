@@ -2717,10 +2717,8 @@ export class TextField extends DisplayObjectContainer {
 		for (const key in this.textShapes) {
 			textShape = this.textShapes[key];
 
-			// this textShapeshape is for FNT font
-			const dim = 2;
-			const attributesView: AttributesView = new AttributesView(Float32Array, dim, textShape.length / 2);
-			const buffer = new Float32Array(attributesView.attributesBuffer.buffer);
+			const attr = new Float2Attributes(textShape.length / 2);
+			const buffer = new Float32Array(attr.attributesBuffer.buffer);
 
 			let offset = 0;
 			for (const chunk of textShape.verts) {
@@ -2728,11 +2726,9 @@ export class TextField extends DisplayObjectContainer {
 				offset += chunk.length;
 			}
 
-			const vertexBuffer: AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
-			attributesView.dispose();
-
-			textShape.elements = new TriangleElements(vertexBuffer);
-			textShape.elements.setPositions(new Float2Attributes(vertexBuffer));
+			textShape.elements = new TriangleElements();
+			textShape.elements.setPositions(attr);
+			textShape.elements.invalidate();
 
 			textShape.shape = <Shape> this.targetGraphics.addShape(Shape.getShape(textShape.elements));
 			textShape.shape.usages++;
@@ -2796,10 +2792,8 @@ export class TextField extends DisplayObjectContainer {
 				alpha = 255;
 			}
 
-			// this textShapeshape is for FNT font
-			const dim = textShape.fntMaterial ? 4 : 2;
-			const attributesView: AttributesView = new AttributesView(Float32Array, dim, textShape.length / 2);
-			const buffer = new Float32Array(attributesView.attributesBuffer.buffer);
+			const attr = new Float2Attributes(textShape.length / 2);
+			const buffer = new Float32Array(attr.attributesBuffer.buffer);
 
 			let offset = 0;
 			for (const chunk of textShape.verts) {
@@ -2807,15 +2801,9 @@ export class TextField extends DisplayObjectContainer {
 				offset += chunk.length;
 			}
 
-			const vertexBuffer: AttributesBuffer = attributesView.attributesBuffer.cloneBufferView();
-			attributesView.dispose();
-
-			textShape.elements = new TriangleElements(vertexBuffer);
-			textShape.elements.setPositions(new Float2Attributes(vertexBuffer));
-
-			if (textShape.fntMaterial) {
-				textShape.elements.setUVs(new Float2Attributes(vertexBuffer));
-			}
+			textShape.elements = new TriangleElements();
+			textShape.elements.setPositions(attr);
+			textShape.elements.invalidate();
 
 			textShape.shape = Shape.getShape(textShape.elements);
 			textShape.shape.usages++;
