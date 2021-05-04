@@ -23,6 +23,13 @@ function once(obj: any, key = '') {
 	return !has;
 }
 
+interface ICharEntry {
+	x: number;
+	y: number;
+	char: TesselatedFontChar;
+	selected?: boolean;
+}
+
 /**
  * GraphicBase wraps a TriangleElements as a scene graph instantiation. A GraphicBase is owned by a Sprite object.
  *
@@ -623,8 +630,9 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 		const textShape = field.getTextShapeForIdentifierAndFormat(format.color.toString(), format);
 		const origin_x = x;
-		const size_multiply = this._size_multiply;
 		const indicesCount = indices.length;
+		const charEntries: ICharEntry[] = [];
+		let textBuffSize: number = 0;
 
 		y -= this._ascent * this._size_multiply;//this.getLineHeight();
 
@@ -658,28 +666,19 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			const charVertices = charGlyph.fill_data;
 
 			if (charVertices) {
-				const buffer = new Float32Array(charVertices.buffer).slice();
-				const count = charVertices.count;
+				charEntries.push({
+					char: charGlyph, x, y, selected: false
+				});
 
-				textShape.addChunk(buffer);
-
-				if (this.usesCurves) {
-
-					for (let v = 0; v < count; v++) {
-						buffer[v * 3] = buffer[v * 3] * size_multiply + x;
-						buffer[v * 3 + 1] = buffer[v * 3 + 1] * size_multiply + y;
-						buffer[v * 3 + 2] = buffer[v * 3 + 2];
-					}
-				} else {
-					for (let v = 0; v < count; v++) {
-						buffer[v * 2] = buffer[v * 2] * size_multiply + x;
-						buffer[v * 2 + 1] = buffer[v * 2 + 1] * size_multiply + y;
-					}
-				}
+				textBuffSize += charVertices.buffer.byteLength / 4;
 			}
 
 			x += advance[i];// * size_multiply;
 		}
+
+		const buff = new Float32Array(textBuffSize);
+		this._fillBuffer(buff, charEntries, false);
+		textShape.addChunk(buff);
 
 		return new Point(x - origin_x, this.getLineHeight());
 	}
@@ -711,18 +710,10 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		let textShapeSelected: TextShape;
 		let newFormat: TextFormat;
 
-		let curTShape: TextShape = null;
-		let charGlyph: TesselatedFontChar;
-		let w: number = 0;
-		const w_len: number = startWord + wordCnt * 5;
-		let c: number = 0;
-		let amount_of_chars_in_text: number = 0;
-		let x: number = 0;
-		let y: number = 0;
-		let startIdx: number = 0;
-		let size_multiply: number;
-		let select_start: number = tf.selectionBeginIndex;
-		let select_end: number = tf.selectionEndIndex;
+		const wordsCount = startWord + wordCnt * 5;
+		const size_multiply = this._size_multiply;
+		let select_start = tf.selectionBeginIndex;
+		let select_end = tf.selectionEndIndex;
 		let start_x: number = 0;
 
 		if (tf.selectable) {
@@ -754,133 +745,128 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			textShape.length = tf.last_word_vertices_count || 0;
 		}
 
+		let selectedBuffSize = 0;
+		let textBuffSize = 0;
+
+		const charEntries: ICharEntry[] = [];
+		const selectedCharEntries: ICharEntry[] = [];
+		const underlines: Float32Array[] = [];
+
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
-		for (w = startWord; w < w_len; w += 5) {
+		for (let w = startWord; w < wordsCount; w += 5) {
 			if (w < tf._words_amount_prev - 5) {
 				continue;
 			}
-			if (w == w_len - 5) {
+
+			if (w === wordsCount - 5) {
 				// last word in current text. Lets save length of textShape.vets BEFORE the last word verts applied.
 				tf.last_word_vertices_count = textShape.length;
 			}
-			startIdx = tf.words[w];
-			x = tf.words[w + 1];
-			y = tf.words[w + 2];
-			/*if (this.name == 'BoldStyle') {
-				y -= 0.2 * this.getLineHeight();
-			} else {
-				//y-=0.03*this._current_size;
-			}
-			//todo: this is a temporary fix for sunflower `si` VoltMeter text vertical align
-			if (format.font_name == 'DJB Get Digital') {
-				y -= 2;
-			}*/
-			//y=tf.words[w+2]+(this.ascent-this.get_font_em_size())*this._size_multiply; // enable for icycle
-			amount_of_chars_in_text = startIdx + tf.words[w + 4];
-			for (c = startIdx; c < amount_of_chars_in_text; c++) {
-				curTShape = (tf.isInFocus && c >= select_start && c < select_end) ?
+
+			let x = tf.words[w + 1];
+			const y = tf.words[w + 2];
+
+			const startIdx = tf.words[w];
+			const charsCount = startIdx + tf.words[w + 4];
+
+			for (let c = startIdx; c < charsCount; c++) {
+				const curTShape = (tf.isInFocus && c >= select_start && c < select_end) ?
 					textShapeSelected : textShape;
-				if (tf.chars_codes[c] != 32 && tf.chars_codes[c] != 9) {
-					charGlyph = this.getChar(tf.chars_codes[c].toString());
-					size_multiply = this._size_multiply;
-					if (charGlyph) {
 
-						if (useFNT) {
-							// the font should use fnt
-							const curFormat = curTShape.format;
-							let ctmpTShape = (tf.isInFocus && c >= select_start && c < select_end) ?
-								fntSelectedTextShapesByChannel[useFNT.toString() + charGlyph.fnt_channel] :
-								fntTextShapesByChannel[curFormat.color.toString() +
-									useFNT.toString() + charGlyph.fnt_channel];
-							if (!ctmpTShape) {
-								const newtextShape: TextShape =
-									tf.getTextShapeForIdentifierAndFormat(
-										curFormat.color.toString()
-										+ useFNT.toString() + charGlyph.fnt_channel.toString(),
-										curFormat);
-								const argb: number[] = ColorUtils.float32ColorToARGB(curFormat.color);
-								const mat: MethodMaterial = new MethodMaterial(
-									this._fnt_channels[charGlyph.fnt_channel]);
-								mat.colorTransform = new ColorTransform(argb[1] / 255, argb[2] / 255, argb[3] / 255);
-								mat.bothSides = true;
-								mat.alphaBlending = true;
-								mat.useColorTransform = true;
-								mat.style.sampler = new ImageSampler(false, true, true);
-								newtextShape.fntMaterial = mat;
-								fntTextShapesByChannel[curFormat.color.toString() +
-									useFNT.toString() + charGlyph.fnt_channel] = newtextShape;
-								ctmpTShape = newtextShape;
-							}
-							const x1: number = x + ((charGlyph.char_width * size_multiply) * charGlyph.fnt_rect.x);
-							const x2: number = x1 + ((charGlyph.char_width * size_multiply) * charGlyph.fnt_rect.width);
-							const y1: number = y + ((this._font_em_size * size_multiply) * charGlyph.fnt_rect.y);
-							const y2: number = y1 + ((this._font_em_size * size_multiply) * charGlyph.fnt_rect.height);
+				if (tf.chars_codes[c] !== 32 && tf.chars_codes[c] !== 9) {
+					const charGlyph = this.getChar(tf.chars_codes[c].toString());
 
-							throw 'Invalid implementation, verts not raw array';
-							/*
-							ctmpTShape.verts[ctmpTShape.verts.length] = x1;
-							ctmpTShape.verts[ctmpTShape.verts.length] = y1;
-							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x;
-							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y;
-
-							ctmpTShape.verts[ctmpTShape.verts.length] = x2;
-							ctmpTShape.verts[ctmpTShape.verts.length] = y1;
-							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
-							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y;
-
-							ctmpTShape.verts[ctmpTShape.verts.length] = x2;
-							ctmpTShape.verts[ctmpTShape.verts.length] = y2;
-							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
-							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
-
-							ctmpTShape.verts[ctmpTShape.verts.length] = x1;//
-							ctmpTShape.verts[ctmpTShape.verts.length] = y1;
-							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x;
-							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y;
-
-							ctmpTShape.verts[ctmpTShape.verts.length] = x1;
-							ctmpTShape.verts[ctmpTShape.verts.length] = y2;
-							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x;
-							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
-
-							ctmpTShape.verts[ctmpTShape.verts.length] = x2;
-							ctmpTShape.verts[ctmpTShape.verts.length] = y2;
-							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
-							ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
-							*/
-
-						} else {
-							const charVertices = charGlyph.fill_data;
-							const buffer = new Float32Array(charVertices.buffer).slice();
-							const count = charVertices.count;
-
-							curTShape.addChunk(buffer);
-
-							if (this.usesCurves) {
-								for (let v = 0; v < count; v++) {
-									buffer[v * 3] = buffer[v * 3] * size_multiply + x;
-									buffer[v * 3 + 1] = buffer[v * 3 + 1] * size_multiply + y;
-									buffer[v * 3 + 2] = buffer[v * 3 + 2];
-								}
-							} else {
-								for (let v = 0; v < count; v++) {
-									buffer[v * 2] = buffer[v * 2] * size_multiply + x;
-									buffer[v * 2 + 1] = buffer[v * 2 + 1] * size_multiply + y;
-								}
-							}
-
-						}
-						x += charGlyph.char_width * size_multiply;
-						// todo: handle kerning
-					} else {
+					if (!charGlyph) {
 						if (once(this, 'miss' + tf.chars_codes[c])) {
 							console.debug('[TesselatedFontTable] Error: char not found in fontTable',
 								tf.chars_codes[c], String.fromCharCode(tf.chars_codes[c]));
 						}
+						continue;
 					}
+
+					if (useFNT) {
+						// the font should use fnt
+						const curFormat = curTShape.format;
+						let ctmpTShape = (tf.isInFocus && c >= select_start && c < select_end) ?
+							fntSelectedTextShapesByChannel[useFNT.toString() + charGlyph.fnt_channel] :
+							fntTextShapesByChannel[curFormat.color.toString() +
+								useFNT.toString() + charGlyph.fnt_channel];
+						if (!ctmpTShape) {
+							const newtextShape: TextShape =
+								tf.getTextShapeForIdentifierAndFormat(
+									curFormat.color.toString()
+									+ useFNT.toString() + charGlyph.fnt_channel.toString(),
+									curFormat);
+							const argb: number[] = ColorUtils.float32ColorToARGB(curFormat.color);
+							const mat: MethodMaterial = new MethodMaterial(
+								this._fnt_channels[charGlyph.fnt_channel]);
+							mat.colorTransform = new ColorTransform(argb[1] / 255, argb[2] / 255, argb[3] / 255);
+							mat.bothSides = true;
+							mat.alphaBlending = true;
+							mat.useColorTransform = true;
+							mat.style.sampler = new ImageSampler(false, true, true);
+							newtextShape.fntMaterial = mat;
+							fntTextShapesByChannel[curFormat.color.toString() +
+								useFNT.toString() + charGlyph.fnt_channel] = newtextShape;
+							ctmpTShape = newtextShape;
+						}
+						const x1: number = x + ((charGlyph.char_width * size_multiply) * charGlyph.fnt_rect.x);
+						const x2: number = x1 + ((charGlyph.char_width * size_multiply) * charGlyph.fnt_rect.width);
+						const y1: number = y + ((this._font_em_size * size_multiply) * charGlyph.fnt_rect.y);
+						const y2: number = y1 + ((this._font_em_size * size_multiply) * charGlyph.fnt_rect.height);
+
+						throw 'Invalid implementation, verts not raw array';
+						/*
+						ctmpTShape.verts[ctmpTShape.verts.length] = x1;
+						ctmpTShape.verts[ctmpTShape.verts.length] = y1;
+						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x;
+						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y;
+
+						ctmpTShape.verts[ctmpTShape.verts.length] = x2;
+						ctmpTShape.verts[ctmpTShape.verts.length] = y1;
+						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
+						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y;
+
+						ctmpTShape.verts[ctmpTShape.verts.length] = x2;
+						ctmpTShape.verts[ctmpTShape.verts.length] = y2;
+						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
+						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
+
+						ctmpTShape.verts[ctmpTShape.verts.length] = x1;//
+						ctmpTShape.verts[ctmpTShape.verts.length] = y1;
+						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x;
+						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y;
+
+						ctmpTShape.verts[ctmpTShape.verts.length] = x1;
+						ctmpTShape.verts[ctmpTShape.verts.length] = y2;
+						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x;
+						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
+
+						ctmpTShape.verts[ctmpTShape.verts.length] = x2;
+						ctmpTShape.verts[ctmpTShape.verts.length] = y2;
+						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
+						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
+						*/
+
+					} else {
+						if (curTShape === textShapeSelected) {
+							selectedCharEntries.push({
+								char: charGlyph, x, y, selected: true
+							});
+
+							selectedBuffSize += charGlyph.fill_data.buffer.byteLength / 4;
+						} else {
+							charEntries.push({
+								char: charGlyph, x, y, selected: false
+							});
+							textBuffSize += charGlyph.fill_data.buffer.byteLength / 4;
+						}
+					}
+					x += charGlyph.char_width * size_multiply;
 				}
 			}
+
 			const half_thickness: number = 0.25 * tf.internalScale.y;
 			const topY: number = y + this.getUnderLineHeight() + half_thickness;
 			const bottomY: number = y + this.getUnderLineHeight() - half_thickness;
@@ -900,8 +886,33 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 				underBuff[9] = bottomY;
 				underBuff[10] = start_x;
 				underBuff[11] = bottomY;
+
+				underlines.push(underBuff);
 			}
 
+		} // for word
+
+		// reallock buffers and fill
+		if (textBuffSize > 0) {
+			textBuffSize += underlines.length * 12;
+
+			const buff = new Float32Array(textBuffSize);
+			let offset = this._fillBuffer(buff, charEntries, false);
+
+			for (const under of underlines) {
+				buff.set(under, offset);
+				offset += under.length;
+			}
+
+			textShape.addChunk(buff);
+		}
+
+		if (selectedBuffSize > 0) {
+			const buff = new Float32Array(selectedBuffSize);
+
+			this._fillBuffer(buff, selectedCharEntries, true);
+
+			textShapeSelected.addChunk(buff);
 		}
 	}
 
@@ -1039,5 +1050,34 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 		this._font_chars.push(t_font_char);
 		this._font_chars_dic[name] = t_font_char;
+	}
+
+	private _fillBuffer(
+		buffer: Float32Array,
+		chars: ICharEntry[],
+		selection: boolean = false
+	): number {
+
+		const scale = this._size_multiply;
+
+		let offset = 0;
+		for (const entry of chars) {
+			if (entry.selected !== selection) {
+				continue;
+			}
+
+			const { x, y, char } = entry;
+			const view = new Float32Array(char.fill_data.buffer);
+			const count = view.length;
+
+			for (let v = 0; v < count; v += 2) {
+				buffer[offset + v + 0] = view[v + 0] * scale + x;
+				buffer[offset + v + 1] = view[v + 1] * scale + y;
+			}
+
+			offset += view.length;
+		}
+
+		return offset;
 	}
 }
