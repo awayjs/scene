@@ -2146,7 +2146,7 @@ export class TextField extends DisplayObjectContainer {
 		event.preventDefault();
 
 		if (this._selectionBeginIndex > 0 || this._selectionEndIndex > this.length) {
-			this.replaceSelectedText(paste);
+			this._insertNewText(paste);
 			return;
 		}
 
@@ -2786,11 +2786,8 @@ export class TextField extends DisplayObjectContainer {
 		for (const key in this.textShapes) {
 			textShape = this.textShapes[key];
 
-			const color = this.getTextColorForTextFormat(textShape.format);
-			let alpha = ColorUtils.float32ColorToARGB(color)[0];
-
-			if (alpha == 0) {
-				alpha = 255;
+			if (textShape.length === 0) {
+				continue;
 			}
 
 			const attr = new Float2Attributes(textShape.length / 2);
@@ -2800,6 +2797,23 @@ export class TextField extends DisplayObjectContainer {
 			for (const chunk of textShape.verts) {
 				buffer.set(chunk, offset);
 				offset += chunk.length;
+			}
+
+			if (textShape.shape) {
+				const element = <TriangleElements> textShape.shape.elements;
+				// there are bug with attribyte buffer, when add attr to exist
+				element.setPositions(buffer);
+				element.invalidate();
+
+				attr.dispose();
+				continue;
+			}
+
+			const color = this.getTextColorForTextFormat(textShape.format);
+			let alpha = ColorUtils.float32ColorToARGB(color)[0];
+
+			if (alpha == 0) {
+				alpha = 255;
 			}
 
 			textShape.elements = new TriangleElements();
@@ -2865,6 +2879,11 @@ export class TextField extends DisplayObjectContainer {
 
 		for (const key in this.textShapes) {
 			textShape = this.textShapes[key];
+
+			if (!textShape.shape) {
+				continue;
+			}
+
             <Shape> this.targetGraphics.addShape(textShape.shape);
 		}
 
@@ -3205,6 +3224,13 @@ export class TextField extends DisplayObjectContainer {
 	 *               sheet.
 	 */
 	public replaceSelectedText(value: string): void {
+
+		return this._insertNewText(value);
+
+		// this is wrong implemementation, how i see,
+		// because it not right invalidate a text;
+
+		/*
 		let selectionStart: number = this._selectionBeginIndex;
 		let selectionEnd: number = this._selectionEndIndex;
 		if (selectionEnd != selectionStart) {
@@ -3224,7 +3250,7 @@ export class TextField extends DisplayObjectContainer {
 		this.text = textBeforeCursor + value + textAfterCursor;
 		this._selectionBeginIndex = selectionStart + 1;
 		this._selectionEndIndex = this._selectionBeginIndex;
-
+		*/
 	}
 
 	/**
@@ -3668,7 +3694,7 @@ export class TextField extends DisplayObjectContainer {
 				if (navigator.clipboard.readText) {
 					navigator.clipboard.readText()
 						.then(e => {
-							this.replaceSelectedText(e);
+							this._insertNewText(e);
 						})
 						.catch((e)=>{
 							console.warn('[TextField] Can\'t paste text:', e.message);
@@ -3788,11 +3814,16 @@ export class TextField extends DisplayObjectContainer {
 
 		let textShape: TextShape;
 		for (const key in this.textShapes) {
+
 			textShape = this.textShapes[key];
-			if (textShape.shape) textShape.shape.dispose();
+			if (textShape.shape) {
+				textShape.shape.dispose();
+			}
+
 			textShape.shape = null;
 			textShape.elements = null;
-			textShape.verts.length = 0;
+			textShape.length = 0;
+
 			delete this.textShapes[key];
 		}
 	}
