@@ -2731,6 +2731,7 @@ export class TextField extends DisplayObjectContainer {
 			textShape.elements.invalidate();
 
 			textShape.shape = <Shape> this.targetGraphics.addShape(Shape.getShape(textShape.elements));
+			textShape.shape.deepHitCheck = false;
 			textShape.shape.usages++;
 
 			const sampler: ImageSampler = new ImageSampler();
@@ -2806,6 +2807,7 @@ export class TextField extends DisplayObjectContainer {
 			textShape.elements.invalidate();
 
 			textShape.shape = Shape.getShape(textShape.elements);
+			textShape.shape.deepHitCheck = false;
 			textShape.shape.usages++;
 
 			const sampler: ImageSampler = new ImageSampler(false, true, true);
