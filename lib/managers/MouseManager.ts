@@ -36,6 +36,7 @@ export class MouseManager {
 	private _allowFocusOnUnfocusable: boolean=true;  // should unfocus-able object steal focus ?
 
 	private _showCursor: boolean;
+	private _cursorType: 'pointer' | 'auto'  = 'auto';
 
 	private _nullVector: Vector3D = new Vector3D();
 	private _queuedEvents: Array<AwayMouseEvent> = new Array<AwayMouseEvent>();
@@ -81,6 +82,16 @@ export class MouseManager {
 
 	public set showCursor(value: boolean) {
 		this._showCursor = value;
+		this.cursorType = this._cursorType;
+	}
+
+	public set cursorType(t: 'pointer' | 'auto') {
+		this._cursorType = t;
+		this._stage.container.style.cursor = this._showCursor ? t : 'none';
+	}
+
+	public get cursorType() {
+		return this._cursorType;
 	}
 
 	public get eventBubbling(): boolean {
@@ -505,11 +516,9 @@ export class MouseManager {
 		}
 
 		// set cursor if not dragging mouse
-		if (!this._mouseDragging)
-			document.body.style.cursor =
-				this._showCursor
-					? (collisionNode ? collisionNode.container.getMouseCursor() : 'initial')
-					: 'none';
+		if (!this._mouseDragging) {
+			this.cursorType = collisionNode ? <any>collisionNode.container.getMouseCursor() : 'auto';
+		}
 
 		this._updateDirty = false;
 	}
