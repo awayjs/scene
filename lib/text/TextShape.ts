@@ -41,6 +41,9 @@ export class TextShape {
 		}
 
 		if (size > 0) {
+			// fix for WInnerVSLooser: index is 0 so we get a crash
+			if (index == 0)
+				index++;
 			// resize buffer
 			this.verts[index - 1] = this.verts[index - 1].subarray(0, size);
 		} else {
