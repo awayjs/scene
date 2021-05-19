@@ -412,9 +412,9 @@ export class SceneImage2D extends BitmapImage2D {
 		this._lastUsedFill = isCrop ? null : color;
 
 		this._stage.clear(
-			(argb[1] / 0xff) * alpha | 0,
-			(argb[2] / 0xff) * alpha | 0,
-			(argb[3] / 0xff) * alpha | 0,
+			(argb[1] / 0xff) * alpha,
+			(argb[2] / 0xff) * alpha,
+			(argb[3] / 0xff) * alpha,
 			alpha
 		);
 
@@ -660,7 +660,7 @@ export class SceneImage2D extends BitmapImage2D {
 		this._imageDataDirty = true;
 	}
 
-	private _mapSuppotedBlendMode(blendMode: string = ''): string {
+	private static _mapSupportedBlendMode(blendMode: string = ''): string {
 		switch (blendMode) {
 			case null:
 			case '':
@@ -704,7 +704,7 @@ export class SceneImage2D extends BitmapImage2D {
 		billboard.material.style.image = source;
 
 		// not all blend modes can be used for rendering
-		billboard.material.blendMode = this._mapSuppotedBlendMode(blendMode);
+		billboard.material.blendMode = SceneImage2D._mapSupportedBlendMode(blendMode);
 
 		(<MaterialBase> billboard.material).useColorTransform = !!colorTransform;
 
@@ -833,7 +833,7 @@ export class SceneImage2D extends BitmapImage2D {
 
 		root.transform.colorTransform = colorTransform;
 		// anyway we not support this =))
-		root.blendMode = this._mapSuppotedBlendMode(blendMode);
+		root.blendMode = SceneImage2D._mapSupportedBlendMode(blendMode);
 
 		//save snapshot if unlocked
 		//if (!this._locked)

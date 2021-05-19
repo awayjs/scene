@@ -1,6 +1,6 @@
 import { ColorUtils, Matrix, Rectangle, Point, Vector3D, AssetEvent } from '@awayjs/core';
 
-import { ImageSampler, AttributesBuffer, AttributesView, Float2Attributes } from '@awayjs/stage';
+import { ImageSampler, Float2Attributes } from '@awayjs/stage';
 
 import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
 
@@ -2731,7 +2731,9 @@ export class TextField extends DisplayObjectContainer {
 			textShape.elements.invalidate();
 
 			textShape.shape = <Shape> this.targetGraphics.addShape(Shape.getShape(textShape.elements));
-			textShape.shape.deepHitCheck = false;
+
+			// has BUG for QWOP, temporarily enable it (default)
+			textShape.shape.deepHitCheck = true;
 			textShape.shape.usages++;
 
 			const sampler: ImageSampler = new ImageSampler();
@@ -2821,7 +2823,8 @@ export class TextField extends DisplayObjectContainer {
 			textShape.elements.invalidate();
 
 			textShape.shape = Shape.getShape(textShape.elements);
-			textShape.shape.deepHitCheck = false;
+			// has BUG for QWOP, temporarily enable it (default)
+			textShape.shape.deepHitCheck = true;
 			textShape.shape.usages++;
 
 			const sampler: ImageSampler = new ImageSampler(false, true, true);

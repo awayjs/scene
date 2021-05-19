@@ -24,34 +24,28 @@ export class TextShape {
 			return;
 		}
 
+		const verts = this.verts;
+
 		if (val === 0) {
-			this.verts.length = 0;
+			this._length = 0;
+			verts.length = 0;
 			return;
 		}
 
 		let index = 0;
 		let size = val;
 
-		while (index < this.verts.length) {
-			if (this.verts[index].length > size) {
-				break;
-			}
-			size -= this.verts[index].length;
+		while (index < verts.length && size > 0) {
+			size -= verts[index].length;
 			index++;
 		}
 
-		if (size > 0) {
-			// fix for WInnerVSLooser: index is 0 so we get a crash
-			if (index == 0)
-				index++;
+		if (size < 0) {
 			// resize buffer
-			this.verts[index - 1] = this.verts[index - 1].subarray(0, size);
-		} else {
-			// remove empty array
-			index--;
+			verts[index - 1] = verts[index - 1].subarray(0, size + verts[index - 1].length);
 		}
 
-		this.verts.length = index;
+		verts.length = index;
 		this._length = val;
 	}
 
