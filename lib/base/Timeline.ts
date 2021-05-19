@@ -592,15 +592,30 @@ export class Timeline {
 		const masks: Array<DisplayObject> = new Array<DisplayObject>();
 		const numMasks: number = timeline.properties_stream_int[i++];
 
+		const numOldMasks: number = child.masks ? child.masks.length : 0;
+		for (let m: number = 0; m < numOldMasks; m++) {
+			const oldMask = child.masks[m];
+			if (!oldMask.isTimelineMask) {
+				masks.push(oldMask);
+			} else {
+				oldMask.isTimelineMask = false;
+			}
+		}
+
 		if (numMasks == 0) {
-			child.masks = null;
+			child.masks = masks.length > 0 ? masks : null;
 			return;
 		}
+
 		//mask may not exist if a goto command moves the playhead to a point in the timeline after
 		//one of the masks in a mask array has already been removed. Therefore a check is needed.
 		for (let m: number = 0; m < numMasks; m++)
-			if ((mask = target_mc.getTimelineChildAtSessionID(timeline.properties_stream_int[i++])))
+			if ((mask = target_mc.getTimelineChildAtSessionID(timeline.properties_stream_int[i++]))) {
+				// @todo: we should have ref to maskee on mask, so that we can set maskee.maskMode = false
+				// if mask is used as property-mask on other object
+				mask.isTimelineMask = true;
 				masks.push(mask);
+			}
 
 		child.masks = masks;
 	}

@@ -209,6 +209,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	private _visible: boolean = true;
 	private _maskId: number = -1;
 	public _masks: Array<DisplayObject>;
+	public isTimelineMask: boolean;
 
 	private _mouseEnabled: boolean = true;
 
