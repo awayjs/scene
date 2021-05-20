@@ -35,7 +35,7 @@ import {
 	ElementsType,
 } from '@awayjs/renderer';
 
-import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
+import { DisplayObjectContainer } from './DisplayObjectContainer';
 import { ControllerBase } from '../controllers/ControllerBase';
 import { IBitmapDrawable } from '../base/IBitmapDrawable';
 import { FocusEvent } from '../events/FocusEvent';
@@ -208,8 +208,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	protected _transform: Transform;
 	private _visible: boolean = true;
 	private _maskId: number = -1;
-	public _masks: Array<DisplayObject>;
-	public isTimelineMask: boolean;
+
+	protected _masks: Array<DisplayObject>;
+	protected _scriptMask: DisplayObject;
 
 	private _mouseEnabled: boolean = true;
 
@@ -840,7 +841,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 			this._registrationMatrix3D._rawData[14] = -value.z / this._transform.scale.z;
 		}
 
-		this._registrationMatrix3D.invalidatePosition();
+		this._registrationMatrix3D!.invalidatePosition();
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
@@ -1357,21 +1358,97 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		this._invalidateHierarchicalProperty(HierarchicalProperty.VISIBLE);
 	}
 
+	private _mergeMasks(timeline: Array<DisplayObject> | null, script: DisplayObject | null): Array<DisplayObject> {
+		if (!timeline && !script) {
+			return null;
+		}
+
+		// we can not have mask array, create it
+		if (!timeline && script) {
+			script.maskMode = true;
+			return [script];
+		}
+
+		// and make sure that we not have same script mask in it
+		if (script && !timeline.includes(script)) {
+			timeline.push(script);
+		}
+
+		// and make sure that mask mode enabled
+		for (const mask of timeline) {
+			mask.maskMode = true;
+		}
+
+		return timeline;
+	}
+
+	/**
+	 *
+	 * @param mask Masked element, that can be used from script without corruption of timeline mask
+	 */
+	public set scriptMask(mask: DisplayObject | null) {
+		if (mask === this._scriptMask) return;
+
+		// remove older script mask, _mask array for this case can't be null
+		if (this._scriptMask) {
+			const index = this._masks.indexOf(this._scriptMask);
+
+			if (index !== -1) {
+				this._masks.splice(index, 1);
+			}
+		}
+
+		this._scriptMask = mask;
+		this._masks = this._mergeMasks(this._masks, mask);
+
+		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
+	}
+
+	public get scriptMask() {
+		return this._scriptMask;
+	}
+
+	/**
+	 * Update mask from timeline and take account that can be a scriptMask
+	 *
+	 * @param masks Masks from timeline
+	 */
+	public updateTimelineMask(masks: DisplayObject[] | null) {
+		this._masks = this._mergeMasks(masks, this._scriptMask);
+
+		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
+	}
+
 	public get masks(): Array<DisplayObject> {
 		return this._masks;
 	}
 
+	/**
+	 * @dangerous Note that we should not use this setter, right way to use `scriptMask` and `updateTimelineMask`
+	 * @param value
+	 */
 	public set masks(value: Array<DisplayObject>) {
 		if (this._masks == value)
 			return;
 
 		this._masks = value;
 
-		//make sure maskMode is set to true for all masks
-		if (value != null && value.length) {
-			const len: number = value.length;
-			for (let i: number = 0; i < len; i++)
+		// this is edge case, if we set masks direct,
+		// this means that we should reset _scriptMask when it not present in input mask
+		if (!value || !value.length) {
+			this._scriptMask = null;
+		} else {
+			const len = value.length;
+			let hasScriptMask = false;
+
+			for (let i  = 0; i < len; i++) {
 				value[i].maskMode = true;
+				hasScriptMask = hasScriptMask || (value[i] === this._scriptMask);
+			}
+
+			if (this._scriptMask && !hasScriptMask) {
+				this._scriptMask = null;
+			}
 		}
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
@@ -1481,12 +1558,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		//setup transform listeners
 		this._transform.addEventListener(
 			TransformEvent.INVALIDATE_MATRIX3D,
-			(event: TransformEvent) => this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM)
+			(_event: TransformEvent) => this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM)
 		);
 
 		this._transform.addEventListener(
 			TransformEvent.INVALIDATE_COLOR_TRANSFORM,
-			(event: TransformEvent) => this._invalidateHierarchicalProperty(HierarchicalProperty.COLOR_TRANSFORM)
+			(_event: TransformEvent) => this._invalidateHierarchicalProperty(HierarchicalProperty.COLOR_TRANSFORM)
 		);
 
 		//bounding volume dictonary
@@ -1539,8 +1616,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		displayObject.isSlice9ScaledMC = this.isSlice9ScaledMC;
 		displayObject.scale9Grid = this.scale9Grid?.clone();
 
-		if (this._masks)
-			displayObject.masks = this._masks;
+		if (this._masks) {
+			// clone mask tree, to avoid corruption
+			// if _scriptMask is presented, it already was exist in _mask array
+			displayObject._masks = this._masks.slice();
+			displayObject._scriptMask = this._scriptMask;
+			// manually call invalidation
+			displayObject._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
+		}
 
 		this._transform.copyRawDataTo(displayObject._transform);
 	}
@@ -1566,13 +1649,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		this._pickObject = null;
 
 		this._masks = null;
+		this._scriptMask = null;
 	}
 
 	/**
 	 * Rotates the 3d object around to face a point defined relative
 	 * to the local coordinates of the parent <code>ObjectContainer3D</code>.
 	 *
-	 * @param    target        The vector defining the point to be looked at
+	 * @param    scenePosition        The vector defining the point to be looked at
 	 * @param    upAxis        An optional vector used to define the desired
 	 * up orientation of the 3d object after rotation has occurred
 	 */

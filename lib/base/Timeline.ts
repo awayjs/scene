@@ -585,39 +585,24 @@ export class Timeline {
 	}
 
 	public static update_masks(timeline: Timeline, child: DisplayObject, target_mc: MovieClip, i: number): void {
-		// an object could have amultiple groups of masks, in case a graphic clip was merged into the timeline
-		// this is not implmeented in the runtime yet
-		// for now, a second mask-groupd would overwrite the first one
-		let mask: DisplayObject;
-		const masks: Array<DisplayObject> = new Array<DisplayObject>();
-		const numMasks: number = timeline.properties_stream_int[i++];
+		// an object could have a multiple groups of masks, in case a graphic clip was merged into the timeline
+		// this is not implemented in the runtime yet
+		// for now, a second mask-group would overwrite the first one
+		const masks: Array<DisplayObject> = [];
+		const numMasks = timeline.properties_stream_int[i++];
 
-		const numOldMasks: number = child.masks ? child.masks.length : 0;
-		for (let m: number = 0; m < numOldMasks; m++) {
-			const oldMask = child.masks[m];
-			if (!oldMask.isTimelineMask) {
-				masks.push(oldMask);
-			} else {
-				oldMask.isTimelineMask = false;
-			}
-		}
-
-		if (numMasks == 0) {
-			child.masks = masks.length > 0 ? masks : null;
+		if (numMasks === 0) {
+			child.updateTimelineMask(null);
 			return;
 		}
 
 		//mask may not exist if a goto command moves the playhead to a point in the timeline after
 		//one of the masks in a mask array has already been removed. Therefore a check is needed.
-		for (let m: number = 0; m < numMasks; m++)
-			if ((mask = target_mc.getTimelineChildAtSessionID(timeline.properties_stream_int[i++]))) {
-				// @todo: we should have ref to maskee on mask, so that we can set maskee.maskMode = false
-				// if mask is used as property-mask on other object
-				mask.isTimelineMask = true;
-				masks.push(mask);
-			}
+		for (let m = 0; m < numMasks; m++) {
+			masks.push(target_mc.getTimelineChildAtSessionID(timeline.properties_stream_int[i + m]));
+		}
 
-		child.masks = masks;
+		child.updateTimelineMask(masks);
 	}
 
 	public static update_name(timeline: Timeline, child: DisplayObject, target_mc: MovieClip, i: number): void {
