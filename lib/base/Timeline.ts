@@ -301,8 +301,10 @@ export class Timeline {
 	 * @param target_mc
 	 */
 	public getCurrentFrameLabel(target_mc: MovieClip): string {
+		const firstFrameIdxOfCurKeyFrame = this.keyframe_to_frameidx[target_mc.constructedKeyFrameIndex];
 		for (const key in this._labels) {
-			if (this._labels[key].keyFrameIndex == target_mc.constructedKeyFrameIndex) {
+			if (this._labels[key].keyFrameIndex == target_mc.constructedKeyFrameIndex &&
+				firstFrameIdxOfCurKeyFrame == target_mc.currentFrameIndex) {
 				return this._labels[key].name;
 			}
 		}
