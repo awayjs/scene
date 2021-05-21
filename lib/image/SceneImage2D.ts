@@ -382,13 +382,6 @@ export class SceneImage2D extends BitmapImage2D {
 		this.copyPixels(from, this._rect, new Point(0,0));
 	}
 
-	public clone(): SceneImage2D {
-		const clone = SceneImage2D.getImage(this.width, this.height, this.transparent, null, false, this._stage);
-		this.addNestedReference(clone);
-
-		return clone;
-	}
-
 	/**
 	 * Fills a rectangular area of pixels with a specified ARGB color.
 	 *
@@ -443,7 +436,7 @@ export class SceneImage2D extends BitmapImage2D {
 	 * <code>mergeAlpha</code> property to <code>true</code>. By default, the
 	 * <code>mergeAlpha</code> property is <code>false</code>.</p>
 	 *
-	 * @param sourceBitmapImage2D The input bitmap image from which to copy pixels.
+	 * @param source The input bitmap image from which to copy pixels.
 	 *                         The source image can be a different BitmapImage2D
 	 *                         instance, or it can refer to the current
 	 *                         BitmapImage2D instance.
@@ -452,7 +445,7 @@ export class SceneImage2D extends BitmapImage2D {
 	 * @param destPoint        The destination point that represents the
 	 *                         upper-left corner of the rectangular area where
 	 *                         the new pixels are placed.
-	 * @param alphaBitmapImage2D  A secondary, alpha BitmapImage2D object source.
+	 * @param alphaBitmapData  A secondary, alpha BitmapImage2D object source.
 	 * @param alphaPoint       The point in the alpha BitmapImage2D object source
 	 *                         that corresponds to the upper-left corner of the
 	 *                         <code>sourceRect</code> parameter.
@@ -471,6 +464,32 @@ export class SceneImage2D extends BitmapImage2D {
 
 		// need drop alpha from source when target is not has alpha
 		mergeAlpha = this.transparent !== source.transparent || mergeAlpha;
+
+		// CPU based copy, not require run GPU based copy
+		// block is equal, one of image not uploaded yet
+		if (sourceRect.equals(this._rect) &&
+			this._rect.equals(source.rect) &&
+			!mergeAlpha && (!this.wasUpload || !source.wasUpload)
+		) {
+			const data = source.getDataInternal(true);
+
+			// inline, instead of setPixels, because it use a lot of checks
+			if (this._data) {
+				this._data.set(data);
+			} else {
+				this._data = data.slice();
+			}
+
+			this.invalidateGPU();
+			return;
+		}
+
+		if (source.width * source.height <= Settings.CPU_COPY_PIXELS_COUNT && !mergeAlpha) {
+			// todo Not implemented yet, need to implement and check performance change
+			// 	i think that increase some small operation performance,
+			// 	because copy by GPU required upload array to VRAM,
+			// 	and games that use set/get pixels and copyPixels only for math process not required use GPU copy
+		}
 
 		if (this._initalFillColor !== null) {
 			this.fillRect(this._rect, this._initalFillColor);
