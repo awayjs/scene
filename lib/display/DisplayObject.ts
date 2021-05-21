@@ -680,11 +680,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	 * <code>null</code>.</p>
 	 */
 	public set mask(value: DisplayObject) {
-		if (value) {
-			value.maskMode = true;
-		}
-		if (!this.masks) this.masks = [];
-		this.masks.push(value);
+		this.scriptMask = value;
 	}
 
 	public get maskMode(): boolean {
