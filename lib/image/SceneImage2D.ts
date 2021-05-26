@@ -480,6 +480,8 @@ export class SceneImage2D extends BitmapImage2D {
 				this._data = data.slice();
 			}
 
+			// we should reset initial color, because not require fill it after copyPixel
+			this._initalFillColor = null;
 			this.invalidateGPU();
 			return;
 		}
