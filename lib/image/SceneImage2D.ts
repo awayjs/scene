@@ -467,7 +467,9 @@ export class SceneImage2D extends BitmapImage2D {
 
 		// CPU based copy, not require run GPU based copy
 		// block is equal, one of image not uploaded yet
-		if (sourceRect.equals(this._rect) &&
+		// and source image no require SYNC
+		if (!(<SceneImage2D>source)._imageDataDirty &&
+			sourceRect.equals(this._rect) &&
 			this._rect.equals(source.rect) &&
 			!mergeAlpha && (!this.wasUpload || !source.wasUpload)
 		) {
@@ -480,8 +482,11 @@ export class SceneImage2D extends BitmapImage2D {
 				this._data = data.slice();
 			}
 
+			// we should sync this, because we can apply PMA twice, that not needed for us
+			this._unpackPMA = (<any> source)._unpackPMA;
 			// we should reset initial color, because not require fill it after copyPixel
 			this._initalFillColor = null;
+			this._imageDataDirty = false;
 			this.invalidateGPU();
 			return;
 		}
