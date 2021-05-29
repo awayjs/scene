@@ -1371,8 +1371,16 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		}
 
 		// and make sure that mask mode enabled
-		for (const mask of timeline) {
-			mask.maskMode = true;
+		for (let i = timeline.length - 1; i >= 0 ; i--) {
+			const m = timeline[i];
+
+			if (!m) {
+				console.warn('[DisplayObject] Timeline mask has null value, skipping it');
+				timeline.splice(i, 1);
+				debugger;
+			} else {
+				m.maskMode = true;
+			}
 		}
 
 		return timeline;
