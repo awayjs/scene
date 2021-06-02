@@ -29,8 +29,13 @@ export class MovieClip extends Sprite {
 	public static movieClipSoundsManagerClass = null;
 
 	private static _movieClips: Array<MovieClip> = new Array<MovieClip>();
+	private static _activeSounds: Record<number, WaveAudio[]> = {};
+	private static _activeSoundsOwners: Set<MovieClip> = new Set<MovieClip>();
 
-	private static _activeSounds: any = {};
+	public static stopAllSounds() {
+		MovieClip._activeSoundsOwners.forEach(e => e && e.stopAllSounds());
+		MovieClip._activeSoundsOwners.clear();
+	}
 
 	public static assetType: string = '[asset MovieClip]';
 
@@ -183,9 +188,13 @@ export class MovieClip extends Sprite {
 		sound.loopsToPlay = loopsToPlay;
 		sound.play(0, false);
 		this._sounds[id] = sound;
-		if (!MovieClip._activeSounds[id])
+
+		if (!MovieClip._activeSounds[id]) {
 			MovieClip._activeSounds[id] = [];
+		}
+
 		MovieClip._activeSounds[id].push(sound);
+		MovieClip._activeSoundsOwners.add(this);
 	}
 
 	public stopSounds(soundID: any = null) {
@@ -200,6 +209,11 @@ export class MovieClip extends Sprite {
 			}
 			this._sounds = {};
 		}
+
+		if (Object.getOwnPropertyNames(this._sounds).length === 0) {
+			MovieClip._activeSoundsOwners.delete(this);
+		}
+
 		const len: number = this._children.length;
 		let child: DisplayObject;
 		for (let i: number = 0; i < len; ++i) {
@@ -281,11 +295,23 @@ export class MovieClip extends Sprite {
 			this._sounds[id].stop();
 			delete this._sounds[id];
 		}
+
+		if (Object.getOwnPropertyNames(this._sounds).length === 0) {
+			MovieClip._activeSoundsOwners.delete(this);
+		}
+
 		if (MovieClip._activeSounds[id]) {
 			for (let i: number = 0; i < MovieClip._activeSounds[id].length; i++) {
 				MovieClip._activeSounds[id][i].stop();
 			}
 			delete MovieClip._activeSounds[id];
+		}
+	}
+
+	public stopAllSounds() {
+		const keys = Object.keys(this._sounds);
+		for (const k of keys) {
+			this.stopSounds(k);
 		}
 	}
 
