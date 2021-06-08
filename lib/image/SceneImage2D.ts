@@ -9,6 +9,7 @@ import { Settings } from '../Settings';
 import {
 	ColorTransform,
 	Matrix,
+	Matrix3D,
 	Rectangle,
 	Point,
 	PerspectiveProjection,
@@ -290,8 +291,8 @@ export class SceneImage2D extends BitmapImage2D {
 		SceneImage2D._renderer.view.backgroundAlpha = 0;
 		SceneImage2D._renderer.view.projection = projection;
 		SceneImage2D._renderer.view.projection.transform = new Transform();
+		SceneImage2D._renderer.view.projection.transform.scaleTo(1, -1, 1);
 		SceneImage2D._renderer.view.projection.transform.moveTo(0, 0, -1000);
-		SceneImage2D._renderer.view.projection.transform.lookAt(new Vector3D());
 
 		SceneImage2D._renderer.renderableSorter = null;//new RenderableSort2D();
 
@@ -786,7 +787,7 @@ export class SceneImage2D extends BitmapImage2D {
 		let target: Image2D = this;
 
 		// lazy filling
-		// we require fill image with initial color, becuase we not doing this immediate
+		// we require fill image with initial color, because we not doing this immediate
 		if (!nativeMSAA  && this._initalFillColor !== null) {
 			this.fillRect(this._rect, this._initalFillColor);
 			this._initalFillColor = null;
@@ -818,33 +819,30 @@ export class SceneImage2D extends BitmapImage2D {
 			}
 		}
 
-		// need correcting a root because maybe flipped around Z
-		const zFlip = source.transform.matrix3D._rawData[10];
+		const transform = renderer.view.projection.transform;
+		const mat3d = transform.matrix3D;
+		mat3d.identity();
 
 		if (matrix) {
-
-			const m = root.transform.matrix3D;
-			m.identity();
-
-			m._rawData[0] = matrix.a;
-			m._rawData[1] = -matrix.b;
-			m._rawData[4] = matrix.c;
-			m._rawData[5] = -matrix.d;
-			m._rawData[10] = zFlip;
-			m._rawData[12] = matrix.tx;
-			m._rawData[13] = this._rect.height - matrix.ty;
-
-			root.transform.invalidateComponents();
-
-		} else {
-			root.transform.rotateTo(0,0,0);
-			root.transform.scaleTo(1, -1, 1);
-			root.transform.moveTo(0, this._rect.height,0);
+			const raw = mat3d._rawData;
+			raw[0] = matrix.a;
+			raw[1] = matrix.b;
+			raw[4] = matrix.c;
+			raw[5] = matrix.d;
+			raw[10] = 1;
+			raw[12] = matrix.tx;
+			raw[13] = matrix.ty;
 		}
 
-		renderer.antiAlias = (internal ? this.antialiasQuality :  (<any>target).antialiasQuality) || 0;
-		renderer.view.target = target;
+		mat3d.appendScale(1, -1, 1);
+		mat3d.appendTranslation(0, this._rect.height, 1000);
 
+		mat3d.invert();
+		transform.matrix3D = mat3d;
+
+		renderer.antiAlias = (internal ? this.antialiasQuality :  (<any>target).antialiasQuality) || 0;
+
+		renderer.view.target = target;
 		renderer.view.projection.scale = 1000 / this._rect.height;
 
 		// shift view, because target can be more
@@ -866,7 +864,6 @@ export class SceneImage2D extends BitmapImage2D {
 		//SceneImage2D.scene.view.target=this;
 		//SceneImage2D.scene.renderer.disableClear = !this._locked;
 
-		//render
 		renderer.render();
 
 		// reset render to default value
@@ -876,7 +873,7 @@ export class SceneImage2D extends BitmapImage2D {
 		rootNode.removeChildAt(0);
 
 		if (useTemp) {
-			// becasue we copy MSAA into no msaa, it should passed as BLIT
+			// because we copy MSAA into no msaa, it should passed as BLIT
 			this._stage.filterManager.copyPixels(
 				target,
 				this,
