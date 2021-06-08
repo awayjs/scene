@@ -17,6 +17,7 @@ import {
 	Image2D,
 	ImageUtils,
 	ContextGLTriangleFace,
+	ContextGLCompareMode
 } from '@awayjs/stage';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 
@@ -383,8 +384,8 @@ export class _Render_Billboard extends _Render_RenderableBase {
 		surfaceSelector: number = 0, mipmapSelector: number = 0, maskConfig: number = 0): void {
 
 		// disable cull, because for render to texture it is bugged
-		// this._stage.context.setCulling(ContextGLTriangleFace.NONE);
-
+		// we flip normals
+		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
 		super.executeRender(enableDepthAndStencil, surfaceSelector, mipmapSelector, maskConfig);
 	}
 

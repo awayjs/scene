@@ -9,7 +9,6 @@ import { Settings } from '../Settings';
 import {
 	ColorTransform,
 	Matrix,
-	Matrix3D,
 	Rectangle,
 	Point,
 	PerspectiveProjection,
@@ -367,7 +366,7 @@ export class SceneImage2D extends BitmapImage2D {
 	}
 
 	public unload() {
-		// query asynce unload
+		// query async unload
 		const t = this.syncData(true);
 
 		// strict quard
@@ -834,6 +833,8 @@ export class SceneImage2D extends BitmapImage2D {
 			raw[13] = matrix.ty;
 		}
 
+		// todo By this line we flip normals, and cull will be broken
+		// 	NEED FIX THIS ASAP, or flip cull state
 		mat3d.appendScale(1, -1, 1);
 		mat3d.appendTranslation(0, this._rect.height, 1000);
 
