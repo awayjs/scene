@@ -188,13 +188,18 @@ export class MovieClip extends Sprite {
 			// and re-emit complete event
 			data.onComplete && data.onComplete();
 
-			const index = MovieClip._activeSounds[data.id].indexOf(data.channel);
-			MovieClip._activeSounds[data.id].splice(index, 1);
+			if (MovieClip._activeSounds[data.id]) {
+				const index = MovieClip._activeSounds[data.id].indexOf(data.channel);
 
-			// because we reset default behavior of sound - we should stop it manually
-			if (MovieClip._activeSounds[data.id].length === 0) {
-				this.stopSound(data.id);
+				if (index >= 0)
+					MovieClip._activeSounds[data.id].splice(index, 1);
+
+				// because we reset default behavior of sound - we should stop it manually
+				if (MovieClip._activeSounds[data.id].length === 0) {
+					this.stopSound(data.id);
+				}
 			}
+			data.channel.onSoundComplete = null;
 			return;
 		}
 
