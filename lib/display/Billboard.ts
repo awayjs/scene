@@ -218,6 +218,10 @@ export class Billboard extends DisplayObjectContainer {
 	}
 
 	public _acceptTraverser(traverser: IEntityTraverser): void {
+		const texture = this.material.getTextureAt(0);
+		if (!texture) {
+			return;
+		}
 		traverser.applyTraversable(this);
 	}
 
