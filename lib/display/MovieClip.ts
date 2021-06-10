@@ -1,4 +1,4 @@
-import { WaveAudio } from '@awayjs/core';
+import { WaveAudio, IAudioChannel } from '@awayjs/core';
 import { PartitionBase, EntityNode } from '@awayjs/view';
 import { Graphics } from '@awayjs/graphics';
 import { IMovieClipAdapter } from '../adapters/IMovieClipAdapter';
@@ -29,7 +29,7 @@ export class MovieClip extends Sprite {
 	public static movieClipSoundsManagerClass = null;
 
 	private static _movieClips: Array<MovieClip> = new Array<MovieClip>();
-	private static _activeSounds: Record<number, WaveAudio[]> = {};
+	private static _activeSounds: Record<number, IAudioChannel[]> = {};
 	private static _activeSoundsOwners: Set<MovieClip> = new Set<MovieClip>();
 
 	public static stopAllSounds() {
@@ -181,19 +181,53 @@ export class MovieClip extends Sprite {
 		this._timeline = timeline || new Timeline();
 	}
 
-	public startSound(id: any, sound: WaveAudio, loopsToPlay: number) {
-		if (this._sounds[id]) {
-			this._sounds[id].stop();
+	private _channelStop(data: { channel: IAudioChannel, loopsToPlay: number, onComplete: () => void, id: any }) {
+		data.loopsToPlay--;
+
+		if (data.loopsToPlay <= 0) {
+			// and re-emit complete event
+			data.onComplete && data.onComplete();
+
+			const index = MovieClip._activeSounds[data.id].indexOf(data.channel);
+			MovieClip._activeSounds[data.id].splice(index, 1);
+
+			// because we reset default behavior of sound - we should stop it manually
+			if (MovieClip._activeSounds[data.id].length === 0) {
+				this.stopSound(data.id);
+			}
+			return;
 		}
-		sound.loopsToPlay = loopsToPlay;
-		sound.play(0, false);
+
+		data.channel.restart();
+	}
+
+	public startSound(
+		id: any,
+		sound: WaveAudio,
+		loopsToPlay: number,
+		onComplete: () => void
+	) {
+
+		const channel: IAudioChannel = sound.play(0, false);
+
+		// todo create WaveAudio API that will support multiple unique listeners for channels
+		// reset before assign new event to channel
+		// if we assign event to channel before reset from sound, sound will reset event from channel
+		sound.onSoundComplete = null;
+		// now we detach WaveAudio event fully
+		const data = {
+			channel, loopsToPlay, onComplete, id
+		};
+		channel.onSoundComplete = () => this._channelStop(data);
+
 		this._sounds[id] = sound;
 
 		if (!MovieClip._activeSounds[id]) {
 			MovieClip._activeSounds[id] = [];
 		}
 
-		MovieClip._activeSounds[id].push(sound);
+		// store channels, stop it instead of sounds
+		MovieClip._activeSounds[id].push(channel);
 		MovieClip._activeSoundsOwners.add(this);
 	}
 
@@ -277,10 +311,12 @@ export class MovieClip extends Sprite {
 		if (this._soundVolume == value) {
 			return;
 		}
+
 		this._soundVolume = value;
 		for (const key in this._sounds) {
 			this._sounds[key].volume = value;
 		}
+
 		const len: number = this._children.length;
 		let child: DisplayObject;
 		for (let i: number = 0; i < len; ++i) {
