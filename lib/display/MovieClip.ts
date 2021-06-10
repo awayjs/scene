@@ -205,7 +205,7 @@ export class MovieClip extends Sprite {
 		id: any,
 		sound: WaveAudio,
 		loopsToPlay: number,
-		onComplete: () => void
+		onComplete?: () => void
 	) {
 
 		const channel: IAudioChannel = sound.play(0, false);
