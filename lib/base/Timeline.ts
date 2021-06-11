@@ -500,12 +500,7 @@ export class Timeline {
 						return;
 					}
 
-					if (audioProps.props.loopCount > 0) {
-						child.loopsToPlay = audioProps.props.loopCount;
-					} else {
-						child.loopsToPlay = 0;
-					}
-					target_mc.startSound(audioProps.id, child, child.loopsToPlay);
+					target_mc.startSound(audioProps.id, child, audioProps.props.loopCount || 0);
 				} else if (audioProps.cmd == 16) {// stop sound
 					target_mc.stopSound(audioProps.id);
 				}
