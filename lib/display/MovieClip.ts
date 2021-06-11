@@ -181,31 +181,6 @@ export class MovieClip extends Sprite {
 		this._timeline = timeline || new Timeline();
 	}
 
-	private _channelStop(data: { channel: IAudioChannel, loopsToPlay: number, onComplete: () => void, id: any }) {
-		data.loopsToPlay--;
-
-		if (data.loopsToPlay <= 0) {
-			// and re-emit complete event
-			data.onComplete && data.onComplete();
-
-			if (MovieClip._activeSounds[data.id]) {
-				const index = MovieClip._activeSounds[data.id].indexOf(data.channel);
-
-				if (index >= 0)
-					MovieClip._activeSounds[data.id].splice(index, 1);
-
-				// because we reset default behavior of sound - we should stop it manually
-				if (MovieClip._activeSounds[data.id].length === 0) {
-					this.stopSound(data.id);
-				}
-			}
-			data.channel.onSoundComplete = null;
-			return;
-		}
-
-		data.channel.restart();
-	}
-
 	public startSound(
 		id: any,
 		sound: WaveAudio,
@@ -213,17 +188,9 @@ export class MovieClip extends Sprite {
 		onComplete?: () => void
 	) {
 
-		const channel: IAudioChannel = sound.play(0, false);
+		const channel: IAudioChannel = sound.play(0, loopsToPlay);
 
-		// todo create WaveAudio API that will support multiple unique listeners for channels
-		// reset before assign new event to channel
-		// if we assign event to channel before reset from sound, sound will reset event from channel
-		sound.onSoundComplete = null;
-		// now we detach WaveAudio event fully
-		const data = {
-			channel, loopsToPlay, onComplete, id
-		};
-		channel.onSoundComplete = () => this._channelStop(data);
+		channel.onSoundComplete = onComplete;
 
 		this._sounds[id] = sound;
 
@@ -241,10 +208,24 @@ export class MovieClip extends Sprite {
 			if (this._sounds[soundID]) {
 				this._sounds[soundID].stop();
 				delete this._sounds[soundID];
+
+				const channels = MovieClip._activeSounds[soundID];
+				if (channels) {
+					for (const c of channels) c.stop();
+				}
+
+				delete MovieClip._activeSounds[soundID];
 			}
 		} else {
 			for (const key in this._sounds) {
 				this._sounds[key].stop();
+
+				const channels = MovieClip._activeSounds[soundID];
+				if (channels) {
+					for (const c of channels) c.stop();
+				}
+
+				delete MovieClip._activeSounds[key];
 			}
 			this._sounds = {};
 		}
@@ -260,8 +241,10 @@ export class MovieClip extends Sprite {
 			if (child.isAsset(MovieClip))
 				(<MovieClip>child).stopSounds(soundID);
 		}
+
 		this.stopCurrentStream(this._currentFrameIndex);
 		MovieClip._activeSounds = {};
+
 		if (this._soundStreams) {
 			this._soundStreams.syncSounds(0, false, this.parent);
 		}
