@@ -1377,7 +1377,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 			if (!m) {
 				console.warn('[DisplayObject] Timeline mask has null value, skipping it');
 				timeline.splice(i, 1);
-				debugger;
 			} else {
 				m.maskMode = true;
 			}
