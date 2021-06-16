@@ -28,7 +28,7 @@ import { Stage,
 
 import { DefaultRenderer, RenderGroup, Style } from '@awayjs/renderer';
 
-// empty matrix for transfrorm reset
+// empty matrix for transform reset
 const TMP_POINT = new Point(0,0);
 
 /**
@@ -778,6 +778,7 @@ export class SceneImage2D extends BitmapImage2D {
 		// when we should use MSAA, we will create temporary image and draw to it
 		const internal = this.canUseMSAAInternaly;
 		const nativeMSAA = (
+			!source.isAsset(Billboard) &&
 			this._stage.context.glVersion === 2 && // can be used because a webgl2
 			Settings.ALLOW_FORCE_MSAA > 1 && // because a quality is more that 1
 			!internal); // and not internal
