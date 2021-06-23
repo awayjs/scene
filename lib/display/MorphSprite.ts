@@ -7,6 +7,7 @@ import {
 	GraphicsFillStyle,
 	GradientFillStyle,
 	BitmapFillStyle,
+	SolidFillStyle,
 	GraphicsStrokeStyle,
 	Graphics,
 	GraphicsPath,
@@ -74,33 +75,44 @@ export class MorphSprite extends Sprite {
 		this.setRatio(0);
 	}
 
-	private _blendStyle(startPath: GraphicsPath, endPath: GraphicsPath, newPath: GraphicsPath, ratio: number): void {
+	private _blendStyle(
+		startPath: GraphicsPath,
+		endPath: GraphicsPath,
+		newPath: GraphicsPath,
+		ratio: number
+	): void {
+
 		const ratioStart = 1 - ratio;
 		const ratioEnd = ratio;
 
 		let color: number;
 		let alpha: number;
 
+		const startFillStyle = startPath.style.fillStyle;
+		const endFillStyle = endPath.style.fillStyle;
+
+		let resultFillStyle: SolidFillStyle | BitmapFillStyle | GradientFillStyle;
+
 		if (startPath.style.data_type != endPath.style.data_type) {
 			throw ('Error in morph data - different styles of pathes');
 		}
 
-		switch (startPath.style.data_type) {
-			case GraphicsFillStyle.data_type: {
-				const startStyle = (<GraphicsFillStyle>startPath.style);
-				const endStyle = (<GraphicsFillStyle>endPath.style);
+		switch (startFillStyle.data_type) {
+			case SolidFillStyle.data_type: {
+				const startStyle = <SolidFillStyle> startFillStyle;
+				const endStyle = <SolidFillStyle> endFillStyle;
 
 				alpha = ratioStart * startStyle.alpha + ratioEnd * endStyle.alpha;
 				color = ColorUtils.interpolateFloat32Color(startStyle.color, endStyle.color, ratio);
-				newPath.style = new GraphicsFillStyle(color, alpha);
+				resultFillStyle = new SolidFillStyle(color, alpha);
 				break;
 			}
 			case GradientFillStyle.data_type: {
 				const newColors = [];
 				const newRatios = [];
 				const newAlphas = [];
-				const startStyle = (<GradientFillStyle>startPath.style);
-				const endStyle = (<GradientFillStyle>endPath.style);
+				const startStyle = (<GradientFillStyle>startFillStyle);
+				const endStyle = (<GradientFillStyle>endFillStyle);
 				const clen = startStyle.colors.length;
 
 				for (let c = 0; c < clen; c++) {
@@ -125,7 +137,7 @@ export class MorphSprite extends Sprite {
 				newTrans.tx = startTrans.tx * ratioStart + endTrans.tx * ratioEnd;
 				newTrans.ty = startTrans.ty * ratioStart + endTrans.ty * ratioEnd;
 
-				newPath.style = new GradientFillStyle(
+				resultFillStyle = new GradientFillStyle(
 					startStyle.type,
 					newColors,
 					newAlphas,
@@ -140,8 +152,8 @@ export class MorphSprite extends Sprite {
 				//todo
 				//console.warn("MorphSprite: BitmapFillStyle not implemented!");
 
-				const startStyle = (<BitmapFillStyle>startPath.style);
-				const endStyle = (<BitmapFillStyle>endPath.style);
+				const startStyle = (<BitmapFillStyle>startFillStyle);
+				const endStyle = (<BitmapFillStyle>endFillStyle);
 
 				//todo: interpolate uvtransform
 				const startTrans = startStyle.matrix;
@@ -155,7 +167,7 @@ export class MorphSprite extends Sprite {
 				newTrans.tx = startTrans.tx * ratioStart + endTrans.tx * ratioEnd;
 				newTrans.ty = startTrans.ty * ratioStart + endTrans.ty * ratioEnd;
 
-				newPath.style = new BitmapFillStyle(
+				resultFillStyle = new BitmapFillStyle(
 					startStyle.material,
 					newTrans,
 					startStyle.repeat,
@@ -163,25 +175,24 @@ export class MorphSprite extends Sprite {
 
 				break;
 			}
-			case GraphicsStrokeStyle.data_type: {
-				const startStyle = (<GraphicsStrokeStyle>startPath.style);
-				const endStyle = (<GraphicsStrokeStyle>endPath.style);
+		}
 
-				alpha = ratioStart * startStyle.alpha + ratioEnd * endStyle.alpha;
-				color = ColorUtils.interpolateFloat32Color(startStyle.color, endStyle.color, ratio);
+		if (startPath.style.data_type === GraphicsStrokeStyle.data_type) {
+			const startStyle = (<GraphicsStrokeStyle<any>>startPath.style);
+			const endStyle = (<GraphicsStrokeStyle<any>>endPath.style);
 
-				const thickness = ratioStart * startStyle.thickness + ratioEnd * endStyle.thickness;
+			const thickness = ratioStart * startStyle.thickness + ratioEnd * endStyle.thickness;
 
-				newPath.style = new GraphicsStrokeStyle(
-					color,
-					alpha,
-					thickness,
-					startStyle.jointstyle,
-					startStyle.capstyle,
-					startStyle.miter_limit,
-					startStyle.scaleMode);
-				break;
-			}
+			newPath.style = new GraphicsStrokeStyle(
+				resultFillStyle,
+				thickness,
+				startStyle.jointstyle,
+				startStyle.capstyle,
+				startStyle.miterLimit,
+				startStyle.scaleMode
+			);
+		} else {
+			newPath.style = new GraphicsFillStyle(resultFillStyle);
 		}
 	}
 
