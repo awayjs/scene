@@ -5,6 +5,7 @@ export interface ISceneSettings {
 	USE_UNSAFE_CACHE_AS_BITMAP: boolean;
 	USE_UNSAFE_SCALE_9_SLICE: boolean;
 	USE_UNSAFE_FILTERS: boolean;
+	USE_UNSAFE_BLENDS: boolean;
 	CPU_COPY_PIXELS_COUNT: number;
 }
 
@@ -36,6 +37,11 @@ export const Settings: ISceneSettings = {
 	 * @description Use applyFilter for SceneImage2D or scene graph
 	 */
 	USE_UNSAFE_FILTERS: false,
+
+	/**
+	 * @description Use blend composing, this force cacheAsBitmap
+	 */
+	USE_UNSAFE_BLENDS: false,
 	/**
 	 * @description How many pixels can be processed on CPU for `copyPixel` operation for avoid run GPU
 	 */

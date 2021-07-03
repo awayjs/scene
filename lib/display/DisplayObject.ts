@@ -378,6 +378,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	}
 
 	public get blendMode() {
+		if (!Settings.USE_UNSAFE_BLENDS) {
+			return '';
+		}
+
 		return this._blendMode;
 	}
 
