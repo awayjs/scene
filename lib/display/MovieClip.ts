@@ -74,9 +74,13 @@ export class MovieClip extends Sprite {
 	private _onMouseUp: (event: MouseEvent) => void;
 
 	private _time: number = 0;// the current time inside the animation
+
 	private _currentFrameIndex: number = -1;// the current frame
 
 	private _isPlaying: boolean = true;// false if paused or stopped
+
+	private _currentSceneIndex: number = 0;
+	private _sceneDirty: boolean = false;
 
 	private _skipAdvance: boolean;
 
@@ -91,11 +95,12 @@ export class MovieClip extends Sprite {
 	private _parentSoundVolume: number;
 
 	private _soundVolume: number;
+
 	private _skipFramesForStream: number = 0;
 
-	public buttonEnabled: boolean = true;
-
 	private _soundStreams: any;
+
+	public buttonEnabled: boolean = true;
 
 	public initSoundStream(streamInfo: any, maxFrameNum: number) {
 		if (!this._soundStreams) {
@@ -250,36 +255,50 @@ export class MovieClip extends Sprite {
 		}
 	}
 
-	public get currentScene(): IScene {
-		if (this.scenes.length == 1) {
-			if (this.scenes[0].numFrames == -1) {
-				this.scenes[0].numFrames = this.timeline.numFrames;
+	private getSceneIndex(scene: string) {
+		const scenes = this.scenes;
+
+		for (let i = 0; i < scenes.length && scene; i++) {
+			if (scenes[i].name === scene) {
+				return  i;
 			}
-			return this.scenes[0];
 		}
-		if (this.scenes.length == 0) {
-			return {
+
+		return 0;
+	}
+
+	public set currentSceneName(scene: string) {
+		const index = this.getSceneIndex(scene);
+
+		this._sceneDirty = this._currentSceneIndex !== index;
+		this._currentSceneIndex = index;
+		this._currentFrameIndex = this._scenes[index].offset;
+	}
+
+	public get currentSceneName(): string {
+		return  this.scenes[this._currentSceneIndex].name;
+	}
+
+	public get currentScene(): IScene {
+		const currentScene = this.scenes[this._currentSceneIndex];
+
+		if (currentScene.numFrames === -1) {
+			currentScene.numFrames = this.timeline.numFrames - currentScene.offset;
+		}
+
+		return currentScene;
+	}
+
+	public get scenes(): IScene[] {
+		if (this._scenes.length === 0) {
+			this._scenes[0] = {
 				name: 'Scene1',
 				offset: 0,
 				labels: [],
 				numFrames: this.timeline.numFrames,
 			};
 		}
-		let currentScene = this.scenes[0];
-		for (let i = 0; i < this.scenes.length; i++) {
-			const scene = this.scenes[i];
-			if (scene.offset > this.currentFrameIndex) {
-				break;
-			}
-			currentScene = scene;
-		}
-		if (currentScene.numFrames == -1) {
-			currentScene.numFrames = this.timeline.numFrames - currentScene.offset;
-		}
-		return currentScene;
-	}
 
-	public get scenes(): IScene[] {
 		return this._scenes;
 	}
 
@@ -474,9 +493,13 @@ export class MovieClip extends Sprite {
 		return this._timeline.numFrames;
 	}
 
-	public jumpToLabel(label: string, offset: number = 0): void {
+	public jumpToLabel(label: string, offset: number = 0): boolean {
 		// the timeline.jumpTolabel will set currentFrameIndex
+		const index = this._currentFrameIndex;
+
 		this._timeline.jumpToLabel(this, label, offset);
+
+		return index !== this._currentFrameIndex;
 	}
 
 	/**
@@ -509,6 +532,8 @@ export class MovieClip extends Sprite {
 		if (fireScripts) {
 			const numFrames: number = this._timeline.keyframe_indices.length;
 			this._isPlaying = Boolean(numFrames > 1);
+			this._currentSceneIndex = 0;
+
 			if (numFrames) {
 				this._currentFrameIndex = 0;
 				// contruct the timeline and queue the script.
@@ -525,37 +550,69 @@ export class MovieClip extends Sprite {
 
 	}
 
-	/*
-	* Setting the currentFrameIndex will move the playhead for this movieclip to the new position
-	 */
-	public get currentFrameIndex(): number {
+	public set currentFrameIndex(value: number) {
+		const scenes = this.scenes;
+
+		this._currentFrameIndex = 0;
+		for (let i = 0; i < scenes.length && scenes.length > 2; i++) {
+			if (scenes[i].offset + scenes[i].numFrames > value) {
+				break;
+			}
+
+			this._currentSceneIndex++;
+		}
+
+		this.jumpToIndex(value, this._currentSceneIndex);
+	}
+
+	public get currentFrameIndex() {
 		return this._currentFrameIndex;
 	}
 
-	public set currentFrameIndex(value: number) {
+	/*
+	* Setting the currentFrameIndex will move the playhead for this movieclip to the new position
+	 */
+	public get currentFrameIndexRelative(): number {
+		return this._currentFrameIndex - this.currentScene.offset;
+	}
+
+	public set currentFrameIndexRelative(value: number) {
+		this.jumpToIndex(value, this._currentSceneIndex);
+	}
+
+	public jumpToIndex(value: number, sceneIndex: string | number = 0): boolean {
 		let queue_script: boolean = true;
 
 		const numFrames: number = this._timeline.keyframe_indices.length;
 
 		this.resetStreamStopped();
 		if (!numFrames)
-			return;
+			return false;
+
+		sceneIndex = typeof sceneIndex === 'string'
+			? this.getSceneIndex(sceneIndex)
+			: sceneIndex;
+
+		const scene = this.scenes[sceneIndex];
 
 		if (value < 0) {
 			value = 0;
-		} else if (value >= numFrames) {
+		} else if (value >= scene.numFrames) {
 			// if value is greater than the available number of
 			// frames, the playhead is moved to the last frame in the timeline.
 			// In this case the frame specified is not considered a keyframe,
 			// no scripts should be executed in this case
-			value = numFrames - 1;
+			value = scene.numFrames - 1;
 			queue_script = false;
 		}
 
-		this._skipAdvance = false;
-		if (this._currentFrameIndex == value)
-			return;
+		value += scene.offset;
 
+		this._skipAdvance = false;
+		if (this._currentFrameIndex === value && !this._sceneDirty)
+			return false;
+
+		this._sceneDirty = false;
 		this._currentFrameIndex = value;
 
 		//console.log("_currentFrameIndex ", this.name, this._currentFrameIndex);
@@ -564,6 +621,8 @@ export class MovieClip extends Sprite {
 		//already been executed
 
 		this._timeline.gotoFrame(this, value, queue_script, false, false);
+
+		return true;
 	}
 
 	public addButtonListeners(): void {
@@ -685,15 +744,18 @@ export class MovieClip extends Sprite {
 
 		//if(this._timeline && this._timeline.numFrames>0)
 		if (this._timeline && this._timeline.numFrames > 0 && this._isPlaying && !this._skipAdvance) {
-			if (this._currentFrameIndex == this._timeline.keyframe_indices.length - 1) {
+
+			const scene = this.currentScene;
+
+			if (this._currentFrameIndex === scene.offset + scene.numFrames - 1) {
 				if (this.loop) {
 					// end of loop - jump to first frame.
-					if (this._currentFrameIndex == 0) {
+					if (this._currentFrameIndex == scene.offset) {
 						// do nothing if we are already on frame 1
 					} else {
-						this._currentFrameIndex = 0;
+						this._currentFrameIndex = scene.offset;
 						this.resetStreamStopped();
-						this._timeline.gotoFrame(this, 0, true, true, true);
+						this._timeline.gotoFrame(this, scene.offset, true, true, true);
 					}
 				} else //end of timeline, stop playing
 					this._isPlaying = false;
