@@ -374,6 +374,7 @@ export class Timeline {
 		const target_keyframe_idx: number = this.keyframe_indices[frame_idx];
 
 		if (current_keyframe_idx == target_keyframe_idx && !forceReconstruct) {
+			(<IMovieClipAdapter>target_mc.adapter).queueFrameScripts(this, frame_idx, queue_script);
 			return;
 		} else if (current_keyframe_idx + 1 == target_keyframe_idx) {
 			// target_keyframe_idx is the next keyframe. we can just use constructnext for this
