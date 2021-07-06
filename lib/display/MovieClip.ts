@@ -593,6 +593,8 @@ export class MovieClip extends Sprite {
 			? this.getSceneIndex(sceneIndex)
 			: sceneIndex;
 
+		this._currentSceneIndex = sceneIndex;
+
 		const scene = this.scenes[sceneIndex];
 
 		if (value < 0) {
