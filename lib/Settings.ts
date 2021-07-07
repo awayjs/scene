@@ -1,3 +1,5 @@
+import { BlendMode }  from '@awayjs/stage';
+
 export interface ISceneSettings {
 	ALLOW_FORCE_MSAA: number;
 	ALLOW_APPROXIMATION: number;
@@ -7,6 +9,8 @@ export interface ISceneSettings {
 	USE_UNSAFE_FILTERS: boolean;
 	USE_UNSAFE_BLENDS: boolean;
 	CPU_COPY_PIXELS_COUNT: number;
+	REMAP_BLEND_MODE: boolean;
+	BLEND_MODE_REMAP_TABLE: Record<string, string>
 }
 
 export const Settings: ISceneSettings = {
@@ -42,6 +46,17 @@ export const Settings: ISceneSettings = {
 	 * @description Use blend composing, this force cacheAsBitmap
 	 */
 	USE_UNSAFE_BLENDS: false,
+	/**
+	 * @description Remap blend modes from => to, can be used for remap a Darker to multiple and other
+	 */
+	REMAP_BLEND_MODE: true,
+
+	/**
+	 * @description Table for remapping a blend mode when it used
+	 * @see REMAP_BLEND_MODE
+	 */
+	BLEND_MODE_REMAP_TABLE: { [BlendMode.DARKEN]: BlendMode.MULTIPLY },
+
 	/**
 	 * @description How many pixels can be processed on CPU for `copyPixel` operation for avoid run GPU
 	 */

@@ -382,6 +382,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 			return '';
 		}
 
+		if (Settings.REMAP_BLEND_MODE) {
+			return Settings.BLEND_MODE_REMAP_TABLE[<string> this._blendMode] || this._blendMode;
+		}
+
 		return this._blendMode;
 	}
 
