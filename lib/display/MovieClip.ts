@@ -551,19 +551,7 @@ export class MovieClip extends Sprite {
 	}
 
 	public set currentFrameIndex(value: number) {
-		const scenes = this.scenes;
-
-		this._currentSceneIndex = 0;
-
-		for (let i = 0; i < scenes.length && scenes.length > 2; i++) {
-			if (scenes[i].offset + scenes[i].numFrames > value) {
-				break;
-			}
-
-			this._currentSceneIndex = i;
-		}
-
-		this.jumpToIndex(value, this._currentSceneIndex);
+		this.jumpToIndex(value);
 	}
 
 	public get currentFrameIndex() {
@@ -581,35 +569,53 @@ export class MovieClip extends Sprite {
 		this.jumpToIndex(value, this._currentSceneIndex);
 	}
 
-	public jumpToIndex(value: number, sceneIndex: string | number = 0): boolean {
+	public jumpToIndex(value: number, sceneIndex?: string | number): boolean {
 		let queue_script: boolean = true;
 
-		const numFrames: number = this._timeline.keyframe_indices.length;
+		let offset: number = 0;
+		let numFrames: number = this._timeline.keyframe_indices.length;
 
 		this.resetStreamStopped();
 		if (!numFrames)
 			return false;
 
-		sceneIndex = typeof sceneIndex === 'string'
-			? this.getSceneIndex(sceneIndex)
-			: sceneIndex;
+		const scenes = this.scenes;
 
-		this._currentSceneIndex = sceneIndex;
+		// scene not presented - global navigation
+		// we should compute scene index and shift frame
+		if (typeof sceneIndex === 'undefined') {
 
-		const scene = this.scenes[sceneIndex];
+			sceneIndex = 0;
+
+			for (let i = 0; i < scenes.length && scenes.length > 2; i++) {
+				if (scenes[i].offset + scenes[i].numFrames > value) {
+					break;
+				}
+
+				sceneIndex = i;
+			}
+
+		} else {
+			sceneIndex = typeof sceneIndex === 'string' ? this.getSceneIndex(sceneIndex) : sceneIndex;
+
+			offset = scenes[sceneIndex].offset;
+			numFrames = scenes[sceneIndex].numFrames;
+		}
+
+		this._currentSceneIndex =  sceneIndex;
 
 		if (value < 0) {
 			value = 0;
-		} else if (value >= scene.numFrames) {
+		} else if (value >= numFrames) {
 			// if value is greater than the available number of
 			// frames, the playhead is moved to the last frame in the timeline.
 			// In this case the frame specified is not considered a keyframe,
 			// no scripts should be executed in this case
-			value = scene.numFrames - 1;
+			value = numFrames - 1;
 			queue_script = false;
 		}
 
-		value += scene.offset;
+		value += offset;
 
 		this._skipAdvance = false;
 		if (this._currentFrameIndex === value && !this._sceneDirty)
