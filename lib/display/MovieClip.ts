@@ -598,8 +598,16 @@ export class MovieClip extends Sprite {
 		} else {
 			sceneIndex = typeof sceneIndex === 'string' ? this.getSceneIndex(sceneIndex) : sceneIndex;
 
-			offset = scenes[sceneIndex].offset;
-			numFrames = scenes[sceneIndex].numFrames;
+			const scene = scenes[sceneIndex];
+
+			// fix negative frames size on latest scene.
+			// this is because we don't know how many frames in instance time
+			if (scene.numFrames === -1) {
+				scene.numFrames = numFrames - scene.offset;
+			}
+
+			offset = scene.offset;
+			numFrames = scene.numFrames;
 		}
 
 		this._currentSceneIndex =  sceneIndex;
