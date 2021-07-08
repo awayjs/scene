@@ -553,13 +553,14 @@ export class MovieClip extends Sprite {
 	public set currentFrameIndex(value: number) {
 		const scenes = this.scenes;
 
-		this._currentFrameIndex = 0;
+		this._currentSceneIndex = 0;
+
 		for (let i = 0; i < scenes.length && scenes.length > 2; i++) {
 			if (scenes[i].offset + scenes[i].numFrames > value) {
 				break;
 			}
 
-			this._currentSceneIndex++;
+			this._currentSceneIndex = i;
 		}
 
 		this.jumpToIndex(value, this._currentSceneIndex);
