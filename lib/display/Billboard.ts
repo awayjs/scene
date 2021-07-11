@@ -218,14 +218,30 @@ export class Billboard extends DisplayObjectContainer {
 	}
 
 	public _acceptTraverser(traverser: IEntityTraverser): void {
+		if (!this.material) {
+			return;
+		}
+
 		const texture = this.material.getTextureAt(0);
+
 		if (!texture) {
 			return;
 		}
+
+		const image = this.image;
+
+		if (!image || image.isDisposed) {
+			return;
+		}
+
 		traverser.applyTraversable(this);
 	}
 
 	public get image(): Image2D {
+		if (!this.material) {
+			return null;
+		}
+
 		const texture = this.material.getTextureAt(0);
 
 		if (!texture) {
@@ -246,10 +262,11 @@ export class Billboard extends DisplayObjectContainer {
 	}
 
 	private _updateDimensions(): void {
-		const texture = this.material.getTextureAt(0);
 		const image = this.image;
 
-		if (image) {
+		if (image && !image.isDisposed) {
+			const texture = this.material.getTextureAt(0);
+
 			this._sampler = <ImageSampler> (
 					this._style?.getSamplerAt(texture)
 					|| this.material.style?.getSamplerAt(texture)
