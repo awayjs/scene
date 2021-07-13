@@ -739,12 +739,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			}
 		}
 
-		// drop verts to the state of previous word because last word may be wrapped or changed
-		// @todo this not supports selectable text for now
-		if (tf._words_amount_prev != 0)	{
-			textShape.length = tf.last_word_vertices_count || 0;
-		}
-
 		let selectedBuffSize = 0;
 		let textBuffSize = 0;
 
@@ -755,14 +749,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
 		for (let w = startWord; w < wordsCount; w += 5) {
-			if (w < tf._words_amount_prev - 5) {
-				continue;
-			}
-
-			if (w === wordsCount - 5) {
-				// last word in current text. Lets save length of textShape.vets BEFORE the last word verts applied.
-				tf.last_word_vertices_count = textShape.length;
-			}
 
 			let x = tf.words[w + 1];
 			const y = tf.words[w + 2];
@@ -817,37 +803,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 						const y2: number = y1 + ((this._font_em_size * size_multiply) * charGlyph.fnt_rect.height);
 
 						throw 'Invalid implementation, verts not raw array';
-						/*
-						ctmpTShape.verts[ctmpTShape.verts.length] = x1;
-						ctmpTShape.verts[ctmpTShape.verts.length] = y1;
-						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x;
-						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y;
-
-						ctmpTShape.verts[ctmpTShape.verts.length] = x2;
-						ctmpTShape.verts[ctmpTShape.verts.length] = y1;
-						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
-						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y;
-
-						ctmpTShape.verts[ctmpTShape.verts.length] = x2;
-						ctmpTShape.verts[ctmpTShape.verts.length] = y2;
-						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
-						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
-
-						ctmpTShape.verts[ctmpTShape.verts.length] = x1;//
-						ctmpTShape.verts[ctmpTShape.verts.length] = y1;
-						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x;
-						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y;
-
-						ctmpTShape.verts[ctmpTShape.verts.length] = x1;
-						ctmpTShape.verts[ctmpTShape.verts.length] = y2;
-						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x;
-						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
-
-						ctmpTShape.verts[ctmpTShape.verts.length] = x2;
-						ctmpTShape.verts[ctmpTShape.verts.length] = y2;
-						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.x + charGlyph.fnt_uv.width;
-						ctmpTShape.verts[ctmpTShape.verts.length] = charGlyph.fnt_uv.y - charGlyph.fnt_uv.height;
-						*/
 
 					} else {
 						if (curTShape === textShapeSelected) {
@@ -914,6 +869,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 			textShapeSelected.addChunk(buff);
 		}
+
 	}
 
 	public createPointGlyph_9679(): TesselatedFontChar {
