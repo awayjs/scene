@@ -255,6 +255,27 @@ export class MovieClip extends Sprite {
 		}
 	}
 
+	/**
+	 * Compute scene index by global frame index
+	 * @param frameIndex
+	 * @private
+	 */
+	private getSceneIndexByFrame(frameIndex: number): number {
+		const scenes = this.scenes;
+
+		if (scenes.length <= 1) {
+			return 0;
+		}
+
+		for (let i = 0; i < scenes.length; i++) {
+			if (scenes[i].offset > frameIndex) {
+				return i - 1;
+			}
+		}
+
+		return scenes.length - 1;
+	}
+
 	private getSceneIndex(scene: string) {
 		const scenes = this.scenes;
 
@@ -585,15 +606,7 @@ export class MovieClip extends Sprite {
 		// we should compute scene index and shift frame
 		if (typeof sceneIndex === 'undefined') {
 
-			sceneIndex = 0;
-
-			for (let i = 0; i < scenes.length && scenes.length > 2; i++) {
-				if (scenes[i].offset + scenes[i].numFrames > value) {
-					break;
-				}
-
-				sceneIndex = i;
-			}
+			sceneIndex = this.getSceneIndexByFrame(value);
 
 		} else {
 			sceneIndex = typeof sceneIndex === 'string' ? this.getSceneIndex(sceneIndex) : sceneIndex;
@@ -762,22 +775,22 @@ export class MovieClip extends Sprite {
 		//if(this._timeline && this._timeline.numFrames>0)
 		if (this._timeline && this._timeline.numFrames > 0 && this._isPlaying && !this._skipAdvance) {
 
-			const scene = this.currentScene;
-
-			if (this._currentFrameIndex === scene.offset + scene.numFrames - 1) {
+			if (this._currentFrameIndex === this._timeline.numFrames - 1) {
 				if (this.loop) {
-					// end of loop - jump to first frame.
-					if (this._currentFrameIndex == scene.offset) {
-						// do nothing if we are already on frame 1
-					} else {
-						this._currentFrameIndex = scene.offset;
+					if (this._currentFrameIndex !== 0) {
+						this._currentFrameIndex = 0;
+						this._currentSceneIndex = 0;
+
 						this.resetStreamStopped();
-						this._timeline.gotoFrame(this, scene.offset, true, true, true);
+						this._timeline.gotoFrame(this, 0, true, true, true);
 					}
+					// end of loop - jump to first frame.
 				} else //end of timeline, stop playing
 					this._isPlaying = false;
 			} else { // not end - construct next frame
 				this._currentFrameIndex++;
+				this._currentSceneIndex = this.getSceneIndexByFrame(this._currentFrameIndex);
+
 				this._timeline.constructNextFrame(this);
 			}
 			//console.log("advancedFrame ", this.name, this._currentFrameIndex);
