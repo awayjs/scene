@@ -29,6 +29,7 @@ export class HTMLTextProcessor {
 		//console.log("html in", input);
 
 		//input = input.replace(new RegExp('&gt;', 'g'), ' ');
+		input = input.replace(/&apos;/g, '\'');
 		input = input.replace(new RegExp('&nbsp;', 'g'), ' ');
 		input = input.replace(new RegExp('â', 'g'), String.fromCharCode(8730));
 		input = input.replace(new RegExp('Ã', 'g'), String.fromCharCode(215));
