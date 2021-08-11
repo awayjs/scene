@@ -759,6 +759,8 @@ export class MovieClip extends Sprite {
 
 	public copyTo(movieClip: MovieClip): void {
 		super.copyTo(movieClip);
+
+		movieClip.buttonMode = this.buttonMode;
 		movieClip.loop = this.loop;
 		movieClip._soundStreams = this._soundStreams;
 		movieClip._scenes = this._scenes;
