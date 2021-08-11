@@ -353,6 +353,8 @@ export class SceneImage2D extends BitmapImage2D {
 	 *
 	 */
 	public dispose(): void {
+		this._clearFromDispose = true;
+
 		this.dropAllReferences();
 		this.unmarkToUnload();
 		this.unuseWeakRef();
@@ -360,9 +362,9 @@ export class SceneImage2D extends BitmapImage2D {
 		// drop buffer, because is big
 		this._data = null;
 		this._locked = false;
-
 		super.dispose();
-		//todo
+
+		this._clearFromDispose = false;
 	}
 
 	public unload() {
@@ -573,6 +575,33 @@ export class SceneImage2D extends BitmapImage2D {
 		}
 
 		super.setPixels(rect, buffer);
+	}
+
+	private _clearFromDispose = false;
+	public clear() {
+		// we call clear in parent class from dispose, call direct
+		if (this._clearFromDispose) {
+			super.clear();
+			return;
+		}
+
+		// clear should drop abstraction, but we can't doing this if unloaded
+		const t = this.syncData(true);
+
+		// not require unload, we already doings this
+		this.unmarkToUnload();
+		this.lastUsedTime = -1;
+
+		if (typeof t === 'boolean') {
+			this.wasUpload = false;
+			super.clear();
+			return;
+		}
+
+		t.then(() => {
+			this.wasUpload = false;
+			super.clear();
+		});
 	}
 
 	/**
