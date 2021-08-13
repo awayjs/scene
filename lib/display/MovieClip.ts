@@ -100,6 +100,15 @@ export class MovieClip extends Sprite {
 
 	private _soundStreams: any;
 
+	/**
+	 * Some symbols can be a sprite. This means that when we spawn it, we should track only first frame.
+	 * @private
+	 */
+	private _isSprite: boolean = false;
+	public get isSprite() {
+		return this._isSprite;
+	}
+
 	public buttonEnabled: boolean = true;
 
 	public initSoundStream(streamInfo: any, maxFrameNum: number) {
@@ -138,15 +147,16 @@ export class MovieClip extends Sprite {
 		return 0;
 	}
 
-	constructor(timeline: Timeline = null) {
+	constructor(timeline: Timeline = null, spriteMode = false) {
 		super();
 
 		this._soundVolume = 1;
 		this._parentSoundVolume = 1;
-		this.doingSwap = false;
 		this._isButton = false;
 		this._buttonMode = false;
 		this._useHandCursor = true;
+
+		this.doingSwap = false;
 		this.cursorType = 'pointer';
 		//this.debugVisible=true;
 
@@ -184,6 +194,36 @@ export class MovieClip extends Sprite {
 		};
 
 		this._timeline = timeline || new Timeline();
+
+		if (spriteMode) {
+			this.transformToSprite();
+		}
+	}
+
+	/**
+	 * Reduce frames of timeline to sprite mode.
+	 * Used for UIComponents, where timeline store more that 1 frame
+	 */
+	public transformToSprite() {
+		if (this._isSprite) {
+			return;
+		}
+
+		this._isSprite = true;
+
+		const timeline = this._timeline;
+
+		// regular MC or frames already is not more 1
+		if (timeline.numFrames <= 1) {
+			return;
+		}
+
+		timeline.frame_command_indices = <any>[timeline.frame_command_indices[0]];
+		timeline.frame_recipe = <any>[timeline.frame_recipe[0]];
+		timeline.keyframe_constructframes = [timeline.keyframe_constructframes[0]];
+		timeline.keyframe_durations = <any>[timeline.keyframe_durations[0]];
+		timeline.keyframe_firstframes = [timeline.keyframe_firstframes[0]];
+		timeline.keyframe_indices = [timeline.keyframe_indices[0]];
 	}
 
 	public startSound(
@@ -761,11 +801,15 @@ export class MovieClip extends Sprite {
 		super.copyTo(movieClip);
 
 		movieClip.buttonMode = this.buttonMode;
+		movieClip.symbolID = this.symbolID;
 		movieClip.loop = this.loop;
 		movieClip._soundStreams = this._soundStreams;
 		movieClip._scenes = this._scenes;
-		movieClip.symbolID = this.symbolID;
 
+		// move to sprite mode too
+		if (this._isSprite) {
+			movieClip.transformToSprite();
+		}
 	}
 
 	public advanceFrameInternal(): void {
