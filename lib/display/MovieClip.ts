@@ -101,6 +101,13 @@ export class MovieClip extends Sprite {
 	private _soundStreams: any;
 
 	/**
+	 * Mark that operation provided by timeline except a script, some operation not allowed from script
+	 * `removeChild` should not remove a child name
+	 * @private
+	 */
+	private _isTimelinePass = false;
+
+	/**
 	 * Some symbols can be a sprite. This means that when we spawn it, we should track only first frame.
 	 * @private
 	 */
@@ -483,23 +490,6 @@ export class MovieClip extends Sprite {
 		this._timeline = null;
 	}
 
-	/* this was used for old Icycle-project text-translation
-	public reset_textclones(): void {
-		if (this.timeline) {
-			//var len:number = this._potentialInstances.length;
-			for (var key in this._potentialInstances) {
-				if (this._potentialInstances[key] != null) {
-					if (this._potentialInstances[key].isAsset(TextField)) {
-						(<TextField>this._potentialInstances[key]).text =
-							(<TextField>this.timeline.getPotentialChildPrototype(parseInt(key))).text;
-					}
-					else if (this._potentialInstances[key].isAsset(MovieClip))
-						(<MovieClip>this._potentialInstances[key]).reset_textclones();
-				}
-			}
-		}
-	}*/
-
 	public get useHandCursor(): boolean {
 		return this._useHandCursor;
 	}
@@ -569,6 +559,8 @@ export class MovieClip extends Sprite {
 	public constructedKeyFrameIndex: number = -1;
 
 	public reset(fireScripts: boolean = true, resetSelf: boolean = true): void {
+		this._isTimelinePass = false;
+
 		if (resetSelf)
 			super.reset();
 
@@ -749,10 +741,14 @@ export class MovieClip extends Sprite {
 
 	public removeChildAtInternal(index: number): DisplayObject {
 		const child: DisplayObject = this._children[index];
-		if (child._adapter)
-			(<IMovieClipAdapter>child.adapter).freeFromScript();
 
-		(<IMovieClipAdapter> this.adapter).unregisterScriptObject(child);
+		// only timeline can do this
+		if (this._isTimelinePass) {
+			if (child._adapter)
+				(<IMovieClipAdapter>child.adapter).freeFromScript();
+
+			(<IMovieClipAdapter> this.adapter).unregisterScriptObject(child);
+		}
 
 		delete this._sessionID_childs[child._sessionID];
 
@@ -813,7 +809,6 @@ export class MovieClip extends Sprite {
 	}
 
 	public advanceFrameInternal(): void {
-
 		// if this._skipadvance is true, the mc has already been moving on its timeline this frame
 		// this happens for objects that have been newly added to parent
 		// they still need to queue their scripts
@@ -843,11 +838,10 @@ export class MovieClip extends Sprite {
 		}
 
 		super.advanceFrame();
-
-		this._skipAdvance = false;
 	}
 
 	public advanceFrame(): void {
+		this._isTimelinePass = true;
 		if (this._skipFramesForStream == 0) {
 			this.advanceFrameInternal();
 		}
@@ -861,6 +855,8 @@ export class MovieClip extends Sprite {
 			this.advanceFrameInternal();
 			this._skipFramesForStream = this._syncSounds(this._currentFrameIndex);
 		}
+
+		this._isTimelinePass = false;
 	}
 
 	// DEBUG CODE:
