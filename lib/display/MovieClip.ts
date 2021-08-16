@@ -559,7 +559,7 @@ export class MovieClip extends Sprite {
 	public constructedKeyFrameIndex: number = -1;
 
 	public reset(fireScripts: boolean = true, resetSelf: boolean = true): void {
-		this._isTimelinePass = false;
+		this._isTimelinePass = true;
 
 		if (resetSelf)
 			super.reset();
@@ -599,8 +599,7 @@ export class MovieClip extends Sprite {
 		}
 		// prevents the playhead to get moved in the advance frame again:
 		this._skipAdvance = true;
-		//FrameScriptManager.execute_queue();
-
+		this._isTimelinePass = false;
 	}
 
 	public set currentFrameIndex(value: number) {
@@ -742,10 +741,11 @@ export class MovieClip extends Sprite {
 	public removeChildAtInternal(index: number): DisplayObject {
 		const child: DisplayObject = this._children[index];
 
+		if (child._adapter)
+			(<IMovieClipAdapter>child.adapter).freeFromScript();
+
 		// only timeline can do this
 		if (this._isTimelinePass) {
-			if (child._adapter)
-				(<IMovieClipAdapter>child.adapter).freeFromScript();
 
 			(<IMovieClipAdapter> this.adapter).unregisterScriptObject(child);
 		}
@@ -838,6 +838,7 @@ export class MovieClip extends Sprite {
 		}
 
 		super.advanceFrame();
+		this._skipAdvance = false;
 	}
 
 	public advanceFrame(): void {
