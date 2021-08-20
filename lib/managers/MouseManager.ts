@@ -5,7 +5,7 @@ import { PickingCollision, RaycastPicker, ContainerNode, IPartitionContainer, En
 
 import { KeyboardEvent } from '../events/KeyboardEvent';
 import { MouseEvent as AwayMouseEvent } from '../events/MouseEvent';
-import { FrameScriptManager } from '../managers/FrameScriptManager';
+import { FrameScriptManager } from './FrameScriptManager';
 
 import { IInputRecorder } from './IInputRecorder';
 
@@ -66,9 +66,11 @@ export class MouseManager {
 	private _isTouch: Boolean;
 	private _isAVM1Dragging: Boolean = false;
 
-	public startDragObject(collision: PickingCollision) {
+	public startDragObject(collision?: PickingCollision) {
 		this._isAVM1Dragging = true;
-		if (!this._mouseDragCollision)
+
+		// we MUST overrider collision target if present, because draggable !== drag emitter
+		if (collision)
 			this._mouseDragCollision = collision;
 	}
 
@@ -292,14 +294,9 @@ export class MouseManager {
 
 		let event: AwayMouseEvent;
 		let dispatcher: ContainerNode;
-		const len: number = this._queuedEvents.length;
-		// Dispatch all queued events.
-		/*var logEvents="";
-        for (var i: number = 0; i < len; ++i) {
-            logEvents+= " / "+this._queuedEvents[i].type;
-        }
-        console.log(logEvents);*/
-		for (let i: number = 0; i < len; ++i) {
+
+		const len = this._queuedEvents.length;
+		for (let i = 0; i < len; ++i) {
 			event = this._queuedEvents[i];
 			dispatcher = collision?.rootNode;
 
@@ -333,7 +330,7 @@ export class MouseManager {
 					if (this._focusContainer)
 						this._focusContainer.setFocus(false, true);
 
-					this._focusContainer = this._mouseDragCollision?.rootNode.container;
+					this._focusContainer = this._mouseDragCollision?.rootNode?.container;
 
 					if (this._focusContainer)
 						this._focusContainer.setFocus(true, true);
@@ -515,29 +512,13 @@ export class MouseManager {
 			this._collisionIsEnabledButton = isActiveButton;
 		}
 
-		// set cursor if not dragging mouse
+		// set cursor if not dragging mouse ???
 		if (!this._mouseDragging) {
 			this.cursorType = collisionNode ? <any>collisionNode.container.getMouseCursor() : 'auto';
 		}
 
 		this._updateDirty = false;
 	}
-
-	//		public addSceneLayer(scene:Scene)
-	//		{
-	//			var stg:Stage = scene.stage;
-	//
-	//			// Add instance to mouse3dmanager to fire mouse events for multiple scenes
-	//			if (!scene.stageGL.mouse3DManager)
-	//				scene.stageGL.mouse3DManager = this;
-	//
-	//			if (!hasKey(scene))
-	//				_scene3Ds[scene] = 0;
-	//
-	//			_childDepth = 0;
-	//			traverseDisplayObjects(stg);
-	//			_sceneCount = _childDepth;
-	//		}
 
 	public registerPicker(picker: RaycastPicker): void {
 		this._pickerLookup.push(picker);
