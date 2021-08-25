@@ -884,7 +884,10 @@ export class SceneImage2D extends BitmapImage2D {
 		renderer.view.height = this.height;
 
 		const sourceNode: ContainerNode = rootNode.addChildAt(source, 0);
+
 		sourceNode.transformDisabled = true;
+		// color transform should be enabled!
+		sourceNode.colorTransformDisabled = false;
 
 		root.transform.colorTransform = colorTransform;
 		// anyway we not support this =))
