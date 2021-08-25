@@ -718,7 +718,7 @@ export class MouseManager {
 
 	private queueDispatch(event: AwayMouseEvent, sourceEvent: MouseEvent | TouchEvent | WheelEvent): void {
 		// Store event to be dispatched later.
-		event.delta = (sourceEvent instanceof WheelEvent) ? sourceEvent.deltaY : 0;
+		event.delta = (sourceEvent instanceof WheelEvent) ? -3 * sourceEvent.deltaY / 100 : 0;
 		event.ctrlKey = sourceEvent.ctrlKey;
 		event.altKey = sourceEvent.altKey;
 		event.shiftKey = sourceEvent.shiftKey;
