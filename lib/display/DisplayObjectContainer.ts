@@ -27,6 +27,7 @@ import { DisplayObject } from './DisplayObject';
 
 export class DisplayObjectContainer extends DisplayObject implements IRenderContainer {
 	public static assetType: string = '[asset DisplayObjectContainer]';
+	private static NO_CHILD_ERROR = new ArgumentError('Child parameter is not a child of the caller');
 
 	private _animator: IAnimator;
 	private _mouseChildren: boolean = true;
@@ -356,8 +357,9 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 	public getChildIndex(child: DisplayObject): number {
 		const childIndex: number = this._children.indexOf(child);
 
-		if (childIndex == -1)
-			throw new ArgumentError('Child parameter is not a child of the caller');
+		if (childIndex == -1) {
+			throw DisplayObjectContainer.NO_CHILD_ERROR;
+		}
 
 		return childIndex;
 	}
