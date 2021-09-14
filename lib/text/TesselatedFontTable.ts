@@ -710,7 +710,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		let textShapeSelected: TextShape;
 		let newFormat: TextFormat;
 
-		const wordsCount = startWord + wordCnt * 5;
+		const wordsCount = startWord + wordCnt;
 		const size_multiply = this._size_multiply;
 		let select_start = tf.selectionBeginIndex;
 		let select_end = tf.selectionEndIndex;
