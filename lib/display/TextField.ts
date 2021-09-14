@@ -31,6 +31,70 @@ import { HTMLTextProcessor } from '../text/HTMLTextProcessor';
 import { TextFormatAlign } from '../text/TextFormatAlign';
 import { MouseEvent } from '../events/MouseEvent';
 
+interface IWorld {
+	start: number;
+	x: number;
+	y: number;
+	width: number;
+	len: number;
+}
+
+class WordStore {
+	store: Array<IWorld>;
+	index: number = -1;
+
+	constructor(size = 40) {
+		this.store = Array.from({ length:  size }, e => ({
+			x: Infinity, y: Infinity, start: 0, width: 0, len: 0
+		}));
+	}
+
+	public put (
+		start: number,
+		x: number,
+		y: number,
+		width: number,
+		len: number
+	): IWorld {
+		this.index++;
+
+		const word = this.store [this.index] || (this.store [this.index] = {} as IWorld);
+
+		word.start = start;
+		word.x = x;
+		word.y = y;
+		word.width = width;
+		word.len = len;
+
+		return word;
+	}
+
+	public get last(): IWorld {
+		return this.store[this.index];
+	}
+
+	public get length () {
+		return this.index + 1;
+	}
+
+	public set length (v: number) {
+		this.index = v - 1;
+	}
+
+	public get (index: number) {
+		return this.store[index];
+	}
+
+	public free() {
+		this.index = -1;
+	}
+
+	public dispose() {
+		this.store = null;
+		this.index = 0;
+	}
+}
+
 const enum CHAR_CODES {
 	TAB = 9,
 	LF = 10,
@@ -164,7 +228,22 @@ export class TextField extends DisplayObjectContainer {
 	private _selectionEndIndex: number = 0;
 	private _biggestLine: number=0;
 
+	/**
+	 * Renderable text, used for computing a glyphs
+	 * @private
+	 */
 	private _iText: string = '';
+
+	/**
+	 * Place where is diff is begun to end
+	 * @private
+	 */
+	private _iTextDiffStart = 0;
+
+	/**
+	 * Original text passed to field
+	 * @private
+	 */
 	private _text: string = '';
 	private _iTextWoLineBreaks: string = ''; // _iText without line breaks
 	private _textInteractionMode: TextInteractionMode;
@@ -214,7 +293,7 @@ export class TextField extends DisplayObjectContainer {
 	// Then on text append we clear last word verts because the word may be wrapped to next line
 	public last_word_vertices_count: number = 0;
 
-	public words: number[]=[];			// stores offset and length and width for each word
+	public words: WordStore = new WordStore(10);			// stores offset and length and width for each word
 
 	private _textRuns_formats: TextFormat[]=[];	// stores textFormat for each textrun
 	private _textRuns_words: number[]=[];	// stores words-offset, word-count and width for each textrun
@@ -1479,13 +1558,6 @@ export class TextField extends DisplayObjectContainer {
 		this._labelData = null;
 		this._text = value;
 
-		/*
-		for (let i = 0; i < this._text.length; i++) {
-			const charCode = this._text.charCodeAt(i);
-			if (this._text)
-			console.log("charcodes", this._text[i], this._text.charCodeAt(i));
-		}*/
-
 		if (value != '' && ((value.charCodeAt(value.length - 1) == 13) || (value.charCodeAt(value.length - 1) == 10))) {
 			value = value.slice(0, value.length - 1);
 		}
@@ -2259,37 +2331,39 @@ export class TextField extends DisplayObjectContainer {
 					if (isSpace) {
 						//console.log("add WhiteSpace");
 						whitespace_cnt++;
-						this.words[this.words.length] = this.chars_codes.length - 1;	// 	index into chars
-						this.words[this.words.length] = 0;							// 	x-position
-						this.words[this.words.length] = 0;							// 	y-position
-						this.words[this.words.length] = char_width;					// 	word width
-						this.words[this.words.length] = 1;							// 	char count
+						this.words.put(
+							this.chars_codes.length - 1,
+							0, 0,
+							char_width,
+							1
+						);
 						word_cnt++;
 						// we also make sure to begin a new word for next char (could be whitespace again)
 						startNewWord = true;
 					} else {
 						// no whitespace
 
-						if (this._autoSize == TextFieldAutoSize.NONE && this._wordWrap) {
-							if (this.words[this.words.length - 2] + char_width >= maxLineWidth) {
+						if (word_cnt > 0 && this._autoSize == TextFieldAutoSize.NONE && this._wordWrap) {
+							if (this.words.last.width + char_width >= maxLineWidth) {
 								startNewWord = true;
 							}
-
 						}
 
 						if (startNewWord) {
 							//console.log("startNewWord");
 							// create new word (either this is the first char, or the last char was whitespace)
-							this.words[this.words.length] = this.chars_codes.length - 1;	// 	index into chars
-							this.words[this.words.length] = 0;							//	x-position
-							this.words[this.words.length] = 0;							//	y-position
-							this.words[this.words.length] = char_width;					// 	word width
-							this.words[this.words.length] = 1;							// 	char count
+							this.words.put(
+								this.chars_codes.length - 1,
+								0, 0,
+								char_width,
+								1
+							);
+
 							word_cnt++;
 						} else {
 							// update-char length and width of active word.
-							this.words[this.words.length - 2] += char_width;
-							this.words[this.words.length - 1]++;
+							this.words.last.width += char_width;
+							this.words.last.len += 1;
 						}
 
 						startNewWord = false;
@@ -2413,7 +2487,7 @@ export class TextField extends DisplayObjectContainer {
 				}
 
 				//console.log("process word positions for textrun", tr, "textruns",  this._textRuns_words);
-				w_len = this._textRuns_words[(tr * 4)] + (this._textRuns_words[(tr * 4) + 1] * 5);
+				w_len = this._textRuns_words[(tr * 4)] + (this._textRuns_words[(tr * 4) + 1]);
 				tr_length += this._textRuns_words[(tr * 4) + 2];
 				//console.log(this._textFieldWidth, tr_length, maxLineWidth);
 			}
@@ -2431,18 +2505,23 @@ export class TextField extends DisplayObjectContainer {
 				format = this._textRuns_formats[tr];
 				format.font_table.initFontSize(format.size);
 				indent = format.indent;
-				w_len = this._textRuns_words[(tr * 4)] + (this._textRuns_words[(tr * 4) + 1] * 5);
+				w_len = this._textRuns_words[(tr * 4)] + (this._textRuns_words[(tr * 4) + 1]);
 				if (tr_length <= maxLineWidth || !this.wordWrap) {
 					//if(tr_length<maxLineWidth || !this.wordWrap){
 					// this must be a single textline
 					//console.log("just add to line",(tr * 4) , w_len, this.words, this._textRuns_words);
-					for (w = this._textRuns_words[(tr * 4)]; w < w_len; w += 5) {
-						word_width = this.words[w + 3];
+					for (w = this._textRuns_words[(tr * 4)]; w < w_len; w += 1) {
+						const word = this.words.get(w);
+
+						word_width = word.width;
 						linelength += word_width;
-						this.lines_wordEndIndices[linecnt] = w + 5;
+
+						this.lines_wordEndIndices[linecnt] = w + 1;
 						this.lines_width[linecnt] += word_width;
+
 						lines_formats[linecnt] = format;
-						if (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9) {
+
+						if (this.chars_codes[word.start] == 32 || this.chars_codes[word.start] == 9) {
 							this.lines_numSpacesPerline[linecnt] += 1;
 						}
 					}
@@ -2450,28 +2529,35 @@ export class TextField extends DisplayObjectContainer {
 					//console.log("split lines");
 					word_width = 0;
 					indent = 0;
-					for (w = this._textRuns_words[(tr * 4)]; w < w_len; w += 5) {
-						word_width = this.words[w + 3];
+
+					for (w = this._textRuns_words[(tr * 4)]; w < w_len; w += 1) {
+						const word = this.words.get(w);
+
+						word_width = word.width;
+
 						let isSpace: boolean = false;
-						if (this.chars_codes[this.words[w]] == 32 || this.chars_codes[this.words[w]] == 9) {
+
+						if (this.chars_codes[word.start] == 32 || this.chars_codes[word.start] == 9) {
 							this.lines_numSpacesPerline[linecnt] += 1;
 							isSpace = true;
 						}
+
 						// (1.5* format.font_table.getCharWidth("32")) is to replicate flash behavior
 						if (isSpace
 							|| (this.lines_width[linecnt] + word_width) <= (
 								maxLineWidth - indent - (1 * format.font_table.getCharWidth('32')))
 							|| this.lines_width[linecnt] == 0) {
-							this.lines_wordEndIndices[linecnt] = w + 5;
+							this.lines_wordEndIndices[linecnt] = w + 1;
 							this.lines_width[linecnt] += word_width;
 							lines_formats[linecnt] = format;
 						} else {
 							linecnt++;
 							this.lines_wordStartIndices[linecnt] = w;
-							this.lines_wordEndIndices[linecnt] = w + 5;
+							this.lines_wordEndIndices[linecnt] = w + 1;
 							this.lines_width[linecnt] = word_width;
 							this.lines_numSpacesPerline[linecnt] = 0;
 							this.lines_height[this.lines_height.length] = lines_heights[lineHeightCnt];
+
 							lines_formats[linecnt] = format;
 							indent = format.indent;
 						}
@@ -2542,28 +2628,35 @@ export class TextField extends DisplayObjectContainer {
 			this.lines_start_y[l] = offsety;
 			this.lines_charIdx_start[l] = charCnt;
 			let line_width = 0;//format.leftMargin + format.indent + format.rightMargin;
-			for (w = start_idx; w < end_idx; w += 5) {
-				this.words[w + 1] = offsetx;
+
+			for (w = start_idx; w < end_idx; w += 1) {
+				const word = this.words.get(w);
+
+				word.x += offsetx;
 				char_pos = 0;
-				start_idx = this.words[w];
-				c_len = start_idx + this.words[w + 4];
+				start_idx = word.start;
+				c_len = start_idx + word.len;
+
 				const tf = this.tf_per_char[start_idx];
 				tf.font_table.initFontSize(tf.size);
 				//console.log("lineHeight", lineHeight);
 				//console.log("lineHeight", tf.font_table.getLineHeight()+tf.leading);
 				let diff = (lineHeight) - (tf.font_table.getLineHeight() + tf.leading);
 				diff = ((diff > 0) ? diff - 2 : 0);
-				this.words[w + 2] = offsety + diff;
+				word.y = offsety + diff;
+
 				for (c = start_idx; c < c_len; c++) {
 					this.char_positions_x[this.char_positions_x.length] = offsetx + char_pos;
 					this.char_positions_y[this.char_positions_y.length] = offsety + diff;
 					char_pos += this.chars_width[c];
 					charCnt++;
 				}
+
 				//console.log("word_width", char_pos, "word:'"+wordstr+"'");
 				offsetx += char_pos;//this.words[w + 3];
 				line_width += char_pos;//this.words[w + 3];
 			}
+
 			this.lines_charIdx_end[l] = charCnt;
 			//console.log("line_width",line_width);
 			offsety += lineHeight;

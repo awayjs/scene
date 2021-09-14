@@ -730,7 +730,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			textShapeSelected.fntMaterial = useFNT ? mat : null;
 
 			if (newFormat.underline && (startWord + 1) < tf.words.length) {
-				start_x = tf.words[startWord + 1];
+				start_x = tf.words.get(startWord).x;
 			}
 
 			if (tf.selectionEndIndex < tf.selectionBeginIndex) {
@@ -748,13 +748,14 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 		// loop over all the words and create the text data for it
 		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
-		for (let w = startWord; w < wordsCount; w += 5) {
+		for (let w = startWord; w < wordsCount; w += 1) {
+			const word = tf.words.get(w);
 
-			let x = tf.words[w + 1];
-			const y = tf.words[w + 2];
+			let x = word.x;
+			const y = word.y;
 
-			const startIdx = tf.words[w];
-			const charsCount = startIdx + tf.words[w + 4];
+			const startIdx = word.start;
+			const charsCount = startIdx + word.len;
 
 			for (let c = startIdx; c < charsCount; c++) {
 				const curTShape = (tf.isInFocus && c >= select_start && c < select_end) ?
