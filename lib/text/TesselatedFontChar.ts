@@ -39,14 +39,13 @@ export class TesselatedFontChar {
 
 	public fnt_rect: Rectangle;
 	public fnt_uv: Rectangle;
-	public fnt_channel: number=0;
+	public fnt_channel: number = 0;
 
 	/**
-	 * Elements for this char
+	 * What is scale was used for generating last tesselation
+	 * Used for reduce a vertices count
 	 */
-	public stroke_data: AttributesBuffer;
-	public fill_data: AttributesBuffer;
-	public fill_data_path: GraphicsPath;
+	public lastTesselatedScale: number = 0;
 
 	/**
 	 * the char_codes that this geom has kerning set for
@@ -58,13 +57,10 @@ export class TesselatedFontChar {
 	public kerningValues: Array<number>=[];
 
 	constructor(
-		fill_data: AttributesBuffer = null,
-		stroke_data: AttributesBuffer = null,
-		fill_data_path: GraphicsPath = null) {
-
-		this.fill_data = fill_data;
-		this.stroke_data = stroke_data;
-		this.fill_data_path = fill_data_path;
+		public fill_data: AttributesBuffer = null,
+		public stroke_data: AttributesBuffer = null,
+		public fill_data_path: GraphicsPath = null
+	) {
 	}
 
 	public dispose() {

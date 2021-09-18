@@ -14,6 +14,7 @@ import { TextFormat } from './TextFormat';
 import { TextShape } from './TextShape';
 
 import { TextField } from '../display/TextField';
+import { Settings } from '../Settings';
 
 const ONCE_EMIT_TABLE: StringMap<boolean> = Object.create(null);
 function once(obj: any, key = '') {
@@ -892,7 +893,11 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 	}
 
 	public getChar(name: string): TesselatedFontChar {
+		const scale = this._size_multiply;
+		const qualityStepScale = Math.max(0.01, Math.round(scale * 100) / 100);
+
 		let t_font_char: TesselatedFontChar = this._font_chars_dic[name];
+
 		if (!t_font_char) {
 			if (this._opentype_font) {
 				const thisGlyph = this._opentype_font.charToGlyph(String.fromCharCode(parseInt(name)));
@@ -942,7 +947,13 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 					t_font_char = new TesselatedFontChar(null, null, awayPath);
 					t_font_char.char_width = thisGlyph.advanceWidth;//(1 / thisGlyph.path.unitsPerEm * 72);
-					t_font_char.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(awayPath, true);
+					t_font_char.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(
+						awayPath,
+						true,
+						null,
+						scale * Settings.FONT_TESSELATION_QUALITY
+					);
+					t_font_char.lastTesselatedScale = scale;
 
 					if (!t_font_char.fill_data) {
 						if (once(this, 'tess' + name)) {
@@ -959,8 +970,15 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			if (name == '9679') {
 				t_font_char = this.createPointGlyph_9679();
 			}
-		} else if (t_font_char.fill_data == null &&
-			t_font_char.stroke_data == null && t_font_char.fill_data_path != null) {
+		} else if (
+			(
+				t_font_char.fill_data == null &&
+				t_font_char.stroke_data == null ||
+				// re-run tesselator if reference scale lees that needed
+				t_font_char.lastTesselatedScale < qualityStepScale
+			) &&
+			t_font_char.fill_data_path != null
+		) {
 			// 	hack for messed up "X": remove the first command if it is moveTo that points to 0,0
 			//	change the new first command to moveTo
 			if (t_font_char.fill_data_path.commands[0][0] == 1 &&
@@ -970,7 +988,28 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 				t_font_char.fill_data_path.commands[0].shift();
 				t_font_char.fill_data_path.commands[0][0] = 2;
 			}
-			t_font_char.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(t_font_char.fill_data_path, true);
+
+			if (t_font_char.fill_data) {
+				// it not have dispose, but clear will drop abstraction if it exist
+				t_font_char.fill_data.clear();
+			}
+
+			t_font_char.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(
+				t_font_char.fill_data_path,
+				true,
+				null,
+				qualityStepScale * Settings.FONT_TESSELATION_QUALITY
+			);
+
+			if (t_font_char.lastTesselatedScale > 0) {
+				console.debug(
+					'[TesselatedFontTable] Retesselate char from scale:',
+					t_font_char.lastTesselatedScale, qualityStepScale, String.fromCharCode(+name)
+				);
+			}
+
+			t_font_char.lastTesselatedScale = qualityStepScale;
+
 			if (!t_font_char.fill_data) {
 				if (once(this, 'tess' + name)) {
 					console.debug('[TesselatedFontTable] Error:tesselating glyph:', name.charCodeAt(0));
@@ -978,6 +1017,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 				return null;
 			}
 		}
+
 		return t_font_char;
 	}
 

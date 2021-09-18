@@ -2907,7 +2907,7 @@ export class TextField extends DisplayObjectContainer {
 			const attr = new Float2Attributes(textShape.length / 2);
 			const buffer = new Float32Array(attr.attributesBuffer.buffer);
 
-			console.log('Build shape size:', textShape.length);
+			//console.log('Build shape size:', textShape.length);
 
 			let offset = 0;
 			for (const chunk of textShape.verts) {

@@ -10,7 +10,8 @@ export interface ISceneSettings {
 	USE_UNSAFE_BLENDS: boolean;
 	CPU_COPY_PIXELS_COUNT: number;
 	REMAP_BLEND_MODE: boolean;
-	BLEND_MODE_REMAP_TABLE: Record<string, string>
+	BLEND_MODE_REMAP_TABLE: Record<string, string>;
+	FONT_TESSELATION_QUALITY: number;
 }
 
 export const Settings: ISceneSettings = {
@@ -61,4 +62,10 @@ export const Settings: ISceneSettings = {
 	 * @description How many pixels can be processed on CPU for `copyPixel` operation for avoid run GPU
 	 */
 	CPU_COPY_PIXELS_COUNT: 64 * 64,
+
+	/**
+	 * @description Quality factor for pre-tesselated font shapes,
+	 * values greater 1 no make sense, 1/10 produce normal font result for small fonts (14px)
+	 */
+	FONT_TESSELATION_QUALITY: 1 / 10
 };
