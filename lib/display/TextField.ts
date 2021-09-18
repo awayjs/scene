@@ -31,7 +31,7 @@ import { HTMLTextProcessor } from '../text/HTMLTextProcessor';
 import { TextFormatAlign } from '../text/TextFormatAlign';
 import { MouseEvent } from '../events/MouseEvent';
 
-interface IWorld {
+interface IWord {
 	start: number;
 	x: number;
 	y: number;
@@ -39,8 +39,15 @@ interface IWorld {
 	len: number;
 }
 
+interface IRunEntry {
+	start: number,
+	count: number,
+	width: number,
+	space: number
+}
+
 class WordStore {
-	store: Array<IWorld>;
+	store: Array<IWord>;
 	index: number = -1;
 
 	constructor(size = 40) {
@@ -55,10 +62,10 @@ class WordStore {
 		y: number,
 		width: number,
 		len: number
-	): IWorld {
+	): IWord {
 		this.index++;
 
-		const word = this.store [this.index] || (this.store [this.index] = {} as IWorld);
+		const word = this.store [this.index] || (this.store [this.index] = {} as IWord);
 
 		word.start = start;
 		word.x = x;
@@ -69,7 +76,7 @@ class WordStore {
 		return word;
 	}
 
-	public get last(): IWorld {
+	public get last(): IWord {
 		return this.store[this.index];
 	}
 
@@ -293,11 +300,15 @@ export class TextField extends DisplayObjectContainer {
 	// Then on text append we clear last word verts because the word may be wrapped to next line
 	public last_word_vertices_count: number = 0;
 
-	public words: WordStore = new WordStore(10);			// stores offset and length and width for each word
+	// stores offset and length and width for each word
+	public words: WordStore = new WordStore(10);
+
+	// Amount of words that was before call reconstuct
+	/*internal*/ _lastWordsCount: number;
 
 	private _textRuns_formats: TextFormat[]=[];	// stores textFormat for each textrun
-	private _textRuns_words: number[]=[];	// stores words-offset, word-count and width for each textrun
-	public _words_amount_prev: number;
+	// stores words-offset, word-count and width for each textrun
+	private _textRuns_words: Array<IRunEntry> = [];
 	private _paragraph_textRuns_indices: number[]=[];	// stores textFormat for each textrun
 
 	private _maxWidthLine: number=0;
@@ -2072,7 +2083,7 @@ export class TextField extends DisplayObjectContainer {
 			// we do not use last word since last word may changed.
 			// For example "Hello w" and "Hello world" both have 3 words but the last word actually changed
 
-			this._words_amount_prev = this.words.length;
+			this._lastWordsCount = this.words.length;
 			this.chars_codes.length = 0;
 			this.chars_width.length = 0;
 			this.char_positions_x.length = 0;
@@ -2251,7 +2262,12 @@ export class TextField extends DisplayObjectContainer {
 
 				// create a new textrun
 				this._textRuns_formats[this._textRuns_formats.length] = tf;
-				this._textRuns_words[this._textRuns_words.length] = this.words.length;
+				let run = this._textRuns_words[this._textRuns_words.length] = {
+					start: this.words.length,
+					count: 0,
+					width: 0,
+					space: 0
+				};
 				// loop over all chars for this format
 				//console.log("textrun tf = ", tf);
 				for (let c = c_start; c < c_end; c++) {
@@ -2280,20 +2296,20 @@ export class TextField extends DisplayObjectContainer {
 					const isLineBreak = char_code === CHAR_CODES.LF;
 
 					if (isLineBreak) {
-
-						this._textRuns_words[this._textRuns_words.length] = word_cnt;
-						this._textRuns_words[this._textRuns_words.length] = linewidth;
-						this._textRuns_words[this._textRuns_words.length] = whitespace_cnt;
+						run.count = word_cnt;
+						run.width = linewidth;
+						run.space = whitespace_cnt;
 
 						this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length] =
 							this._textRuns_formats.length;
 						// create a new textrun
 						this._textRuns_formats[this._textRuns_formats.length] = tf;
-						this._textRuns_words[this._textRuns_words.length] = this.words.length;
-
-						// this.chars_codes[this.chars_codes.length] = 55;
-						// this.chars_width[this.chars_width.length] = 0;
-						// this.tf_per_char[this.tf_per_char.length] = tf;
+						run = this._textRuns_words[this._textRuns_words.length] = {
+							start: this.words.length,
+							count: 0,
+							width: 0,
+							space: 0
+						};
 
 						startNewWord = true;
 						whitespace_cnt = 0;
@@ -2370,9 +2386,9 @@ export class TextField extends DisplayObjectContainer {
 					}
 				}
 
-				this._textRuns_words[this._textRuns_words.length] = word_cnt;
-				this._textRuns_words[this._textRuns_words.length] = linewidth;
-				this._textRuns_words[this._textRuns_words.length] = whitespace_cnt;
+				run.count = word_cnt;
+				run.width = linewidth;
+				run.space = whitespace_cnt;
 
 				if (this._maxWidthLine < linewidth) {
 					this._maxWidthLine = linewidth;
@@ -2487,13 +2503,13 @@ export class TextField extends DisplayObjectContainer {
 				}
 
 				//console.log("process word positions for textrun", tr, "textruns",  this._textRuns_words);
-				w_len = this._textRuns_words[(tr * 4)] + (this._textRuns_words[(tr * 4) + 1]);
-				tr_length += this._textRuns_words[(tr * 4) + 2];
+				w_len = this._textRuns_words[tr].start + this._textRuns_words[tr].count;
+				tr_length += this._textRuns_words[tr].width;
 				//console.log(this._textFieldWidth, tr_length, maxLineWidth);
 			}
 
 			this.lines_wordStartIndices[this.lines_wordStartIndices.length]
-				= this._textRuns_words[(this._paragraph_textRuns_indices[p] * 4)];
+				= this._textRuns_words[this._paragraph_textRuns_indices[p]].start;
 			this.lines_wordEndIndices[this.lines_wordEndIndices.length] = w_len;
 			this.lines_width[this.lines_width.length] = 0;
 			this.lines_numSpacesPerline[this.lines_numSpacesPerline.length] = 0;
@@ -2505,12 +2521,12 @@ export class TextField extends DisplayObjectContainer {
 				format = this._textRuns_formats[tr];
 				format.font_table.initFontSize(format.size);
 				indent = format.indent;
-				w_len = this._textRuns_words[(tr * 4)] + (this._textRuns_words[(tr * 4) + 1]);
+				w_len = this._textRuns_words[tr].start + this._textRuns_words[tr].count;
 				if (tr_length <= maxLineWidth || !this.wordWrap) {
 					//if(tr_length<maxLineWidth || !this.wordWrap){
 					// this must be a single textline
 					//console.log("just add to line",(tr * 4) , w_len, this.words, this._textRuns_words);
-					for (w = this._textRuns_words[(tr * 4)]; w < w_len; w += 1) {
+					for (w = this._textRuns_words[tr].start; w < w_len; w += 1) {
 						const word = this.words.get(w);
 
 						word_width = word.width;
@@ -2530,7 +2546,7 @@ export class TextField extends DisplayObjectContainer {
 					word_width = 0;
 					indent = 0;
 
-					for (w = this._textRuns_words[(tr * 4)]; w < w_len; w += 1) {
+					for (w = this._textRuns_words[tr].start; w < w_len; w += 1) {
 						const word = this.words.get(w);
 
 						word_width = word.width;
@@ -2865,15 +2881,18 @@ export class TextField extends DisplayObjectContainer {
 		if (this._textShapesDirty) this._clearTextShapes();
 
 		for (let tr = 0; tr < tr_len; tr++) {
-			if (tr_words[(tr * 4) + 1] == 0) {
+			const run = tr_words[tr];
+
+			if (run.count == 0) {
 				continue;
 			// } else if (tr_words[(tr * 4)] + tr_words[(tr * 4) + 1] * 5 <= this._words_amount_prev) {
 				// continue;
 			}
+
 			tr_formats[tr].font_table.initFontSize(tr_formats[tr].size);
 
 			tr_formats[tr].font_table.fillTextRun(
-				this, tr_formats[tr],  tr_words[(tr * 4)], tr_words[(tr * 4) + 1]);
+				this, tr_formats[tr], run.start, run.count);
 		}
 
 		let textShape: TextShape;
@@ -2887,6 +2906,8 @@ export class TextField extends DisplayObjectContainer {
 
 			const attr = new Float2Attributes(textShape.length / 2);
 			const buffer = new Float32Array(attr.attributesBuffer.buffer);
+
+			console.log('Build shape size:', textShape.length);
 
 			let offset = 0;
 			for (const chunk of textShape.verts) {
@@ -2917,7 +2938,7 @@ export class TextField extends DisplayObjectContainer {
 
 			textShape.shape = Shape.getShape(textShape.elements);
 			// has BUG for QWOP, temporarily enable it (default)
-			textShape.shape.deepHitCheck = true;
+			textShape.shape.deepHitCheck = false;
 			textShape.shape.usages++;
 
 			const sampler: ImageSampler = new ImageSampler(false, true, true);
@@ -3903,7 +3924,7 @@ export class TextField extends DisplayObjectContainer {
 		this.last_word_vertices_count = 0;
 		this.tf_per_char_prev.length = 0;
 		this.chars_codes_prev.length = 0;
-		this._words_amount_prev = 0;
+		this._lastWordsCount = 0;
 
 		if (this.targetGraphics)
 			this.targetGraphics.clear();
