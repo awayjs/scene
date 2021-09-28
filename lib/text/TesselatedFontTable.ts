@@ -15,6 +15,7 @@ import { TextShape } from './TextShape';
 
 import { TextField } from '../display/TextField';
 import { Settings } from '../Settings';
+import { FNTGeneratorCanvas } from './FNTGeneratorCanvas';
 
 const ONCE_EMIT_TABLE: StringMap<boolean> = Object.create(null);
 function once(obj: any, key = '') {
@@ -200,6 +201,15 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 		glyph_verts[glyph_verts.length] = maxx - 1;
 		glyph_verts[glyph_verts.length] = maxy;
+	}
+
+	public generateFNTData() {
+		const generator = new FNTGeneratorCanvas(null, true);
+		const bitmap = generator.generate(this.font, this._font_em_size, 14, 4);
+
+		document.body.appendChild(generator.canvas);
+
+		debugger;
 	}
 
 	public generateFNTTextures(padding: number, fontSize: number, texSize: number): Shape[] {
@@ -651,6 +661,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 			if (charGlyph.fill_data === null) {
 
+				/*
 				if (charGlyph.fill_data_path.commands[0][0] == 1
 					&& charGlyph.fill_data_path.data[0][0] == 0
 					&& charGlyph.fill_data_path.data[0][1] == 0) {
@@ -659,7 +670,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 					charGlyph.fill_data_path.data[0].shift();
 					charGlyph.fill_data_path.commands[0].shift();
 					charGlyph.fill_data_path.commands[0][0] = 2;
-				}
+				}*/
 
 				charGlyph.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(charGlyph.fill_data_path, true);
 			}

@@ -7,18 +7,17 @@ import { Stage, BitmapImage2D } from '@awayjs/stage';
 import { DefaultRenderer, RenderGroup } from '@awayjs/renderer';
 
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
-
 import { BasicPartition, NodePool, View } from '@awayjs/view';
 import { Sprite } from '../display/Sprite';
 import { Shape } from '@awayjs/graphics';
+import { FNTGeneratorBase } from './FNTGeneratrorBase';
 
-export class FNTGenerator {
+export class FNTGenerator extends FNTGeneratorBase {
 	private _root: DisplayObjectContainer;
 	private _renderer: DefaultRenderer;
-	private _stage: Stage;
 
-	constructor(stage) {
-		this._stage = stage;
+	constructor(stage: Stage) {
+		super (stage);
 
 		//create the projection
 		const projection = new PerspectiveProjection();
@@ -39,10 +38,9 @@ export class FNTGenerator {
 		this._renderer.view.projection.transform.lookAt(new Vector3D());
 
 		this._renderer.renderableSorter = null;//new RenderableSort2D();
-
 	}
 
-	public generate(font: Font, maxSize: number, fontSize: number, padding: number): any {
+	public generate(font: Font, maxSize: number, fontSize: number, padding: number): BitmapImage2D[] {
 		let outputBitmap: BitmapImage2D;
 		const outputBitmaps: BitmapImage2D[] = [];
 		let mipSize: number;
