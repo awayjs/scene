@@ -137,7 +137,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			/**
 			 * Random value, anyway we render real font dimension ;)
 			 */
-			this._fntSizeLimit = this._current_size / 2;
+			this._fntSizeLimit = this._current_size * 4;
 		}
 	}
 
@@ -945,10 +945,10 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		const uv = charGlyph.fnt_uv;
 		const width = charGlyph.char_width * scale;
 
-		const x1 = x + width * rect.x;
-		const x2 = x1 + width * rect.width;
-		const y1 = y + size * rect.y;
-		const y2 = y1 + size * rect.height;
+		const x1 = x + width * rect.x * 20;
+		const x2 = x1 + width * rect.width * 20;
+		const y1 = y + size * rect.y * 20;
+		const y2 = y1 + size * rect.height * 20;
 
 		target.pos.push(
 			x1, y1, x1, y2, x2, y1,
@@ -957,7 +957,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 		target.uv.push(
 			uv.x, uv.y, uv.x, uv.bottom, uv.right, uv.y,
-			uv.right, uv.y, uv.bottom, uv.right, uv.right, uv.bottom
+			uv.right, uv.y, uv.x, uv.bottom, uv.right, uv.bottom
 		);
 	}
 

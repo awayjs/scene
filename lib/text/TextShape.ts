@@ -79,7 +79,7 @@ export class TextShape {
 		this.verts.push(buffer);
 
 		if (uvs) {
-			this.uvs.push(buffer);
+			this.uvs.push(uvs);
 		}
 	}
 

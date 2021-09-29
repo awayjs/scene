@@ -215,11 +215,17 @@ export class FNTGeneratorCanvas extends FNTGeneratorBase {
 			);
 
 			path.char.fnt_uv = new Rectangle(
+				tx * scale / size,
+				ty * scale / size,
+				path.rect.width * scale / size,
+				path.rect.height * scale / size);
+			/*
+			path.char.fnt_uv = new Rectangle(
 				(tx - path.rect.x) * scale / size,
-				(ty - path.rect.y) * scale / scale,
+				1 - (ty - path.rect.y) * scale / scale,
 				path.rect.width * scale / size,
 				path.rect.height * scale / size
-			);
+			);*/
 
 			path.char.fnt_channel = 0;
 

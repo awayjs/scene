@@ -2891,6 +2891,8 @@ export class TextField extends DisplayObjectContainer {
 
 			tr_formats[tr].font_table.initFontSize(tr_formats[tr].size);
 
+			(tr_formats[tr].font_table as TesselatedFontTable).generateFNTData(null);
+
 			tr_formats[tr].font_table.fillTextRun(
 				this, tr_formats[tr], run.start, run.count);
 		}
@@ -2924,6 +2926,12 @@ export class TextField extends DisplayObjectContainer {
 
 				offset += chunk.length;
 			}
+
+			// hack, merge buffer in single
+			// this helps to avoid a lot of set in incremental filling
+			// but anyway is slow
+			textShape.length = 0;
+			textShape.addChunk(pos, uvs);
 
 			if (textShape.shape) {
 				const element = <TriangleElements> textShape.shape.elements;
