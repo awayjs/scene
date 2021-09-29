@@ -945,6 +945,11 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		const uv = charGlyph.fnt_uv;
 		const width = charGlyph.char_width * scale;
 
+		if (!rect) {
+			// empty chars not have data
+			return;
+		}
+
 		const x1 = x + width * rect.x * 20;
 		const x2 = x1 + width * rect.width * 20;
 		const y1 = y + size * rect.y * 20;
