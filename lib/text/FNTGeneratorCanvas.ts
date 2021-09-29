@@ -1,25 +1,35 @@
 import { FNTGeneratorBase } from './FNTGeneratrorBase';
 import { Font } from './Font';
 import { BitmapImage2D, Stage } from '@awayjs/stage';
-import { FNTGenerator } from './FNTGenerator';
 import { Rectangle } from '@awayjs/core';
-import { Shape, GraphicsPath, GraphicsPathCommand } from '@awayjs/graphics';
+import { GraphicsPathCommand } from '@awayjs/graphics';
 import { TesselatedFontTable } from './TesselatedFontTable';
 import { TesselatedFontChar } from './TesselatedFontChar';
 
-const addMaxPoint = (rect: Rectangle, x: number, y: number): Rectangle => {
-	if (x > rect.right)
-		rect.width = x - rect.x;
-	if (x < rect.x)
-		rect.x = x;
+class Bounds {
+	left: number = Number.MAX_VALUE;
+	right: number = Number.MIN_VALUE;
+	top: number = Number.MAX_VALUE;
+	bottom: number = Number.MIN_VALUE;
 
-	if (y > rect.bottom)
-		rect.height = y - rect.y;
-	if (y < rect.y)
-		rect.y = y;
+	grown (x: number, y: number) {
+		if (x < this.left)
+			this.left = x;
 
-	return rect;
-};
+		if (x > this.right)
+			this.right = x;
+
+		if (y < this.top)
+			this.top = y;
+
+		if (y > this.bottom)
+			this.bottom = y;
+	}
+
+	toRect(): Rectangle {
+		return new Rectangle(this.left, this.top, this.right - this.left, this.bottom - this.top);
+	}
+}
 
 interface IPathContainer {
 	path: Path2D;
@@ -62,7 +72,7 @@ export class FNTGeneratorCanvas extends FNTGeneratorBase {
 		}
 
 		const path = new Path2D();
-		const rect = new Rectangle(Infinity, Infinity, -Infinity, -Infinity);
+		const box = new Bounds();
 
 		for (let i = 0; i < fillData.commands.length; i++) {
 			const data = fillData.data[i];
@@ -76,7 +86,7 @@ export class FNTGeneratorCanvas extends FNTGeneratorBase {
 						const px = data[pointer++] / 20;
 						const py = data[pointer++] / 20;
 
-						addMaxPoint(rect, px, py);
+						box.grown(px, py);
 						path.moveTo(px, py);
 						break;
 					}
@@ -85,7 +95,7 @@ export class FNTGeneratorCanvas extends FNTGeneratorBase {
 						const px = data[pointer++] / 20;
 						const py = data[pointer++] / 20;
 
-						addMaxPoint(rect, px, py);
+						box.grown(px, py);
 						path.lineTo(px, py);
 						break;
 					}
@@ -96,8 +106,8 @@ export class FNTGeneratorCanvas extends FNTGeneratorBase {
 						const dx = data[pointer++] / 20;
 						const dy = data[pointer++] / 20;
 
-						addMaxPoint(rect, cx, cy);
-						addMaxPoint(rect, cx, cy);
+						box.grown(cx, cy);
+						box.grown(dx, dy);
 
 						path.quadraticCurveTo(
 							cx, cy,
@@ -110,7 +120,9 @@ export class FNTGeneratorCanvas extends FNTGeneratorBase {
 		}
 
 		return {
-			path, rect, char
+			path,
+			char,
+			rect: box.toRect(),
 		};
 	}
 
@@ -144,13 +156,12 @@ export class FNTGeneratorCanvas extends FNTGeneratorBase {
 			patches.push(path);
 		}
 
-		//patches.sort(FNTGeneratorCanvas.sortPatches);
+		patches.sort(FNTGeneratorCanvas.sortPatches);
 
-		// TODO compute valid size when font size is 0
-
-		if (size) {
+		// TODO compute valid scale when fontSize is 0
+		if (fontSize) {
 			table.initFontSize(fontSize);
-			scale = table.get_font_em_size() / size;
+			scale = /* 20 *  table._size_multiply **/ size / table.get_font_em_size();
 		}
 
 		/**
@@ -159,7 +170,7 @@ export class FNTGeneratorCanvas extends FNTGeneratorBase {
 		 */
 		context.save();
 		context.clearRect(0, 0, size, size);
-		context.fillStyle = '#000';
+		context.fillStyle = '#fff';
 
 		let tx = padding;
 		let ty = padding;
@@ -171,30 +182,48 @@ export class FNTGeneratorCanvas extends FNTGeneratorBase {
 				continue;
 			}
 
-			path.char.fnt_uv = new Rectangle(
-				(tx - path.rect.x) * scale,
-				(ty - path.rect.y) * scale,
-				path.rect.width * scale,
-				path.rect.height * scale
-			);
+			// if overflow - jump next location
+			if (tx + path.rect.width + doublePad >= size / scale) {
+				tx = padding;
+				ty += maxHeight + doublePad;
+				maxHeight = 0;
+			}
 
-			context.setTransform(scale, 0, 0, scale, (tx - path.rect.x) * scale, (ty - path.rect.y) * scale);
-			context.fill(path.path);
+			/**
+			 * @todo Support multiple channel table data
+			 */
+			if (ty + path.rect.height > size / scale) {
+				console.warn('[FNTGeneratorCanvas] Font image overflow, font will corrupted!');
+			}
 
 			maxHeight = Math.max(path.rect.height, maxHeight);
 
-			// next location
-			const vx = tx + path.rect.width + doublePad;
-			const vy = ty + maxHeight + doublePad;
+			context.setTransform(
+				scale, 0, 0, scale,
+				(tx - path.rect.x) * scale,
+				(ty - path.rect.y) * scale
+			);
 
-			// if overflow - jump next location
-			if (vx >= size) {
-				maxHeight = 0;
-				tx = padding;
-				ty = vy;
-			} else {
-				tx = vx;
-			}
+			context.fill(path.path);
+			//context.strokeRect(path.rect.x,path.rect.y, path.rect.width, path.rect.height);
+
+			path.char.fnt_rect = new Rectangle(
+				(path.rect.x) / path.char.char_width,
+				(path.rect.y) / table.get_font_em_size(),
+				path.rect.width / path.char.char_width,
+				path.rect.height / table.get_font_em_size()
+			);
+
+			path.char.fnt_uv = new Rectangle(
+				(tx - path.rect.x) * scale / size,
+				(ty - path.rect.y) * scale / scale,
+				path.rect.width * scale / size,
+				path.rect.height * scale / size
+			);
+
+			path.char.fnt_channel = 0;
+
+			tx += path.rect.width + doublePad;
 		}
 
 		context.restore();
@@ -218,15 +247,15 @@ export class FNTGeneratorCanvas extends FNTGeneratorBase {
 		this.debug = debug;
 	}
 
-	public generate(font: Font, maxSize: number, fontSize: number, padding: number): BitmapImage2D[] {
-		const size = maxSize * 2;
+	public generate(font: Font, size: number, fontSize: number, padding: number): BitmapImage2D[] {
 		const context = FNTGeneratorCanvas.getCanvasContext(size, size, this.debug);
 		const bitmaps = [];
 
 		for (const key in font.font_styles) {
+			const table = <TesselatedFontTable> font.font_styles[key];
 			// render table in context
 			FNTGeneratorCanvas.render(
-				<TesselatedFontTable> font.font_styles[key],
+				table,
 				context,
 				size,
 				fontSize,
@@ -239,6 +268,7 @@ export class FNTGeneratorCanvas extends FNTGeneratorBase {
 			image.setPixels(new Rectangle(0, 0, size, size), data.data);
 
 			bitmaps.push(image);
+			table.addFNTChannel(image);
 		}
 
 		if (!this.debug) {
