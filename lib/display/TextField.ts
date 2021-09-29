@@ -2905,35 +2905,56 @@ export class TextField extends DisplayObjectContainer {
 			}
 
 			const attr = new Float2Attributes(textShape.length / 2);
-			const buffer = new Float32Array(attr.attributesBuffer.buffer);
+			const pos = new Float32Array(attr.attributesBuffer.buffer);
+
+			const uvAttr = textShape.hasUV ? new Float2Attributes(textShape.length / 2) : null;
+			const uvs = uvAttr ? new Float32Array(uvAttr.attributesBuffer.buffer) : null;
 
 			//console.log('Build shape size:', textShape.length);
 
 			let offset = 0;
-			for (const chunk of textShape.verts) {
-				buffer.set(chunk, offset);
+			for (let i = 0; i < textShape.verts.length; i++) {
+				const chunk = textShape.verts[i];
+
+				pos.set(chunk, offset);
+
+				if (uvs) {
+					uvs.set(textShape.uvs[i], offset);
+				}
+
 				offset += chunk.length;
 			}
 
 			if (textShape.shape) {
 				const element = <TriangleElements> textShape.shape.elements;
-				// there are bug with attribyte buffer, when add attr to exist
-				element.setPositions(buffer);
+				// there are bug with attribute buffer, when add attr to exist
+				element.setPositions(pos);
+
+				if (uvs) {
+					element.setUVs(uvs);
+				}
+
 				element.invalidate();
 
 				attr.dispose();
+
+				if (uvAttr) {
+					uvAttr.dispose();
+				}
 				continue;
 			}
 
 			const color = this.getTextColorForTextFormat(textShape.format);
-			let alpha = ColorUtils.float32ColorToARGB(color)[0];
-
-			if (alpha == 0) {
-				alpha = 255;
-			}
+			const alpha = ColorUtils.float32ColorToARGB(color)[0] || 255;
 
 			textShape.elements = new TriangleElements();
+
 			textShape.elements.setPositions(attr);
+
+			if (uvAttr) {
+				textShape.elements.setUVs(uvAttr);
+			}
+
 			textShape.elements.invalidate();
 
 			textShape.shape = Shape.getShape(textShape.elements);

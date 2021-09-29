@@ -1,6 +1,6 @@
 import { Matrix, AssetBase, Point, Rectangle, ColorTransform, ColorUtils } from '@awayjs/core';
 
-import { ImageSampler, AttributesBuffer, Float2Attributes, AttributesView, BitmapImage2D } from '@awayjs/stage';
+import { ImageSampler, AttributesBuffer, Float2Attributes, AttributesView, BitmapImage2D, Stage } from '@awayjs/stage';
 
 import { Style, TriangleElements } from '@awayjs/renderer';
 
@@ -30,6 +30,7 @@ interface ICharEntry {
 	y: number;
 	char: TesselatedFontChar;
 	selected?: boolean;
+	shape?: TextShape;
 }
 
 /**
@@ -123,93 +124,21 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		return this._font_chars.length;
 	}
 
-	private _drawDebugRect(glyph_verts: number[], minx: number, maxx: number,miny: number,maxy: number,) {
+	public generateFNTData (stage: Stage): void {
+		// already exist
+		if (this._fntSizeLimit > 0) {
+			return;
+		}
 
-		// left
-		glyph_verts[glyph_verts.length] = minx;
-		glyph_verts[glyph_verts.length] = miny;
+		const generator = new FNTGeneratorCanvas(stage, false);
+		const bitmaps = generator.generate(this.font, this._font_em_size, this._current_size, 4);
 
-		glyph_verts[glyph_verts.length] = minx + 1;
-		glyph_verts[glyph_verts.length] = maxy;
-
-		glyph_verts[glyph_verts.length] = minx;
-		glyph_verts[glyph_verts.length] = maxy;
-
-		glyph_verts[glyph_verts.length] = minx;
-		glyph_verts[glyph_verts.length] = miny;
-
-		glyph_verts[glyph_verts.length] = minx + 1;
-		glyph_verts[glyph_verts.length] = miny;
-
-		glyph_verts[glyph_verts.length] = minx + 1;
-		glyph_verts[glyph_verts.length] = maxy;
-
-		// right
-
-		glyph_verts[glyph_verts.length] = maxx;
-		glyph_verts[glyph_verts.length] = miny;
-
-		glyph_verts[glyph_verts.length] = maxx - 1;
-		glyph_verts[glyph_verts.length] = maxy;
-
-		glyph_verts[glyph_verts.length] = maxx;
-		glyph_verts[glyph_verts.length] = maxy;
-
-		glyph_verts[glyph_verts.length] = maxx;
-		glyph_verts[glyph_verts.length] = miny;
-
-		glyph_verts[glyph_verts.length] = maxx - 1;
-		glyph_verts[glyph_verts.length] = miny;
-
-		glyph_verts[glyph_verts.length] = maxx - 1;
-		glyph_verts[glyph_verts.length] = maxy;
-
-		// top
-		glyph_verts[glyph_verts.length] = minx + 1;
-		glyph_verts[glyph_verts.length] = miny;
-
-		glyph_verts[glyph_verts.length] = minx + 1;
-		glyph_verts[glyph_verts.length] = miny + 1;
-
-		glyph_verts[glyph_verts.length] = maxx - 1;
-		glyph_verts[glyph_verts.length] = miny;
-
-		glyph_verts[glyph_verts.length] = minx + 1;
-		glyph_verts[glyph_verts.length] = miny + 1;
-
-		glyph_verts[glyph_verts.length] = maxx - 1;
-		glyph_verts[glyph_verts.length] = miny + 1;
-
-		glyph_verts[glyph_verts.length] = maxx - 1;
-		glyph_verts[glyph_verts.length] = miny;
-
-		// bottom
-		glyph_verts[glyph_verts.length] = minx + 1;
-		glyph_verts[glyph_verts.length] = maxy;
-
-		glyph_verts[glyph_verts.length] = minx + 1;
-		glyph_verts[glyph_verts.length] = maxy - 1;
-
-		glyph_verts[glyph_verts.length] = maxx - 1;
-		glyph_verts[glyph_verts.length] = maxy;
-
-		glyph_verts[glyph_verts.length] = minx + 1;
-		glyph_verts[glyph_verts.length] = maxy - 1;
-
-		glyph_verts[glyph_verts.length] = maxx - 1;
-		glyph_verts[glyph_verts.length] = maxy - 1;
-
-		glyph_verts[glyph_verts.length] = maxx - 1;
-		glyph_verts[glyph_verts.length] = maxy;
-	}
-
-	public generateFNTData() {
-		const generator = new FNTGeneratorCanvas(null, true);
-		const bitmap = generator.generate(this.font, this._font_em_size, 14, 4);
-
-		document.body.appendChild(generator.canvas);
-
-		debugger;
+		if (bitmaps && bitmaps.length > 0) {
+			/**
+			 * Random value, anyway we render real font dimension ;)
+			 */
+			this._fntSizeLimit = this._current_size / 2;
+		}
 	}
 
 	public generateFNTTextures(padding: number, fontSize: number, texSize: number): Shape[] {
@@ -661,7 +590,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 			if (charGlyph.fill_data === null) {
 
-				/*
 				if (charGlyph.fill_data_path.commands[0][0] == 1
 					&& charGlyph.fill_data_path.data[0][0] == 0
 					&& charGlyph.fill_data_path.data[0][1] == 0) {
@@ -670,7 +598,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 					charGlyph.fill_data_path.data[0].shift();
 					charGlyph.fill_data_path.commands[0].shift();
 					charGlyph.fill_data_path.commands[0][0] = 2;
-				}*/
+				}
 
 				charGlyph.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(charGlyph.fill_data_path, true);
 			}
@@ -695,35 +623,21 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		return new Point(x - origin_x, this.getLineHeight());
 	}
 
-	public fillTextRun(tf: TextField, format: TextFormat, startWord: number, wordCnt: number) {
+	public fillTextRun (tf: TextField, format: TextFormat, startWord: number, wordCnt: number) {
+		const useFNT: boolean = this._fntSizeLimit >= 0 && this._fntSizeLimit >= format.size;
 
-		const useFNT: boolean = this._fntSizeLimit >= 0 &&
-			(this._fntSizeLimit == 0 || this._fntSizeLimit >= format.size);
-		const textShape: TextShape =
-			tf.getTextShapeForIdentifierAndFormat(format.color.toString() + useFNT.toString() + '0', format);
-
-		const fntTextShapesByChannel: any = {};
-		const fntSelectedTextShapesByChannel: any = {};
-		//var currentFNTTextShapeMap:any;
-
-		let argb: number[];
-		let mat: MethodMaterial;
 		if (useFNT) {
-			argb = ColorUtils.float32ColorToARGB(format.color);
-			mat = new MethodMaterial(this._fnt_channels[0]);
-			mat.colorTransform = new ColorTransform(argb[1] / 255, argb[2] / 255, argb[3] / 255);
-			mat.bothSides = true;
-			mat.alphaBlending = true;
-			mat.useColorTransform = true;
-			mat.style.sampler = new ImageSampler(false, true, true);
+			return this.fillTextRunFNT(tf, format, startWord, wordCnt);
 		}
-		textShape.fntMaterial = useFNT ? mat : null;
-		fntTextShapesByChannel[format.color.toString() + useFNT.toString() + '0'] = textShape;
+
+		const textShape = tf.getTextShapeForIdentifierAndFormat(format.color.toString() + 'false0', format);
+
 		let textShapeSelected: TextShape;
 		let newFormat: TextFormat;
 
 		const wordsCount = startWord + wordCnt;
 		const size_multiply = this._size_multiply;
+
 		let select_start = tf.selectionBeginIndex;
 		let select_end = tf.selectionEndIndex;
 		let start_x: number = 0;
@@ -733,13 +647,12 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			newFormat.color = 0xffffff;
 
 			textShapeSelected = tf.getTextShapeForIdentifierAndFormat(useFNT.toString() + '0', newFormat);
-			fntSelectedTextShapesByChannel[useFNT.toString() + '0'] = textShapeSelected;
-			mat = new MethodMaterial(this._fnt_channels[0]);
+
+			const mat = new MethodMaterial(this._fnt_channels[0]);
 			mat.bothSides = true;
 			mat.alphaBlending = true;
 			mat.useColorTransform = true;
 			mat.style.sampler = new ImageSampler(false, true, true);
-			textShapeSelected.fntMaterial = useFNT ? mat : null;
 
 			if (newFormat.underline && (startWord + 1) < tf.words.length) {
 				start_x = tf.words.get(startWord).x;
@@ -784,53 +697,19 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 						continue;
 					}
 
-					if (useFNT) {
-						// the font should use fnt
-						const curFormat = curTShape.format;
-						let ctmpTShape = (tf.isInFocus && c >= select_start && c < select_end) ?
-							fntSelectedTextShapesByChannel[useFNT.toString() + charGlyph.fnt_channel] :
-							fntTextShapesByChannel[curFormat.color.toString() +
-								useFNT.toString() + charGlyph.fnt_channel];
-						if (!ctmpTShape) {
-							const newtextShape: TextShape =
-								tf.getTextShapeForIdentifierAndFormat(
-									curFormat.color.toString()
-									+ useFNT.toString() + charGlyph.fnt_channel.toString(),
-									curFormat);
-							const argb: number[] = ColorUtils.float32ColorToARGB(curFormat.color);
-							const mat: MethodMaterial = new MethodMaterial(
-								this._fnt_channels[charGlyph.fnt_channel]);
-							mat.colorTransform = new ColorTransform(argb[1] / 255, argb[2] / 255, argb[3] / 255);
-							mat.bothSides = true;
-							mat.alphaBlending = true;
-							mat.useColorTransform = true;
-							mat.style.sampler = new ImageSampler(false, true, true);
-							newtextShape.fntMaterial = mat;
-							fntTextShapesByChannel[curFormat.color.toString() +
-								useFNT.toString() + charGlyph.fnt_channel] = newtextShape;
-							ctmpTShape = newtextShape;
-						}
-						const x1: number = x + ((charGlyph.char_width * size_multiply) * charGlyph.fnt_rect.x);
-						const x2: number = x1 + ((charGlyph.char_width * size_multiply) * charGlyph.fnt_rect.width);
-						const y1: number = y + ((this._font_em_size * size_multiply) * charGlyph.fnt_rect.y);
-						const y2: number = y1 + ((this._font_em_size * size_multiply) * charGlyph.fnt_rect.height);
+					if (curTShape === textShapeSelected) {
+						selectedCharEntries.push({
+							char: charGlyph, x, y, selected: true
+						});
 
-						throw 'Invalid implementation, verts not raw array';
-
+						selectedBuffSize += charGlyph.fill_data.buffer.byteLength / 4;
 					} else {
-						if (curTShape === textShapeSelected) {
-							selectedCharEntries.push({
-								char: charGlyph, x, y, selected: true
-							});
-
-							selectedBuffSize += charGlyph.fill_data.buffer.byteLength / 4;
-						} else {
-							charEntries.push({
-								char: charGlyph, x, y, selected: false
-							});
-							textBuffSize += charGlyph.fill_data.buffer.byteLength / 4;
-						}
+						charEntries.push({
+							char: charGlyph, x, y, selected: false
+						});
+						textBuffSize += charGlyph.fill_data.buffer.byteLength / 4;
 					}
+
 					x += charGlyph.char_width * size_multiply;
 				}
 			}
@@ -883,6 +762,203 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			textShapeSelected.addChunk(buff);
 		}
 
+	}
+
+	/**
+	 * Fill text run but use FNT Texture.
+	 */
+	public fillTextRunFNT (tf: TextField, format: TextFormat, startWord: number, wordCnt: number) {
+		const textShape: TextShape = tf.getTextShapeForIdentifierAndFormat(format.color.toString() + 'true0', format);
+
+		const fntTextShapesByChannel: any = {};
+		const fntSelectedTextShapesByChannel: any = {};
+		//var currentFNTTextShapeMap:any;
+
+		const argb = ColorUtils.float32ColorToARGB(format.color);
+		const mat = new MethodMaterial(this._fnt_channels[0]);
+
+		mat.colorTransform = new ColorTransform(argb[1] / 255, argb[2] / 255, argb[3] / 255);
+		mat.bothSides = true;
+		mat.alphaBlending = true;
+		mat.useColorTransform = true;
+		mat.style.sampler = new ImageSampler(false, true, true);
+
+		textShape.fntMaterial = mat;
+		fntTextShapesByChannel[format.color.toString() + 'true0'] = textShape;
+
+		let textShapeSelected: TextShape;
+		let newFormat: TextFormat;
+
+		const wordsCount = startWord + wordCnt;
+		const size_multiply = this._size_multiply;
+
+		let select_start = tf.selectionBeginIndex;
+		let select_end = tf.selectionEndIndex;
+		let start_x: number = 0;
+
+		if (tf.selectable) {
+			newFormat = format.clone();
+			newFormat.color = 0xffffff;
+
+			textShapeSelected = tf.getTextShapeForIdentifierAndFormat('true0', newFormat);
+			fntSelectedTextShapesByChannel['true0'] = textShapeSelected;
+
+			const mat = new MethodMaterial(this._fnt_channels[0]);
+			mat.bothSides = true;
+			mat.alphaBlending = true;
+			mat.useColorTransform = true;
+			mat.style.sampler = new ImageSampler(false, true, true);
+			textShapeSelected.fntMaterial = mat;
+
+			if (newFormat.underline && (startWord + 1) < tf.words.length) {
+				start_x = tf.words.get(startWord).x;
+			}
+
+			if (tf.selectionEndIndex < tf.selectionBeginIndex) {
+				select_start = tf.selectionEndIndex;
+				select_end = tf.selectionBeginIndex;
+			}
+		}
+
+		const shapeArray = new Map<TextShape, {
+			uv: number [],
+			pos: number []
+		}>();
+
+		const underlines: Float32Array[] = [];
+
+		// loop over all the words and create the text data for it
+		// each word provides its own start-x and start-y values, so we can just ignore whitespace-here
+		for (let w = startWord; w < wordsCount; w += 1) {
+			const word = tf.words.get(w);
+
+			let x = word.x;
+			const y = word.y;
+
+			const startIdx = word.start;
+			const charsCount = startIdx + word.len;
+
+			for (let c = startIdx; c < charsCount; c++) {
+				const selected = (tf.isInFocus && c >= select_start && c < select_end);
+				const curTShape = selected ? textShapeSelected : textShape;
+
+				if (tf.chars_codes[c] !== 32 && tf.chars_codes[c] !== 9) {
+					const charGlyph = this.getChar(tf.chars_codes[c].toString());
+
+					if (!charGlyph) {
+						if (once(this, 'miss' + tf.chars_codes[c])) {
+							console.debug('[TesselatedFontTable] Error: char not found in fontTable',
+								tf.chars_codes[c], String.fromCharCode(tf.chars_codes[c]));
+						}
+						continue;
+					}
+
+					// the font should use fnt
+					const curFormat = curTShape.format;
+					let fntFilledShape = selected ?
+						fntSelectedTextShapesByChannel['true' + charGlyph.fnt_channel] :
+						fntTextShapesByChannel[curFormat.color.toString() + 'true' + charGlyph.fnt_channel];
+
+					if (!fntFilledShape) {
+						// eslint-disable-next-line max-len
+						fntFilledShape = tf.getTextShapeForIdentifierAndFormat(curFormat.color.toString() + 'true' + charGlyph.fnt_channel.toString(), curFormat);
+
+						const argb = ColorUtils.float32ColorToARGB(curFormat.color);
+						const mat = new MethodMaterial(this._fnt_channels[charGlyph.fnt_channel]);
+
+						mat.colorTransform = new ColorTransform(argb[1] / 255, argb[2] / 255, argb[3] / 255);
+						mat.bothSides = true;
+						mat.alphaBlending = true;
+						mat.useColorTransform = true;
+						mat.style.sampler = new ImageSampler(false, true, true);
+						fntFilledShape.fntMaterial = mat;
+
+						// eslint-disable-next-line max-len
+						fntTextShapesByChannel[curFormat.color.toString() + 'true' + charGlyph.fnt_channel] = fntFilledShape;
+					}
+
+					// FNT is very little, has 6 vertices per shape (instead of 300 ++)
+					// fill it directly
+					const target = shapeArray.get(fntFilledShape) || {
+						uv: [],
+						pos: []
+					};
+
+					this._emitCharFNT (target, charGlyph, x, y);
+					shapeArray.set(fntFilledShape, target);
+
+					x += charGlyph.char_width * size_multiply;
+				}
+			}
+
+			/*
+			todo Generate underline for regular shape
+
+			const half_thickness: number = 0.25 * tf.internalScale.y;
+			const topY: number = y + this.getUnderLineHeight() + half_thickness;
+			const bottomY: number = y + this.getUnderLineHeight() - half_thickness;
+
+			if (tf.selectable && newFormat.underline && (startWord + 1) < tf.words.length) {
+				const underBuff = new Float32Array(12);
+
+				underBuff[0] = start_x;
+				underBuff[1] = bottomY;
+				underBuff[2] = start_x;
+				underBuff[3] = topY;
+				underBuff[4] = x;
+				underBuff[5] = topY;
+				underBuff[6] = x;
+				underBuff[7] = topY;
+				underBuff[8] = x;
+				underBuff[9] = bottomY;
+				underBuff[10] = start_x;
+				underBuff[11] = bottomY;
+
+				underlines.push(underBuff);
+			}
+			*/
+
+		} // for word
+
+		// oh, es5... iterating over map won't working
+		const shapes = Array.from(shapeArray.keys());
+
+		for (const shape of shapes) {
+			const values = shapeArray.get(shape);
+
+			shape.addChunk(
+				new Float32Array(values.pos),
+				new Float32Array(values.uv)
+			);
+		}
+	}
+
+	private _emitCharFNT (
+		target: {uv: number[], pos: number[]},
+		charGlyph: TesselatedFontChar,
+		x: number,
+		y: number
+	) {
+		const scale = this._size_multiply;
+		const size = this._font_em_size * scale;
+		const rect = charGlyph.fnt_rect;
+		const uv = charGlyph.fnt_uv;
+		const width = charGlyph.char_width * scale;
+
+		const x1 = x + width * rect.x;
+		const x2 = x1 + width * rect.width;
+		const y1 = y + size * rect.y;
+		const y2 = y1 + size * rect.height;
+
+		target.pos.push(
+			x1, y1, x1, y2, x2, y1,
+			x2, y1, x1, y2, x2, y2
+		);
+
+		target.uv.push(
+			uv.x, uv.y, uv.x, uv.bottom, uv.right, uv.y,
+			uv.right, uv.y, uv.bottom, uv.right, uv.right, uv.bottom
+		);
 	}
 
 	public createPointGlyph_9679(): TesselatedFontChar {
