@@ -291,14 +291,8 @@ export class TextField extends DisplayObjectContainer {
 	public _textShapesDirty: Boolean = false;
 
 	public chars_codes: number[] = [];
-	private chars_codes_prev: number[] = [];
 	public chars_width: number[] = [];
 	public tf_per_char: TextFormat[] = [];
-	public tf_per_char_prev: TextFormat[] = [];
-
-	// we use that for text appending to save verts count before last word verts are added to textShape.
-	// Then on text append we clear last word verts because the word may be wrapped to next line
-	public last_word_vertices_count: number = 0;
 
 	// stores offset and length and width for each word
 	public words: WordStore = new WordStore(10);
@@ -2005,7 +1999,6 @@ export class TextField extends DisplayObjectContainer {
 
 	public clear(): void {
 		super.clear();
-
 	}
 
 	/**
@@ -2047,6 +2040,7 @@ export class TextField extends DisplayObjectContainer {
 			this._labelData = null;
 		}
 
+		this._resetParagraph();
 		this._clearTextShapes();
 
 		this._textFormat = null;
@@ -2076,22 +2070,10 @@ export class TextField extends DisplayObjectContainer {
 
 		if (this._textDirty) {
 			this._positionsDirty = true;
-
-			this.chars_codes_prev = Array.from(this.chars_codes);
-			this.tf_per_char_prev = Array.from(this.tf_per_char);
-			// we do not use last word since last word may changed.
-			// For example "Hello w" and "Hello world" both have 3 words but the last word actually changed
-
 			this._lastWordsCount = this.words.length;
-			this.chars_codes.length = 0;
-			this.chars_width.length = 0;
 			this.char_positions_x.length = 0;
 			this.char_positions_y.length = 0;
-			this.tf_per_char.length = 0;
 			this.words.length = 0;
-			this._textRuns_words.length = 0;
-			this._textRuns_formats.length = 0;
-			this._paragraph_textRuns_indices.length = 0;
 			this.lines_wordStartIndices.length = 0;
 			this.lines_wordEndIndices.length = 0;
 			this.lines_start_y.length = 0;
@@ -2104,7 +2086,6 @@ export class TextField extends DisplayObjectContainer {
 
 			this._maxScrollH = 0;
 			this._maxScrollV = 0;
-
 			this._maxWidthLine = 0;
 
 			// sometimes needed for TLFTextfields
@@ -2112,10 +2093,7 @@ export class TextField extends DisplayObjectContainer {
 			if (!this._textFormat && this._textFormats.length > 0)
 				this._textFormat = this._textFormats[0];
 
-			if (this._iText != '' && this._textFormat != null) {
-				//console.log("textlength", this.text.toString().length, this.text.toString());
-				this.buildParagraphs();
-			}
+			this.buildParagraphs();
 
 			//console.log("TextField buildParagraph", this.id, this._iText);
 			//console.log("TextField buildParagraph", this.id, this._autoSize);
@@ -2172,16 +2150,6 @@ export class TextField extends DisplayObjectContainer {
 		//	the data for new text-shapes is collected from the font-tables
 		//	and the new text-shapes are created and assigned to the graphics
 
-		if (this._textShapesDirty) {
-			// do nothing
-		} else if (this.chars_codes_prev.length == 0) {
-			// do nothing
-		} else if (this.chars_codes_prev.length > this.chars_codes.length) {
-			this._textShapesDirty = true;
-		} else if (this.chars_codes_prev[0] !== this.chars_codes[0]) {
-			this._textShapesDirty = true;
-		}
-
 		if (this._glyphsDirty) {
 			//console.log("TextField buildGlyphs", this.id, this.words);
 			if (this._labelData) {
@@ -2235,17 +2203,79 @@ export class TextField extends DisplayObjectContainer {
 		this.text = paste;
 	}
 
-	private buildParagraphs() {
-		const thisText = this._iText.toString();
-		const f_len = this._textFormatsIdx.length;
+	private _resetParagraph() {
+		this._textShapesDirty = this._textShapesDirty || this.chars_codes.length > 0;
 
+		this.tf_per_char.length = 0;
+		this.chars_width.length = 0;
+		this.chars_codes.length = 0;
+		this._paragraph_textRuns_indices.length = 0;
+		this._textRuns_formats.length = 0;
+		this._textRuns_words.length = 0;
+	}
+
+	private buildParagraphs() {
+		if (!this._textDirty) {
+			return;
+		}
+
+		// clear paragraph data when clear
+		if (this._iText === '' || !this._textFormat) {
+			this._resetParagraph();
+			return;
+		}
+
+		let paragraphIndex = 0;
+		let formatIndex = 0;
+		let wordIndex = 0;
+		let charCodeIndex = 0;
+
+		// track char mutations between new and older.
+		let codeChanges = 0;
 		let linewidth = 0;
 		let c_start = 0;
 
-		this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length] = this._textRuns_formats.length;
+		const thisText = this._iText;
+		const formatsCount = this._textFormatsIdx.length;
+		const paragraphIndices = this._paragraph_textRuns_indices;
+		const textRunFormats = this._textRuns_formats;
+		const textRunWords = this._textRuns_words;
+		const charCodes = this.chars_codes;
+		const charTextFormats = this.tf_per_char;
+		const charWidths = this.chars_width;
+
+		const pushParagraph = (formatIndex: number) => {
+			paragraphIndices[paragraphIndex] = formatIndex;
+			paragraphIndex++;
+		};
+
+		const pushFormat = (format: TextFormat, updateParagraph = false) => {
+			updateParagraph && pushParagraph(formatIndex);
+			textRunFormats[formatIndex++] = format;
+			return format;
+		};
+
+		const pushRunEntry = (word: IRunEntry) => {
+			textRunWords[wordIndex++] = word;
+			return word;
+		};
+
+		const pushCharData = (code: number, tf: TextFormat, width: number) => {
+			codeChanges += +(code !== charCodes[charCodeIndex]);
+			codeChanges += +(tf !== charTextFormats[charCodeIndex]);
+			codeChanges += +(width !== charWidths[charCodeIndex]);
+
+			charCodes[charCodeIndex] = code;
+			charTextFormats[charCodeIndex] = tf;
+			charWidths[charCodeIndex] = width;
+
+			charCodeIndex++;
+		};
+
+		pushParagraph(formatIndex);
 
 		// loop over all textFormats
-		for (let f = 0; f < f_len; f++) {
+		for (let f = 0; f < formatsCount; f++) {
 			let word_cnt = 0;
 			let whitespace_cnt = 0;
 			let startNewWord = true;
@@ -2255,18 +2285,20 @@ export class TextField extends DisplayObjectContainer {
 
 			tf.font_table.initFontSize(tf.size);
 			// if that is last format then it goes till the end of text:
-			const c_end = (f === f_len - 1) ? thisText.length : this._textFormatsIdx[f];
+			const c_end = (f === formatsCount - 1) ? thisText.length : this._textFormatsIdx[f];
 
 			if (c_end > c_start) {
 
 				// create a new textrun
-				this._textRuns_formats[this._textRuns_formats.length] = tf;
-				let run = this._textRuns_words[this._textRuns_words.length] = {
+				pushFormat(tf);
+
+				let run = pushRunEntry({
 					start: this.words.length,
 					count: 0,
 					width: 0,
 					space: 0
-				};
+				});
+
 				// loop over all chars for this format
 				//console.log("textrun tf = ", tf);
 				for (let c = c_start; c < c_end; c++) {
@@ -2299,16 +2331,15 @@ export class TextField extends DisplayObjectContainer {
 						run.width = linewidth;
 						run.space = whitespace_cnt;
 
-						this._paragraph_textRuns_indices[this._paragraph_textRuns_indices.length] =
-							this._textRuns_formats.length;
 						// create a new textrun
-						this._textRuns_formats[this._textRuns_formats.length] = tf;
-						run = this._textRuns_words[this._textRuns_words.length] = {
+						pushFormat(tf, true);
+
+						run = pushRunEntry({
 							start: this.words.length,
 							count: 0,
 							width: 0,
 							space: 0
-						};
+						});
 
 						startNewWord = true;
 						whitespace_cnt = 0;
@@ -2320,9 +2351,6 @@ export class TextField extends DisplayObjectContainer {
 						linewidth = 0;
 						continue;
 					}
-
-					this.chars_codes[this.chars_codes.length] = char_code;
-					this.tf_per_char[this.tf_per_char.length] = tf;
 
 					let char_width = tf.font_table.getCharWidth(char_code.toString());
 
@@ -2337,7 +2365,8 @@ export class TextField extends DisplayObjectContainer {
 					}
 
 					linewidth += char_width;
-					this.chars_width[this.chars_width.length] = char_width;
+
+					pushCharData(char_code, tf, char_width);
 
 					// we create a new word if the char is either:
 					// 	- first char of paragraph
@@ -2347,7 +2376,7 @@ export class TextField extends DisplayObjectContainer {
 						//console.log("add WhiteSpace");
 						whitespace_cnt++;
 						this.words.put(
-							this.chars_codes.length - 1,
+							charCodeIndex - 1,
 							0, 0,
 							char_width,
 							1
@@ -2368,7 +2397,7 @@ export class TextField extends DisplayObjectContainer {
 							//console.log("startNewWord");
 							// create new word (either this is the first char, or the last char was whitespace)
 							this.words.put(
-								this.chars_codes.length - 1,
+								charCodeIndex - 1,
 								0, 0,
 								char_width,
 								1
@@ -2397,27 +2426,19 @@ export class TextField extends DisplayObjectContainer {
 			c_start = c_end;
 		}
 
-		// run through all the chars to check if new text is just old text with some data appended
-		if (this.chars_codes_prev.length == 0) {
-			return;
-		} else if (this.chars_codes_prev[0] !== this.chars_codes[0]) {
-			this._textShapesDirty = true;
-			return;
-		}
+		this._textShapesDirty = (
+			this._textShapesDirty ||
+			codeChanges > 0 ||
+			charCodes.length !== charCodeIndex
+		);
 
-		for (let c = this.chars_codes.length - 1; c >= 0; c--) {
-			const char_code = this.chars_codes[c];
-			const tf = this.tf_per_char_prev[c];
-
-			if (
-				// this.chars_codes_prev.length <= this.chars_codes.length &&
-				this.chars_codes_prev[c] &&
-				(this.chars_codes_prev[c] != char_code
-				|| (<any> this.tf_per_char_prev[c])._style_name != (<any>tf)._style_name)) {
-				this._textShapesDirty = true;
-				break;
-			}
-		}
+		// reduce paragraph count if will be greater that older
+		paragraphIndices.length = paragraphIndex;
+		textRunWords.length = wordIndex;
+		textRunFormats.length = formatIndex;
+		charCodes.length = charCodeIndex;
+		charTextFormats.length = charCodeIndex;
+		charWidths.length = charCodeIndex;
 	}
 
 	private adjustPositionForAutoSize(newWidth: number) {
@@ -3949,9 +3970,6 @@ export class TextField extends DisplayObjectContainer {
 	private _clearTextShapes(): void {
 		this._textShapesDirty = false;
 
-		this.last_word_vertices_count = 0;
-		this.tf_per_char_prev.length = 0;
-		this.chars_codes_prev.length = 0;
 		this._lastWordsCount = 0;
 
 		if (this.targetGraphics)
