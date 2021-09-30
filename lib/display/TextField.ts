@@ -749,12 +749,11 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	public getTextShapeForIdentifierAndFormat(id: string, format: TextFormat) {
-		if (this.textShapes.hasOwnProperty(id)) {
+		if (this.textShapes[id]) {
 			return this.textShapes[id];
 		}
-		this.textShapes[id] = new TextShape();
-		this.textShapes[id].format = format;
-		return this.textShapes[id];
+
+		return (this.textShapes[id] = new TextShape(format, id));
 	}
 
 	/**

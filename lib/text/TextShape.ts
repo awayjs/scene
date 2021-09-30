@@ -10,7 +10,6 @@ export class TextShape {
 
 	public verts: Array<Float32Array> = [];
 	public uvs: Array<Float32Array> = [];
-	public format: TextFormat;
 	public shape: Shape;
 	public fntMaterial: MaterialBase;
 	public elements: TriangleElements;
@@ -60,7 +59,10 @@ export class TextShape {
 		return this.uvs.length > 0;
 	}
 
-	constructor() {
+	constructor(
+		public readonly format: TextFormat,
+		public readonly cacheId: string
+	) {
 		this.verts = [];
 		this.uvs = [];
 	}
