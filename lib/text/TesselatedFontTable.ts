@@ -460,14 +460,13 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			return (space * 2 * 20) / 20;
 		}
 
-		let t_font_char: TesselatedFontChar = this.getChar(char_code, false);
+		let t_font_char = this.getChar(char_code, false);
+
 		if (t_font_char) {
-			return (Math.floor(t_font_char.char_width * this._size_multiply * 20)) / 20;
-		} else {
-			if (char_code == '9679') {
-				t_font_char = this.createPointGlyph_9679();
-				return (Math.floor(t_font_char.char_width * this._size_multiply * 20)) / 20;
-			}
+			return ((t_font_char.char_width * this._size_multiply * 20) | 0) / 20;
+		} else if (char_code == '9679') {
+			t_font_char = this.createPointGlyph_9679();
+			return ((t_font_char.char_width * this._size_multiply * 20) | 0) / 20;
 		}
 
 		return 0;
@@ -680,32 +679,37 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 				const curTShape = (tf.isInFocus && c >= select_start && c < select_end) ?
 					textShapeSelected : textShape;
 
-				if (tf.chars_codes[c] !== 32 && tf.chars_codes[c] !== 9) {
-					const charGlyph = this.getChar(tf.chars_codes[c].toString());
+				const code = tf.chars_codes[c];
 
-					if (!charGlyph) {
-						if (once(this, 'miss' + tf.chars_codes[c])) {
-							console.debug('[TesselatedFontTable] Error: char not found in fontTable',
-								tf.chars_codes[c], String.fromCharCode(tf.chars_codes[c]));
-						}
-						continue;
-					}
-
-					if (curTShape === textShapeSelected) {
-						selectedCharEntries.push({
-							char: charGlyph, x, y, selected: true
-						});
-
-						selectedBuffSize += charGlyph.fill_data.buffer.byteLength / 4;
-					} else {
-						charEntries.push({
-							char: charGlyph, x, y, selected: false
-						});
-						textBuffSize += charGlyph.fill_data.buffer.byteLength / 4;
-					}
-
-					x += charGlyph.char_width * size_multiply;
+				if (code === 32 || code === 9) {
+					continue;
 				}
+
+				const charGlyph = this.getChar(code, true);
+
+				if (!charGlyph) {
+					if (once(this, 'miss' + tf.chars_codes[c])) {
+						console.debug('[TesselatedFontTable] Error: char not found in fontTable',
+							tf.chars_codes[c], String.fromCharCode(tf.chars_codes[c]));
+					}
+					continue;
+				}
+
+				if (curTShape === textShapeSelected) {
+					selectedCharEntries.push({
+						char: charGlyph, x, y, selected: true
+					});
+
+					selectedBuffSize += charGlyph.fill_data.buffer.byteLength / 4;
+				} else {
+					charEntries.push({
+						char: charGlyph, x, y, selected: false
+					});
+					textBuffSize += charGlyph.fill_data.buffer.byteLength / 4;
+				}
+
+				x += charGlyph.char_width * size_multiply;
+
 			}
 
 			const half_thickness: number = 0.25 * tf.internalScale.y;
