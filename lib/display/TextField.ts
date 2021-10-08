@@ -1432,16 +1432,25 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	public set scrollV(value: number) /*int*/ {
-		if (Math.floor(value) == this._scrollV)
+		const rounded = Math.round(value);
+
+		if (rounded === this._scrollV)
 			return;
-		this._scrollV = Math.floor(value);
+
+		this._scrollV = rounded;
 
 		if (this._scrollV > this._maxScrollV)
 			this._scrollV = this._maxScrollV;
 
+		if (this._scrollV <= 0) {
+			this._scrollV = 0;
+		}
+
 		if (!this.textChild) {
 			return;
 		}
+
+		// unsafe
 		this.textChild.y = -this.lines_start_y[this._scrollV];
 	}
 
