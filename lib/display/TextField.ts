@@ -30,6 +30,7 @@ import { ITextfieldAdapter } from '../adapters/ITextfieldAdapter';
 import { HTMLTextProcessor } from '../text/HTMLTextProcessor';
 import { TextFormatAlign } from '../text/TextFormatAlign';
 import { MouseEvent } from '../events/MouseEvent';
+import { Settings } from '../Settings';
 
 interface IWord {
 	start: number;
@@ -2911,7 +2912,9 @@ export class TextField extends DisplayObjectContainer {
 
 			tr_formats[tr].font_table.initFontSize(tr_formats[tr].size);
 
-			(tr_formats[tr].font_table as TesselatedFontTable).generateFNTData(null);
+			if (Settings.USE_UNSAFE_FNT) {
+				(tr_formats[tr].font_table as TesselatedFontTable).generateFNTData(null);
+			}
 
 			tr_formats[tr].font_table.fillTextRun(
 				this, tr_formats[tr], run.start, run.count);
