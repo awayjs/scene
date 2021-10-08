@@ -1095,6 +1095,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			if (name == '9679') {
 				return this.createPointGlyph_9679();
 			}
+
+			return null;
 		}
 
 		// tesselation pass
