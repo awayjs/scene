@@ -1111,7 +1111,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		if (!(fontChar.fill_data == null && fontChar.stroke_data == null)
 			&& fontChar.lastTesselatedScale >= qualityStepScale
 		) {
-			return;
+			return fontChar;
 		}
 
 		const path = fontChar.fill_data_path;
