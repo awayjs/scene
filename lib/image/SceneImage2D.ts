@@ -505,13 +505,60 @@ export class SceneImage2D extends BitmapImage2D {
 			this._initalFillColor = null;
 		}
 
-		this._stage.copyPixels(source, this, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha);
+		let compositeSource: Image2D = source;
+
+		// merge alpha with source
+		if (alphaBitmapData) {
+			compositeSource = this._stage.filterManager.popTemp(source.width, source.height);
+
+			//this._stage.filterManager.copyPixels(source, compositeSource, source.rect, source.rect.topLeft);
+			this._stage.filterManager.copyPixels(
+				alphaBitmapData,
+				compositeSource,
+				new Rectangle(
+					alphaPoint.x,
+					alphaPoint.y,
+					sourceRect.width,
+					sourceRect.height
+				),
+				new Point(0,0)
+			);
+
+			this._stage.filterManager.copyPixels(
+				source,
+				compositeSource,
+				source.rect,
+				new Point(0,0),
+				true,
+				'alpha_back'
+			);
+		}
+
+		this._stage.filterManager.copyPixels(
+			compositeSource,
+			this,
+			sourceRect,
+			destPoint,
+			mergeAlpha
+		);
+
+		if (alphaBitmapData) {
+			this._stage.filterManager.pushTemp(compositeSource);
+		}
+
 		this._imageDataDirty = true;
 	}
 
 	public threshold(
-		source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point,
-		operation: string, threshold: number, color: number, mask: number, copySource: boolean): void {
+		source: BitmapImage2D,
+		sourceRect: Rectangle,
+		destPoint: Point,
+		operation: string,
+		threshold: number,
+		color: number,
+		mask: number,
+		copySource: boolean
+	): void {
 
 		this._lastUsedFill = null;
 		this.dropAllReferences();
