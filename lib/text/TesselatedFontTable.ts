@@ -1184,6 +1184,13 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		this._font_chars_dic[name] = t_font_char;
 	}
 
+	private roundTo(val: number) {
+		const p = Settings.TEXT_SHAPE_ROUND_PRECISION;
+		const invP = 1 / (p || 1);
+
+		return Math.floor(val * invP) * p;
+	}
+
 	private _fillBuffer(
 		buffer: Float32Array,
 		chars: ICharEntry[],
@@ -1203,8 +1210,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			const count = view.length;
 
 			for (let v = 0; v < count; v += 2) {
-				buffer[offset + v + 0] = view[v + 0] * scale + x;
-				buffer[offset + v + 1] = view[v + 1] * scale + y;
+				buffer[offset + v + 0] = this.roundTo(view[v + 0] * scale + x);
+				buffer[offset + v + 1] = this.roundTo(view[v + 1] * scale + y);
 			}
 
 			offset += view.length;

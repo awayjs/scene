@@ -13,6 +13,7 @@ export interface ISceneSettings {
 	BLEND_MODE_REMAP_TABLE: Record<string, string>;
 	FONT_TESSELATION_QUALITY: number;
 	USE_UNSAFE_FNT: boolean;
+	TEXT_SHAPE_ROUND_PRECISION: number;
 }
 
 export const Settings: ISceneSettings = {
@@ -73,4 +74,10 @@ export const Settings: ISceneSettings = {
 	 * @description Use unsafe FNT (pre-cached font shapes onto texture)
 	 */
 	USE_UNSAFE_FNT: false,
+
+	/**
+	 * @description Precision of text building for rounding a vertices placement of text shape.
+	 * Used for correction text blurring when pixel is missposited
+	 */
+	TEXT_SHAPE_ROUND_PRECISION: 1,
 };
