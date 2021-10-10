@@ -2678,7 +2678,7 @@ export class TextField extends DisplayObjectContainer {
 			for (w = start_idx; w < end_idx; w += 1) {
 				const word = this.words.get(w);
 
-				word.x += offsetx;
+				word.x = offsetx;
 				char_pos = 0;
 				start_idx = word.start;
 				c_len = start_idx + word.len;
