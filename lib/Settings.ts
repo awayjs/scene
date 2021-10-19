@@ -79,5 +79,5 @@ export const Settings: ISceneSettings = {
 	 * @description Precision of text building for rounding a vertices placement of text shape.
 	 * Used for correction text blurring when pixel is missposited
 	 */
-	TEXT_SHAPE_ROUND_PRECISION: 1,
+	TEXT_SHAPE_ROUND_PRECISION: 0.1,
 };
