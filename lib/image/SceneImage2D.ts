@@ -851,7 +851,7 @@ export class SceneImage2D extends BitmapImage2D {
 				target,
 				this,
 				this.rect,
-				this.rect,
+				TMP_POINT,
 				true,
 				blendMode
 			);
