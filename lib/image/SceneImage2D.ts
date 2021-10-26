@@ -793,20 +793,28 @@ export class SceneImage2D extends BitmapImage2D {
 			this._initalFillColor = null;
 		}
 
+		const stage = this._stage;
+		const mappedBlend = SceneImage2D._mapSupportedBlendMode(blendMode);
+		const supportNativeBlend = !blendMode || mappedBlend !== BlendMode.LAYER || blendMode == BlendMode.LAYER;
+		const useTmp = (!supportNativeBlend || this === source);
+		const target = useTmp ?
+			stage.filterManager.popTemp(this.width, this.height, false)
+			: this;
+
 		const renderer = SceneImage2D._billboardRenderer;
 		const root = SceneImage2D._billboardRoot;
 		const billboard = SceneImage2D._billboard;
 
 		billboard.sampler.smooth = smoothing;
 
-		renderer.disableClear = true;
-		renderer.view.target = this;
-		renderer.view.projection.scale = 1000 / this.rect.height;
+		renderer.disableClear = !useTmp;
+		renderer.view.target = target;
+		renderer.view.projection.scale = 1000 / target.height;
 
 		billboard.material.style.image = source;
 
 		// not all blend modes can be used for rendering
-		billboard.material.blendMode = SceneImage2D._mapSupportedBlendMode(blendMode);
+		billboard.material.blendMode = !useTmp ? SceneImage2D._mapSupportedBlendMode(blendMode) : BlendMode.LAYER;
 
 		(<MaterialBase> billboard.material).useColorTransform = !!colorTransform;
 
@@ -820,20 +828,35 @@ export class SceneImage2D extends BitmapImage2D {
 			m._rawData[4] = matrix.c;
 			m._rawData[5] = -matrix.d;
 			m._rawData[12] = matrix.tx;
-			m._rawData[13] = this.rect.height - matrix.ty;
+			m._rawData[13] = target.height - matrix.ty;
 
 			root.transform.invalidateComponents();
 		} else {
 
 			root.transform.rotateTo(0,0,0);
 			root.transform.scaleTo(1, -1, 1);
-			root.transform.moveTo(0, this.rect.height,0);
+			root.transform.moveTo(0, target.height,0);
 		}
 
 		root.transform.colorTransform = colorTransform;
 
 		//render
 		renderer.render();
+
+		//
+		if (useTmp) {
+			stage.filterManager.copyPixels(
+				target,
+				this,
+				this.rect,
+				this.rect,
+				true,
+				blendMode
+			);
+
+			stage.filterManager.pushTemp(target);
+		}
+
 	}
 
 	private _drawAsDisplay(
