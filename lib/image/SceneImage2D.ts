@@ -288,6 +288,7 @@ export class SceneImage2D extends BitmapImage2D {
 		//setup the projection
 		SceneImage2D._renderer.disableClear = true;
 		SceneImage2D._renderer.view.backgroundAlpha = 0;
+		SceneImage2D._renderer.view.backgroundColor = 0x0;
 		SceneImage2D._renderer.view.projection = projection;
 		SceneImage2D._renderer.view.projection.transform = new Transform();
 		SceneImage2D._renderer.view.projection.transform.scaleTo(1, -1, 1);
@@ -316,6 +317,7 @@ export class SceneImage2D extends BitmapImage2D {
 		//setup the projection
 		SceneImage2D._billboardRenderer.disableClear = true;
 		SceneImage2D._billboardRenderer.view.backgroundAlpha = 0;
+		SceneImage2D._billboardRenderer.view.backgroundColor = 0x0;
 		SceneImage2D._billboardRenderer.view.projection = projection;
 		SceneImage2D._billboardRenderer.view.projection.transform = new Transform();
 		SceneImage2D._billboardRenderer.view.projection.transform.moveTo(0, 0, -1000);
