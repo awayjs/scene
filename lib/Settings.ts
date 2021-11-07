@@ -1,3 +1,4 @@
+import { ConfigManager } from '@awayjs/core';
 import { BlendMode }  from '@awayjs/stage';
 
 export interface ISceneSettings {
@@ -16,7 +17,7 @@ export interface ISceneSettings {
 	TEXT_SHAPE_ROUND_PRECISION: number;
 }
 
-export const Settings: ISceneSettings = {
+export const Settings: ISceneSettings = ConfigManager.instance.addStore<any>('scene', {
 	/**
 	 * @description Force MSAA for rendering to image bitmap (WebGL2), 0 - disable, 1-16 - msaa quality
 	 */
@@ -80,4 +81,4 @@ export const Settings: ISceneSettings = {
 	 * Used for correction text blurring when pixel is missposited
 	 */
 	TEXT_SHAPE_ROUND_PRECISION: 0.1,
-};
+});
