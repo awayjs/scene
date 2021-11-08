@@ -994,6 +994,21 @@ export class SceneImage2D extends BitmapImage2D {
 	}
 
 	public reset() {}
+
+	public clone(): SceneImage2D {
+		const image = SceneImage2D.getImage(
+			this.width,
+			this.height,
+			this.transparent,
+			null,
+			false,
+			this._stage,
+			false
+		);
+
+		image.deepClone(this);
+		return  image;
+	}
 }
 
 Stage.registerAbstraction(_Stage_BitmapImage2D, SceneImage2D);
