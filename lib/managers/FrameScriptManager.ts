@@ -139,7 +139,7 @@ export class FrameScriptManager {
 		 * after that execute_as3_constructors_finish_scene is called for the scene-mc
 		 * so that we can continue with the next top-level child that has not yet been processed
 		 */
-		for (let i = 0; i < mc.numChildren; i++) {
+		for (let i = 0, l = mc.numChildren; i < l; i++) {
 			const child: DisplayObject = mc.getChildAt(i);
 			if (child.parent && (<IDisplayObjectAdapter>child.adapter).executeConstructor)
 				FrameScriptManager.execute_as3_constructors_recursiv(<MovieClip>child);
@@ -219,12 +219,13 @@ export class FrameScriptManager {
 			constructorFunc();
 		} else {
 			// constructor already has run. we need to still do recursion on childs
-			for (let i = 0; i < mc.numChildren; i++) {
+			for (let i = 0, l = mc.numChildren; i < l; i++) {
 				const child: DisplayObject = mc.getChildAt(i);
 
-				if (child.parent) {
-					FrameScriptManager.execute_as3_constructors_recursiv(<MovieClip>child);
-				}
+				// because we iterate over mc, it already is parent
+				//if (child.parent) {
+				FrameScriptManager.execute_as3_constructors_recursiv(<MovieClip>child);
+				//}
 			}
 		}
 
