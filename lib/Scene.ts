@@ -9,7 +9,6 @@ import {
 	TabPicker,
 	RaycastPicker,
 	PickGroup,
-	NodePool,
 	ContainerNode,
 	EntityNode,
 } from '@awayjs/view';
@@ -99,7 +98,7 @@ export class Scene {
 
 		if (this._view) {
 			if (this._renderer) {
-				RenderGroup.clearInstance(this._view, this._rendererClass);
+				this._renderer.clear();
 				this._renderer = null;
 			}
 
@@ -138,7 +137,7 @@ export class Scene {
 
 		this._rendererClass = rendererClass || DefaultRenderer;
 		this.view = view || new View();
-		this.partition = partition || NodePool.getRootNode(new DisplayObjectContainer(), BasicPartition).partition;
+		this.partition = partition || this._view.getNode(new DisplayObjectContainer()).partition;
 		this.camera = camera || new Camera();
 
 		//			if (this._shareContext)
@@ -149,7 +148,7 @@ export class Scene {
 
 	public get renderer(): RendererBase {
 		if (!this._renderer)
-			this._renderer = RenderGroup.getInstance(this._view, this._rendererClass).getRenderer(this._partition);
+			this._renderer = RenderGroup.getInstance(this._rendererClass).getRenderer(this._partition);
 
 		return this._renderer;
 	}
@@ -210,7 +209,7 @@ export class Scene {
 			return;
 
 		if (this._renderer) {
-			RenderGroup.clearInstance(this._view, this._rendererClass);
+			this._renderer.clear();
 			this._renderer = null;
 		}
 
@@ -325,7 +324,7 @@ export class Scene {
 	 */
 	public dispose(): void {
 		if (this._renderer) {
-			RenderGroup.clearInstance(this._view, this._rendererClass);
+			this._renderer.clear();
 			this._renderer = null;
 		}
 

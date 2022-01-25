@@ -1,5 +1,5 @@
 
-import { BasicPartition, ContainerNode, NodePool, View } from '@awayjs/view';
+import { BasicPartition, ContainerNode, View } from '@awayjs/view';
 import { MaterialBase, MethodMaterial } from '@awayjs/materials';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 import { DisplayObject } from '../display/DisplayObject';
@@ -275,11 +275,12 @@ export class SceneImage2D extends BitmapImage2D {
 		projection.originY = 1;
 
 		//create the view
+		const view = new View(projection, this._stage, null, null, null, true);
 		SceneImage2D._root = new DisplayObjectContainer();
-		SceneImage2D._rootNode = NodePool.getRootNode(SceneImage2D._root, BasicPartition);
+		SceneImage2D._rootNode = view.getNode(SceneImage2D._root);
 		SceneImage2D._renderer =
 			<DefaultRenderer> RenderGroup
-				.getInstance(new View(projection, this._stage, null, null, null, true),	DefaultRenderer)
+				.getInstance(DefaultRenderer)
 				.getRenderer(SceneImage2D._rootNode.partition);
 
 		//SceneImage2D._root.partition = SceneImage2D._renderer.partition;
@@ -306,10 +307,11 @@ export class SceneImage2D extends BitmapImage2D {
 		projection.originY = 1;
 
 		//create the view
+		const view = new View(projection, this._stage, null, null, null, true);
 		SceneImage2D._billboardRoot = new DisplayObjectContainer();
 		SceneImage2D._billboardRenderer = <DefaultRenderer> RenderGroup
-			.getInstance(new View(projection,this._stage, null, null, null, true), DefaultRenderer)
-			.getRenderer(NodePool.getRootNode(SceneImage2D._billboardRoot, BasicPartition).partition);
+			.getInstance(DefaultRenderer)
+			.getRenderer(view.getNode(SceneImage2D._billboardRoot).partition);
 
 		//SceneImage2D._billboardRoot.partition = SceneImage2D._billboardRenderer.partition;
 
