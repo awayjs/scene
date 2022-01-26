@@ -330,7 +330,7 @@ export class _Render_Skybox extends _Render_RenderableBase {
 
 	protected _getRenderMaterial(): _Render_SkyboxMaterial {
 		return this._asset.getAbstraction<_Render_SkyboxMaterial>(
-			this.renderGroup.getRenderElements(this.stageElements.elements));
+			this.renderer.getRenderElements(this.stageElements.elements));
 	}
 
 	protected _getStyle(): Style {

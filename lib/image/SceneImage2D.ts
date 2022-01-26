@@ -1,5 +1,5 @@
 
-import { BasicPartition, ContainerNode, View } from '@awayjs/view';
+import { ContainerNode, View } from '@awayjs/view';
 import { MaterialBase, MethodMaterial } from '@awayjs/materials';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 import { DisplayObject } from '../display/DisplayObject';
@@ -74,6 +74,8 @@ export class SceneImage2D extends BitmapImage2D {
 
 	private static _renderer: DefaultRenderer;
 	private static _billboardRenderer: DefaultRenderer;
+	private static _view: View;
+	private static _billboardView: View;
 	private static _root: DisplayObjectContainer;
 	private static _rootNode: ContainerNode;
 	private static _billboardRoot: DisplayObjectContainer;
@@ -273,30 +275,26 @@ export class SceneImage2D extends BitmapImage2D {
 		projection.coordinateSystem = CoordinateSystem.RIGHT_HANDED;
 		projection.originX = -1;
 		projection.originY = 1;
+		projection.transform = new Transform();
+		projection.transform.scaleTo(1, -1, 1);
+		projection.transform.moveTo(0, 0, -1000);
 
 		//create the view
-		const view = new View(projection, this._stage, null, null, null, true);
+		SceneImage2D._view = new View(projection, this._stage);
 		SceneImage2D._root = new DisplayObjectContainer();
-		SceneImage2D._rootNode = view.getNode(SceneImage2D._root);
-		SceneImage2D._renderer =
-			<DefaultRenderer> RenderGroup
-				.getInstance(DefaultRenderer)
-				.getRenderer(SceneImage2D._rootNode.partition);
+		SceneImage2D._rootNode = SceneImage2D._view.getNode(SceneImage2D._root);
+		SceneImage2D._renderer = <DefaultRenderer> RenderGroup
+			.getInstance(DefaultRenderer)
+			.getRenderer(SceneImage2D._rootNode.partition);
 
-		//SceneImage2D._root.partition = SceneImage2D._renderer.partition;
+		//set the view properties
+		SceneImage2D._view.backgroundAlpha = 0;
+		SceneImage2D._view.backgroundColor = 0x0;
 
-		//SceneImage2D._renderer.antiAlias = Settings.ALLOW_FORCE_MSAA;
-		//setup the projection
+		//set the renderer properties
 		SceneImage2D._renderer.disableClear = true;
-		SceneImage2D._renderer.view.backgroundAlpha = 0;
-		SceneImage2D._renderer.view.backgroundColor = 0x0;
-		SceneImage2D._renderer.view.projection = projection;
-		SceneImage2D._renderer.view.projection.transform = new Transform();
-		SceneImage2D._renderer.view.projection.transform.scaleTo(1, -1, 1);
-		SceneImage2D._renderer.view.projection.transform.moveTo(0, 0, -1000);
-
 		SceneImage2D._renderer.renderableSorter = null;//new RenderableSort2D();
-
+		//SceneImage2D._renderer.antiAlias = Settings.ALLOW_FORCE_MSAA;
 	}
 
 	private createBillboardRenderer(): void {
@@ -305,26 +303,26 @@ export class SceneImage2D extends BitmapImage2D {
 		projection.coordinateSystem = CoordinateSystem.RIGHT_HANDED;
 		projection.originX = -1;
 		projection.originY = 1;
+		projection.transform = new Transform();
+		projection.transform.moveTo(0, 0, -1000);
+		projection.transform.lookAt(new Vector3D());
 
 		//create the view
-		const view = new View(projection, this._stage, null, null, null, true);
+		SceneImage2D._billboardView = new View(projection, this._stage);
 		SceneImage2D._billboardRoot = new DisplayObjectContainer();
 		SceneImage2D._billboardRenderer = <DefaultRenderer> RenderGroup
 			.getInstance(DefaultRenderer)
-			.getRenderer(view.getNode(SceneImage2D._billboardRoot).partition);
+			.getRenderer(SceneImage2D._billboardView.getNode(SceneImage2D._billboardRoot).partition);
 
 		//SceneImage2D._billboardRoot.partition = SceneImage2D._billboardRenderer.partition;
 
 		//SceneImage2D._renderer.antiAlias = Settings.ALLOW_FORCE_MSAA;
-		//setup the projection
-		SceneImage2D._billboardRenderer.disableClear = true;
-		SceneImage2D._billboardRenderer.view.backgroundAlpha = 0;
-		SceneImage2D._billboardRenderer.view.backgroundColor = 0x0;
-		SceneImage2D._billboardRenderer.view.projection = projection;
-		SceneImage2D._billboardRenderer.view.projection.transform = new Transform();
-		SceneImage2D._billboardRenderer.view.projection.transform.moveTo(0, 0, -1000);
-		SceneImage2D._billboardRenderer.view.projection.transform.lookAt(new Vector3D());
+		//set the view properties
+		SceneImage2D._billboardView.backgroundAlpha = 0;
+		SceneImage2D._billboardView.backgroundColor = 0x0;
 
+		//set the renderer properties
+		SceneImage2D._billboardRenderer.disableClear = true;
 		SceneImage2D._billboardRenderer.renderableSorter = null;//new RenderableSort2D();
 
 		const mat: MethodMaterial = new MethodMaterial(new BitmapImage2D(128, 128, true, 0x0));
