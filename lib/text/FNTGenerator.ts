@@ -7,12 +7,13 @@ import { Stage, BitmapImage2D } from '@awayjs/stage';
 import { DefaultRenderer, RenderGroup } from '@awayjs/renderer';
 
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
-import { BasicPartition, NodePool, View } from '@awayjs/view';
+import { View } from '@awayjs/view';
 import { Sprite } from '../display/Sprite';
 import { Shape } from '@awayjs/graphics';
 import { FNTGeneratorBase } from './FNTGeneratrorBase';
 
 export class FNTGenerator extends FNTGeneratorBase {
+	private _view: View;
 	private _root: DisplayObjectContainer;
 	private _renderer: DefaultRenderer;
 
@@ -24,19 +25,21 @@ export class FNTGenerator extends FNTGeneratorBase {
 		projection.coordinateSystem = CoordinateSystem.RIGHT_HANDED;
 		projection.originX = -1;
 		projection.originY = 1;
+		projection.transform = new Transform();
+		projection.transform.moveTo(0, 0, -1000);
+		projection.transform.lookAt(new Vector3D());
 
 		//create the view
+		this._view = new View(projection, this._stage);
 		this._root = new DisplayObjectContainer();
-		this._renderer = RenderGroup
-			.getInstance(new View(projection, stage, null, null, null, true), DefaultRenderer)
-			.getRenderer(NodePool.getRootNode(this._root, BasicPartition).partition);
+		this._renderer = <DefaultRenderer> RenderGroup
+			.getInstance(DefaultRenderer)
+			.getRenderer(this._view.getNode(this._root).partition);
 
-		//setup the projection
+		//set the view properties
 		this._renderer.view.projection = projection;
-		this._renderer.view.projection.transform = new Transform();
-		this._renderer.view.projection.transform.moveTo(0, 0, -1000);
-		this._renderer.view.projection.transform.lookAt(new Vector3D());
 
+		//set the renderer properties
 		this._renderer.renderableSorter = null;//new RenderableSort2D();
 	}
 
@@ -73,10 +76,10 @@ export class FNTGenerator extends FNTGeneratorBase {
 
 				while (mipSize >= 1) {
 
-					this._renderer.view.backgroundAlpha = 0;//1;
-					this._renderer.view.backgroundColor = 0;//ColorUtils.ARGBtoFloat32(1, (mipSize/maxSize)*255, 0,0);
+					this._view.backgroundAlpha = 0;//1;
+					this._view.backgroundColor = 0;//ColorUtils.ARGBtoFloat32(1, (mipSize/maxSize)*255, 0,0);
 
-					this._renderer.view.target = outputBitmap;
+					this._view.target = outputBitmap;
 					this._renderer.render(true, 0, mipmapSelector);
 					//this._scene.view.stage.context.configureBackBuffer(mipSize/2, mipSize/2, 0, true);
 

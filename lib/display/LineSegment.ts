@@ -144,7 +144,7 @@ export class _Render_LineSegment extends _Render_RenderableBase {
 	protected _getRenderMaterial(): _Render_MaterialBase {
 		const material: IMaterial = (<LineSegment> this._asset).material || MaterialUtils.getDefaultColorMaterial();
 		return material.getAbstraction<_Render_MaterialBase>(
-			this.renderGroup.getRenderElements(this.stageElements.elements));
+			this.renderer.getRenderElements(this.stageElements.elements));
 	}
 
 	protected _getStyle(): Style {

@@ -17,7 +17,6 @@ import {
 	Image2D,
 	ImageUtils,
 	ContextGLTriangleFace,
-	ContextGLCompareMode
 } from '@awayjs/stage';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 
@@ -413,7 +412,7 @@ export class _Render_Billboard extends _Render_RenderableBase {
 	protected _getRenderMaterial(): _Render_MaterialBase {
 		const material: IMaterial = (<Billboard> this._asset).material || MaterialUtils.getDefaultColorMaterial();
 		return material.getAbstraction<_Render_MaterialBase>(
-			this.renderGroup.getRenderElements(this.stageElements.elements));
+			this.renderer.getRenderElements(this.stageElements.elements));
 	}
 
 	protected _getStyle(): Style {

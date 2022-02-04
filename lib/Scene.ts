@@ -4,12 +4,10 @@ import { TouchPoint } from '@awayjs/stage';
 
 import {
 	View,
-	BasicPartition,
 	PartitionBase,
 	TabPicker,
 	RaycastPicker,
 	PickGroup,
-	NodePool,
 	ContainerNode,
 	EntityNode,
 } from '@awayjs/view';
@@ -99,18 +97,15 @@ export class Scene {
 
 		if (this._view) {
 			if (this._renderer) {
-				RenderGroup.clearInstance(this._view, this._rendererClass);
+				this._renderer.clear();
 				this._renderer = null;
 			}
-
-			PickGroup.clearInstance(this._view);
 
 			if (this._mousePicker)
 				this._mouseManager.unregisterPicker(this._mousePicker);
 		}
 
 		this._view = value;
-		this._pickGroup = PickGroup.getInstance(this._view);
 
 		this._mouseManager = MouseManager.getInstance(this._view.stage);
 
@@ -137,8 +132,9 @@ export class Scene {
 		this._onProjectionChangedDelegate = (event: CameraEvent) => this._onProjectionChanged(event);
 
 		this._rendererClass = rendererClass || DefaultRenderer;
+		this._pickGroup = PickGroup.getInstance();
 		this.view = view || new View();
-		this.partition = partition || NodePool.getRootNode(new DisplayObjectContainer(), BasicPartition).partition;
+		this.partition = partition || this._view.getNode(new DisplayObjectContainer()).partition;
 		this.camera = camera || new Camera();
 
 		//			if (this._shareContext)
@@ -149,7 +145,9 @@ export class Scene {
 
 	public get renderer(): RendererBase {
 		if (!this._renderer)
-			this._renderer = RenderGroup.getInstance(this._view, this._rendererClass).getRenderer(this._partition);
+			this._renderer = RenderGroup
+				.getInstance(this._rendererClass)
+				.getRenderer(this._partition);
 
 		return this._renderer;
 	}
@@ -210,7 +208,7 @@ export class Scene {
 			return;
 
 		if (this._renderer) {
-			RenderGroup.clearInstance(this._view, this._rendererClass);
+			this._renderer.clear();
 			this._renderer = null;
 		}
 
@@ -325,7 +323,7 @@ export class Scene {
 	 */
 	public dispose(): void {
 		if (this._renderer) {
-			RenderGroup.clearInstance(this._view, this._rendererClass);
+			this._renderer.clear();
 			this._renderer = null;
 		}
 
