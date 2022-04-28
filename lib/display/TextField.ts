@@ -2999,7 +2999,7 @@ export class TextField extends DisplayObjectContainer {
 
 			textShape.shape = Shape.getShape(textShape.elements);
 			// has BUG for QWOP, temporarily enable it (default)
-			textShape.shape.deepHitCheck = false;
+			textShape.shape.deepHitCheck = true;
 			textShape.shape.usages++;
 
 			const sampler: ImageSampler = new ImageSampler(false, true, true);

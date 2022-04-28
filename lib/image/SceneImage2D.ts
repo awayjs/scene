@@ -887,23 +887,26 @@ export class SceneImage2D extends BitmapImage2D {
 		// target image for rendering.
 		let target: Image2D = this;
 
-		// lazy filling
-		// we require fill image with initial color, because we not doing this immediate
-		if (!nativeMSAA  && this._initalFillColor !== null) {
-			this.fillRect(this._rect, this._initalFillColor);
-			this._initalFillColor = null;
-		}
-
 		// we should run compositor when blendMode !== LAYER (default)
 		// or when we use MSAA + fill is not flat.
 		const useBlend = blendMode !== BlendMode.LAYER || this._lastUsedFill === null;
+
 		const useTemp = useBlend || nativeMSAA;
+
+		// lazy filling
+		// we require fill image with initial color, because we not doing this immediate
+		// and when blend is required, because we should blend with vald color
+		if ((!nativeMSAA || useBlend) && this._initalFillColor !== null) {
+			this.fillRect(this._rect, this._initalFillColor);
+			this._initalFillColor = null;
+		}
 
 		if (useTemp) {
 			target = SceneImage2D.getTemp(this.width, this.height, this._stage, nativeMSAA);
 
 			// because target image is stupid filled - it not require merging
-			if (this._lastUsedFill !== null) {
+			// BUT when blend is required - we shpuld skip color clear and use empty TMP
+			if (!useBlend && this._lastUsedFill !== null) {
 				// bitmap was filled plain, go clear TMP to this color too
 				renderer.disableClear = false;
 				renderer.view.backgroundColor = this._lastUsedFill;
