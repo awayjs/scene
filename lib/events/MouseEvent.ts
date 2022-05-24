@@ -3,6 +3,7 @@ import { Point, Vector3D, EventBase } from '@awayjs/core';
 import { EntityNode, ContainerNode, INode, ITraversable, View } from '@awayjs/view';
 
 import { IMaterial } from '@awayjs/renderer';
+import FrameScriptManager from '../managers/FrameScriptManager';
 
 /**
  * A MouseEvent is dispatched when a mouse event occurs over a mouseEnabled object in View.
@@ -275,5 +276,12 @@ export class MouseEvent extends EventBase {
 		sceneNormal.normalize();
 
 		return sceneNormal;
+	}
+	
+	public _dispatchEvent(dispatcher: ContainerNode) {
+		if (!dispatcher.isMouseDisabled()) {
+			dispatcher.container.dispatchEvent(this);
+			FrameScriptManager.execute_queue();
+		}
 	}
 }

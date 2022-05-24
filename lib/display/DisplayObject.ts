@@ -239,8 +239,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 
 	public partitionClass: IPartitionClass;
 
-	public static focusEvent: FocusEvent=new FocusEvent(FocusEvent.FOCUS_IN);
-
 	// this is needed for AVM1 - todo: maybe do this on adapters ?
 	public placeObjectTag: any=null;
 	public getScriptPrecedence(): number[] {
@@ -252,20 +250,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 			result.push(this.placeObjectTag.actionBlocksPrecedence);
 		}
 		return result;
-	}
-
-	public dispatchFrameEvents(events: any[]) {
-		this.dispatchEvent(events[0]);//ENTER_FRAME
-		this.dispatchEvent(events[1]);//EXIT_FRAME
-
-	}
-
-	public dispatchEnterFrame(event: any) {
-		this.dispatchEvent(event);//ENTER_FRAME
-	}
-
-	public dispatchExitFrame(event: any) {
-		this.dispatchEvent(event);//Exit
 	}
 
 	public getMouseCursor(): string {
@@ -300,11 +284,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		if (this._isInFocus == value)
 			return;
 		this._isInFocus = value;
-		if (this._isInFocus)
-			DisplayObject.focusEvent.type = FocusEvent.FOCUS_IN;
-		else
-			DisplayObject.focusEvent.type = FocusEvent.FOCUS_OUT;
-		this.dispatchEnterFrame(DisplayObject.focusEvent);
 	}
 
 	/**

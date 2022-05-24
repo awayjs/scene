@@ -2,6 +2,7 @@ import { Vector3D } from '@awayjs/core';
 import { Stage } from '@awayjs/stage';
 
 import { PickingCollision, RaycastPicker, ContainerNode, IPartitionContainer, EntityNode } from '@awayjs/view';
+import { FocusEvent } from '../events/FocusEvent';
 
 import { KeyboardEvent } from '../events/KeyboardEvent';
 import { MouseEvent as AwayMouseEvent } from '../events/MouseEvent';
@@ -26,7 +27,7 @@ export class MouseManager {
 
 	private _mouseDragCollision: PickingCollision;     // entity hit on mouse-down
 	private _mouseDragging: boolean;            // true while mosue is dragged
-	private _focusContainer: IPartitionContainer;       // entity currently in focus
+	private _focusNode: ContainerNode;       // entity currently in focus
 
 	public allowKeyInput: boolean=true;
 
@@ -59,6 +60,9 @@ export class MouseManager {
 	private _dragMove: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DRAG_MOVE);
 	private _dragStart: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DRAG_START);
 	private _dragStop: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DRAG_STOP);
+
+	private _focusIn: FocusEvent = new FocusEvent(FocusEvent.FOCUS_IN);
+	private _focusOut: FocusEvent = new FocusEvent(FocusEvent.FOCUS_OUT);
 
 	private _useSoftkeyboard: boolean = false;
 
@@ -219,29 +223,35 @@ export class MouseManager {
 
 	}
 
-	public setFocus(obj: IPartitionContainer) {
-		if (this._focusContainer == obj) {
+	public setFocus(node: ContainerNode) {
+		if (this._focusNode == node)
 			return;
-		}
-		if (this._focusContainer) {
-			this._focusContainer.setFocus(false, false);
-		}
-		this._focusContainer = obj;
 
-		if (this._focusContainer) {
-			this._focusContainer.setFocus(true, false);
+		//  in FP6, a mouseclick on non focus-able object still steal the focus
+		//  in newer FP they only steal the focus if the the new hit is focusable
+		if (this._allowFocusOnUnfocusable || this._focusNode.container.tabEnabled) {
+			if (this._focusNode) {
+				this.dispatchEvent(this._focusOut, this._focusNode);
+				this._focusNode.container.setFocus(false, true);
+			}
+
+			this._focusNode = node;
+
+			if (this._focusNode) {
+				this.dispatchEvent(this._focusIn, this._focusNode);
+				this._focusNode.container.setFocus(true, true);
+			}
 		}
 	}
 
 	public getFocus() {
-		return this._focusContainer;
+		return this._focusNode;
 	}
 
-	private dispatchEvent(event: AwayMouseEvent, dispatcher: ContainerNode) {
+	private dispatchEvent(event: AwayMouseEvent | FocusEvent, dispatcher: ContainerNode) {
 		if (!this._eventBubbling) {
 			if (dispatcher) {
-				dispatcher.container.dispatchEvent(event);
-				FrameScriptManager.execute_queue();
+				event._dispatchEvent(dispatcher);
 			}
 			return;
 		}
@@ -250,10 +260,8 @@ export class MouseManager {
 			if (event.commonAncestor && dispatcher == event.commonAncestor) {
 				return;
 			}
-			if (!dispatcher.isMouseDisabled()) {
-				dispatcher.container.dispatchEvent(event);
-				FrameScriptManager.execute_queue();
-			}
+			event._dispatchEvent(dispatcher);
+
 			if (!event._iAllowedToPropagate) {
 				dispatcher = null;
 			} else {
@@ -324,20 +332,10 @@ export class MouseManager {
 				} else if (this._eventBubbling)
 					this._stage.dispatchEvent(event);
 
-				//  in FP6, a mouseclick on non focus-able object still steal the focus
-				//  in newer FP they only steal the focus if the the new hit is focusable
-				if (this._allowFocusOnUnfocusable || this._mouseDragCollision?.rootNode.container.tabEnabled) {
-					if (this._focusContainer)
-						this._focusContainer.setFocus(false, true);
-
-					this._focusContainer = this._mouseDragCollision?.rootNode?.container;
-
-					if (this._focusContainer)
-						this._focusContainer.setFocus(true, true);
-				}
-
-				if (this._mouseDragCollision)
+				if (this._mouseDragCollision) {
+					this.setFocus(this._mouseDragCollision?.rootNode);
 					this.setupAndDispatchEvent(this._dragStart, event, this._mouseDragCollision);
+				}
 
 			} else if (event.type == AwayMouseEvent.MOUSE_UP) {
 
@@ -746,15 +744,15 @@ export class MouseManager {
 				default:
 					break;
 			}
-			if (this._focusContainer || this._stage) {
-				//console.log("dispatch keydown on ", this._focusContainer);
+			if (this._focusNode || this._stage) {
+				//console.log("dispatch keydown on ", this._focusNode);
 				const newEvent: KeyboardEvent = new KeyboardEvent(KeyboardEvent.KEYDOWN, event.key, event.code);
 				newEvent.isShift = event.shiftKey;
 				newEvent.isCTRL = event.ctrlKey;
 				newEvent.isAlt = event.altKey;
 				(<any>newEvent).keyCode = event.keyCode;
-				if (this._focusContainer)
-					this._focusContainer.dispatchEvent(newEvent);
+				if (this._focusNode)
+					this._focusNode.container.dispatchEvent(newEvent);
 				if (this._stage)
 					this._stage.dispatchEvent(newEvent);
 			}
@@ -778,15 +776,15 @@ export class MouseManager {
 					break;
 			}
 
-			if (this._focusContainer || this._stage) {
-				//console.log("dispatch keydown on ", this._focusContainer);
+			if (this._focusNode || this._stage) {
+				//console.log("dispatch keydown on ", this._focusNode);
 				const newEvent: KeyboardEvent = new KeyboardEvent(KeyboardEvent.KEYUP, event.key, event.code);
 				newEvent.isShift = event.shiftKey;
 				newEvent.isCTRL = event.ctrlKey;
 				newEvent.isAlt = event.altKey;
 				(<any>newEvent).keyCode = event.keyCode;
-				if (this._focusContainer)
-					this._focusContainer.dispatchEvent(newEvent);
+				if (this._focusNode)
+					this._focusNode.container.dispatchEvent(newEvent);
 				if (this._stage)
 					this._stage.dispatchEvent(newEvent);
 			}

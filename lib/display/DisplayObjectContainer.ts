@@ -42,41 +42,6 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 		return DisplayObjectContainer.assetType;
 	}
 
-	public dispatchFrameEvents(events: any[]) {
-		this.dispatchEvent(events[0]);//ENTER_FRAME
-		let i: number = this._children.length;
-		while (i > 0) {
-			i--;
-			this._children[i].dispatchFrameEvents(events);
-		}
-		this.dispatchEvent(events[1]);//EXIT_FRAME
-
-	}
-
-	public dispatchEnterFrame(event: any) {
-		let i: number = this._children.length;
-		while (i > 0) {
-			i--;
-			// the dispatched Event might change the childs, so make sure they still exits
-			if (i < this._children.length) {
-				this._children[i].dispatchEnterFrame(event);
-			}
-		}
-		this.dispatchEvent(event);//ENTER_FRAME
-	}
-
-	public dispatchExitFrame(event: any) {
-		let i: number = this._children.length;
-		while (i > 0) {
-			i--;
-			// the dispatched Event might change the childs, so make sure they still exits
-			if (i < this._children.length) {
-				this._children[i].dispatchExitFrame(event);
-			}
-		}
-		this.dispatchEvent(event);//Exit
-	}
-
 	/**
 	 * Determines whether or not the children of the object are mouse, or user
 	 * input device, enabled. If an object is enabled, a user can interact with
