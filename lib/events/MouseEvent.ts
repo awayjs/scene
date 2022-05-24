@@ -277,7 +277,7 @@ export class MouseEvent extends EventBase {
 
 		return sceneNormal;
 	}
-	
+
 	public _dispatchEvent(dispatcher: ContainerNode) {
 		if (!dispatcher.isMouseDisabled()) {
 			dispatcher.container.dispatchEvent(this);
