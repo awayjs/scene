@@ -466,7 +466,7 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 		if (original_idx < 0)
 			throw new ArgumentError('Parameter child must be child of this object');
 
-		if (index > this._children.length)
+		if (index > this._children.length - 1)
 			throw new RangeError('Parameter index is out of range of the child list');
 
 		if (original_idx == index)
@@ -474,7 +474,7 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 
 		this.removeChildAt(original_idx);
 
-		this.addChildAt(child, (original_idx < index) ? index - 1 : index);
+		this.addChildAt(child, index);
 
 		if (child._sessionID >= 0 && (<any> this)._sessionID_childs) {
 			delete (<any> this)._sessionID_childs[child._sessionID];
