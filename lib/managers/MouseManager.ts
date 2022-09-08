@@ -125,7 +125,7 @@ export class MouseManager {
 		this.onKeyUp = this.onKeyUp.bind(this);
 
 		this.buttonEnabledDirty = false;
-		this._isTouch = (('ontouchstart' in self) || navigator.msMaxTouchPoints > 0);
+		this._isTouch = (('ontouchstart' in self) || navigator['msMaxTouchPoints'] > 0);
 		this._showCursor = true;
 		this._mouseDragging = false;
 
@@ -251,16 +251,18 @@ export class MouseManager {
 	private dispatchEvent(event: AwayMouseEvent | FocusEvent, dispatcher: ContainerNode) {
 		if (!this._eventBubbling) {
 			if (dispatcher) {
-				event._dispatchEvent(dispatcher);
+				event._dispatchEvent(dispatcher, dispatcher.container);
 			}
 			return;
 		}
+
+		const target = dispatcher?.container;
 
 		while (dispatcher) {
 			if (event.commonAncestor && dispatcher == event.commonAncestor) {
 				return;
 			}
-			event._dispatchEvent(dispatcher);
+			event._dispatchEvent(dispatcher, target);
 
 			if (!event._iAllowedToPropagate) {
 				dispatcher = null;

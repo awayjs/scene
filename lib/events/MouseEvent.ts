@@ -1,6 +1,6 @@
 import { Point, Vector3D, EventBase } from '@awayjs/core';
 
-import { EntityNode, ContainerNode, INode, ITraversable, View } from '@awayjs/view';
+import { EntityNode, ContainerNode, INode, ITraversable, View, IPartitionContainer } from '@awayjs/view';
 
 import { IMaterial } from '@awayjs/renderer';
 import FrameScriptManager from '../managers/FrameScriptManager';
@@ -278,9 +278,9 @@ export class MouseEvent extends EventBase {
 		return sceneNormal;
 	}
 
-	public _dispatchEvent(dispatcher: ContainerNode) {
+	public _dispatchEvent(dispatcher: ContainerNode, target: IPartitionContainer) {
 		if (!dispatcher.isMouseDisabled()) {
-			dispatcher.container.dispatchEvent(this);
+			dispatcher.container.dispatchEvent(this, target);
 			FrameScriptManager.execute_queue();
 		}
 	}
