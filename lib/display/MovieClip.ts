@@ -710,14 +710,6 @@ export class MovieClip extends Sprite {
 		this.removeEventListener(MouseEvent.DRAG_OUT, this._onDragOut);
 	}
 
-	public swapChildrenAt(index1: number, index2: number): void {
-		console.warn('[scene/MovieClip] - swapChildrenAt - not implemented');
-	}
-
-	public swapDepths(child: DisplayObject, depth: number) {
-		console.warn('[scene/MovieClip] - swapDepths - not implemented');
-	}
-
 	public getTimelineChildAtSessionID(sessionID: number): DisplayObject {
 		return this._sessionID_childs[sessionID];
 	}
