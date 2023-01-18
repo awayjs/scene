@@ -762,6 +762,7 @@ export class SceneImage2D extends BitmapImage2D {
 
 		this._lastUsedFill = null;
 		this._imageDataDirty = true;
+		this.invalidate();
 	}
 
 	private static _mapSupportedBlendMode(blendMode: string = ''): string {
