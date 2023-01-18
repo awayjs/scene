@@ -231,6 +231,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	public _hierarchicalPropsDirty: number;
 
 	private _onInvalidatePropertiesDelegate: (event: StyleEvent) => void;
+	private _onInvalidateImagesDelegate: (event: StyleEvent) => void;
 
 	public isSlice9ScaledMC: boolean=false;
 	public isSlice9ScaledSprite: boolean=false;
@@ -1201,13 +1202,17 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		if (this._style == value)
 			return;
 
-		if (this._style)
+		if (this._style) {
 			this._style.removeEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+			this._style.removeEventListener(StyleEvent.INVALIDATE_IMAGES, this._onInvalidateImagesDelegate);
+		}
 
 		this._style = value;
 
-		if (this._style)
+		if (this._style) {
 			this._style.addEventListener(StyleEvent.INVALIDATE_PROPERTIES, this._onInvalidatePropertiesDelegate);
+			this._style.addEventListener(StyleEvent.INVALIDATE_IMAGES, this._onInvalidateImagesDelegate);
+		}
 
 		this._invalidateStyle();
 	}
@@ -1541,6 +1546,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		//global debug bounding boxes:
 		//this._boundsVisible=true;
 		this._onInvalidatePropertiesDelegate = (event: StyleEvent) => this._onInvalidateProperties(event);
+		this._onInvalidateImagesDelegate = (event: StyleEvent) => this._onInvalidateImages(event);
 
 		//creation of associated transform object
 		this._transform = new Transform(null);
@@ -1831,6 +1837,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 
 	protected _onInvalidateProperties(_event: StyleEvent = null): void {
 		this._invalidateStyle();
+	}
+
+	protected _onInvalidateImages(_event: StyleEvent = null): void {
+		this.invalidate();
 	}
 
 	protected _getDefaultBoundingVolume(): BoundingVolumeType {
