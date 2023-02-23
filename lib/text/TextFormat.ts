@@ -541,7 +541,7 @@ export class TextFormat extends AssetBase {
 		this._rightMargin = rightMargin;
 		this._indent = indent;
 		this._leading = leading;
-		
+
 		if (typeof font === 'string') {
 			this.font_name = font;
 		} else  {
