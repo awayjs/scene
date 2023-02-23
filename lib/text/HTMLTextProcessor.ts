@@ -325,7 +325,7 @@ export class HTMLTextProcessor {
 				const value = (<any>myChild.attributes).face ?
 					(<any>myChild.attributes).face : (<any>myChild.attributes).FACE;
 				newProps_values[newProps_values.length] = value;
-				newProps_names[newProps_names.length] = 'font';
+				newProps_names[newProps_names.length] = 'font_name';
 			}
 		}
 
