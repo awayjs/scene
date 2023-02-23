@@ -88,12 +88,9 @@ export class DefaultFontManager {
 	}
 
 	public static getFont(fontName: string, namespace: string = undefined): Font {
-
-		//console.log('[DefaultFontManager] - getFont', fontName);
-
-		if (!fontName) {
-			return DeviceFontManager.getDeviceFont(fontName);
-		}
+		// return null if no fontName supplied
+		if (!fontName)
+			return null;
 
 		// hack for dynamic fonts: first check if reguested font-name is a classname that was registered
 		if (this._registered_fonts_by_className[fontName]) {
