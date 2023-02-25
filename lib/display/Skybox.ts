@@ -37,6 +37,8 @@ export class Skybox extends DisplayObjectContainer implements IMaterial {
 
 	public alphaThreshold: number = 0;
 
+	public alphaBlending: boolean = true;
+
 	/**
 	 *
 	 */

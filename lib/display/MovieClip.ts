@@ -39,10 +39,10 @@ export class MovieClip extends Sprite {
 
 	public static assetType: string = '[asset MovieClip]';
 
-	public static getNewMovieClip(timeline: Timeline = null): MovieClip {
+	public static getNewMovieClip(timeline: Timeline): MovieClip {
 		if (MovieClip._movieClips.length) {
 			const movieClip: MovieClip = MovieClip._movieClips.pop();
-			movieClip.timeline = timeline || new Timeline();
+			movieClip.timeline = timeline;
 			movieClip.graphics = Graphics.getGraphics();
 			return movieClip;
 		}
@@ -154,7 +154,7 @@ export class MovieClip extends Sprite {
 		return 0;
 	}
 
-	constructor(timeline: Timeline = null, spriteMode = false) {
+	constructor(timeline: Timeline, spriteMode = false) {
 		super();
 
 		this._soundVolume = 1;
@@ -200,7 +200,7 @@ export class MovieClip extends Sprite {
 			this.currentFrameIndex = 1;
 		};
 
-		this._timeline = timeline || new Timeline();
+		this._timeline = timeline;
 
 		if (spriteMode) {
 			this.transformToSprite();

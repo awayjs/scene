@@ -1,16 +1,17 @@
-import { Image2D, IGraphicsFactory } from '@awayjs/stage';
-import { IMaterial } from '@awayjs/renderer';
+import { IAsset } from '@awayjs/core';
+import { IMaterial, IMaterialFactory } from '@awayjs/renderer';
+import { Graphics } from '@awayjs/graphics';
+
 import { Timeline } from '../base/Timeline';
+import { IFrameScript } from '../base/IFrameScript';
 import { Billboard } from '../display/Billboard';
 import { TextField } from '../display/TextField';
 import { MovieClip } from '../display/MovieClip';
 import { Sprite } from '../display/Sprite';
-import { PrefabBase } from '../prefabs/PrefabBase';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
-import { Graphics } from '@awayjs/graphics';
-import { IFrameScript } from '../base/IFrameScript';
+import { PrefabBase } from '../prefabs/PrefabBase';
 
-export interface ISceneGraphFactory extends IGraphicsFactory
+export interface ISceneGraphFactory extends IMaterialFactory
 {
 	createMovieClip(timelime?: Timeline, symbol?: any): MovieClip;
 
@@ -22,8 +23,7 @@ export interface ISceneGraphFactory extends IGraphicsFactory
 
 	createBillboard(material?: IMaterial, symbol?: any): Billboard;
 
-	createMaterial(image?: Image2D, alpha?: number, symbol?: any): IMaterial;
-	createMaterial(color?: number, alpha?: number, symbol?: any): IMaterial;
-
 	createFrameScripts(scripts: IFrameScript[], frameIdx: number, objName: string, objID: number): IFrameScript[];
+
+	createChildInstanceForTimeline(timeline: Timeline, symbolID: number, sessionID: number): IAsset;
 }

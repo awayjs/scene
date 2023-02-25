@@ -1,19 +1,20 @@
 import { WaveAudio, ColorTransform, IAsset, Matrix3D } from '@awayjs/core';
+import { BlendMode } from '@awayjs/stage';
+import { HierarchicalProperty } from '@awayjs/view';
 import { Graphics } from '@awayjs/graphics';
+
 import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
+import { IFilter } from '../adapters/IFilter';
 import { IMovieClipAdapter } from '../adapters/IMovieClipAdapter';
 import { MovieClip } from '../display/MovieClip';
 import { Sprite } from '../display/Sprite';
 import { MorphSprite } from '../display/MorphSprite';
 import { DisplayObject } from '../display/DisplayObject';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
+import { ISceneGraphFactory } from '../factories/ISceneGraphFactory';
 import { IFrameLabel } from './IFrameLabel';
 import { TimelineActionType as AType } from './TimelineActionType';
-import { IFilter } from '../adapters/IFilter';
-import { BlendMode } from '@awayjs/stage';
-import { ISymbolDecoder } from './ISymbolDecoder';
 import { IFrameScript } from './IFrameScript';
-import { HierarchicalProperty } from '@awayjs/view';
 
 const BLEND_MODES = [
 	'', BlendMode.NORMAL, BlendMode.LAYER,
@@ -50,7 +51,6 @@ export class Timeline {
 		[AType.START_AUDIO]: Timeline.start_audio
 	};
 
-	private _symbolDecoder: ISymbolDecoder;
 	private _blocked: boolean;
 
 	public _update_indices: number[] = [];
@@ -120,7 +120,7 @@ export class Timeline {
 	 **/
 	private _initalMcID: number;
 
-	constructor() {
+	constructor(readonly factory:ISceneGraphFactory) {
 
 		this._initalMcID = -1;
 		this.numKeyFrames = 0;
@@ -137,14 +137,6 @@ export class Timeline {
 		this.keyframe_to_frameidx = {};
 	}
 
-	public get symbolDecoder(): ISymbolDecoder {
-		return this._symbolDecoder;
-	}
-
-	public set symbolDecoder(value: ISymbolDecoder) {
-		this._symbolDecoder = value;
-	}
-
 	public resetScripts() {
 		this._framescripts = {};
 		this._framescripts_translated = {};
@@ -154,10 +146,6 @@ export class Timeline {
 	prepares
 	*/
 	public init(): void {
-
-		if (!this._symbolDecoder) {
-			console.warn('[Timeline] - init - no _symbolDecoder is set');
-		}
 
 		if ((this.frame_command_indices == null) || (this.frame_recipe == null) || (this.keyframe_durations == null)) {
 			return;
@@ -245,7 +233,7 @@ export class Timeline {
 			if (checkForTranslation && !this._framescripts_translated[frame_idx]) {
 				// todo: cleanup so we can retrieve className of target_mc without hacks
 				const name = (<any>target_mc).className ?  (<any>target_mc).className : target_mc.name;
-				this._framescripts[frame_idx] = this.symbolDecoder.prepareFrameScriptsForAVM1(
+				this._framescripts[frame_idx] = this.factory.createFrameScripts(
 					this._framescripts[frame_idx],
 					frame_idx,
 					name,
@@ -266,7 +254,7 @@ export class Timeline {
 	}
 
 	public getChildInstance(symbolID: number, sessionID: number) {
-		return this.symbolDecoder.createChildInstanceForTimeline(this, symbolID, sessionID);
+		return this.factory.createChildInstanceForTimeline(this, symbolID, sessionID);
 	}
 
 	public extractHitArea(target_mc: MovieClip): DisplayObjectContainer {
@@ -480,7 +468,7 @@ export class Timeline {
 					idx, this.add_child_stream);
 				continue;
 			}
-			const childAsset: IAsset = this._symbolDecoder.createChildInstanceForTimeline(this,
+			const childAsset: IAsset = this.factory.createChildInstanceForTimeline(this,
 				this.add_child_stream[idx + 2], this.add_child_stream[idx]);
 			(<IMovieClipAdapter>target_mc.adapter).addTimelineChildAtDepth(<DisplayObject>childAsset,
 				this.add_child_stream[idx + 1]);
