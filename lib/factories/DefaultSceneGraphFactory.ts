@@ -51,7 +51,7 @@ export class DefaultSceneGraphFactory extends DefaultStageFactory implements ISc
 		throw ('[DefaultSceneGraphFactory] - createFrameScripts should be overwritten by AVM');
 	}
 
-	createChildInstanceForTimeline(timeline: Timeline, symbolID: number, sessionID: number): IAsset{
+	createChildInstanceForTimeline(timeline: Timeline, symbolID: number, sessionID: number): IAsset {
 		throw ('[DefaultSceneGraphFactory] - createChildInstanceForTimeline should be overwritten by AVM');
 	}
 }

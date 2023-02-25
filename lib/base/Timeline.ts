@@ -120,7 +120,7 @@ export class Timeline {
 	 **/
 	private _initalMcID: number;
 
-	constructor(readonly factory:ISceneGraphFactory) {
+	constructor(readonly factory: ISceneGraphFactory) {
 
 		this._initalMcID = -1;
 		this.numKeyFrames = 0;
