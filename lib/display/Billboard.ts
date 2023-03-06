@@ -4,6 +4,7 @@ import {
 	PickEntity,
 	_Pick_PickableBase,
 	EntityNode,
+	IPartitionEntity,
 } from '@awayjs/view';
 import {
 	RenderableEvent,
@@ -195,8 +196,8 @@ export class Billboard extends DisplayObjectContainer {
 		//override for billboard
 	}
 
-	public isEntity(): boolean {
-		return true;
+	public getEntity(): IPartitionEntity {
+		return this;
 	}
 
 	/**

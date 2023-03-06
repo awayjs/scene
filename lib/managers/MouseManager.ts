@@ -1,12 +1,11 @@
 import { Vector3D } from '@awayjs/core';
 import { Stage } from '@awayjs/stage';
 
-import { PickingCollision, RaycastPicker, ContainerNode, IPartitionContainer, EntityNode } from '@awayjs/view';
+import { PickingCollision, RaycastPicker, ContainerNode } from '@awayjs/view';
 import { FocusEvent } from '../events/FocusEvent';
 
 import { KeyboardEvent } from '../events/KeyboardEvent';
 import { MouseEvent as AwayMouseEvent } from '../events/MouseEvent';
-import { FrameScriptManager } from './FrameScriptManager';
 
 import { IInputRecorder } from './IInputRecorder';
 
@@ -348,13 +347,13 @@ export class MouseManager {
 				// @todo: at this point the object under the mouse might have been changed,
 				// so we need to recheck the collision ?
 
-				let upEntityNode: EntityNode = null;
+				let upContainerNode: ContainerNode = null;
 				let upRootNode: ContainerNode = null;
 				if (this._isAVM1Dragging && this._mouseDragCollision) {
 					// avm1dragging is in process, dispatch the mouse-up on this.
 					// mouseDragEntity instead of the current collision
 					upRootNode = this._mouseDragCollision.rootNode;
-					upEntityNode = this._mouseDragCollision.entityNode;
+					upContainerNode = this._mouseDragCollision.containerNode;
 				} else if (this._mouseDragging && this._mouseDragCollision
 					&& this._mouseDragCollision.rootNode != dispatcher) {
 					// no avm1dragging is in process, but current collision
@@ -371,13 +370,13 @@ export class MouseManager {
 					// but current collision is not the same as collision that appeared on mouse-down,
 					// need to dispatch a MOUSE_UP_OUTSIDE on _mouseDragEntity
 					upRootNode = this._mouseDragCollision.rootNode;
-					upEntityNode = this._mouseDragCollision.entityNode;
+					upContainerNode = this._mouseDragCollision.containerNode;
 				}
 
 				if (this._mouseDragging && dispatcher)
 					this.setupAndDispatchEvent(this._mouseOver, event, collision);
 
-				if (this._isTouch && upEntityNode)
+				if (this._isTouch && upContainerNode)
 					this.setupAndDispatchEvent(this._mouseOut, this._mouseMoveEvent, this._mouseDragCollision);
 
 				if (upRootNode) {
@@ -388,7 +387,7 @@ export class MouseManager {
 				else if (this._eventBubbling)
 					this._stage.dispatchEvent(event);
 
-				if (upEntityNode)
+				if (upContainerNode)
 					this.setupAndDispatchEvent(this._dragStop, event, this._mouseDragCollision);
 
 				this._mouseDragCollision = null;
@@ -688,7 +687,7 @@ export class MouseManager {
 
 		// 3D properties.
 		if (collision) {
-			event.entityNode = collision.entityNode;
+			event.containerNode = collision.containerNode;
 
 			event.rootNode = collision.rootNode;
 			// Object.
@@ -703,7 +702,7 @@ export class MouseManager {
 			event.elementIndex = collision.elementIndex;
 		} else {
 			// Set all to null.
-			event.entityNode = null;
+			event.containerNode = null;
 			event.rootNode = null;
 			event.traversable = null;
 			event.uv = null;

@@ -1,6 +1,6 @@
 import { Matrix, ColorUtils, AssetEvent } from '@awayjs/core';
 
-import { PartitionBase, EntityNode } from '@awayjs/view';
+import { PartitionBase, EntityNode, IPartitionEntity } from '@awayjs/view';
 
 import {
 	GraphicsPathCommand,
@@ -57,13 +57,10 @@ export class MorphSprite extends Sprite {
 			//	this.graphics.dispose();
 		}
 
-		if (!this._graphics) {
+		if (!this._graphics)
 			this._graphics = Graphics.getGraphics();
-		}
 
 		this._graphics.copyFrom(value);
-
-		this._onGraphicsInvalidate(null);
 	}
 
 	public get assetType(): string {

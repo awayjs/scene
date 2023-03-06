@@ -1,7 +1,7 @@
 ﻿import { Vector3D, Matrix3D, Box, Sphere } from '@awayjs/core';
 
 import { PickingCollision, PartitionBase, _Pick_PickableBase,
-	PickEntity, IEntityTraverser, EntityNode } from '@awayjs/view';
+	PickEntity, IEntityTraverser, EntityNode, IPartitionEntity } from '@awayjs/view';
 
 import { RenderableEvent, IMaterial } from '@awayjs/renderer';
 
@@ -89,8 +89,8 @@ export class LineSegment extends DisplayObject {
 		this._halfThickness = thickness * 0.5;
 	}
 
-	public isEntity(): boolean {
-		return true;
+	public getEntity(): IPartitionEntity {
+		return this;
 	}
 
 	public _acceptTraverser(traverser: IEntityTraverser): void {

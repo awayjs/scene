@@ -2,7 +2,7 @@ import { ColorUtils, Matrix, Rectangle, Point, Vector3D, AssetEvent } from '@awa
 
 import { ImageSampler, Float2Attributes } from '@awayjs/stage';
 
-import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
+import { IEntityTraverser, PartitionBase, EntityNode, IPartitionEntity, PickEntity } from '@awayjs/view';
 
 import { Style, TriangleElements } from '@awayjs/renderer';
 
@@ -204,7 +204,6 @@ const MNEMOS = [
  *                                  options
  */
 export class TextField extends DisplayObjectContainer {
-	private _isEntity: boolean = false;
 	private _onGraphicsInvalidateDelegate: (event: AssetEvent) => void;
 	private _onClipboardPasteDelegate: (event: ClipboardEvent) => void;
 
@@ -423,7 +422,7 @@ export class TextField extends DisplayObjectContainer {
 		this.setSelection(0, 0);
 
 		this._glyphsDirty = true;
-		this._invalidateEntity();
+		this._updateEntity();
 	}
 
 	private enableInput(enable: boolean = true) {
@@ -918,14 +917,7 @@ export class TextField extends DisplayObjectContainer {
 	 * @private
 	 */
 	private _onGraphicsInvalidate(event: AssetEvent): void {
-		const isEntity: boolean = this.isEntity();
 
-		if (this._isEntity != isEntity) {
-			if (!isEntity)
-				this._clearEntity();
-
-			this._isEntity = isEntity;
-		}
 
 		this.invalidate();
 	}
@@ -1203,7 +1195,7 @@ export class TextField extends DisplayObjectContainer {
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
 		else
-			this._invalidateEntity();
+			this._updateEntity();
 
 		this.newTextFormat = this._textFormats[this._textFormats.length - 1];
 
@@ -1597,7 +1589,7 @@ export class TextField extends DisplayObjectContainer {
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
 		else
-			this._invalidateEntity();
+			this._updateEntity();
 
 	}
 
@@ -1614,7 +1606,7 @@ export class TextField extends DisplayObjectContainer {
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
 		else
-			this._invalidateEntity();
+			this._updateEntity();
 
 	}
 
@@ -1657,7 +1649,7 @@ export class TextField extends DisplayObjectContainer {
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
 		else
-			this._invalidateEntity();
+			this._updateEntity();
 	}
 
 	/**
@@ -1768,7 +1760,7 @@ export class TextField extends DisplayObjectContainer {
 
 		this._glyphsDirty = true;
 
-		this._invalidateEntity();
+		this._updateEntity();
 	}
 
 	private getTextColorForTextFormat(format: TextFormat) {
@@ -1849,7 +1841,7 @@ export class TextField extends DisplayObjectContainer {
 		this._type = value;
 		this._textDirty = true;
 
-		this._invalidateEntity();
+		this._updateEntity();
 
 		if (value == TextFieldType.INPUT) {
 			//this._selectable=true;
@@ -2003,8 +1995,8 @@ export class TextField extends DisplayObjectContainer {
 		//override for textfield
 	}
 
-	public isEntity(): boolean {
-		return true;
+	public getEntity(): IPartitionEntity {
+		return this;
 	}
 
 	public clear(): void {
@@ -3090,7 +3082,7 @@ export class TextField extends DisplayObjectContainer {
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
 		else
-			this._invalidateEntity();
+			this._updateEntity();
 	}
 
 	/**
@@ -3103,7 +3095,7 @@ export class TextField extends DisplayObjectContainer {
 		if (this._autoSize != TextFieldAutoSize.NONE)
 			this.invalidate();
 		else
-			this._invalidateEntity();
+			this._updateEntity();
 	}
 
 	/**

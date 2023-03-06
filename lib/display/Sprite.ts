@@ -1,5 +1,5 @@
 ﻿import { AssetEvent, Vector3D } from '@awayjs/core';
-import { IEntityTraverser, PartitionBase, EntityNode } from '@awayjs/view';
+import { IEntityTraverser, PartitionBase, EntityNode, IPartitionEntity } from '@awayjs/view';
 import { IMaterial } from '@awayjs/renderer';
 import { Graphics } from '@awayjs/graphics';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
@@ -11,7 +11,6 @@ import { PrefabBase } from '../prefabs/PrefabBase';
  * of the graphics to be assigned different materials.
  */
 export class Sprite extends DisplayObjectContainer {
-	private _isEntity: boolean = false;
 
 	public _iSourcePrefab: PrefabBase;
 
@@ -63,9 +62,8 @@ export class Sprite extends DisplayObjectContainer {
 	}
 
 	protected _setGraphics(value: Graphics): void {
-		if (this._graphics == value) {
+		if (this._graphics == value)
 			return;
-		}
 
 		if (this._graphics) {
 			this._graphics.removeEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
@@ -79,7 +77,7 @@ export class Sprite extends DisplayObjectContainer {
 
 		this._graphics.usages++;
 
-		this._onGraphicsInvalidate(null);
+		this.invalidate();
 	}
 
 	/**
@@ -115,8 +113,8 @@ export class Sprite extends DisplayObjectContainer {
 		// }
 	}
 
-	public isEntity(): boolean {
-		return (this._graphics && this._graphics.count > 0);
+	public getEntity(): IPartitionEntity {
+		return (this._graphics.count > 0)? this : null;
 	}
 
 	/**
@@ -183,15 +181,6 @@ export class Sprite extends DisplayObjectContainer {
 	 * @private
 	 */
 	protected _onGraphicsInvalidate(_event: AssetEvent): void {
-		const isEntity: boolean = this.isEntity();
-
-		if (this._isEntity != isEntity) {
-			if (!isEntity)
-				this._clearEntity();
-
-			this._isEntity = isEntity;
-		}
-
 		this.invalidate();
 	}
 

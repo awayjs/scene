@@ -19,10 +19,6 @@ export class Camera extends DisplayObjectContainer {
 		this.z = -1000;
 	}
 
-	public isEntity(): boolean {
-		return true;
-	}
-
 	//@override
 	public get assetType(): string {
 		return Camera.assetType;

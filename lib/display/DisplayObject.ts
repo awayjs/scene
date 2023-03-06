@@ -24,7 +24,9 @@ import {
 	ContainerEvent,
 	AlignmentMode,
 	OrientationMode,
-	BasicPartition
+	BasicPartition,
+	IPartitionContainer,
+	ContainerNode
 } from '@awayjs/view';
 
 import {
@@ -177,8 +179,9 @@ import { Settings } from '../Settings';
  *                         display is not rendering. This is the case when the
  *                         content is either minimized or obscured. </p>
  */
-export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartitionEntity {
+export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartitionContainer {
 
+	private _mouseChildren: boolean = true;
 	public _material: IMaterial;
 	public _style: Style;
 	private _loader: Loader;
@@ -1236,7 +1239,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		this.invalidate();
 	}
 
-	public getScrollRectPrimitive(): DisplayObject {
+	public getScrollRectPrimitive(): IPartitionContainer {
 		if (this._scrollRectPrimitiveDirty) {
 			this._scrollRectPrimitiveDirty = false;
 
@@ -1257,7 +1260,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		return this._scrollRectPrimitive;
 	}
 
-	public getBoundsPrimitive(picker: BoundsPicker): DisplayObject {
+	public getBoundsPrimitive(picker: BoundsPicker): IPartitionContainer {
 		if (this._boundsPrimitive == null) {
 			switch (this._defaultBoundingVolume) {
 				case BoundingVolumeType.BOX:
@@ -1450,6 +1453,40 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	}
 
 	/**
+	 * Determines whether or not the children of the object are mouse, or user
+	 * input device, enabled. If an object is enabled, a user can interact with
+	 * it by using a mouse or user input device. The default is
+	 * <code>true</code>.
+	 *
+	 * <p>This property is useful when you create a button with an instance of
+	 * the Sprite class(instead of using the SimpleButton class). When you use a
+	 * Sprite instance to create a button, you can choose to decorate the button
+	 * by using the <code>addChild()</code> method to add additional Sprite
+	 * instances. This process can cause unexpected behavior with mouse events
+	 * because the Sprite instances you add as children can become the target
+	 * object of a mouse event when you expect the parent instance to be the
+	 * target object. To ensure that the parent instance serves as the target
+	 * objects for mouse events, you can set the <code>mouseChildren</code>
+	 * property of the parent instance to <code>false</code>.</p>
+	 *
+	 * <p> No event is dispatched by setting this property. You must use the
+	 * <code>addEventListener()</code> method to create interactive
+	 * functionality.</p>
+	 */
+	public get mouseChildren(): boolean {
+		return this._mouseChildren;
+	}
+
+	public set mouseChildren(value: boolean) {
+		if (this._mouseChildren == value)
+			return;
+
+		this._mouseChildren = value;
+
+		this._invalidateHierarchicalProperty(HierarchicalProperty.MOUSE_ENABLED);
+	}
+
+	/**
 	 * Indicates the <i>x</i> coordinate of the DisplayObject instance relative
 	 * to the local coordinates of the parent DisplayObjectContainer. If the
 	 * object is inside a DisplayObjectContainer that has transformations, it is
@@ -1572,9 +1609,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		//default to do nothing
 	}
 
-	public isEntity(): boolean {
-		return false;
+	public getEntity(): IPartitionEntity {
+		return;
 	}
+
+	
+	public _initNode(node: ContainerNode): void {}
 
 	/**
 	 *
@@ -1593,6 +1633,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		if (this._registrationMatrix3D)
 			displayObject._registrationMatrix3D = this._registrationMatrix3D.clone();
 
+		displayObject.mouseChildren = this._mouseChildren;
 		displayObject.material = this._material;
 		displayObject.style = this._style;
 		displayObject.pickObject = this._pickObject;
@@ -1726,12 +1767,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		this.dispatchEvent(new HeirarchicalEvent(HeirarchicalEvent.INVALIDATE_PROPERTY, propDirty));
 	}
 
-	public _invalidateEntity(): void {
-		this.dispatchEvent(new ContainerEvent(ContainerEvent.INVALIDATE_ENTITY, this));
-	}
-
-	public _clearEntity(): void {
-		this.dispatchEvent(new ContainerEvent(ContainerEvent.CLEAR_ENTITY, this));
+	public _updateEntity(): void {
+		this.dispatchEvent(new ContainerEvent(ContainerEvent.UPDATE_ENTITY, this));
 	}
 
 	/**

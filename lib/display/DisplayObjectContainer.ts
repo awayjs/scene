@@ -1,6 +1,6 @@
 import { Point, ArgumentError, RangeError } from '@awayjs/core';
 import { IAnimator, IRenderContainer } from '@awayjs/renderer';
-import { PartitionBase, EntityNode, HierarchicalProperty, ContainerEvent } from '@awayjs/view';
+import { PartitionBase, EntityNode, HierarchicalProperty, ContainerEvent, ContainerNode } from '@awayjs/view';
 import { DisplayObject } from './DisplayObject';
 
 /**
@@ -30,7 +30,6 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 	private static NO_CHILD_ERROR = new ArgumentError('Child parameter is not a child of the caller');
 
 	private _animator: IAnimator;
-	private _mouseChildren: boolean = true;
 	protected _children: Array<DisplayObject> = new Array<DisplayObject>();
 
 	public doingSwap: boolean = false;
@@ -40,40 +39,6 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 	 */
 	public get assetType(): string {
 		return DisplayObjectContainer.assetType;
-	}
-
-	/**
-	 * Determines whether or not the children of the object are mouse, or user
-	 * input device, enabled. If an object is enabled, a user can interact with
-	 * it by using a mouse or user input device. The default is
-	 * <code>true</code>.
-	 *
-	 * <p>This property is useful when you create a button with an instance of
-	 * the Sprite class(instead of using the SimpleButton class). When you use a
-	 * Sprite instance to create a button, you can choose to decorate the button
-	 * by using the <code>addChild()</code> method to add additional Sprite
-	 * instances. This process can cause unexpected behavior with mouse events
-	 * because the Sprite instances you add as children can become the target
-	 * object of a mouse event when you expect the parent instance to be the
-	 * target object. To ensure that the parent instance serves as the target
-	 * objects for mouse events, you can set the <code>mouseChildren</code>
-	 * property of the parent instance to <code>false</code>.</p>
-	 *
-	 * <p> No event is dispatched by setting this property. You must use the
-	 * <code>addEventListener()</code> method to create interactive
-	 * functionality.</p>
-	 */
-	public get mouseChildren(): boolean {
-		return this._mouseChildren;
-	}
-
-	public set mouseChildren(value: boolean) {
-		if (this._mouseChildren == value)
-			return;
-
-		this._mouseChildren = value;
-
-		this._invalidateHierarchicalProperty(HierarchicalProperty.MOUSE_ENABLED);
 	}
 
 	/**
@@ -230,8 +195,6 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 
 	public copyTo(newInstance: DisplayObjectContainer): void {
 		super.copyTo(newInstance);
-
-		newInstance.mouseChildren = this._mouseChildren;
 
 		if (this._animator)
 			newInstance.animator = this._animator.clone();
@@ -544,6 +507,11 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 			}
 		}
 
+	}
+
+	public _initNode(node: ContainerNode): void {
+		for (let i: number = 0; i < this._children.length; ++i)
+			node.addChildAt(this._children[i], i);
 	}
 
 	/**

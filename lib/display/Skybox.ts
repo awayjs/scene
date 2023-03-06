@@ -2,7 +2,7 @@ import { AssetEvent } from '@awayjs/core';
 
 import { BlendMode, ImageCube } from '@awayjs/stage';
 
-import { PickingCollision, PartitionBase, BoundingVolumeType, INode } from '@awayjs/view';
+import { PickingCollision, PartitionBase, BoundingVolumeType, INode, IPartitionEntity } from '@awayjs/view';
 
 import { IAnimationSet, IMaterial, ITexture, RenderableEvent,
 	MaterialEvent, Style, StyleEvent, IRenderContainer, ImageTextureCube, DefaultRenderer } from '@awayjs/renderer';
@@ -132,8 +132,8 @@ export class Skybox extends DisplayObjectContainer implements IMaterial {
 		}
 	}
 
-	public isEntity(): boolean {
-		return true;
+	public getEntity(): IPartitionEntity {
+		return this;
 	}
 
 	public get assetType(): string {
