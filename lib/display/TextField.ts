@@ -918,7 +918,6 @@ export class TextField extends DisplayObjectContainer {
 	 */
 	private _onGraphicsInvalidate(event: AssetEvent): void {
 
-
 		this.invalidate();
 	}
 

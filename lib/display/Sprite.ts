@@ -114,7 +114,7 @@ export class Sprite extends DisplayObjectContainer {
 	}
 
 	public getEntity(): IPartitionEntity {
-		return (this._graphics.count > 0)? this : null;
+		return (this._graphics.count > 0) ? this : null;
 	}
 
 	/**

@@ -1613,7 +1613,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		return;
 	}
 
-	
 	public _initNode(node: ContainerNode): void {}
 
 	/**
