@@ -16,12 +16,10 @@ import {
 	BoundingBox,
 	BoundingSphere,
 	BoundingVolumeType,
-	IEntityTraverser,
 	IPartitionEntity,
 	BoundsPicker,
 	HeirarchicalEvent,
 	HierarchicalProperty,
-	ContainerEvent,
 	AlignmentMode,
 	OrientationMode,
 	BasicPartition,
@@ -40,7 +38,6 @@ import {
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 import { ControllerBase } from '../controllers/ControllerBase';
 import { IBitmapDrawable } from '../base/IBitmapDrawable';
-import { FocusEvent } from '../events/FocusEvent';
 
 import { PrimitiveCubePrefab } from '../prefabs/PrimitiveCubePrefab';
 import { PrimitiveSpherePrefab } from '../prefabs/PrimitiveSpherePrefab';
@@ -1766,10 +1763,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		this.dispatchEvent(new HeirarchicalEvent(HeirarchicalEvent.INVALIDATE_PROPERTY, propDirty));
 	}
 
-	public _updateEntity(): void {
-		this.dispatchEvent(new ContainerEvent(ContainerEvent.UPDATE_ENTITY, this));
-	}
-
 	/**
 	 *
 	 */
@@ -1784,8 +1777,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	public get maskId(): number {
 		return this._maskId;
 	}
-
-	public _acceptTraverser(_traverser: IEntityTraverser): void {}
 
 	protected _setScaleX(val: number): void {
 		if (this.scaleX == val)
