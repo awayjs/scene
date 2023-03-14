@@ -3029,7 +3029,7 @@ export class TextField extends DisplayObjectContainer {
 
 		this._iText += newText;
 		this._textDirty = true;
-		
+
 		this.invalidate();
 	}
 

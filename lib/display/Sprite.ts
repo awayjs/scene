@@ -154,7 +154,6 @@ export class Sprite extends DisplayObjectContainer {
 			this._iSourcePrefab._iValidate();
 	}
 
-
 	/**
 	 *
 	 */
