@@ -21,7 +21,7 @@ export class Sprite extends DisplayObjectContainer {
 	public static getNewSprite(graphics: Graphics = null, material: IMaterial = null): Sprite {
 		if (Sprite._sprites.length) {
 			const sprite: Sprite = Sprite._sprites.pop();
-			sprite.graphics = graphics || Graphics.getGraphics();
+			sprite.graphics = graphics;
 			sprite.material = material;
 			return sprite;
 		}
@@ -35,7 +35,6 @@ export class Sprite extends DisplayObjectContainer {
 
 	private _center: Vector3D;
 	public _graphics: Graphics;
-	protected _onGraphicsInvalidateDelegate: (event: AssetEvent) => void;
 
 	/**
 	 *
@@ -49,24 +48,20 @@ export class Sprite extends DisplayObjectContainer {
 	 * drawing commands can occur.
 	 */
 	public get graphics(): Graphics {
-		if (this._iSourcePrefab)
-			this._iSourcePrefab._iValidate();
+		//create new graphics object if none exists
+		if (!this._graphics) {
+			this.graphics = Graphics.getGraphics();
+			this.invalidate();
+		}
+
 		return this._graphics;
 	}
 
 	public set graphics(value: Graphics) {
-		if (value == null)
-			throw new Error('Cannot have graphics set to null');
-
-		this._setGraphics(value);
-	}
-
-	protected _setGraphics(value: Graphics): void {
 		if (this._graphics == value)
 			return;
 
 		if (this._graphics) {
-			this._graphics.removeEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
 			this._graphics.usages--;
 
 			//if (!this._graphics.usages)
@@ -75,7 +70,8 @@ export class Sprite extends DisplayObjectContainer {
 
 		this._graphics = value;
 
-		this._graphics.usages++;
+		if (this._graphics)
+			this._graphics.usages++;
 
 		this.invalidate();
 	}
@@ -88,33 +84,15 @@ export class Sprite extends DisplayObjectContainer {
 	constructor(graphics: Graphics = null, material: IMaterial = null) {
 		super();
 
-		this._onGraphicsInvalidateDelegate = (event: AssetEvent) => this._onGraphicsInvalidate(event);
-
-		this.graphics = graphics || Graphics.getGraphics();
+		this.graphics = graphics;
 		this.material = material;
 
 		// this.dropBitmapCache = this.dropBitmapCache.bind(this);
 		// this.generateBitmapCache = this.generateBitmapCache.bind(this);
 	}
 
-	public _setParent(parent: DisplayObjectContainer): void {
-		super._setParent(parent);
-
-		if (parent)
-			this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
-		else
-			this._graphics.removeEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
-
-		// if (this._requestCacheAsBitmap) {
-
-		// 	this.set_cacheAsBitmapInternal(true);
-
-		// 	console.log('Restore cache');
-		// }
-	}
-
 	public getEntity(): IPartitionEntity {
-		return (this._graphics.count > 0) ? this : null;
+		return this._graphics;
 	}
 
 	/**
@@ -162,7 +140,8 @@ export class Sprite extends DisplayObjectContainer {
 
 		sprite._iSourcePrefab = this._iSourcePrefab;
 
-		this._graphics.copyTo(sprite._graphics, cloneShapes);
+		if (this._graphics)
+			this._graphics.copyTo(sprite.graphics, cloneShapes);
 	}
 
 	/**
@@ -171,29 +150,10 @@ export class Sprite extends DisplayObjectContainer {
 	public _iInternalUpdate(): void {
 		super._iInternalUpdate();
 
-		// if(this.parent)
-		// 	this._graphics.updateScale(view);
+		if (this._iSourcePrefab)
+			this._iSourcePrefab._iValidate();
 	}
 
-	/**
-	 * //TODO
-	 *
-	 * @private
-	 */
-	protected _onGraphicsInvalidate(_event: AssetEvent): void {
-		this.invalidate();
-	}
-
-	/**
-	 *
-	 * @param renderer
-	 *
-	 * @internal
-	 */
-	public _acceptTraverser(traverser: IEntityTraverser): void {
-		super._acceptTraverser(traverser);
-		this.graphics._acceptTraverser(traverser);
-	}
 
 	/**
 	 *
@@ -203,5 +163,3 @@ export class Sprite extends DisplayObjectContainer {
 		this.transform.clearMatrix3D();
 	}
 }
-
-PartitionBase.registerAbstraction(EntityNode, Sprite);

@@ -44,25 +44,6 @@ export class MorphSprite extends Sprite {
 	private _ratio: ui16;
 	private _frameCaches: NumberMap<GraphicsPath[]> = {};
 
-	protected _setGraphics(value: Graphics): void {
-		if (this._graphics == value) {
-			return;
-		}
-
-		if (this._graphics) {
-			this._graphics.removeEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
-			this._graphics.usages--;
-
-			//if (!this._graphics.usages)
-			//	this.graphics.dispose();
-		}
-
-		if (!this._graphics)
-			this._graphics = Graphics.getGraphics();
-
-		this._graphics.copyFrom(value);
-	}
-
 	public get assetType(): string {
 		return MorphSprite.assetType;
 	}
@@ -367,5 +348,3 @@ export class MorphSprite extends Sprite {
 		return newInstance;
 	}
 }
-
-PartitionBase.registerAbstraction(EntityNode, MorphSprite);

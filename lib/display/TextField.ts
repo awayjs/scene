@@ -204,7 +204,6 @@ const MNEMOS = [
  *                                  options
  */
 export class TextField extends DisplayObjectContainer {
-	private _onGraphicsInvalidateDelegate: (event: AssetEvent) => void;
 	private _onClipboardPasteDelegate: (event: ClipboardEvent) => void;
 
 	private static _textFields: Array<TextField> = [];
@@ -422,7 +421,8 @@ export class TextField extends DisplayObjectContainer {
 		this.setSelection(0, 0);
 
 		this._glyphsDirty = true;
-		this._updateEntity();
+
+		this.invalidate();
 	}
 
 	private enableInput(enable: boolean = true) {
@@ -912,16 +912,6 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	/**
-	 * //TODO
-	 *
-	 * @private
-	 */
-	private _onGraphicsInvalidate(event: AssetEvent): void {
-
-		this.invalidate();
-	}
-
-	/**
 	 *
 	 * @returns {string}
 	 */
@@ -1191,13 +1181,10 @@ export class TextField extends DisplayObjectContainer {
 		this._iTextWoLineBreaks = processedText.replace(/(\r\n|\n|\\n|\r)/gm,'');
 		this._textDirty = true;
 		//console.log("set text", value, "on" , this);
-		if (this._autoSize != TextFieldAutoSize.NONE)
-			this.invalidate();
-		else
-			this._updateEntity();
 
 		this.newTextFormat = this._textFormats[this._textFormats.length - 1];
 
+		this.invalidate();
 	}
 
 	/**
@@ -1585,11 +1572,7 @@ export class TextField extends DisplayObjectContainer {
 		this._textDirty = true;
 
 		//console.log("set text", value, "on" , this);
-		if (this._autoSize != TextFieldAutoSize.NONE)
-			this.invalidate();
-		else
-			this._updateEntity();
-
+		this.invalidate();
 	}
 
 	public setLabelData(labelData: any) {
@@ -1602,11 +1585,7 @@ export class TextField extends DisplayObjectContainer {
 		this._positionsDirty = false;
 		this._glyphsDirty = true;
 
-		if (this._autoSize != TextFieldAutoSize.NONE)
-			this.invalidate();
-		else
-			this._updateEntity();
-
+		this.invalidate();
 	}
 
 	public get newTextFormat(): TextFormat {
@@ -1645,31 +1624,7 @@ export class TextField extends DisplayObjectContainer {
 		this._textDirty = true;
 		//this.reConstruct();
 
-		if (this._autoSize != TextFieldAutoSize.NONE)
-			this.invalidate();
-		else
-			this._updateEntity();
-	}
-
-	/**
-	 *
-	 * @param renderer
-	 *
-	 * @internal
-	 */
-	public _acceptTraverser(traverser: IEntityTraverser): void {
-		if (!this.maskMode) {
-			//if(!this.cursorBlinking &&  this._isInFocus && this.cursorShape && this._type==TextFieldType.INPUT){
-			//	traverser[this.cursorShape.elements.traverseName](this.cursorShape);
-			//}
-			this._graphics._acceptTraverser(traverser);
-			//if(this.showSelection && this._isInFocus && this.bgShapeSelect){
-			//	traverser[this.bgShapeSelect.elements.traverseName](this.bgShapeSelect);
-			//}
-			//if(this.bgShape){// && this.background){
-			//	traverser[this.bgShape.elements.traverseName](this.bgShape);
-			//}
-		}
+		this.invalidate();
 	}
 
 	/**
@@ -1759,7 +1714,7 @@ export class TextField extends DisplayObjectContainer {
 
 		this._glyphsDirty = true;
 
-		this._updateEntity();
+		this.invalidate();
 	}
 
 	private getTextColorForTextFormat(format: TextFormat) {
@@ -1834,13 +1789,11 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	public set type(value: TextFieldType) {
-		if (this._type == value) {
+		if (this._type == value)
 			return;
-		}
+
 		this._type = value;
 		this._textDirty = true;
-
-		this._updateEntity();
 
 		if (value == TextFieldType.INPUT) {
 			//this._selectable=true;
@@ -1850,6 +1803,8 @@ export class TextField extends DisplayObjectContainer {
 			this.enableInput(false);
 			this.removeEventListener(KeyboardEvent.KEYDOWN, this.onKeyDelegate);
 		}
+
+		this.invalidate();
 	}
 
 	/**
@@ -1951,7 +1906,6 @@ export class TextField extends DisplayObjectContainer {
 		this.stopSelectionByMouseDelegate = (event: any) => this.stopSelectionByMouse(event);
 		this.updateSelectionByMouseDelegate = (event: any) => this.updateSelectionByMouse(event);
 
-		this._onGraphicsInvalidateDelegate = (event: AssetEvent) => this._onGraphicsInvalidate(event);
 		this._onClipboardPasteDelegate = (event: ClipboardEvent) => this.onClipboardPaste(event);
 
 		this.cursorIntervalID = -1;
@@ -1985,7 +1939,6 @@ export class TextField extends DisplayObjectContainer {
 		this._textFormats = [];
 
 		this._graphics = Graphics.getGraphics(); //unique graphics object for each TextField
-		this._graphics.addEventListener(AssetEvent.INVALIDATE, this._onGraphicsInvalidateDelegate);
 
 		this.mouseEnabled = this._selectable;
 	}
@@ -1995,7 +1948,7 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	public getEntity(): IPartitionEntity {
-		return this;
+		return this._graphics;
 	}
 
 	public clear(): void {
@@ -2745,8 +2698,6 @@ export class TextField extends DisplayObjectContainer {
 			}
 
 		}
-		this.updateMaskMode();
-
 	}
 
 	public staticMatrix: any;
@@ -3078,10 +3029,8 @@ export class TextField extends DisplayObjectContainer {
 
 		this._iText += newText;
 		this._textDirty = true;
-		if (this._autoSize != TextFieldAutoSize.NONE)
-			this.invalidate();
-		else
-			this._updateEntity();
+		
+		this.invalidate();
 	}
 
 	/**
@@ -3091,10 +3040,8 @@ export class TextField extends DisplayObjectContainer {
 	public closeParagraph(): void {
 		this._iText += '\n';
 		this._textDirty = true;
-		if (this._autoSize != TextFieldAutoSize.NONE)
-			this.invalidate();
-		else
-			this._updateEntity();
+
+		this.invalidate();
 	}
 
 	/**
@@ -3995,5 +3942,3 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 }
-
-PartitionBase.registerAbstraction(EntityNode, TextField);

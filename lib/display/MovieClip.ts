@@ -43,7 +43,6 @@ export class MovieClip extends Sprite {
 		if (MovieClip._movieClips.length) {
 			const movieClip: MovieClip = MovieClip._movieClips.pop();
 			movieClip.timeline = timeline;
-			movieClip.graphics = Graphics.getGraphics();
 			return movieClip;
 		}
 
@@ -580,7 +579,8 @@ export class MovieClip extends Sprite {
 		for (let i: number = this.numChildren - 1; i >= 0; i--)
 			this.removeChildAt(i);
 
-		this.graphics.clear();
+		if (this._graphics)
+			this._graphics.clear();
 
 		if (fireScripts) {
 			const numFrames: number = this._timeline.keyframe_indices.length;

@@ -1,6 +1,6 @@
 import { Point, Vector3D, EventBase } from '@awayjs/core';
 
-import { EntityNode, ContainerNode, INode, ITraversable, View, IPartitionContainer } from '@awayjs/view';
+import { ContainerNode, INode, ITraversable, View, IPartitionContainer } from '@awayjs/view';
 
 import { IMaterial } from '@awayjs/renderer';
 import FrameScriptManager from '../managers/FrameScriptManager';
