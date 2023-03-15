@@ -6,6 +6,7 @@ export { IFilter } from './lib/adapters/IFilter';
 
 export { IBitmapDrawable } from './lib/base/IBitmapDrawable';
 export { IFrameScript } from './lib/base/IFrameScript';
+export { MouseButtons } from './lib/base/MouseButtons';
 export { Timeline } from './lib/base/Timeline';
 export { TimelineActionType } from './lib/base/TimelineActionType';
 
