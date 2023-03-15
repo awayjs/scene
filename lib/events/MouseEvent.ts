@@ -4,6 +4,7 @@ import { ContainerNode, INode, ITraversable, View, IPartitionContainer } from '@
 
 import { IMaterial } from '@awayjs/renderer';
 import FrameScriptManager from '../managers/FrameScriptManager';
+import { MouseButtons } from '../base/MouseButtons';
 
 /**
  * A MouseEvent is dispatched when a mouse event occurs over a mouseEnabled object in View.
@@ -181,9 +182,9 @@ export class MouseEvent extends EventBase {
 	public delta: number;
 
 	/**
-	 * Current button that fire event
+	 * Current buttons status
 	 */
-	public button: 0 | 1 | 2 | 3 = 0;
+	public buttons: MouseButtons = 0;
 
 	/**
 	 * Create a new MouseEvent object.
@@ -256,7 +257,7 @@ export class MouseEvent extends EventBase {
 
 		result._iParentEvent = this;
 		result._iAllowedToPropagate = this._iAllowedToPropagate;
-		result.button = this.button;
+		result.buttons = this.buttons;
 
 		return result;
 	}
@@ -279,7 +280,7 @@ export class MouseEvent extends EventBase {
 	}
 
 	public _dispatchEvent(dispatcher: ContainerNode, target: IPartitionContainer) {
-		if (!dispatcher.isMouseDisabled()) {
+		if (!dispatcher.isMouseDisabled() || this.type == MouseEvent.MOUSE_OUT || this.type == MouseEvent.ROLL_OUT) {
 			dispatcher.container.dispatchEvent(this, target);
 			FrameScriptManager.execute_queue();
 		}

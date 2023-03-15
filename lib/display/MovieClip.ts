@@ -8,6 +8,7 @@ import { FrameScriptManager } from '../managers/FrameScriptManager';
 import { DisplayObject } from './DisplayObject';
 import { Sprite } from './Sprite';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
+import { MouseButtons } from '../base/MouseButtons';
 interface IScene {
 	offset: number;
 	name: string;
@@ -67,10 +68,9 @@ export class MovieClip extends Sprite {
 
 	private _onMouseOver: (event: MouseEvent) => void;
 	private _onMouseOut: (event: MouseEvent) => void;
-	private _onDragOver: (event: MouseEvent) => void;
-	private _onDragOut: (event: MouseEvent) => void;
 	private _onMouseDown: (event: MouseEvent) => void;
 	private _onMouseUp: (event: MouseEvent) => void;
+	private _onMouseUpOutside: (event: MouseEvent) => void;
 
 	private _time: number = 0;// the current time inside the animation
 
@@ -168,13 +168,13 @@ export class MovieClip extends Sprite {
 
 		this._onMouseOver = (_event: MouseEvent) => {
 			if (this.buttonEnabled)
-				this.currentFrameIndex = 1;
+				this.currentFrameIndex = (_event.buttons & MouseButtons.PRIMARY_BUTTON) ? this.currentFrameIndex == 0 ? 0 : 2 : 1;
 			else
 				this.currentFrameIndex = 0;
 		};
 
 		this._onMouseOut = (_event: MouseEvent) => {
-			this.currentFrameIndex = 0;
+			this.currentFrameIndex = (_event.buttons & MouseButtons.PRIMARY_BUTTON && this.currentFrameIndex != 0) ? 1 : 0;
 		};
 
 		this._onMouseDown = (_event: MouseEvent) => {
@@ -185,18 +185,11 @@ export class MovieClip extends Sprite {
 		};
 
 		this._onMouseUp = (_event: MouseEvent) => {
-			this.currentFrameIndex = this.currentFrameIndex == 0 ? 0 : 1;
-		};
-
-		this._onDragOver = (_event: MouseEvent) => {
-			if (this.buttonEnabled)
-				this.currentFrameIndex = 2;
-			else
-				this.currentFrameIndex = 0;
-		};
-
-		this._onDragOut = (_event: MouseEvent) => {
 			this.currentFrameIndex = 1;
+		};
+
+		this._onMouseUpOutside = (_event: MouseEvent) => {
+			this.currentFrameIndex = 0;
 		};
 
 		this._timeline = timeline;
@@ -695,8 +688,7 @@ export class MovieClip extends Sprite {
 		this.addEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
 		this.addEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
 		this.addEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
-		this.addEventListener(MouseEvent.DRAG_OVER, this._onDragOver);
-		this.addEventListener(MouseEvent.DRAG_OUT, this._onDragOut);
+		this.addEventListener(MouseEvent.MOUSE_UP_OUTSIDE, this._onMouseUpOutside);
 
 		this.mouseChildren = false;
 	}
@@ -706,8 +698,7 @@ export class MovieClip extends Sprite {
 		this.removeEventListener(MouseEvent.MOUSE_OUT, this._onMouseOut);
 		this.removeEventListener(MouseEvent.MOUSE_DOWN, this._onMouseDown);
 		this.removeEventListener(MouseEvent.MOUSE_UP, this._onMouseUp);
-		this.removeEventListener(MouseEvent.DRAG_OVER, this._onDragOver);
-		this.removeEventListener(MouseEvent.DRAG_OUT, this._onDragOut);
+		this.removeEventListener(MouseEvent.MOUSE_UP_OUTSIDE, this._onMouseUpOutside);
 	}
 
 	public getTimelineChildAtSessionID(sessionID: number): DisplayObject {

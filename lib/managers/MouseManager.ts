@@ -112,7 +112,6 @@ export class MouseManager {
 	 */
 	constructor(stage: Stage) {
 		this._stage = stage;
-		this.onClick = this.onClick.bind(this);
 		this.onDoubleClick = this.onDoubleClick.bind(this);
 		this.onMouseDown = this.onMouseDown.bind(this);
 		this.onMouseMove = this.onMouseMove.bind(this);
@@ -130,8 +129,6 @@ export class MouseManager {
 
 		//register stage
 		const container = this._stage.container;
-		container.addEventListener('click', this.onClick);
-		container.addEventListener('dblclick', this.onClick);
 		container.addEventListener('touchstart', this.onMouseDown);
 		container.addEventListener('mousedown', this.onMouseDown);
 
@@ -140,7 +137,6 @@ export class MouseManager {
 		window.addEventListener('mouseup', this.onMouseUp);
 
 		container.addEventListener('touchend', this.onMouseUp);
-		container.addEventListener('touchend', this.onClick);
 		container.addEventListener('mousewheel', this.onMouseWheel);
 		container.addEventListener('mouseover', this.onMouseOver);
 		container.addEventListener('mouseout', this.onMouseOut);
@@ -174,7 +170,6 @@ export class MouseManager {
 	public dispose() {
 		//unregister stage
 		const container = this._stage.container;
-		container.removeEventListener('click', this.onClick);
 		container.removeEventListener('dblclick', this.onDoubleClick);
 		container.removeEventListener('touchstart', this.onMouseDown);
 		container.removeEventListener('mousedown', this.onMouseDown);
@@ -182,7 +177,6 @@ export class MouseManager {
 		window.removeEventListener('mousemove', this.onMouseMove);
 		window.removeEventListener('mouseup', this.onMouseUp);
 		container.removeEventListener('touchend', this.onMouseUp);
-		container.removeEventListener('touchend', this.onClick);
 		container.removeEventListener('wheel', this.onMouseWheel);
 		container.removeEventListener('mouseover', this.onMouseOver);
 		container.removeEventListener('mouseout', this.onMouseOut);
@@ -279,6 +273,7 @@ export class MouseManager {
 			event.ctrlKey = sourceEvent.ctrlKey;
 			event.altKey = sourceEvent.altKey;
 			event.shiftKey = sourceEvent.shiftKey;
+			event.buttons = sourceEvent.buttons;
 		}
 
 		event = this.setUpEvent(event, collision, commonAncestor);
@@ -358,26 +353,15 @@ export class MouseManager {
 					&& this._mouseDragCollision.rootNode != dispatcher) {
 					// no avm1dragging is in process, but current collision
 					// is not the same as collision that appeared on mouse-down,
-					// need to dispatch a MOUSE_UP_OUTSIDE on _mouseDragEntity
-					if ((<any> this._mouseDragCollision.rootNode).buttonEnabled)
-						this.setupAndDispatchEvent(this._mouseOut, event, this._mouseDragCollision);
-					if (!this._eventBubbling) {
-						this.setupAndDispatchEvent(this._mouseUpOutside, event, this._mouseDragCollision);
-					}
+					// need to dispatch a MOUSE_UP_OUTSIDE after mouse up
 				} else if (this._mouseDragging && this._mouseDragCollision
 					&& this._mouseDragCollision.rootNode == dispatcher) {
 					// no avm1dragging is in process,
-					// but current collision is not the same as collision that appeared on mouse-down,
-					// need to dispatch a MOUSE_UP_OUTSIDE on _mouseDragEntity
+					// current collision is the same as collision that appeared on
+					// mouse-down, need to dispatch a MOUSE_CLICK event after mouse up
 					upRootNode = this._mouseDragCollision.rootNode;
 					upContainerNode = this._mouseDragCollision.containerNode;
 				}
-
-				if (this._mouseDragging && dispatcher)
-					this.setupAndDispatchEvent(this._mouseOver, event, collision);
-
-				if (this._isTouch && upContainerNode)
-					this.setupAndDispatchEvent(this._mouseOut, this._mouseMoveEvent, this._mouseDragCollision);
 
 				if (upRootNode) {
 					//console.log("onRelease", upRootNode)
@@ -387,8 +371,13 @@ export class MouseManager {
 				else if (this._eventBubbling)
 					this._stage.dispatchEvent(event);
 
-				if (upContainerNode)
+				if (upContainerNode) {
+					if (!this._isAVM1Dragging)
+						this.setupAndDispatchEvent(this._mouseClick, this._isTouch ? this._mouseMoveEvent : event, this._mouseDragCollision);
 					this.setupAndDispatchEvent(this._dragStop, event, this._mouseDragCollision);
+				} else if (this._mouseDragging && this._mouseDragCollision) {
+					this.setupAndDispatchEvent(this._mouseUpOutside, event, this._mouseDragCollision);
+				}
 
 				this._mouseDragCollision = null;
 				this._mouseDragging = false;
@@ -432,16 +421,16 @@ export class MouseManager {
 		if (collisionNode != prevCollisionNode) {
 
 			//  If colliding object has changed, queue OVER and OUT events.
-			//  If the mouse is dragged (mouse-down is hold), use DRAG_OVER and DRAG_OUT instead of MOUSE_OVER MOUSE_OUT
+			//  If the mouse is dragged (mouse-down is hold), use DRAG_OVER and DRAG_OUT as well as MOUSE_OVER MOUSE_OUT
 			//  DRAG_OVER and DRAG_OUT are only dispatched on the object that was hit on the mouse-down
 			// (_mouseDragEntity)
 
 			//  Store the info if the collision is a enabled Button (_collisionIsEnabledButton)
 
 			if (prevCollisionNode) {
-				if (!this._isTouch && !this._mouseDragging)
-					this.setupAndDispatchEvent(this._mouseOut, this._mouseMoveEvent, this._prevCollision);
-				else if (this._mouseDragging && this._mouseDragCollision
+				this.setupAndDispatchEvent(this._mouseOut, this._mouseMoveEvent, this._prevCollision);
+
+				if (this._mouseDragging && this._mouseDragCollision
 					&& this._mouseDragCollision.rootNode == prevCollisionNode)
 					this.setupAndDispatchEvent(this._dragOut, this._mouseMoveEvent, this._prevCollision);
 			}
@@ -487,10 +476,9 @@ export class MouseManager {
 			this._collisionIsEnabledButton = collisionNode ? (<any> collisionNode).buttonEnabled : false;
 
 			if (collisionNode) {
-				if (!this._isTouch && !this._mouseDragging)
-					this.setupAndDispatchEvent(this._mouseOver, this._mouseMoveEvent, collision);
-				else if (this._mouseDragging && this._mouseDragCollision &&
-					this._mouseDragCollision.rootNode == collisionNode)
+				this.setupAndDispatchEvent(this._mouseOver, this._mouseMoveEvent, collision);
+
+				if (this._mouseDragging)
 					this.setupAndDispatchEvent(this._dragOver, this._mouseMoveEvent, collision);
 			}
 
@@ -721,7 +709,7 @@ export class MouseManager {
 		event.ctrlKey = sourceEvent.ctrlKey;
 		event.altKey = sourceEvent.altKey;
 		event.shiftKey = sourceEvent.shiftKey;
-		event.button = (sourceEvent instanceof MouseEvent) ? <0> sourceEvent.button : 0;
+		event.buttons = (sourceEvent instanceof MouseEvent) ? <0> sourceEvent.buttons : 0;
 
 		this._queuedEvents.push(event);
 	}
@@ -814,12 +802,6 @@ export class MouseManager {
 		this.updateColliders(event);
 
 		this.queueDispatch(this._mouseOver, event);
-	}
-
-	public onClick(event: MouseEvent): void {
-		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
-		this.updateColliders(event);
-		this.queueDispatch(this._mouseClick, event);
 	}
 
 	public onDoubleClick(event: MouseEvent): void {
