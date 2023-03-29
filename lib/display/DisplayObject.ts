@@ -1390,6 +1390,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 
 			if (index !== -1) {
 				this._masks.splice(index, 1);
+				this._scriptMask.maskMode = false;
 			}
 		}
 
