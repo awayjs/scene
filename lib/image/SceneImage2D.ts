@@ -910,8 +910,8 @@ export class SceneImage2D extends BitmapImage2D {
 			if (!useBlend && this._lastUsedFill !== null) {
 				// bitmap was filled plain, go clear TMP to this color too
 				renderer.disableClear = false;
-				renderer.view.backgroundColor = this._lastUsedFill;
-				renderer.view.backgroundAlpha = (this._lastUsedFill >>> 24 & 0xff) / 0xff;
+				renderer.view.backgroundColor = this._lastUsedFill & 0xffffff;
+				renderer.view.backgroundAlpha = this._transparent ? (this._lastUsedFill >>> 24 & 0xff) / 0xff : 1;
 			} else {
 				// we clear TMP and render to it, prepare to composing
 				renderer.disableClear = false;
