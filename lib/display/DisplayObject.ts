@@ -1347,34 +1347,48 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	}
 
 	private _mergeMasks(timeline: Array<DisplayObject> | null, script: DisplayObject | null): Array<DisplayObject> {
-		if (!timeline && !script) {
-			return null;
-		}
+		if (!timeline && !script)
+			return;
 
 		// we can not have mask array, create it
-		if (!timeline && script) {
-			script.maskMode = true;
+		if (!timeline && script)
 			return [script];
-		}
 
 		// and make sure that we not have same script mask in it
-		if (script && !timeline.includes(script)) {
+		if (script && !timeline.includes(script))
 			timeline.push(script);
-		}
+		
+		return timeline;
+	}
 
-		// and make sure that mask mode enabled
-		for (let i = timeline.length - 1; i >= 0 ; i--) {
-			const m = timeline[i];
+	private _setMasks(masks: Array<DisplayObject> | null): void {
+		let oldMasks: Array<DisplayObject> = this._masks ? this._masks : [];
 
-			if (!m) {
-				console.warn('[DisplayObject] Timeline mask has null value, skipping it');
-				timeline.splice(i, 1);
-			} else {
-				m.maskMode = true;
+		if (masks) {
+
+			// and make sure that mask mode enabled if not already
+			for (let i = masks.length - 1; i >= 0 ; i--) {
+				const mask = masks[i];
+
+				if (!mask) {
+					console.warn('[DisplayObject] Timeline mask has null value, skipping it');
+					masks.splice(i, 1);
+				} else {
+					const index = oldMasks.indexOf(mask)
+					if (index != -1) {
+						oldMasks.splice(index, 1);
+					} else {
+						mask.maskMode = true;
+					}
+				}
 			}
 		}
 
-		return timeline;
+		//set mask mode to false for old masks
+		for (let i = oldMasks.length - 1; i >= 0 ; i--)
+			oldMasks[i].maskMode = false;
+
+		this._masks = masks;
 	}
 
 	/**
@@ -1382,7 +1396,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	 * @param mask Masked element, that can be used from script without corruption of timeline mask
 	 */
 	public set scriptMask(mask: DisplayObject | null) {
-		if (mask === this._scriptMask) return;
+		if (mask === this._scriptMask)
+			return;
 
 		// remove older script mask, _mask array for this case can't be null
 		if (this._scriptMask) {
@@ -1395,7 +1410,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		}
 
 		this._scriptMask = mask;
-		this._masks = this._mergeMasks(this._masks, mask);
+
+		this._masks = this._mergeMasks(this._masks, mask)
+
+		if (mask)
+			mask.maskMode = true;
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 	}
@@ -1410,7 +1429,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	 * @param masks Masks from timeline
 	 */
 	public updateTimelineMask(masks: DisplayObject[] | null) {
-		this._masks = this._mergeMasks(masks, this._scriptMask);
+		this._setMasks(this._mergeMasks(masks, this._scriptMask));
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 	}
@@ -1427,8 +1446,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		if (this._masks == value)
 			return;
 
-		this._masks = value;
-
 		// this is edge case, if we set masks direct,
 		// this means that we should reset _scriptMask when it not present in input mask
 		if (!value || !value.length) {
@@ -1437,15 +1454,15 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 			const len = value.length;
 			let hasScriptMask = false;
 
-			for (let i  = 0; i < len; i++) {
-				value[i].maskMode = true;
+			for (let i  = 0; i < len; i++)
 				hasScriptMask = hasScriptMask || (value[i] === this._scriptMask);
-			}
 
-			if (this._scriptMask && !hasScriptMask) {
+			//if we had a script mask set but it wasn't present in the new masks value, remove it
+			if (this._scriptMask && !hasScriptMask)
 				this._scriptMask = null;
-			}
 		}
+
+		this._setMasks(value);
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 	}

@@ -658,7 +658,7 @@ export class Timeline {
 	}
 
 	public static remove_masks(_timeline: Timeline, child: DisplayObject, _target_mc: MovieClip, _i: number): void {
-		child.masks = null;
+		child.updateTimelineMask(null);
 	}
 
 	public static update_filters(timeline: Timeline, child: DisplayObject, _target_mc: MovieClip, i: number): void {

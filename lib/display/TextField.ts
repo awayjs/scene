@@ -367,8 +367,7 @@ export class TextField extends DisplayObjectContainer {
 			this.maskChild.graphics.endFill();
 			this.addChild(this.maskChild);
 			this.addChild(this.textChild);
-			this.maskChild.maskMode = true;
-			//this.textChild.masks = [this.maskChild];
+			this.maskChild.visible = false;
 
 			this._graphics.clear();
 			this.targetGraphics = this.textChild.graphics;
@@ -376,9 +375,9 @@ export class TextField extends DisplayObjectContainer {
 		}
 		// only use masking if needed:
 		if (this._textWidth > this._width || this._textHeight > this._height) {
-			this.textChild.masks = [this.maskChild];
+			this.textChild.scriptMask = this.maskChild;
 		} else {
-			this.textChild.masks = null;
+			this.textChild.scriptMask = null;
 		}
 		return;
 	}
