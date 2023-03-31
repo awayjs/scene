@@ -1357,12 +1357,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		// and make sure that we not have same script mask in it
 		if (script && !timeline.includes(script))
 			timeline.push(script);
-		
+
 		return timeline;
 	}
 
 	private _setMasks(masks: Array<DisplayObject> | null): void {
-		let oldMasks: Array<DisplayObject> = this._masks ? this._masks : [];
+		const oldMasks: Array<DisplayObject> = this._masks ? this._masks : [];
 
 		if (masks) {
 
@@ -1374,7 +1374,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 					console.warn('[DisplayObject] Timeline mask has null value, skipping it');
 					masks.splice(i, 1);
 				} else {
-					const index = oldMasks.indexOf(mask)
+					const index = oldMasks.indexOf(mask);
 					if (index != -1) {
 						oldMasks.splice(index, 1);
 					} else {
@@ -1411,7 +1411,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 
 		this._scriptMask = mask;
 
-		this._masks = this._mergeMasks(this._masks, mask)
+		this._masks = this._mergeMasks(this._masks, mask);
 
 		if (mask)
 			mask.maskMode = true;
