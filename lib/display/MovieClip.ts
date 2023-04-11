@@ -1,6 +1,5 @@
 import { WaveAudio, IAudioChannel } from '@awayjs/core';
 import { PartitionBase, EntityNode } from '@awayjs/view';
-import { Graphics } from '@awayjs/graphics';
 import { IMovieClipAdapter } from '../adapters/IMovieClipAdapter';
 import { Timeline } from '../base/Timeline';
 import { MouseEvent } from '../events/MouseEvent';

@@ -1,6 +1,6 @@
 import { Point, ArgumentError, RangeError } from '@awayjs/core';
 import { IAnimator, IRenderContainer } from '@awayjs/renderer';
-import { PartitionBase, EntityNode, HierarchicalProperty, ContainerEvent, ContainerNode } from '@awayjs/view';
+import { PartitionBase, EntityNode, ContainerEvent, ContainerNode } from '@awayjs/view';
 import { DisplayObject } from './DisplayObject';
 
 /**

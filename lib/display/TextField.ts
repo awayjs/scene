@@ -1,8 +1,8 @@
-import { ColorUtils, Matrix, Rectangle, Point, Vector3D, AssetEvent } from '@awayjs/core';
+import { ColorUtils, Matrix, Rectangle, Point, Vector3D } from '@awayjs/core';
 
 import { ImageSampler, Float2Attributes } from '@awayjs/stage';
 
-import { IEntityTraverser, PartitionBase, EntityNode, IPartitionEntity, PickEntity } from '@awayjs/view';
+import { IPartitionEntity } from '@awayjs/view';
 
 import { Style, TriangleElements } from '@awayjs/renderer';
 

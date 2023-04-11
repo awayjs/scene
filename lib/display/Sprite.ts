@@ -1,5 +1,5 @@
-﻿import { AssetEvent, Vector3D } from '@awayjs/core';
-import { IEntityTraverser, PartitionBase, EntityNode, IPartitionEntity } from '@awayjs/view';
+﻿import { Vector3D } from '@awayjs/core';
+import { IPartitionEntity } from '@awayjs/view';
 import { IMaterial } from '@awayjs/renderer';
 import { Graphics } from '@awayjs/graphics';
 import { DisplayObjectContainer } from './DisplayObjectContainer';

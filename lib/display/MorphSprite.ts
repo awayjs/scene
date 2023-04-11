@@ -1,6 +1,4 @@
-import { Matrix, ColorUtils, AssetEvent } from '@awayjs/core';
-
-import { PartitionBase, EntityNode, IPartitionEntity } from '@awayjs/view';
+import { Matrix, ColorUtils } from '@awayjs/core';
 
 import {
 	GraphicsPathCommand,
