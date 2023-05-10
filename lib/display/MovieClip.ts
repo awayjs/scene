@@ -198,7 +198,7 @@ export class MovieClip extends Sprite {
 			this.transformToSprite();
 		}
 
-		this.onSoundCompleteInternal = this.onSoundCompleteInternal.bind(this)
+		this.onSoundCompleteInternal = this.onSoundCompleteInternal.bind(this);
 	}
 
 	/**
@@ -238,7 +238,7 @@ export class MovieClip extends Sprite {
 		if (onSoundComplete)
 			channel.addEventListener(BaseAudioChannel.COMPLETE, onSoundComplete);
 
-		//internal listener to clear 
+		//internal listener to clear
 		channel.addEventListener(BaseAudioChannel.COMPLETE, this.onSoundCompleteInternal);
 
 		this._sounds[sound.id] = sound;
@@ -385,11 +385,11 @@ export class MovieClip extends Sprite {
 			if (Object.getOwnPropertyNames(this._sounds).length === 0) {
 				MovieClip._activeSoundsOwners.delete(this);
 			}
-	
+
 			const channels = this._activeSounds[sound.id];
 			if (channels) {
 				for (const c of channels) c.stop();
-	
+
 				delete this._activeSounds[sound.id];
 			}
 		}
