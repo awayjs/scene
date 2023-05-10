@@ -481,17 +481,17 @@ export class Timeline {
 		for (let i: number = start_index; i < end_index; i++) {
 			const audioProps: any = this.audioPool[this.add_sounds_stream[i]];
 			if (audioProps) {
+				const sound: WaveAudio = audioProps.sound;
+
+				if (!sound) {
+					console.warn('[Timeline] Missing sound in audioProps!', audioProps);
+					return;
+				}
+
 				if (audioProps.cmd == 15) {// start sound
-					const child: WaveAudio = audioProps.sound;
-
-					if (!child) {
-						console.warn('[Timeline] Missed sound to start!', audioProps);
-						return;
-					}
-
-					target_mc.startSound(audioProps.id, child, audioProps.props.loopCount || 0);
+					target_mc.startSound(sound, audioProps.props.loopCount || 0);
 				} else if (audioProps.cmd == 16) {// stop sound
-					target_mc.stopSound(audioProps.id);
+					target_mc.stopSound(sound);
 				}
 				//console.log("start sound:", child);
 			}
