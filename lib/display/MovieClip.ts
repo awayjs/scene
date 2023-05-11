@@ -91,8 +91,6 @@ export class MovieClip extends Sprite {
 
 	public _useHandCursor: boolean;
 
-	private _parentSoundVolume: number;
-
 	private _soundVolume: number;
 
 	private _skipFramesForStream: number = 0;
@@ -157,7 +155,6 @@ export class MovieClip extends Sprite {
 		super();
 
 		this._soundVolume = 1;
-		this._parentSoundVolume = 1;
 		this._isButton = false;
 		this._buttonMode = false;
 		this._useHandCursor = true;
@@ -234,6 +231,8 @@ export class MovieClip extends Sprite {
 	) {
 
 		const channel: IAudioChannel = sound.play(0, loopsToPlay);
+
+		channel.volume = this._soundVolume;
 
 		if (onSoundComplete)
 			channel.addEventListener(BaseAudioChannel.COMPLETE, onSoundComplete);
@@ -364,8 +363,10 @@ export class MovieClip extends Sprite {
 		}
 
 		this._soundVolume = value;
-		for (const key in this._sounds) {
-			this._sounds[key].volume = value;
+		for (const key in this._activeSounds) {
+			const channels = this._activeSounds[key];
+			if (channels)
+				for (const c of channels) c.volume = value;
 		}
 
 		const len: number = this._children.length;
