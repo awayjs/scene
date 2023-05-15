@@ -371,7 +371,6 @@ export class TextField extends DisplayObjectContainer {
 
 			this._graphics.clear();
 			this.targetGraphics = this.textChild.graphics;
-			return;
 		}
 		// only use masking if needed:
 		if (this._textWidth > this._width || this._textHeight > this._height) {
@@ -719,9 +718,26 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	public drawBG(): void {
-		this._graphics.beginFill(this.backgroundColor, (!this._background) ? 0 : 1);
-		this._graphics.drawRect(this.textOffsetX, this.textOffsetY, this.width, this.height);
-		this._graphics.endFill();
+		//TODO this fixes masking using static textfields, but dynamic textfields still have problems. (see addChild(this.maskChild))
+		if (this._background) {
+			this._graphics.beginFill(this.backgroundColor, 1);
+			this._graphics.drawRect(this.textOffsetX, this.textOffsetY, this.width, this.height);
+			this._graphics.endFill();
+		}
+
+		//create a hitArea for the textfield
+		let  pickObject: Sprite = <Sprite> this.pickObject;
+
+		if (!pickObject) {
+			this.pickObject = pickObject || (pickObject = new Sprite());
+			pickObject.pickObjectFromTimeline = true;
+		}
+
+		const graphics: Graphics = pickObject.graphics;
+		graphics.clear();
+		graphics.beginFill(0x000000, 1);
+		graphics.drawRect(this.textOffsetX, this.textOffsetY, this.width, this.height);
+		graphics.endFill();
 	}
 
 	public drawBorder(): void {
