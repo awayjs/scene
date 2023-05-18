@@ -1,5 +1,5 @@
 ﻿import { Vector3D } from '@awayjs/core';
-import { IPartitionEntity } from '@awayjs/view';
+import { EntityNode, IPartitionEntity, PartitionBase } from '@awayjs/view';
 import { IMaterial } from '@awayjs/renderer';
 import { Graphics } from '@awayjs/graphics';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
@@ -162,3 +162,5 @@ export class Sprite extends DisplayObjectContainer {
 		this.transform.clearMatrix3D();
 	}
 }
+
+PartitionBase.registerAbstraction(EntityNode, Sprite);
