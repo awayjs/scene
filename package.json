@@ -14,7 +14,7 @@
   "scripts": {
     "rimraf": "rimraf",
     "rollup": "rollup -c",
-    "uglifyjs": "uglifyjs ./bundle/awayjs-scene.umd.js -o ./bundle/awayjs-scene.umd.min.js --in-source-map ./bundle/awayjs-scene.umd.js.map --source-map --output ./bundle/awayjs-scene.umd.min.js.map --mangle",
+    "uglifyjs": "uglifyjs ./bundle/awayjs-scene.umd.js -o ./bundle/awayjs-scene.umd.min.js --source-map \"content='./bundle/awayjs-scene.umd.js.map'\" --mangle",
     "tsc": "tsc",
     "tsc:build": "npm run tsc || exit 0",
     "clean": "npm cache clean && npm run rimraf -- node_modules dist bundle",
@@ -64,7 +64,7 @@
     "rimraf": "^2.5.2",
     "rollup": "^0.36.4",
     "rollup-plugin-includepaths": "^0.2.1",
-    "tslib": "^1.9.0",
+    "tslib": "^2.3.0",
     "typescript": "^3.7.3",
     "uglify-js": "^3.0.15"
   },
