@@ -1,4 +1,4 @@
-import { WaveAudio, IAudioChannel, EventBase } from '@awayjs/core';
+import { WaveAudio, IAudioChannel, EventBase, BaseAudioChannel } from '@awayjs/core';
 import { PartitionBase, EntityNode } from '@awayjs/view';
 import { IMovieClipAdapter } from '../adapters/IMovieClipAdapter';
 import { Timeline } from '../base/Timeline';
@@ -8,7 +8,7 @@ import { DisplayObject } from './DisplayObject';
 import { Sprite } from './Sprite';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 import { MouseButtons } from '../base/MouseButtons';
-import { BaseAudioChannel } from '@awayjs/core/dist/lib/managers/BaseAudioChannel';
+
 interface IScene {
 	offset: number;
 	name: string;
