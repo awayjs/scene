@@ -358,24 +358,15 @@ export class MovieClip extends Sprite {
 	}
 
 	public set soundVolume(value: number) {
-		if (this._soundVolume == value) {
+		if (this._soundVolume == value)
 			return;
-		}
 
 		this._soundVolume = value;
-		for (const key in this._activeSounds) {
-			const channels = this._activeSounds[key];
-			if (channels)
-				for (const c of channels) c.volume = value;
-		}
 
-		const len: number = this._children.length;
-		let child: DisplayObject;
-		for (let i: number = 0; i < len; ++i) {
-			child = this._children[i];
-			if (child.isAsset(MovieClip))
-				(<MovieClip>child).soundVolume = value;
-		}
+		let channels: IAudioChannel[];
+		for (const key in this._activeSounds)
+			if ((channels = this._activeSounds[key]))
+				for (const c of channels) c.volume = value;
 	}
 
 	public stopSound(sound: WaveAudio) {
