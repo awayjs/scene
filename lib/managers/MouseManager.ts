@@ -145,7 +145,7 @@ export class MouseManager {
 		window.addEventListener('keyup', this.onKeyUp);
 
 		// supress context menu
-		window.addEventListener('contextmenu', e => e.preventDefault());
+		container.addEventListener('contextmenu', e => e.preventDefault());
 	}
 
 	public set useSoftkeyboard(value: boolean) {
