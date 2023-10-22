@@ -344,7 +344,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	 * object(2) superimposed on another display object(1).</p>
 	 */
 
-	public _blendMode: BlendMode = BlendMode.NORMAL;
+	public _blendMode: BlendMode = BlendMode.LAYER;
 
 	public set blendMode(v: BlendMode) {
 		if (this._blendMode === v) {
