@@ -960,6 +960,7 @@ export class SceneImage2D extends BitmapImage2D {
 		renderer.view.height = this.height;
 
 		const sourceNode: ContainerNode = rootNode.addChildAt(source, 0);
+		const transformDisabled = sourceNode.transformDisabled;
 
 		sourceNode.transformDisabled = true;
 		// color transform should be enabled!
@@ -981,6 +982,8 @@ export class SceneImage2D extends BitmapImage2D {
 		renderer.disableClear = true;
 
 		rootNode.removeChildAt(0);
+
+		sourceNode.transformDisabled = transformDisabled;
 
 		if (useTemp) {
 			// because we copy MSAA into no msaa, it should passed as BLIT
