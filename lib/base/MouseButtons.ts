@@ -1,6 +1,11 @@
 
 export const enum MouseButtons {
 	/**
+	 * No button or un-initialized
+	 */
+	NO_BUTTON = 0,
+
+	/**
 	 * Primary Button (usually the left button)
 	 */
 	PRIMARY_BUTTON = 1,

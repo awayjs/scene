@@ -8,6 +8,7 @@ import { KeyboardEvent } from '../events/KeyboardEvent';
 import { MouseEvent as AwayMouseEvent } from '../events/MouseEvent';
 
 import { IInputRecorder } from './IInputRecorder';
+import { MouseButtons } from '../base/MouseButtons';
 
 /**
  * MouseManager enforces a singleton pattern and is not intended to be instanced.
@@ -709,7 +710,7 @@ export class MouseManager {
 		event.ctrlKey = sourceEvent.ctrlKey;
 		event.altKey = sourceEvent.altKey;
 		event.shiftKey = sourceEvent.shiftKey;
-		event.buttons = (sourceEvent instanceof MouseEvent) ? <0> sourceEvent.buttons : 0;
+		event.buttons = (sourceEvent instanceof MouseEvent) ? <MouseButtons> sourceEvent.buttons : MouseButtons.NO_BUTTON;
 
 		this._queuedEvents.push(event);
 	}
