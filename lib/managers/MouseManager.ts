@@ -724,6 +724,7 @@ export class MouseManager {
 		//console.log("Keydown", event);
 		if (this.allowKeyInput) {
 			switch (event.keyCode) {
+				case 32: // spacebar
 				case 37: // left
 				case 39: // right
 				case 38: // up
@@ -755,6 +756,7 @@ export class MouseManager {
 		//console.log("Keyup", event);
 		if (this.allowKeyInput) {
 			switch (event.keyCode) {
+				case 32: // spacebar
 				case 37: // left
 				case 39: // right
 				case 38: // up
