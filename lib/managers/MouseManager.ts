@@ -40,8 +40,8 @@ export class MouseManager {
 	private _cursorType: 'pointer' | 'auto'  = 'auto';
 
 	private _nullVector: Vector3D = new Vector3D();
-	
-	private static _touchToMouseDict:Record<string, string> = {
+
+	private static _touchToMouseDict: Record<string, string> = {
 		touchstart: 'mousedown',
 		touchend: 'mouseup',
 		touchmove: 'mousemove',
@@ -67,7 +67,7 @@ export class MouseManager {
 		touchover: new AwayTouchEvent(AwayTouchEvent.TOUCH_OVER),
 		touchrollover: new AwayTouchEvent(AwayTouchEvent.TOUCH_ROLL_OVER),
 		touchrollout: new AwayTouchEvent(AwayTouchEvent.TOUCH_ROLL_OUT),
-		
+
 	}
 
 	private _dragOut: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DRAG_OUT);
@@ -290,7 +290,7 @@ export class MouseManager {
 		if (!forcePicker && !this._updateDirty)
 			return;
 
-		for (let key in this._pointerDataArray) {
+		for (const key in this._pointerDataArray) {
 			this._fireMouseEventsInternal(this._pointerDataArray[key], forcePicker);
 		}
 	}
@@ -722,7 +722,6 @@ export class MouseManager {
 		event.ctrlKey = sourceEvent.ctrlKey;
 		event.altKey = sourceEvent.altKey;
 		event.shiftKey = sourceEvent.shiftKey;
-		
 
 		pointerData.queuedEvents.push(event);
 
@@ -871,15 +870,14 @@ export class MouseManager {
 
 		const mouseData = this._pointerDataArray[0] || (this._pointerDataArray[0] = new PointerData(0, true));
 
-		const type = (event instanceof MouseEvent)? event.type : MouseManager._touchToMouseDict[event.type];
+		const type = (event instanceof MouseEvent) ? event.type : MouseManager._touchToMouseDict[event.type];
 		this.queueDispatch(mouseData, MouseManager._pointerDict[type], event);
-		
-		
+
 		mouseData.screenX = this._stage.screenX;
 		mouseData.screenY = this._stage.screenY;
 
 		const touchPoints = this._stage.touchPoints;
-		for (let touchPoint of touchPoints) {
+		for (const touchPoint of touchPoints) {
 			const touchData = this._pointerDataArray[touchPoint.id] || (this._pointerDataArray[touchPoint.id] = new PointerData(touchPoint.id));
 			touchData.screenX = touchPoint.x;
 			touchData.screenY = touchPoint.y;
@@ -909,7 +907,7 @@ class PointerData {
 	public rollOver: PointerEvent;
 	public rollOut: PointerEvent;
 
-	constructor(public id:number, public isMouse: boolean = false) {
+	constructor(public id: number, public isMouse: boolean = false) {
 		if (isMouse) {
 			this.up = MouseManager._pointerDict.mouseup;
 			this.upOutside = MouseManager._pointerDict.mouseupoutside;
