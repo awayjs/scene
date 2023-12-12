@@ -37,6 +37,7 @@ export { CameraEvent } from './lib/events/CameraEvent';
 export { FocusEvent } from './lib/events/FocusEvent';
 export { KeyboardEvent } from './lib/events/KeyboardEvent';
 export { MouseEvent } from './lib/events/MouseEvent';
+export { TouchEvent } from './lib/events/TouchEvent';
 export { ResizeEvent } from './lib/events/ResizeEvent';
 export { TextfieldEvent } from './lib/events/TextfieldEvent';
 
