@@ -6,6 +6,8 @@ import { FocusEvent } from '../events/FocusEvent';
 
 import { KeyboardEvent } from '../events/KeyboardEvent';
 import { MouseEvent as AwayMouseEvent } from '../events/MouseEvent';
+import { TouchEvent as AwayTouchEvent } from '../events/TouchEvent';
+import { PointerEvent } from '../events/PointerEvent';
 
 import { IInputRecorder } from './IInputRecorder';
 import { MouseButtons } from '../base/MouseButtons';
@@ -21,17 +23,15 @@ export class MouseManager {
 	private _stage: Stage;
 	private static _instancePool: Record<number, MouseManager> = {};
 	private _pickerLookup: Array<RaycastPicker> = new Array<RaycastPicker>();
+	private _pointerDataArray: Record<number, PointerData> = {};
 
 	private _updateDirty: boolean;
-	private _prevCollision: PickingCollision;
 
 	private _mouseDragCollision: PickingCollision;     // entity hit on mouse-down
 	private _mouseDragging: boolean;            // true while mosue is dragged
 	private _focusNode: ContainerNode;       // entity currently in focus
 
 	public allowKeyInput: boolean=true;
-
-	private _collisionIsEnabledButton: boolean=false;
 
 	private _eventBubbling: boolean=true;           //  should events bubble up
 	private _allowFocusOnUnfocusable: boolean=true;  // should unfocus-able object steal focus ?
@@ -40,22 +40,38 @@ export class MouseManager {
 	private _cursorType: 'pointer' | 'auto'  = 'auto';
 
 	private _nullVector: Vector3D = new Vector3D();
-	private _queuedEvents: Array<AwayMouseEvent> = new Array<AwayMouseEvent>();
+	
+	private static _touchToMouseDict:Record<string, string> = {
+		touchstart: 'mousedown',
+		touchend: 'mouseup',
+		touchmove: 'mousemove',
+	}
 
-	private _mouseMoveEvent;
-	private _mouseUp: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_UP);
-	private _mouseUpOutside: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_UP_OUTSIDE);
-	private _mouseClick: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.CLICK);
-	private _mouseOut: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_OUT);
+	public static _pointerDict: Record<string, PointerEvent> = {
+		mouseup: new AwayMouseEvent(AwayMouseEvent.MOUSE_UP),
+		mouseupoutside: new AwayMouseEvent(AwayMouseEvent.MOUSE_UP_OUTSIDE),
+		click: new AwayMouseEvent(AwayMouseEvent.CLICK),
+		mouseout: new AwayMouseEvent(AwayMouseEvent.MOUSE_OUT),
+		mousedown: new AwayMouseEvent(AwayMouseEvent.MOUSE_DOWN),
+		mousemove: new AwayMouseEvent(AwayMouseEvent.MOUSE_MOVE),
+		mouseover: new AwayMouseEvent(AwayMouseEvent.MOUSE_OVER),
+		mousewheel: new AwayMouseEvent(AwayMouseEvent.MOUSE_WHEEL),
+		dblclick: new AwayMouseEvent(AwayMouseEvent.DOUBLE_CLICK),
+		rollover: new AwayMouseEvent(AwayMouseEvent.ROLL_OVER),
+		rollout: new AwayMouseEvent(AwayMouseEvent.ROLL_OUT),
+		touchend: new AwayTouchEvent(AwayTouchEvent.TOUCH_END),
+		touchtap: new AwayTouchEvent(AwayTouchEvent.TOUCH_TAP),
+		touchout: new AwayTouchEvent(AwayTouchEvent.TOUCH_OUT),
+		touchstart: new AwayTouchEvent(AwayTouchEvent.TOUCH_BEGIN),
+		touchmove: new AwayTouchEvent(AwayTouchEvent.TOUCH_MOVE),
+		touchover: new AwayTouchEvent(AwayTouchEvent.TOUCH_OVER),
+		touchrollover: new AwayTouchEvent(AwayTouchEvent.TOUCH_ROLL_OVER),
+		touchrollout: new AwayTouchEvent(AwayTouchEvent.TOUCH_ROLL_OUT),
+		
+	}
+
 	private _dragOut: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DRAG_OUT);
 	private _dragOver: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DRAG_OVER);
-	private _mouseDown: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_DOWN);
-	private _mouseMove: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_MOVE);
-	private _mouseOver: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_OVER);
-	private _mouseWheel: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.MOUSE_WHEEL);
-	private _mouseDoubleClick: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DOUBLE_CLICK);
-	private _rollOver: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.ROLL_OVER);
-	private _rollOut: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.ROLL_OUT);
 
 	private _dragMove: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DRAG_MOVE);
 	private _dragStart: AwayMouseEvent = new AwayMouseEvent(AwayMouseEvent.DRAG_START);
@@ -66,8 +82,6 @@ export class MouseManager {
 
 	private _useSoftkeyboard: boolean = false;
 
-	public buttonEnabledDirty: boolean;
-	private _isTouch: Boolean;
 	private _isAVM1Dragging: Boolean = false;
 
 	public startDragObject(collision?: PickingCollision) {
@@ -123,8 +137,6 @@ export class MouseManager {
 		this.onKeyDown = this.onKeyDown.bind(this);
 		this.onKeyUp = this.onKeyUp.bind(this);
 
-		this.buttonEnabledDirty = false;
-		this._isTouch = (('ontouchstart' in self) || navigator['msMaxTouchPoints'] > 0);
 		this._showCursor = true;
 		this._mouseDragging = false;
 
@@ -186,18 +198,8 @@ export class MouseManager {
 
 		this._stage = null;
 
-		this._mouseMoveEvent = null;
-		this._mouseUp = null;
-		this._mouseUpOutside = null;
-		this._mouseClick = null;
-		this._mouseOut = null;
 		this._dragOut = null;
 		this._dragOver = null;
-		this._mouseDown = null;
-		this._mouseMove = null;
-		this._mouseOver = null;
-		this._mouseWheel = null;
-		this._mouseDoubleClick = null;
 		this._dragMove = null;
 		this._dragStart = null;
 		this._dragStop = null;
@@ -242,7 +244,7 @@ export class MouseManager {
 		return this._focusNode;
 	}
 
-	private dispatchEvent(event: AwayMouseEvent | FocusEvent, dispatcher: ContainerNode) {
+	private dispatchEvent(event: PointerEvent | FocusEvent, dispatcher: ContainerNode) {
 		if (!this._eventBubbling) {
 			if (dispatcher) {
 				event._dispatchEvent(dispatcher, dispatcher.container);
@@ -266,15 +268,17 @@ export class MouseManager {
 		}
 	}
 
-	private setupAndDispatchEvent(event: AwayMouseEvent, sourceEvent,
+	private setupAndDispatchEvent(event: PointerEvent, sourceEvent,
 		collision: PickingCollision, commonAncestor: ContainerNode = null) {
 
 		if (sourceEvent) {
-			event.delta = sourceEvent.wheelDelta;
+			if (event instanceof AwayMouseEvent) {
+				event.delta = sourceEvent.wheelDelta;
+				event.buttons = sourceEvent.buttons;
+			}
 			event.ctrlKey = sourceEvent.ctrlKey;
 			event.altKey = sourceEvent.altKey;
 			event.shiftKey = sourceEvent.shiftKey;
-			event.buttons = sourceEvent.buttons;
 		}
 
 		event = this.setUpEvent(event, collision, commonAncestor);
@@ -282,32 +286,37 @@ export class MouseManager {
 	}
 
 	public fireMouseEvents(forcePicker: RaycastPicker = null): void {
-
-		let collision: PickingCollision;
-		if (forcePicker) {
-			collision = forcePicker.getViewCollision(this._stage.screenX, this._stage.screenY);
-		} else if (this._updateDirty) {
-			for (let i = 0; i < this._pickerLookup.length; i++)
-				if (!collision || this._pickerLookup[i].layeredView)
-					collision = this._pickerLookup[i].getViewCollision(this._stage.screenX,
-						this._stage.screenY, false, collision);
-		}
-
 		//if theres nothing to update, return
 		if (!forcePicker && !this._updateDirty)
 			return;
 
-		let event: AwayMouseEvent;
+		for (let key in this._pointerDataArray) {
+			this._fireMouseEventsInternal(this._pointerDataArray[key], forcePicker);
+		}
+	}
+
+	private _fireMouseEventsInternal(pointerData: PointerData, forcePicker: RaycastPicker = null): void {
+		let collision: PickingCollision;
+		if (forcePicker) {
+			collision = forcePicker.getViewCollision(pointerData.screenX, pointerData.screenY);
+		} else if (this._updateDirty) {
+			for (let i = 0; i < this._pickerLookup.length; i++)
+				if (!collision || this._pickerLookup[i].layeredView)
+					collision = this._pickerLookup[i].getViewCollision(pointerData.screenX,
+						pointerData.screenY, false, collision);
+		}
+
+		let event: PointerEvent;
 		let dispatcher: ContainerNode;
 
-		const len = this._queuedEvents.length;
+		const len = pointerData.queuedEvents.length;
 		for (let i = 0; i < len; ++i) {
-			event = this._queuedEvents[i];
+			event = pointerData.queuedEvents[i];
 			dispatcher = collision?.rootNode;
 
 			this.setUpEvent(event, collision);
 
-			if (event.type == AwayMouseEvent.MOUSE_DOWN) {
+			if (event.type == pointerData.down.type) {
 				this._mouseDragging = true;
 
 				// no event-bubbling. dispatch on stage first
@@ -318,8 +327,8 @@ export class MouseManager {
 				// so we need to recheck the collision ?
 
 				// on Touch dispatch mouseOver Command
-				if (this._isTouch)
-					this.setupAndDispatchEvent(this._mouseOver, this._mouseMoveEvent, collision);
+				if (!pointerData.isMouse)
+					this.setupAndDispatchEvent(pointerData.over, pointerData.sourceEvent, collision);
 
 				this._mouseDragCollision = collision;
 
@@ -334,7 +343,7 @@ export class MouseManager {
 					this.setupAndDispatchEvent(this._dragStart, event, this._mouseDragCollision);
 				}
 
-			} else if (event.type == AwayMouseEvent.MOUSE_UP) {
+			} else if (event.type == pointerData.up.type) {
 
 				// no event-bubbling. dispatch on stage first
 				if (!this._eventBubbling)
@@ -374,17 +383,17 @@ export class MouseManager {
 
 				if (upContainerNode) {
 					if (!this._isAVM1Dragging)
-						this.setupAndDispatchEvent(this._mouseClick, this._isTouch ? this._mouseMoveEvent : event, this._mouseDragCollision);
+						this.setupAndDispatchEvent(pointerData.click, pointerData.isMouse ? event : pointerData.sourceEvent, this._mouseDragCollision);
 					this.setupAndDispatchEvent(this._dragStop, event, this._mouseDragCollision);
 				} else if (this._mouseDragging && this._mouseDragCollision) {
-					this.setupAndDispatchEvent(this._mouseUpOutside, event, this._mouseDragCollision);
+					this.setupAndDispatchEvent(pointerData.upOutside, event, this._mouseDragCollision);
 				}
 
 				this._mouseDragCollision = null;
 				this._mouseDragging = false;
 				this._isAVM1Dragging = false;
 
-			} else if (event.type == AwayMouseEvent.MOUSE_MOVE) {
+			} else if (event.type == pointerData.move.type) {
 
 				// no event-bubbling. dispatch on stage first
 				if (!this._eventBubbling) {
@@ -411,13 +420,13 @@ export class MouseManager {
 			}
 		}
 
-		this._queuedEvents.length = 0;
+		pointerData.queuedEvents.length = 0;
 
-		this._rollOut.commonAncestor = null;
-		this._rollOver.commonAncestor = null;
+		pointerData.rollOut.commonAncestor = null;
+		pointerData.rollOver.commonAncestor = null;
 
 		const collisionNode: ContainerNode = collision?.rootNode;
-		const prevCollisionNode: ContainerNode = this._prevCollision?.rootNode;
+		const prevCollisionNode: ContainerNode = pointerData.prevCollision?.rootNode;
 
 		if (collisionNode != prevCollisionNode) {
 
@@ -429,22 +438,22 @@ export class MouseManager {
 			//  Store the info if the collision is a enabled Button (_collisionIsEnabledButton)
 
 			if (prevCollisionNode) {
-				this.setupAndDispatchEvent(this._mouseOut, this._mouseMoveEvent, this._prevCollision);
+				this.setupAndDispatchEvent(pointerData.out, pointerData.sourceEvent, pointerData.prevCollision);
 
 				if (this._mouseDragging && this._mouseDragCollision
 					&& this._mouseDragCollision.rootNode == prevCollisionNode)
-					this.setupAndDispatchEvent(this._dragOut, this._mouseMoveEvent, this._prevCollision);
+					this.setupAndDispatchEvent(this._dragOut, pointerData.sourceEvent, pointerData.prevCollision);
 			}
 
 			if (!prevCollisionNode && collisionNode) {
 				// rollout / rollover easy case, can just bubble up
-				this.setupAndDispatchEvent(this._rollOut, this._mouseMoveEvent, this._prevCollision);
-				this.setupAndDispatchEvent(this._rollOver, this._mouseMoveEvent, collision);
+				this.setupAndDispatchEvent(pointerData.rollOut, pointerData.sourceEvent, pointerData.prevCollision);
+				this.setupAndDispatchEvent(pointerData.rollOver, pointerData.sourceEvent, collision);
 			}
 			if (prevCollisionNode && !collisionNode) {
 				// rollout / rollover easy case, can just bubble up
-				this.setupAndDispatchEvent(this._rollOut, this._mouseMoveEvent, this._prevCollision);
-				this.setupAndDispatchEvent(this._rollOver, this._mouseMoveEvent, collision);
+				this.setupAndDispatchEvent(pointerData.rollOut, pointerData.sourceEvent, pointerData.prevCollision);
+				this.setupAndDispatchEvent(pointerData.rollOver, pointerData.sourceEvent, collision);
 			}
 			if (prevCollisionNode && collisionNode) {
 				// rollout / rollover find common ancester and only bubble up to that point
@@ -466,38 +475,38 @@ export class MouseManager {
 					}
 				}
 				if (commonAncestor != prevCollisionNode)
-					this.setupAndDispatchEvent(this._rollOut, this._mouseMoveEvent,
-						this._prevCollision, commonAncestor);
+					this.setupAndDispatchEvent(pointerData.rollOut, pointerData.sourceEvent,
+						pointerData.prevCollision, commonAncestor);
 
 				if (commonAncestor != collisionNode)
-					this.setupAndDispatchEvent(this._rollOver, this._mouseMoveEvent, collision, commonAncestor);
+					this.setupAndDispatchEvent(pointerData.rollOver, pointerData.sourceEvent, collision, commonAncestor);
 
 			}
 
-			this._collisionIsEnabledButton = collisionNode ? (<any> collisionNode).buttonEnabled : false;
+			pointerData.collisionIsEnabledButton = collisionNode ? (<any> collisionNode).buttonEnabled : false;
 
 			if (collisionNode) {
-				this.setupAndDispatchEvent(this._mouseOver, this._mouseMoveEvent, collision);
+				this.setupAndDispatchEvent(pointerData.over, pointerData.sourceEvent, collision);
 
 				if (this._mouseDragging)
-					this.setupAndDispatchEvent(this._dragOver, this._mouseMoveEvent, collision);
+					this.setupAndDispatchEvent(this._dragOver, pointerData.sourceEvent, collision);
 			}
 
-			this._prevCollision = collision;
+			pointerData.prevCollision = collision;
 		} else {
 			//  colliding object has not changed
 			//  Check if we need to send any MOUSE_OVER/DRAG_OVER event to handle the case
 			//  when a Button has become active while under the mouse.
 			const isActiveButton = collisionNode ? (<any> collisionNode).buttonEnabled : false;
 
-			if (this._collisionIsEnabledButton != isActiveButton && isActiveButton) {
-				if (!this._isTouch)
-					this.setupAndDispatchEvent(this._mouseOver, this._mouseMoveEvent, collision);
+			if (pointerData.collisionIsEnabledButton != isActiveButton && isActiveButton) {
+				if (pointerData.isMouse)
+					this.setupAndDispatchEvent(pointerData.over, pointerData.sourceEvent, collision);
 				else if (this._mouseDragCollision && this._mouseDragCollision.rootNode == collisionNode)
-					this.setupAndDispatchEvent(this._dragOver, this._mouseMoveEvent, collision);
+					this.setupAndDispatchEvent(this._dragOver, pointerData.sourceEvent, collision);
 			}
 
-			this._collisionIsEnabledButton = isActiveButton;
+			pointerData.collisionIsEnabledButton = isActiveButton;
 		}
 
 		// set cursor if not dragging mouse ???
@@ -665,8 +674,8 @@ export class MouseManager {
 	// ---------------------------------------------------------------------
 	// Private.
 	// ---------------------------------------------------------------------
-	private setUpEvent(event: AwayMouseEvent,
-		collision: PickingCollision, commonAncestor: ContainerNode = null): AwayMouseEvent {
+	private setUpEvent(event: PointerEvent,
+		collision: PickingCollision, commonAncestor: ContainerNode = null): PointerEvent {
 		event._iAllowedToImmediatlyPropagate = true;
 		event._iAllowedToPropagate = true;
 		// 2D properties.
@@ -704,15 +713,20 @@ export class MouseManager {
 		return event;
 	}
 
-	private queueDispatch(event: AwayMouseEvent, sourceEvent: MouseEvent | TouchEvent | WheelEvent): void {
+	private queueDispatch(pointerData: PointerData, event: PointerEvent, sourceEvent: MouseEvent | TouchEvent | WheelEvent): void {
 		// Store event to be dispatched later.
-		event.delta = (sourceEvent instanceof WheelEvent) ? -3 * sourceEvent.deltaY / 100 : 0;
+		if (event instanceof AwayMouseEvent) {
+			event.delta = (sourceEvent instanceof WheelEvent) ? -3 * sourceEvent.deltaY / 100 : 0;
+			event.buttons = (sourceEvent instanceof MouseEvent) ? <MouseButtons> sourceEvent.buttons : MouseButtons.NO_BUTTON;
+		}
 		event.ctrlKey = sourceEvent.ctrlKey;
 		event.altKey = sourceEvent.altKey;
 		event.shiftKey = sourceEvent.shiftKey;
-		event.buttons = (sourceEvent instanceof MouseEvent) ? <MouseButtons> sourceEvent.buttons : MouseButtons.NO_BUTTON;
+		
 
-		this._queuedEvents.push(event);
+		pointerData.queuedEvents.push(event);
+
+		pointerData.sourceEvent = sourceEvent;
 	}
 
 	// ---------------------------------------------------------------------
@@ -786,25 +800,17 @@ export class MouseManager {
 
 	public onMouseMove(event: MouseEvent | TouchEvent): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
-		this._isTouch = (event.type != 'mousemove');
-
 		this.updateColliders(event);
-
-		this.queueDispatch(this._mouseMove, this._mouseMoveEvent = event);
 	}
 
 	public onMouseOut(event: MouseEvent): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this.updateColliders(event);
-
-		this.queueDispatch(this._mouseOut, event);
 	}
 
 	public onMouseOver(event: MouseEvent): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this.updateColliders(event);
-
-		this.queueDispatch(this._mouseOver, event);
 	}
 
 	public onDoubleClick(event: MouseEvent): void {
@@ -815,24 +821,14 @@ export class MouseManager {
 		if (event instanceof MouseEvent && event.buttons & 0b110) {
 			event.preventDefault();
 		}
-
-		this.queueDispatch(this._mouseDoubleClick, event);
 	}
 
-	private _isDown: boolean = false;
-
 	public onMouseDown(event: MouseEvent | TouchEvent): void {
-		this._isTouch = (event.type !== 'mousedown');
-		if (this._isDown) {
-			return;
-		}
 
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
-		this._isDown = true;
-
 		this.updateColliders(event);
 
-		let prevent = this._isTouch;
+		let prevent = (event.type !== 'mousedown');
 
 		// prevent middle and second button
 		if (event instanceof MouseEvent && event.buttons & 0b110) {
@@ -843,21 +839,15 @@ export class MouseManager {
 			event.preventDefault();
 			this._stage.container.focus();
 		}
-
-		this.queueDispatch(this._mouseDown, event);
 	}
 
 	public onMouseUp(event: MouseEvent | TouchEvent): void {
-		if (!this._isDown) {
-			return;
-		}
 
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
-		this._isDown = false;
 
 		this.updateColliders(event);
 
-		let prevent = this._isTouch;
+		let prevent = event.type !== 'mouseup';
 		// prevent middle and second button
 		if (event instanceof MouseEvent && event.button === 1) {
 			prevent = true;
@@ -867,20 +857,91 @@ export class MouseManager {
 			event.preventDefault();
 			this._stage.container.focus();
 		}
-
-		this.queueDispatch(this._mouseUp, event);
 	}
 
 	public onMouseWheel(event: WheelEvent): void {
 		!MouseManager.inputRecorder || MouseManager.inputRecorder.recordEvent(event);
 		this.updateColliders(event);
-
-		this.queueDispatch(this._mouseWheel, event);
 	}
 
-	private updateColliders(event: Event): void {
+	private updateColliders(event: MouseEvent | TouchEvent): void {
 		this._stage.interactionHandler(event);
 
 		this._updateDirty = true;
+
+		const mouseData = this._pointerDataArray[0] || (this._pointerDataArray[0] = new PointerData(0, true));
+
+		const type = (event instanceof MouseEvent)? event.type : MouseManager._touchToMouseDict[event.type];
+		this.queueDispatch(mouseData, MouseManager._pointerDict[type], event);
+		
+		
+		mouseData.screenX = this._stage.screenX;
+		mouseData.screenY = this._stage.screenY;
+
+		const touchPoints = this._stage.touchPoints;
+		for (let touchPoint of touchPoints) {
+			const touchData = this._pointerDataArray[touchPoint.id] || (this._pointerDataArray[touchPoint.id] = new PointerData(touchPoint.id));
+			touchData.screenX = touchPoint.x;
+			touchData.screenY = touchPoint.y;
+		}
+
+		if ((<TouchEvent> event).changedTouches) {
+			for (let i: number = 0; i < (<TouchEvent> event).changedTouches.length; i++) {
+				const touch = (<TouchEvent> event).changedTouches[i];
+				const touchData = this._pointerDataArray[touch.identifier];
+				this.queueDispatch(touchData, MouseManager._pointerDict[event.type], event);
+			}
+		}
 	}
+}
+
+class PointerData {
+
+	public up: PointerEvent;
+	public upOutside: PointerEvent;
+	public click: PointerEvent;
+	public out: PointerEvent;
+	public down: PointerEvent;
+	public move: PointerEvent;
+	public over: PointerEvent;
+	public wheel: PointerEvent;
+	public doubleClick: PointerEvent;
+	public rollOver: PointerEvent;
+	public rollOut: PointerEvent;
+
+	constructor(public id:number, public isMouse: boolean = false) {
+		if (isMouse) {
+			this.up = MouseManager._pointerDict.mouseup;
+			this.upOutside = MouseManager._pointerDict.mouseupoutside;
+			this.click = MouseManager._pointerDict.click;
+			this.out = MouseManager._pointerDict.mouseout;
+			this.down = MouseManager._pointerDict.mousedown;
+			this.move = MouseManager._pointerDict.mousemove;
+			this.over = MouseManager._pointerDict.mouseover;
+			this.wheel = MouseManager._pointerDict.mousewheel;
+			this.doubleClick = MouseManager._pointerDict.dblclick;
+			this.rollOver = MouseManager._pointerDict.rollover;
+			this.rollOut = MouseManager._pointerDict.rollout;
+		} else {
+			this.up = MouseManager._pointerDict.touchend;
+			this.click = MouseManager._pointerDict.touchtap;
+			this.out = MouseManager._pointerDict.touchout;
+			this.down = MouseManager._pointerDict.touchstart;
+			this.move = MouseManager._pointerDict.touchmove;
+			this.over = MouseManager._pointerDict.touchover;
+			this.rollOver = MouseManager._pointerDict.touchrollover;
+			this.rollOut = MouseManager._pointerDict.touchrollout;
+		}
+	}
+
+	sourceEvent: MouseEvent | TouchEvent;
+
+	prevCollision: PickingCollision;
+
+	collisionIsEnabledButton: boolean = false;
+
+	queuedEvents: Array<PointerEvent> = new Array<PointerEvent>();
+
+	screenX: number;
+	screenY: number;
 }
