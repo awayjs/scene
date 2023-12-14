@@ -51,7 +51,6 @@ export class TouchEvent extends PointerEvent {
 	 */
 	public static TOUCH_TAP: string = 'tap3d';
 
-
 	/**
 	 * Unique identifier of associated touchPoint
 	 */
