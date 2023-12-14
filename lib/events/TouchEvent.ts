@@ -51,6 +51,12 @@ export class TouchEvent extends PointerEvent {
 	 */
 	public static TOUCH_TAP: string = 'tap3d';
 
+
+	/**
+	 * Unique identifier of associated touchPoint
+	 */
+	public touchPointID: number = 0;
+
 	/**
 	 * Create a new touchEvent object.
 	 * @param type The type of the touchEvent.
@@ -82,6 +88,7 @@ export class TouchEvent extends PointerEvent {
 		result.position = this.position;
 		result.normal = this.normal;
 		result.elementIndex = this.elementIndex;
+		result.touchPointID = this.touchPointID;
 
 		result.ctrlKey = this.ctrlKey;
 		result.shiftKey = this.shiftKey;
