@@ -331,8 +331,7 @@ export class MouseManager {
 				if (!pointerData.isMouse)
 					this.setupAndDispatchEvent(pointerData.over, pointerData, collision);
 
-				//only allow dragging for mouse (or pseudo-mouse) interactions
-				if (pointerData.id != 0)
+				if (pointerData.id == 0)
 					this._mouseDragCollision = collision;
 
 				if (dispatcher) {
