@@ -268,20 +268,21 @@ export class MouseManager {
 		}
 	}
 
-	private setupAndDispatchEvent(event: PointerEvent, sourceEvent,
+	private setupAndDispatchEvent(event: PointerEvent, pointerData: PointerData,
 		collision: PickingCollision, commonAncestor: ContainerNode = null) {
 
+		const sourceEvent = pointerData.sourceEvent;
 		if (sourceEvent) {
 			if (event instanceof AwayMouseEvent) {
-				event.delta = sourceEvent.wheelDelta;
-				event.buttons = sourceEvent.buttons;
+				event.delta = (<WheelEvent> sourceEvent).deltaY;
+				event.buttons = (<MouseEvent> sourceEvent).buttons;
 			}
 			event.ctrlKey = sourceEvent.ctrlKey;
 			event.altKey = sourceEvent.altKey;
 			event.shiftKey = sourceEvent.shiftKey;
 		}
 
-		event = this.setUpEvent(event, collision, commonAncestor);
+		event = this.setUpEvent(event, pointerData, collision, commonAncestor);
 		this.dispatchEvent(event, event.rootNode);
 	}
 
@@ -314,7 +315,7 @@ export class MouseManager {
 			event = pointerData.queuedEvents[i];
 			dispatcher = collision?.rootNode;
 
-			this.setUpEvent(event, collision);
+			this.setUpEvent(event, pointerData, collision);
 
 			if (event.type == pointerData.down.type) {
 				this._mouseDragging = true;
@@ -328,9 +329,11 @@ export class MouseManager {
 
 				// on Touch dispatch mouseOver Command
 				if (!pointerData.isMouse)
-					this.setupAndDispatchEvent(pointerData.over, pointerData.sourceEvent, collision);
+					this.setupAndDispatchEvent(pointerData.over, pointerData, collision);
 
-				this._mouseDragCollision = collision;
+				//only allow dragging for mouse (or pseudo-mouse) interactions
+				if (pointerData.id != 0)
+					this._mouseDragCollision = collision;
 
 				if (dispatcher) {
 					//console.log("onPress", dispatcher)
@@ -340,7 +343,7 @@ export class MouseManager {
 
 				if (this._mouseDragCollision) {
 					this.setFocus(this._mouseDragCollision?.rootNode);
-					this.setupAndDispatchEvent(this._dragStart, event, this._mouseDragCollision);
+					this.setupAndDispatchEvent(this._dragStart, pointerData, this._mouseDragCollision);
 				}
 
 			} else if (event.type == pointerData.up.type) {
@@ -383,35 +386,35 @@ export class MouseManager {
 
 				if (upContainerNode) {
 					if (!this._isAVM1Dragging)
-						this.setupAndDispatchEvent(pointerData.click, pointerData.isMouse ? event : pointerData.sourceEvent, this._mouseDragCollision);
-					this.setupAndDispatchEvent(this._dragStop, event, this._mouseDragCollision);
+						this.setupAndDispatchEvent(pointerData.click, pointerData, this._mouseDragCollision);
+					this.setupAndDispatchEvent(this._dragStop, pointerData, this._mouseDragCollision);
 				} else if (this._mouseDragging && this._mouseDragCollision) {
-					this.setupAndDispatchEvent(pointerData.upOutside, event, this._mouseDragCollision);
+					this.setupAndDispatchEvent(pointerData.upOutside, pointerData, this._mouseDragCollision);
 				}
 
 				this._mouseDragCollision = null;
 				this._mouseDragging = false;
 				this._isAVM1Dragging = false;
 
+				//make sure to clear old touch references when no longer needed
+				if (pointerData.id != 0)
+					delete this._pointerDataArray[pointerData.id];
+
 			} else if (event.type == pointerData.move.type) {
 
 				// no event-bubbling. dispatch on stage first
-				if (!this._eventBubbling) {
+				if (!this._eventBubbling)
 					this._stage.dispatchEvent(event);
-				}
 
 				// fire to picker
-				if (event.rootNode) {
-					this.dispatchEvent(event, event.rootNode);
+				if (dispatcher) {
+					this.dispatchEvent(event, dispatcher);
+				} else if (this._eventBubbling) {
+					this._stage.dispatchEvent(event);
 				}
 
 				if (this._mouseDragCollision) {
-					this.setupAndDispatchEvent(this._dragMove, event, this._mouseDragCollision);
-				}
-
-				// if bubling is exist, fire to stage late
-				if (this._eventBubbling) {
-					this._stage.dispatchEvent(event);
+					this.setupAndDispatchEvent(this._dragMove, pointerData, this._mouseDragCollision);
 				}
 
 			} else {
@@ -438,22 +441,22 @@ export class MouseManager {
 			//  Store the info if the collision is a enabled Button (_collisionIsEnabledButton)
 
 			if (prevCollisionNode) {
-				this.setupAndDispatchEvent(pointerData.out, pointerData.sourceEvent, pointerData.prevCollision);
+				this.setupAndDispatchEvent(pointerData.out, pointerData, pointerData.prevCollision);
 
 				if (this._mouseDragging && this._mouseDragCollision
 					&& this._mouseDragCollision.rootNode == prevCollisionNode)
-					this.setupAndDispatchEvent(this._dragOut, pointerData.sourceEvent, pointerData.prevCollision);
+					this.setupAndDispatchEvent(this._dragOut, pointerData, pointerData.prevCollision);
 			}
 
 			if (!prevCollisionNode && collisionNode) {
 				// rollout / rollover easy case, can just bubble up
-				this.setupAndDispatchEvent(pointerData.rollOut, pointerData.sourceEvent, pointerData.prevCollision);
-				this.setupAndDispatchEvent(pointerData.rollOver, pointerData.sourceEvent, collision);
+				this.setupAndDispatchEvent(pointerData.rollOut, pointerData, pointerData.prevCollision);
+				this.setupAndDispatchEvent(pointerData.rollOver, pointerData, collision);
 			}
 			if (prevCollisionNode && !collisionNode) {
 				// rollout / rollover easy case, can just bubble up
-				this.setupAndDispatchEvent(pointerData.rollOut, pointerData.sourceEvent, pointerData.prevCollision);
-				this.setupAndDispatchEvent(pointerData.rollOver, pointerData.sourceEvent, collision);
+				this.setupAndDispatchEvent(pointerData.rollOut, pointerData, pointerData.prevCollision);
+				this.setupAndDispatchEvent(pointerData.rollOver, pointerData, collision);
 			}
 			if (prevCollisionNode && collisionNode) {
 				// rollout / rollover find common ancester and only bubble up to that point
@@ -475,21 +478,21 @@ export class MouseManager {
 					}
 				}
 				if (commonAncestor != prevCollisionNode)
-					this.setupAndDispatchEvent(pointerData.rollOut, pointerData.sourceEvent,
+					this.setupAndDispatchEvent(pointerData.rollOut, pointerData,
 						pointerData.prevCollision, commonAncestor);
 
 				if (commonAncestor != collisionNode)
-					this.setupAndDispatchEvent(pointerData.rollOver, pointerData.sourceEvent, collision, commonAncestor);
+					this.setupAndDispatchEvent(pointerData.rollOver, pointerData, collision, commonAncestor);
 
 			}
 
 			pointerData.collisionIsEnabledButton = collisionNode ? (<any> collisionNode).buttonEnabled : false;
 
 			if (collisionNode) {
-				this.setupAndDispatchEvent(pointerData.over, pointerData.sourceEvent, collision);
+				this.setupAndDispatchEvent(pointerData.over, pointerData, collision);
 
 				if (this._mouseDragging)
-					this.setupAndDispatchEvent(this._dragOver, pointerData.sourceEvent, collision);
+					this.setupAndDispatchEvent(this._dragOver, pointerData, collision);
 			}
 
 			pointerData.prevCollision = collision;
@@ -501,9 +504,9 @@ export class MouseManager {
 
 			if (pointerData.collisionIsEnabledButton != isActiveButton && isActiveButton) {
 				if (pointerData.isMouse)
-					this.setupAndDispatchEvent(pointerData.over, pointerData.sourceEvent, collision);
+					this.setupAndDispatchEvent(pointerData.over, pointerData, collision);
 				else if (this._mouseDragCollision && this._mouseDragCollision.rootNode == collisionNode)
-					this.setupAndDispatchEvent(this._dragOver, pointerData.sourceEvent, collision);
+					this.setupAndDispatchEvent(this._dragOver, pointerData, collision);
 			}
 
 			pointerData.collisionIsEnabledButton = isActiveButton;
@@ -674,13 +677,17 @@ export class MouseManager {
 	// ---------------------------------------------------------------------
 	// Private.
 	// ---------------------------------------------------------------------
-	private setUpEvent(event: PointerEvent,
+	private setUpEvent(event: PointerEvent, pointerData: PointerData,
 		collision: PickingCollision, commonAncestor: ContainerNode = null): PointerEvent {
 		event._iAllowedToImmediatlyPropagate = true;
 		event._iAllowedToPropagate = true;
 		// 2D properties.
-		event.screenX = this._stage.screenX;
-		event.screenY = this._stage.screenY;
+		event.screenX = pointerData.screenX;
+		event.screenY = pointerData.screenY;
+
+		if (event instanceof AwayTouchEvent)
+			event.touchPointID = pointerData.id;
+
 		//console.log("event", event, collisionNode, collisionNode);
 
 		// 3D properties.
@@ -870,23 +877,20 @@ export class MouseManager {
 
 		const mouseData = this._pointerDataArray[0] || (this._pointerDataArray[0] = new PointerData(0, true));
 
-		const type = (event instanceof MouseEvent) ? event.type : MouseManager._touchToMouseDict[event.type];
+		mouseData.isMouse = (event instanceof MouseEvent);
+		const type = (mouseData.isMouse) ? event.type : MouseManager._touchToMouseDict[event.type];
 		this.queueDispatch(mouseData, MouseManager._pointerDict[type], event);
 
 		mouseData.screenX = this._stage.screenX;
 		mouseData.screenY = this._stage.screenY;
 
-		const touchPoints = this._stage.touchPoints;
-		for (const touchPoint of touchPoints) {
-			const touchData = this._pointerDataArray[touchPoint.id] || (this._pointerDataArray[touchPoint.id] = new PointerData(touchPoint.id));
-			touchData.screenX = touchPoint.x;
-			touchData.screenY = touchPoint.y;
-		}
-
 		if ((<TouchEvent> event).changedTouches) {
 			for (let i: number = 0; i < (<TouchEvent> event).changedTouches.length; i++) {
 				const touch = (<TouchEvent> event).changedTouches[i];
-				const touchData = this._pointerDataArray[touch.identifier];
+				const touchData = this._pointerDataArray[touch.identifier] || (this._pointerDataArray[touch.identifier] = new PointerData(touch.identifier));
+				const point = this._stage.mapWindowToStage(touch.clientX, touch.clientY);
+				touchData.screenX = point.x;
+				touchData.screenY = point.y;
 				this.queueDispatch(touchData, MouseManager._pointerDict[event.type], event);
 			}
 		}
