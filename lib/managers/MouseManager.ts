@@ -334,10 +334,9 @@ export class MouseManager {
 				if (pointerData.id == 0)
 					this._mouseDragCollision = collision;
 
-				if (dispatcher) {
-					//console.log("onPress", dispatcher)
+				if (dispatcher)
 					this.dispatchEvent(event, dispatcher);
-				} else if (this._eventBubbling)
+				else if (this._eventBubbling)
 					this._stage.dispatchEvent(event);
 
 				if (this._mouseDragCollision) {
@@ -375,10 +374,9 @@ export class MouseManager {
 					upContainerNode = this._mouseDragCollision.containerNode;
 				}
 
-				if (upRootNode) {
-					//console.log("onRelease", upRootNode)
+				if (upRootNode)
 					this.dispatchEvent(event, upRootNode);
-				} else if (this._eventBubbling && dispatcher)
+				else if (this._eventBubbling && dispatcher)
 					this.dispatchEvent(event, dispatcher);
 				else if (this._eventBubbling)
 					this._stage.dispatchEvent(event);
@@ -406,15 +404,15 @@ export class MouseManager {
 					this._stage.dispatchEvent(event);
 
 				// fire to picker
-				if (dispatcher) {
+				if (dispatcher)
 					this.dispatchEvent(event, dispatcher);
-				} else if (this._eventBubbling) {
-					this._stage.dispatchEvent(event);
-				}
 
-				if (this._mouseDragCollision) {
+				if (this._mouseDragCollision)
 					this.setupAndDispatchEvent(this._dragMove, pointerData, this._mouseDragCollision);
-				}
+
+				// if bubbling is exist, fire to stage late
+				if (this._eventBubbling)
+					this._stage.dispatchEvent(event);
 
 			} else {
 				// MouseEvent.MOUSE_OVER / MouseEvent.MOUSE_OUT / MouseEvent.DRAG_OVER / MouseEvent.DRAG_OUT
