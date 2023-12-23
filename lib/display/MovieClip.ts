@@ -30,12 +30,11 @@ export class MovieClip extends Sprite {
 	public static movieClipSoundsManagerClass = null;
 
 	private static _movieClips: Array<MovieClip> = new Array<MovieClip>();
-	private static _activeSounds: Record<number, IAudioChannel[]> = {};
+	private static _activeSounds: Record<number, WaveAudio> = {};
 	private static _activeSoundsOwners: Set<MovieClip> = new Set<MovieClip>();
 
-	public static stopAllSounds() {
-		MovieClip._activeSoundsOwners.forEach(e => e && e.stopSounds());
-		MovieClip._activeSoundsOwners.clear();
+	public static stopSounds(sound?: WaveAudio) {
+		MovieClip._activeSoundsOwners.forEach(e => e && e.stopSounds(sound));
 	}
 
 	public static assetType: string = '[asset MovieClip]';
@@ -87,7 +86,7 @@ export class MovieClip extends Sprite {
 
 	public _sessionID_childs: NumberMap<DisplayObject> = {};
 
-	private _sounds: Record<number, WaveAudio> = {};
+	private _sounds: Record<number, IAudioChannel[]> = {};
 
 	public _useHandCursor: boolean;
 
@@ -195,7 +194,7 @@ export class MovieClip extends Sprite {
 			this.transformToSprite();
 		}
 
-		this.onSoundCompleteInternal = this.onSoundCompleteInternal.bind(this);
+		this._onSoundCompleteInternal = this._onSoundCompleteInternal.bind(this);
 	}
 
 	/**
@@ -238,31 +237,26 @@ export class MovieClip extends Sprite {
 			channel.addEventListener(BaseAudioChannel.COMPLETE, onSoundComplete);
 
 		//internal listener to clear
-		channel.addEventListener(BaseAudioChannel.COMPLETE, this.onSoundCompleteInternal);
+		channel.addEventListener(BaseAudioChannel.COMPLETE, this._onSoundCompleteInternal);
 
 		const id = sound.id;
 
-		this._sounds[id] = sound;
-
-		if (!MovieClip._activeSounds[id]) {
-			MovieClip._activeSounds[id] = [];
-		}
-
+		if (!this._sounds[id])
+			this._sounds[id] = [];
+		
 		// store channels, stop it instead of sounds
-		MovieClip._activeSounds[id].push(channel);
-		MovieClip._activeSoundsOwners.add(this);
+		this._sounds[id].push(channel);
+
+		MovieClip._activeSounds[id] = sound;
 	}
 
 	public stopSounds(sound: WaveAudio = null) {
+
 		if (sound) {
-			this.stopSound(sound);
+			this._stopChannels(sound);
 		} else {
 			for (const key in this._sounds)
-				this.stopSound(this._sounds[key]);
-		}
-
-		if (Object.getOwnPropertyNames(this._sounds).length === 0) {
-			MovieClip._activeSoundsOwners.delete(this);
+				this._stopChannels(sound);
 		}
 
 		const len: number = this._children.length;
@@ -366,27 +360,24 @@ export class MovieClip extends Sprite {
 		this._soundVolume = value;
 
 		let channels: IAudioChannel[];
-		for (const key in MovieClip._activeSounds)
-			if ((channels = MovieClip._activeSounds[key]))
+		for (const key in this._sounds)
+			if ((channels = this._sounds[key]))
 				for (const c of channels) c.volume = value;
 	}
 
 	public stopSound(sound: WaveAudio) {
 		const id = sound.id;
 
-		if (this._sounds[id]) {
-			this._sounds[id].stop();
+		if (this._sounds[id])
 			delete this._sounds[id];
-		}
+
 
 		if (Object.getOwnPropertyNames(this._sounds).length === 0) {
 			MovieClip._activeSoundsOwners.delete(this);
 		}
 
-		const channels = MovieClip._activeSounds[id];
-		if (channels) {
-			for (const c of channels) c.stop();
-
+		if (MovieClip._activeSounds[id]) {
+			MovieClip._activeSounds[id].stop();
 			delete MovieClip._activeSounds[id];
 		}
 	}
@@ -862,10 +853,10 @@ export class MovieClip extends Sprite {
 		super.clear();
 	}
 
-	private onSoundCompleteInternal(event: EventBase): void {
+	private _onSoundCompleteInternal(event: EventBase): void {
 		const channel: IAudioChannel = event.target;
 		const sound = channel.owner;
-		const channels = MovieClip._activeSounds[sound.id];
+		const channels = this._sounds[sound.id];
 		const index = channels.indexOf(channel);
 
 		if (index != -1) {
@@ -873,10 +864,20 @@ export class MovieClip extends Sprite {
 		}
 
 		if (channels.length === 0)
-			delete this._sounds[sound.id];
+			delete MovieClip._activeSounds[sound.id];
 
 		if (Object.getOwnPropertyNames(this._sounds).length === 0)
 			MovieClip._activeSoundsOwners.delete(this);
+	}
+
+	private _stopChannels(sound: WaveAudio) {
+		const id: number = sound.id
+		const channels = this._sounds[id];
+
+		for (const c of channels)
+			c.stop();
+
+		delete this._sounds[id];
 	}
 }
 
