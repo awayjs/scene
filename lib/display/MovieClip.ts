@@ -243,7 +243,7 @@ export class MovieClip extends Sprite {
 
 		if (!this._sounds[id])
 			this._sounds[id] = [];
-		
+
 		// store channels, stop it instead of sounds
 		this._sounds[id].push(channel);
 
@@ -370,7 +370,6 @@ export class MovieClip extends Sprite {
 
 		if (this._sounds[id])
 			delete this._sounds[id];
-
 
 		if (Object.getOwnPropertyNames(this._sounds).length === 0) {
 			MovieClip._activeSoundsOwners.delete(this);
@@ -871,7 +870,7 @@ export class MovieClip extends Sprite {
 	}
 
 	private _stopChannels(sound: WaveAudio) {
-		const id: number = sound.id
+		const id: number = sound.id;
 		const channels = this._sounds[id];
 
 		for (const c of channels)
