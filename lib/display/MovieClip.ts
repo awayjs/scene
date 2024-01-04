@@ -37,7 +37,7 @@ export class MovieClip extends Sprite {
 			if (MovieClip._activeSounds[sound.id])
 				MovieClip._activeSounds[sound.id].stop();
 		} else {
-			for (let key in MovieClip._activeSounds)
+			for (const key in MovieClip._activeSounds)
 				MovieClip._activeSounds[key].stop();
 		}
 	}
@@ -853,7 +853,7 @@ export class MovieClip extends Sprite {
 		const channel: IAudioChannel = event.target;
 		const sound = channel.owner;
 		const channels = this._sounds[sound.id];
-		const index = channels? channels.indexOf(channel) : -1;
+		const index = channels ? channels.indexOf(channel) : -1;
 
 		if (index != -1) {
 			channels.splice(index, 1);
