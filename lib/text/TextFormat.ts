@@ -568,14 +568,16 @@ export class TextFormat extends AssetBase {
 		return true;
 	}
 
-	public applyToFormat(format: TextFormat) {
+	public applyToFormat(format: TextFormat): boolean {
 
+		let change = false;
 		for (const field of PUBLIC_FIELDS) {
-			if (this['_' + field] !== null) {
+			if (this['_' + field] !== null && format[field] !== this['_' + field]) {
+				change = true;
 				format[field] = this['_' + field];
 			}
 		}
-		return format;
+		return change;
 	}
 
 	/**

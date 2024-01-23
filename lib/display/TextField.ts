@@ -270,7 +270,7 @@ export class TextField extends DisplayObjectContainer {
 
 	public textShapes: StringMap<TextShape>;
 
-	private inMaskMode: boolean = false;
+	private inMaskMode: boolean;
 	private maskChild: Sprite;
 	private textChild: TextSprite;
 	private targetGraphics: Graphics;
@@ -280,14 +280,15 @@ export class TextField extends DisplayObjectContainer {
 
 	private cursorIntervalID: number = -1;
 
-	public cursorBlinking: boolean = false;
-	public showSelection: boolean = false;
+	public cursorBlinking: boolean;
+	public showSelection: boolean;
 
-	public _textDirty: Boolean = false;
-	public _positionsDirty: Boolean = false;
-	public _glyphsDirty: Boolean = false;
-	public _shapesDirty: Boolean = false;
-	public _textShapesDirty: Boolean = false;
+	private _textDirty: boolean;
+	private _positionsDirty: boolean;
+	private _glyphsDirty: boolean;
+	private _shapesDirty: boolean;
+	private _textShapesDirty: boolean;
+	private _newFormatDirty: boolean;
 
 	public chars_codes: number[] = [];
 	public chars_width: number[] = [];
@@ -1559,8 +1560,10 @@ export class TextField extends DisplayObjectContainer {
 
 		value = value.replace(String.fromCharCode(160), ' ');
 
-		if (this._text == value)
+		if (this._text == value && !this._newFormatDirty)
 			return;
+
+		this._newFormatDirty = false;
 
 		this._labelData = null;
 		this._text = value;
@@ -1609,11 +1612,18 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	public set newTextFormat(value: TextFormat) {
+		let updated = false;
+
 		if (value) {
-			this._newTextFormat = value.applyToFormat(this._textFormat.clone());
-			return;
+			this._newTextFormat = this._textFormat.clone()
+			updated = value.applyToFormat(this._newTextFormat);
+		} else if (this._newTextFormat != null) {
+			this._newTextFormat = null;
+			updated = true;
 		}
-		this._newTextFormat = null;
+		
+		if (updated)
+			this._newFormatDirty = true;
 	}
 
 	public get textFormat(): TextFormat {
