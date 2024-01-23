@@ -1615,13 +1615,13 @@ export class TextField extends DisplayObjectContainer {
 		let updated = false;
 
 		if (value) {
-			this._newTextFormat = this._textFormat.clone()
+			this._newTextFormat = this._textFormat.clone();
 			updated = value.applyToFormat(this._newTextFormat);
 		} else if (this._newTextFormat != null) {
 			this._newTextFormat = null;
 			updated = true;
 		}
-		
+
 		if (updated)
 			this._newFormatDirty = true;
 	}
