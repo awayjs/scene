@@ -1609,7 +1609,7 @@ export class TextField extends DisplayObjectContainer {
 	public get newTextFormat(): TextFormat {
 		// only use the newTextformat if it is available, otherwise fall back to textFormat
 		if (this._newTextFormat == null) {
-			this._newTextFormat = this._textFormat? this._textFormat : new TextFormat();
+			this._newTextFormat = this._textFormat ? this._textFormat : new TextFormat();
 		}
 		return this._newTextFormat;
 	}
@@ -1617,7 +1617,6 @@ export class TextField extends DisplayObjectContainer {
 	public set newTextFormat(value: TextFormat) {
 		if (!value)
 			throw new Error('TextField::: set newTextFormat - no value!');
-
 
 		if (value.equal(this.newTextFormat))
 			return;
@@ -1638,10 +1637,8 @@ export class TextField extends DisplayObjectContainer {
 		if (!value)
 			throw new Error('TextField::: set textFormat - no value!');
 
-
 		if (value.equal(this.textFormat))
 			return;
-
 
 		this._textFormat = value.clone();
 
