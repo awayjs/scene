@@ -1608,22 +1608,23 @@ export class TextField extends DisplayObjectContainer {
 
 	public get newTextFormat(): TextFormat {
 		// only use the newTextformat if it is available, otherwise fall back to textFormat
-		return this._newTextFormat ? this._newTextFormat : this._textFormat ? this._textFormat : new TextFormat();
+		if (this._newTextFormat == null) {
+			this._newTextFormat = this._textFormat? this._textFormat : new TextFormat();
+		}
+		return this._newTextFormat;
 	}
 
 	public set newTextFormat(value: TextFormat) {
-		let updated = false;
+		if (!value)
+			throw new Error('TextField::: set newTextFormat - no value!');
 
-		if (value) {
-			this._newTextFormat = this._textFormat.clone();
-			updated = value.applyToFormat(this._newTextFormat);
-		} else if (this._newTextFormat != null) {
-			this._newTextFormat = null;
-			updated = true;
-		}
 
-		if (updated)
-			this._newFormatDirty = true;
+		if (value.equal(this.newTextFormat))
+			return;
+
+		this._newTextFormat = value.clone();
+
+		this._newFormatDirty = true;
 	}
 
 	public get textFormat(): TextFormat {
@@ -1634,14 +1635,16 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	public set textFormat(value: TextFormat) {
-		if (!value) throw new Error('TextField::: set textFormat - no value!');
+		if (!value)
+			throw new Error('TextField::: set textFormat - no value!');
 
-		if (this._textFormat == value) {
+
+		if (value.equal(this.textFormat))
 			return;
-		}
-		this._textDirty = true;
 
-		this._textFormat = value;
+
+		this._textFormat = value.clone();
+
 		this._textShapesDirty = true;
 		// this._positionsDirty = true;
 		// this._glyphsDirty = true;
