@@ -341,4 +341,3 @@ export class Scene {
 }
 
 MaterialManager.materialClass = MethodMaterial;
-MaterialManager.textureClass = ImageTexture2D;
