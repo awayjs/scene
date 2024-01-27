@@ -271,7 +271,7 @@ export class Billboard extends DisplayObjectContainer {
 					this._style?.getSamplerAt(texture)
 					|| this.material.style?.getSamplerAt(texture)
 					|| texture.getSamplerAt(0)
-					|| ImageUtils.getDefaultSampler());
+					|| ImageUtils.getDefaultImageSampler());
 
 			if (this._sampler.imageRect) {
 				this._billboardWidth = this._sampler.imageRect.width * image.width;
