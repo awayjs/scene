@@ -622,7 +622,7 @@ export class TextField extends DisplayObjectContainer {
 		if (this.cursorShape.style.color !== color) {
 			const alpha = ColorUtils.float32ColorToARGB(color)[0];
 
-			const obj = MaterialManager.get_material_for_color(color, (alpha / 255) || 1);
+			const obj = MaterialManager.getMaterialForColor(color, (alpha / 255) || 1);
 
 			if (obj.colorPos) {
 				this.cursorShape.style = new Style();
@@ -1624,6 +1624,7 @@ export class TextField extends DisplayObjectContainer {
 		this._newTextFormat = value.clone();
 
 		this._newFormatDirty = true;
+		this._textShapesDirty = true;
 	}
 
 	public get textFormat(): TextFormat {
@@ -2857,7 +2858,7 @@ export class TextField extends DisplayObjectContainer {
 				if (alpha == 0) {
 					alpha = 255;
 				}
-				const obj = MaterialManager.get_material_for_color(color, alpha / 255);
+				const obj = MaterialManager.getMaterialForColor(color, alpha / 255);
 
 				textShape.shape.material = obj.material;
 				if (obj.colorPos) {
@@ -2989,7 +2990,7 @@ export class TextField extends DisplayObjectContainer {
 			} else {
 				// 	used by runtime textureatlas.
 				//	(standart for dynamic created text and text loaded from swf)
-				const obj = MaterialManager.get_material_for_color(color, alpha / 255);
+				const obj = MaterialManager.getMaterialForColor(color, alpha / 255);
 				textShape.shape.material = obj.material;
 				if (obj.colorPos) {
 					textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));

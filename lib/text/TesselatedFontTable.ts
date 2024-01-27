@@ -377,7 +377,7 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 			const color = 0xFFFFFF;
 			const alpha = 1;
-			const obj = MaterialManager.get_material_for_color(color, alpha);
+			const obj = MaterialManager.getMaterialForColor(color, alpha);
 
 			shape.material = obj.material;
 			if (obj.colorPos) {
