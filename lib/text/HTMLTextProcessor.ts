@@ -247,13 +247,14 @@ export class HTMLTextProcessor {
 		}
 
 		const textProps: any = { text: '' };
+		const childFormat: TextFormat = target_tf.newTextFormat;
 
-		target_tf._textFormats = [target_tf._textFormat];
+		target_tf._textFormats = [childFormat];
 		target_tf._textFormatsIdx = [0];
 		const doc = parse(input);
 		if (doc && doc.firstChild) {
 			textProps.multiline = doc.firstChild.childNodes.length > 0;
-			this.readHTMLTextPropertiesRecursive(target_tf, doc, textProps, target_tf._textFormat);
+			this.readHTMLTextPropertiesRecursive(target_tf, doc, textProps, childFormat);
 		}
 		if (textProps.text != '' && ((textProps.text.charCodeAt(textProps.text.length - 1) == 13)
 			|| (textProps.text.charCodeAt(textProps.text.length - 1) == 10))) {

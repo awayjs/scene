@@ -257,14 +257,11 @@ export class TextField extends DisplayObjectContainer {
 	private _textWidth: number;
 	private _textHeight: number;
 
-	private _charBoundaries: Rectangle;
 	private _firstCharInParagraph: number;
 	private _imageReference: DisplayObject
-	private _lineMetrics: TextLineMetrics;
 	private _paragraphLength: number;
 
-	public _textFormat: TextFormat;
-	public _newTextFormat: TextFormat;
+	public _newTextFormat: TextFormat = new TextFormat();
 	public _textFormats: TextFormat[];
 	public _textFormatsIdx: number[];
 
@@ -578,7 +575,7 @@ export class TextField extends DisplayObjectContainer {
 
 		let x: number = 0;
 		let y: number = 0;
-		let tf: TextFormat = this.newTextFormat;
+		let tf: TextFormat = this._newTextFormat;
 
 		if (this.char_positions_x.length == 0) {
 			x = this.textOffsetX + (this._width / 2) + this._textWidth / 2;
@@ -1198,8 +1195,6 @@ export class TextField extends DisplayObjectContainer {
 		this._textDirty = true;
 		//console.log("set text", value, "on" , this);
 
-		this.newTextFormat = this._textFormats[this._textFormats.length - 1];
-
 		this.invalidate();
 	}
 
@@ -1607,50 +1602,20 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	public get newTextFormat(): TextFormat {
-		// only use the newTextformat if it is available, otherwise fall back to textFormat
-		if (this._newTextFormat == null) {
-			this._newTextFormat = this._textFormat ? this._textFormat : new TextFormat();
-		}
-		return this._newTextFormat;
+		return this._newTextFormat.clone();
 	}
 
 	public set newTextFormat(value: TextFormat) {
 		if (!value)
 			throw new Error('TextField::: set newTextFormat - no value!');
 
-		if (value.equal(this.newTextFormat))
+		if (value.equal(this._newTextFormat))
 			return;
 
 		this._newTextFormat = value.clone();
 
 		this._newFormatDirty = true;
 		this._textShapesDirty = true;
-	}
-
-	public get textFormat(): TextFormat {
-		if (this._textFormat == null) {
-			this._textFormat = new TextFormat();
-		}
-		return this._textFormat;
-	}
-
-	public set textFormat(value: TextFormat) {
-		if (!value)
-			throw new Error('TextField::: set textFormat - no value!');
-
-		if (value.equal(this.textFormat))
-			return;
-
-		this._textFormat = value.clone();
-
-		this._textShapesDirty = true;
-		// this._positionsDirty = true;
-		// this._glyphsDirty = true;
-		// this._shapesDirty = true;
-		this._textDirty = true;
-		//this.reConstruct();
-
-		this.invalidate();
 	}
 
 	/**
@@ -1777,8 +1742,8 @@ export class TextField extends DisplayObjectContainer {
 	public get textHeight(): number {
 		this.reConstruct();
 		if (this.type == TextFieldType.INPUT && this._iText == '') {
-			this.textFormat.font_table.initFontSize(this.textFormat.size);
-			return this.textFormat.font_table.getLineHeight();
+			this._newTextFormat.font_table.initFontSize(this._newTextFormat.size);
+			return this._newTextFormat.font_table.getLineHeight();
 		}
 
 		return this._textHeight;
@@ -2022,8 +1987,6 @@ export class TextField extends DisplayObjectContainer {
 
 		this._resetParagraph();
 		this._clearTextShapes();
-
-		this._textFormat = null;
 	}
 
 	/**
@@ -2068,11 +2031,6 @@ export class TextField extends DisplayObjectContainer {
 			this._maxScrollV = 0;
 			this._maxWidthLine = 0;
 
-			// sometimes needed for TLFTextfields
-			// todo: cleanup usage of _textFormats vs _textFormats
-			if (!this._textFormat && this._textFormats.length > 0)
-				this._textFormat = this._textFormats[0];
-
 			this.buildParagraphs();
 
 			//console.log("TextField buildParagraph", this.id, this._iText);
@@ -2093,9 +2051,9 @@ export class TextField extends DisplayObjectContainer {
 
 		if (this._positionsDirty) {
 			this._glyphsDirty = true;
-			if (this._iText != '' && this._textFormat != null) {
+			if (this._iText != '' && this._textFormats[0] != null) {
 				//console.log("TextField getWordPositions", this.id, this.words);
-				this.getWordPositions();
+				this.getWordPositions(this._textFormats[0]);
 			} else {
 				// this is empty text, we need to reset the text-size
 				this._textWidth = 0;
@@ -2106,8 +2064,8 @@ export class TextField extends DisplayObjectContainer {
 
 					this._height = 4;
 					if (this._type == TextFieldType.INPUT) {
-						this.newTextFormat.font_table.initFontSize(this.newTextFormat.size);
-						this._height = this.newTextFormat.font_table.getLineHeight() + 4;
+						this._newTextFormat.font_table.initFontSize(this._newTextFormat.size);
+						this._height = this._newTextFormat.font_table.getLineHeight() + 4;
 					}
 				}
 				if (this._type == TextFieldType.INPUT)
@@ -2200,7 +2158,7 @@ export class TextField extends DisplayObjectContainer {
 		}
 
 		// clear paragraph data when clear
-		if (this._iText === '' || !this._textFormat) {
+		if (this._iText === '' || !this._textFormats[0]) {
 			this._resetParagraph();
 			return;
 		}
@@ -2435,7 +2393,7 @@ export class TextField extends DisplayObjectContainer {
 		}
 	}
 
-	private getWordPositions() {
+	private getWordPositions(tf: TextFormat) {
 		/*console.log("this._iText", this._iText);
 		console.log("this._width", this._width);
 		console.log("this._height", this._height);*/
@@ -2466,13 +2424,13 @@ export class TextField extends DisplayObjectContainer {
 		// if we have autosize enabled, and no wordWrap, we can adjust the textfield width
 		if (this._autoSize != TextFieldAutoSize.NONE && !this._wordWrap && this._textDirty) {
 			const maxSizeComplete: number =
-				this._maxWidthLine + this._textFormat.indent
-				+ this._textFormat.leftMargin + this._textFormat.rightMargin;
+				this._maxWidthLine + tf.indent
+				+ tf.leftMargin + tf.rightMargin;
 			this.adjustPositionForAutoSize(maxSizeComplete);
 		}
 
 		const maxLineWidth: number =
-			this._width - (this._textFormat.indent + this._textFormat.leftMargin + this._textFormat.rightMargin);
+			this._width - (tf.indent + tf.leftMargin + tf.rightMargin);
 
 		let p: number = 0;
 		const p_len: number = this._paragraph_textRuns_indices.length;
@@ -2846,7 +2804,7 @@ export class TextField extends DisplayObjectContainer {
 			const sampler: ImageSampler = new ImageSampler();
 			textShape.shape.style = new Style();
 			if (textShape.format.material && this._textColor == 0) {
-				textShape.shape.material = this._textFormat.material;
+				textShape.shape.material = this._textFormats[0].material;
 				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
 				(<MaterialBase> textShape.shape.material).animateUVs = true;
 				textShape.shape.style.uvMatrix =
@@ -2982,7 +2940,7 @@ export class TextField extends DisplayObjectContainer {
 			} else if (textShape.format.material && this._textColor == 0) {
 				// 	used for textfields loaded from awd.
 				//	the material on the format uses textureAtlas from awd
-				textShape.shape.material = this._textFormat.material;
+				textShape.shape.material = this._textFormats[0].material;
 				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
 				(<MaterialBase> textShape.shape.material).animateUVs = true;
 				textShape.shape.style.uvMatrix =
@@ -3327,9 +3285,7 @@ export class TextField extends DisplayObjectContainer {
 	 */
 	public getTextFormat(beginIndex: number /*int*/ = -1, endIndex: number /*int*/ = -1): TextFormat {
 		if (!this.tf_per_char || !this.tf_per_char.length) {
-			if (this._textFormat)
-				return this._textFormat.clone();
-			return new TextFormat();
+			return this._textFormats[0]?.clone() || new TextFormat();
 		}
 		if (beginIndex < 0)
 			beginIndex = 0;
@@ -3792,9 +3748,9 @@ export class TextField extends DisplayObjectContainer {
 					if (char == '')
 						return;
 				}
-				if (this.newTextFormat.font_table) {
+				if (this._newTextFormat.font_table) {
 
-					const table = this.newTextFormat.font_table;
+					const table = this._newTextFormat.font_table;
 					const symbol = char.charCodeAt(0).toString();
 					let exist = false;
 
@@ -3917,8 +3873,7 @@ export class TextField extends DisplayObjectContainer {
 		newInstance.html = this.html;
 		newInstance.width = this._width;
 		newInstance.height = this._height;
-		if (this._textFormat)
-			newInstance.textFormat = this._textFormat.clone();
+		newInstance.newTextFormat = this._newTextFormat.clone();
 		newInstance.textColor = this._textColor;
 		newInstance.border = this._border;
 		newInstance.borderColor = this._borderColor;
