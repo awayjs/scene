@@ -84,8 +84,8 @@ export class MouseManager {
 
 	private _isAVM1Dragging: Boolean = false;
 
-	public startDragObject(collision?: PickingCollision) {
-		this._isAVM1Dragging = true;
+	public startDragObject(collision?: PickingCollision, isAVM1Dragging: boolean = false) {
+		this._isAVM1Dragging = isAVM1Dragging;
 
 		// we MUST overrider collision target if present, because draggable !== drag emitter
 		if (collision)
@@ -340,7 +340,7 @@ export class MouseManager {
 					this._stage.dispatchEvent(event);
 
 				if (this._mouseDragCollision) {
-					this.setFocus(this._mouseDragCollision?.rootNode);
+					this.setFocus(this._mouseDragCollision.rootNode);
 					this.setupAndDispatchEvent(this._dragStart, pointerData, this._mouseDragCollision);
 				}
 
