@@ -27,8 +27,6 @@ export class MouseManager {
 
 	private _updateDirty: boolean;
 
-	private _mouseDragCollision: PickingCollision;     // entity hit on mouse-down
-	private _mouseDragging: boolean;            // true while mosue is dragged
 	private _focusNode: ContainerNode;       // entity currently in focus
 
 	public allowKeyInput: boolean=true;
@@ -89,7 +87,7 @@ export class MouseManager {
 
 		// we MUST overrider collision target if present, because draggable !== drag emitter
 		if (collision)
-			this._mouseDragCollision = collision;
+			this._pointerDataArray[0].dragCollision = collision;
 	}
 
 	public stopDragObject() {
@@ -138,7 +136,6 @@ export class MouseManager {
 		this.onKeyUp = this.onKeyUp.bind(this);
 
 		this._showCursor = true;
-		this._mouseDragging = false;
 
 		//register stage
 		const container = this._stage.container;
@@ -318,8 +315,6 @@ export class MouseManager {
 			this.setUpEvent(event, pointerData, collision);
 
 			if (event.type == pointerData.down.type) {
-				this._mouseDragging = true;
-
 				// no event-bubbling. dispatch on stage first
 				if (!this._eventBubbling)
 					this._stage.dispatchEvent(event);
@@ -332,16 +327,16 @@ export class MouseManager {
 					this.setupAndDispatchEvent(pointerData.over, pointerData, collision);
 
 				if (pointerData.id == 0)
-					this._mouseDragCollision = collision;
+					pointerData.dragCollision = collision;
 
 				if (dispatcher)
 					this.dispatchEvent(event, dispatcher);
 				else if (this._eventBubbling)
 					this._stage.dispatchEvent(event);
 
-				if (this._mouseDragCollision) {
-					this.setFocus(this._mouseDragCollision.rootNode);
-					this.setupAndDispatchEvent(this._dragStart, pointerData, this._mouseDragCollision);
+				if (pointerData.dragCollision) {
+					this.setFocus(pointerData.dragCollision.rootNode);
+					this.setupAndDispatchEvent(this._dragStart, pointerData, pointerData.dragCollision);
 				}
 
 			} else if (event.type == pointerData.up.type) {
@@ -355,23 +350,21 @@ export class MouseManager {
 
 				let upContainerNode: ContainerNode = null;
 				let upRootNode: ContainerNode = null;
-				if (this._isAVM1Dragging && this._mouseDragCollision) {
+				if (this._isAVM1Dragging && pointerData.dragCollision) {
 					// avm1dragging is in process, dispatch the mouse-up on this.
 					// mouseDragEntity instead of the current collision
-					upRootNode = this._mouseDragCollision.rootNode;
-					upContainerNode = this._mouseDragCollision.containerNode;
-				} else if (this._mouseDragging && this._mouseDragCollision
-					&& this._mouseDragCollision.rootNode != dispatcher) {
+					upRootNode = pointerData.dragCollision.rootNode;
+					upContainerNode = pointerData.dragCollision.containerNode;
+				} else if (pointerData.dragCollision && pointerData.dragCollision.rootNode != dispatcher) {
 					// no avm1dragging is in process, but current collision
 					// is not the same as collision that appeared on mouse-down,
 					// need to dispatch a MOUSE_UP_OUTSIDE after mouse up
-				} else if (this._mouseDragging && this._mouseDragCollision
-					&& this._mouseDragCollision.rootNode == dispatcher) {
+				} else if (pointerData.dragCollision && pointerData.dragCollision.rootNode == dispatcher) {
 					// no avm1dragging is in process,
 					// current collision is the same as collision that appeared on
 					// mouse-down, need to dispatch a MOUSE_CLICK event after mouse up
-					upRootNode = this._mouseDragCollision.rootNode;
-					upContainerNode = this._mouseDragCollision.containerNode;
+					upRootNode = pointerData.dragCollision.rootNode;
+					upContainerNode = pointerData.dragCollision.containerNode;
 				}
 
 				if (upRootNode)
@@ -383,14 +376,13 @@ export class MouseManager {
 
 				if (upContainerNode) {
 					if (!this._isAVM1Dragging)
-						this.setupAndDispatchEvent(pointerData.click, pointerData, this._mouseDragCollision);
-					this.setupAndDispatchEvent(this._dragStop, pointerData, this._mouseDragCollision);
-				} else if (this._mouseDragging && this._mouseDragCollision) {
-					this.setupAndDispatchEvent(pointerData.upOutside, pointerData, this._mouseDragCollision);
+						this.setupAndDispatchEvent(pointerData.click, pointerData, pointerData.dragCollision);
+					this.setupAndDispatchEvent(this._dragStop, pointerData, pointerData.dragCollision);
+				} else if (pointerData.dragCollision) {
+					this.setupAndDispatchEvent(pointerData.upOutside, pointerData, pointerData.dragCollision);
 				}
 
-				this._mouseDragCollision = null;
-				this._mouseDragging = false;
+				pointerData.dragCollision = null;
 				this._isAVM1Dragging = false;
 
 				//make sure to clear old touch references when no longer needed
@@ -407,8 +399,8 @@ export class MouseManager {
 				if (dispatcher)
 					this.dispatchEvent(event, dispatcher);
 
-				if (this._mouseDragCollision)
-					this.setupAndDispatchEvent(this._dragMove, pointerData, this._mouseDragCollision);
+				if (pointerData.dragCollision)
+					this.setupAndDispatchEvent(this._dragMove, pointerData, pointerData.dragCollision);
 
 				// if bubbling is exist, fire to stage late
 				if (this._eventBubbling)
@@ -440,8 +432,7 @@ export class MouseManager {
 			if (prevCollisionNode) {
 				this.setupAndDispatchEvent(pointerData.out, pointerData, pointerData.prevCollision);
 
-				if (this._mouseDragging && this._mouseDragCollision
-					&& this._mouseDragCollision.rootNode == prevCollisionNode)
+				if (pointerData.dragCollision?.rootNode == prevCollisionNode)
 					this.setupAndDispatchEvent(this._dragOut, pointerData, pointerData.prevCollision);
 			}
 
@@ -488,7 +479,7 @@ export class MouseManager {
 			if (collisionNode) {
 				this.setupAndDispatchEvent(pointerData.over, pointerData, collision);
 
-				if (this._mouseDragging)
+				if (pointerData.dragCollision)
 					this.setupAndDispatchEvent(this._dragOver, pointerData, collision);
 			}
 
@@ -502,7 +493,7 @@ export class MouseManager {
 			if (pointerData.collisionIsEnabledButton != isActiveButton && isActiveButton) {
 				if (pointerData.isMouse)
 					this.setupAndDispatchEvent(pointerData.over, pointerData, collision);
-				else if (this._mouseDragCollision && this._mouseDragCollision.rootNode == collisionNode)
+				else if (pointerData.dragCollision?.rootNode == collisionNode)
 					this.setupAndDispatchEvent(this._dragOver, pointerData, collision);
 			}
 
@@ -510,7 +501,7 @@ export class MouseManager {
 		}
 
 		// set cursor if not dragging mouse ???
-		if (!this._mouseDragging) {
+		if (!pointerData.dragCollision) {
 			this.cursorType = collisionNode ? <any>collisionNode.container.getMouseCursor() : 'auto';
 		}
 
@@ -936,6 +927,8 @@ class PointerData {
 	sourceEvent: MouseEvent | TouchEvent;
 
 	prevCollision: PickingCollision;
+
+	dragCollision: PickingCollision;
 
 	collisionIsEnabledButton: boolean = false;
 
