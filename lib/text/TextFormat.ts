@@ -523,7 +523,7 @@ export class TextFormat extends AssetBase {
 	 *                    space between lines.
 	 */
 	constructor(
-		font: Font | string = null, size: number = null, color: number = null, bold: boolean = null,
+		font: Font | string = '_serif', size: number = null, color: number = null, bold: boolean = null,
 		italic: boolean = null, underline: boolean = null, url: string = null,
 		link_target: string = null, align: string = null,
 		leftMargin: number = null, rightMargin: number = null, indent: number = null, leading: number = null) {
