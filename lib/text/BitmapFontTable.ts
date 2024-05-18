@@ -26,13 +26,10 @@ export class BitmapFontTable extends AssetBase implements IFontTable {
 	public _font_chars_dic: Object;
 	private _font_em_size: number;
 	private _whitespace_width: number;
-	private _offset_x: number;
-	private _offset_y: number;
 	private _ascent: number;
 	private _descent: number;
 	private _texture_width: number;
 	private _texture_height: number;
-	private _charDictDirty: Boolean;
 	public font: any;
 	public _adjust_size: number;
 
@@ -173,22 +170,6 @@ export class BitmapFontTable extends AssetBase implements IFontTable {
 
 	set descent(value: number) {
 		this._descent = value;
-	}
-
-	get offset_x(): number {
-		return this._offset_x;
-	}
-
-	set offset_x(value: number) {
-		this._offset_x = value;
-	}
-
-	get offset_y(): number {
-		return this._offset_y;
-	}
-
-	set offset_y(value: number) {
-		this._offset_y = value;
 	}
 
 	public get_font_chars(): Array<BitmapFontChar> {
