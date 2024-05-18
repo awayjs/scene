@@ -67,56 +67,52 @@ export class FNTGeneratorCanvas extends FNTGeneratorBase {
 		const fillData = char.fill_data_path;
 
 		// empty command
-		if (fillData.commands[0].length === 0 && fillData.commands.length === 1) {
+		if (fillData.commands.length === 0) {
 			return  null;
 		}
 
 		const path = new Path2D();
 		const box = new Bounds();
+		const data = fillData.data;
+		const commands = fillData.commands;
 
-		for (let i = 0; i < fillData.commands.length; i++) {
-			const data = fillData.data[i];
-			const commands = fillData.commands[i];
+		let pointer = 0;
+		for (const command of commands) {
+			switch (command) {
+				case GraphicsPathCommand.MOVE_TO: {
+					// flash path in twips, transform it
+					const px = data[pointer++] / 20;
+					const py = data[pointer++] / 20;
 
-			let pointer = 0;
-			for (const command of commands) {
-				switch (command) {
-					case GraphicsPathCommand.MOVE_TO: {
-						// flash path in twips, transform it
-						const px = data[pointer++] / 20;
-						const py = data[pointer++] / 20;
+					box.grown(px, py);
+					path.moveTo(px, py);
+					break;
+				}
 
-						box.grown(px, py);
-						path.moveTo(px, py);
-						break;
-					}
+				case GraphicsPathCommand.LINE_TO: {
+					const px = data[pointer++] / 20;
+					const py = data[pointer++] / 20;
 
-					case GraphicsPathCommand.LINE_TO: {
-						const px = data[pointer++] / 20;
-						const py = data[pointer++] / 20;
+					box.grown(px, py);
+					path.lineTo(px, py);
+					break;
+				}
 
-						box.grown(px, py);
-						path.lineTo(px, py);
-						break;
-					}
+				case GraphicsPathCommand.CURVE_TO: {
+					const cx = data[pointer++] / 20;
+					const cy = data[pointer++] / 20;
+					const dx = data[pointer++] / 20;
+					const dy = data[pointer++] / 20;
 
-					case GraphicsPathCommand.CURVE_TO: {
-						const cx = data[pointer++] / 20;
-						const cy = data[pointer++] / 20;
-						const dx = data[pointer++] / 20;
-						const dy = data[pointer++] / 20;
+					box.grown(cx, cy);
+					box.grown(dx, dy);
 
-						box.grown(cx, cy);
-						box.grown(dx, dy);
-
-						path.quadraticCurveTo(
-							cx, cy,
-							dx, dy
-						);
-					}
+					path.quadraticCurveTo(
+						cx, cy,
+						dx, dy
+					);
 				}
 			}
-			//path.closePath();
 		}
 
 		return {

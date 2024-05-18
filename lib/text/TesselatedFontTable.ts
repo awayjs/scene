@@ -4,7 +4,7 @@ import { ImageSampler, AttributesBuffer, Float2Attributes, AttributesView, Bitma
 
 import { Style, TriangleElements } from '@awayjs/renderer';
 
-import { GraphicsPath, Shape, GraphicsFactoryFills, GraphicsFactoryHelper, MaterialManager } from '@awayjs/graphics';
+import { GraphicsPath, Shape, GraphicsFactoryFills, GraphicsFactoryHelper, MaterialManager, GraphicsPathCommand } from '@awayjs/graphics';
 
 import { MaterialBase, MethodMaterial } from '@awayjs/materials';
 
@@ -48,26 +48,25 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 	public font: any;
 
-	/*internal*/ _font_chars_dic: StringMap<TesselatedFontChar>;
-	/*internal*/ _current_size: number;
-	/*internal*/ _size_multiply: number;
+	/*internal*/ _font_chars_dic: StringMap<TesselatedFontChar> = {};
+	/*internal*/ _current_size: number = 0;
+	/*internal*/ _size_multiply: number = 0;
 
-	private _font_chars: Array<TesselatedFontChar>;
-	private _font_em_size: number;
+	private _font_chars: TesselatedFontChar[] = [];
+
+	// default size
+	private _font_em_size: number = 32;
 
 	private _whitespace_width: number;
 
-	private _offset_x: number;
-	private _offset_y: number;
-	private _ascent: number;
-	private _descent: number;
-	private _charDictDirty: Boolean;
-	private _usesCurves: boolean;
+	private _ascent: number = 0;
+	private _descent: number = 0;
+	private _usesCurves: boolean = false;
 	private _opentype_font: any;
-	private _glyphIdxToChar: any;
+	private _glyphIdxToChar: Record<number, TesselatedFontChar> = {};
 
-	private _fntSizeLimit: number=-1;
-	private _fnt_channels: BitmapImage2D[];
+	private _fntSizeLimit: number = -1;
+	private _fnt_channels: BitmapImage2D[] = [];
 
 	/**
 	 * Creates a new TesselatedFont object
@@ -76,18 +75,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 	 */
 	constructor(opentype_font: any = null) {
 		super();
-		this._font_chars = [];
-		this._font_chars_dic = Object.create(null);
-		this._current_size = 0;
-		this._size_multiply = 0;
-		this._ascent = 0;
-		this._descent = 0;
-		this._usesCurves = false;
-		this._glyphIdxToChar = {};
-		this._fnt_channels = [];
-
-		// default size
-		this._font_em_size = 32;
 
 		if (opentype_font) {
 			this._opentype_font = opentype_font;
@@ -524,22 +511,6 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 		this._descent = value;
 	}
 
-	get offset_x(): number {
-		return this._offset_x;
-	}
-
-	set offset_x(value: number) {
-		this._offset_x = value;
-	}
-
-	get offset_y(): number {
-		return this._offset_y;
-	}
-
-	set offset_y(value: number) {
-		this._offset_y = value;
-	}
-
 	public get_font_chars(): Array<TesselatedFontChar> {
 		return this._font_chars;
 	}
@@ -589,14 +560,14 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 			if (charGlyph.fill_data === null) {
 
-				if (charGlyph.fill_data_path.commands[0][0] == 1
-					&& charGlyph.fill_data_path.data[0][0] == 0
-					&& charGlyph.fill_data_path.data[0][1] == 0) {
+				if (charGlyph.fill_data_path.commands[0] == GraphicsPathCommand.MOVE_TO
+					&& charGlyph.fill_data_path.data[0] == 0
+					&& charGlyph.fill_data_path.data[1] == 0) {
 
-					charGlyph.fill_data_path.data[0].shift();
-					charGlyph.fill_data_path.data[0].shift();
-					charGlyph.fill_data_path.commands[0].shift();
-					charGlyph.fill_data_path.commands[0][0] = 2;
+					charGlyph.fill_data_path.data.shift();
+					charGlyph.fill_data_path.data.shift();
+					charGlyph.fill_data_path.commands.shift();
+					charGlyph.fill_data_path.commands[0] = GraphicsPathCommand.LINE_TO;
 				}
 
 				charGlyph.fill_data = GraphicsFactoryFills.pathToAttributesBuffer(charGlyph.fill_data_path, true);
@@ -1118,11 +1089,11 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 
 		// 	hack for messed up "X": remove the first command if it is moveTo that points to 0,0
 		//	change the new first command to moveTo
-		if (path.commands[0][0] == 1 && path.data[0][0] == 0 && path.data[0][1] == 0) {
-			path.data[0].shift();
-			path.data[0].shift();
-			path.commands[0].shift();
-			path.commands[0][0] = 2;
+		if (path.commands[0] == GraphicsPathCommand.MOVE_TO && path.data[0] == 0 && path.data[1] == 0) {
+			path.data.shift();
+			path.data.shift();
+			path.commands.shift();
+			path.commands[0] = GraphicsPathCommand.LINE_TO;
 		}
 
 		if (fontChar.fill_data) {
