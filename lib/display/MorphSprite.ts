@@ -176,102 +176,94 @@ export class MorphSprite extends Sprite {
 		const ratioStart = 1 - ratio;
 		const ratioEnd = ratio;
 
-		const len_contours = startPath._commands.length;
+		const len_contours = startPath.commands.length;
 
-		if (endPath._commands.length !== len_contours) {
+		if (endPath.commands.length !== len_contours) {
 			//len_contours = Math.min(endPath._commands.length, len_contours);
 			throw ('Error in morph data - different number of contour');
 		}
+		let startDataCnt = 0;
+		let endDataCnt = 0;
+		let startLastX = 0;
+		let startLastY = 0;
+		let endLastX = 0;
+		let endLastY = 0;
+
+		const startData = startPath.data;
+		const endData = endPath.data;
 
 		for (let c = 0; c < len_contours; c++) {
 
-			const startCmds = startPath._commands[c];
-			const startData = startPath._data[c];
-			const endCmds = endPath._commands[c];
-			const endData = endPath._data[c];
+			const startCmd = startPath.commands[c];
+			
+			const endCmd = endPath.commands[c];
 
-			let startDataCnt = 0;
-			let endDataCnt = 0;
-			let startLastX = 0;
-			let startLastY = 0;
-			let endLastX = 0;
-			let endLastY = 0;
-
-			let len_cmds = startCmds.length;
-
-			if (endCmds.length != len_cmds) {
-				len_cmds = Math.min(endCmds.length, len_cmds);
-				once(this, 'different number of commands in contour');
-				return;
-			}
-			for (let c2 = 0; c2 < len_cmds; c2++) {
-				switch (startCmds[c2]) {
-					case GraphicsPathCommand.MOVE_TO:
-						if (endCmds[c2] != GraphicsPathCommand.MOVE_TO) {
-							throw ('Error in morph data - both shapes must start with Move too command');
-						}
+			switch (startCmd) {
+				case GraphicsPathCommand.MOVE_TO:
+					if (endCmd != GraphicsPathCommand.MOVE_TO) {
+						throw ('Error in morph data - both shapes must start with Move too command');
+					}
+					startLastX = startData[startDataCnt++];
+					startLastY = startData[startDataCnt++];
+					endLastX = endData[endDataCnt++];
+					endLastY = endData[endDataCnt++];
+					newPath.moveTo(
+						ratioStart * startLastX + ratioEnd * endLastX,
+						ratioStart * startLastY + ratioEnd * endLastY);
+					break;
+				case GraphicsPathCommand.LINE_TO:
+					if (endCmd == GraphicsPathCommand.LINE_TO) {
 						startLastX = startData[startDataCnt++];
 						startLastY = startData[startDataCnt++];
 						endLastX = endData[endDataCnt++];
 						endLastY = endData[endDataCnt++];
-						newPath.moveTo(
+						newPath.lineTo(
 							ratioStart * startLastX + ratioEnd * endLastX,
 							ratioStart * startLastY + ratioEnd * endLastY);
-						break;
-					case GraphicsPathCommand.LINE_TO:
-						if (endCmds[c2] == GraphicsPathCommand.LINE_TO) {
-							startLastX = startData[startDataCnt++];
-							startLastY = startData[startDataCnt++];
-							endLastX = endData[endDataCnt++];
-							endLastY = endData[endDataCnt++];
-							newPath.lineTo(
-								ratioStart * startLastX + ratioEnd * endLastX,
-								ratioStart * startLastY + ratioEnd * endLastY);
-						} else if (endCmds[c2] == GraphicsPathCommand.CURVE_TO) {
-							const ctrX = startLastX + (startData[startDataCnt++] - startLastX) / 2;
-							const ctrY = startLastY + (startData[startDataCnt++] - startLastY) / 2;
+					} else if (endCmd == GraphicsPathCommand.CURVE_TO) {
+						const ctrX = startLastX + (startData[startDataCnt++] - startLastX) / 2;
+						const ctrY = startLastY + (startData[startDataCnt++] - startLastY) / 2;
 
-							newPath.curveTo(
-								ratioStart * ctrX + ratioEnd * endData[endDataCnt++],
-								ratioStart * ctrY + ratioEnd * endData[endDataCnt++],
-								ratioStart * startData[startDataCnt - 2] + ratioEnd * endData[endDataCnt++],
-								ratioStart * startData[startDataCnt - 1] + ratioEnd * endData[endDataCnt++]);
+						newPath.curveTo(
+							ratioStart * ctrX + ratioEnd * endData[endDataCnt++],
+							ratioStart * ctrY + ratioEnd * endData[endDataCnt++],
+							ratioStart * startData[startDataCnt - 2] + ratioEnd * endData[endDataCnt++],
+							ratioStart * startData[startDataCnt - 1] + ratioEnd * endData[endDataCnt++]);
 
-							startLastX = startData[startDataCnt - 2];
-							startLastY = startData[startDataCnt - 1];
-							endLastX = endData[endDataCnt - 2];
-							endLastY = endData[endDataCnt - 1];
-						}
-						break;
-					case GraphicsPathCommand.CURVE_TO:
-						if (endCmds[c2] == GraphicsPathCommand.LINE_TO) {
-							const ctrX = endLastX + (endData[endDataCnt++] - endLastX) / 2;
-							const ctrY = endLastY + (endData[endDataCnt++] - endLastY) / 2;
+						startLastX = startData[startDataCnt - 2];
+						startLastY = startData[startDataCnt - 1];
+						endLastX = endData[endDataCnt - 2];
+						endLastY = endData[endDataCnt - 1];
+					}
+					break;
+				case GraphicsPathCommand.CURVE_TO:
+					if (endCmd == GraphicsPathCommand.LINE_TO) {
+						const ctrX = endLastX + (endData[endDataCnt++] - endLastX) / 2;
+						const ctrY = endLastY + (endData[endDataCnt++] - endLastY) / 2;
 
-							newPath.curveTo(
-								ratioStart * startData[startDataCnt++] + ratioEnd * ctrX,
-								ratioStart * startData[startDataCnt++] + ratioEnd * ctrY,
-								ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt - 2],
-								ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt - 1]);
+						newPath.curveTo(
+							ratioStart * startData[startDataCnt++] + ratioEnd * ctrX,
+							ratioStart * startData[startDataCnt++] + ratioEnd * ctrY,
+							ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt - 2],
+							ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt - 1]);
 
-							startLastX = startData[startDataCnt - 2];
-							startLastY = startData[startDataCnt - 1];
-							endLastX = endData[endDataCnt - 2];
-							endLastY = endData[endDataCnt - 1];
-						} else if (endCmds[c2] == GraphicsPathCommand.CURVE_TO) {
-							newPath.curveTo(
-								ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++],
-								ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++],
-								ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++],
-								ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++]);
+						startLastX = startData[startDataCnt - 2];
+						startLastY = startData[startDataCnt - 1];
+						endLastX = endData[endDataCnt - 2];
+						endLastY = endData[endDataCnt - 1];
+					} else if (endCmd == GraphicsPathCommand.CURVE_TO) {
+						newPath.curveTo(
+							ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++],
+							ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++],
+							ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++],
+							ratioStart * startData[startDataCnt++] + ratioEnd * endData[endDataCnt++]);
 
-							startLastX = startData[startDataCnt - 2];
-							startLastY = startData[startDataCnt - 1];
-							endLastX = endData[endDataCnt - 2];
-							endLastY = endData[endDataCnt - 1];
-						}
-						break;
-				}
+						startLastX = startData[startDataCnt - 2];
+						startLastY = startData[startDataCnt - 1];
+						endLastX = endData[endDataCnt - 2];
+						endLastY = endData[endDataCnt - 1];
+					}
+					break;
 			}
 		}
 	}
