@@ -195,7 +195,7 @@ export class MorphSprite extends Sprite {
 		for (let c = 0; c < len_contours; c++) {
 
 			const startCmd = startPath.commands[c];
-			
+
 			const endCmd = endPath.commands[c];
 
 			switch (startCmd) {
