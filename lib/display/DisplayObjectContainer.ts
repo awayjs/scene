@@ -174,7 +174,7 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 
 			return child;
 		}
-			
+
 		if (child.parent)
 			child.parent.removeChild(child);
 
