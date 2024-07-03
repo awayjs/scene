@@ -164,6 +164,17 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 	 *              list.
 	 */
 	public addChildAt(child: DisplayObject, index: number): DisplayObject {
+		if (child.parent && child.parent == this) {
+			const childIndex: number = this.getChildIndex(child);
+
+			if (childIndex != index) {
+				this._children.splice(childIndex, 1);
+				this._children.splice(index, 0, child);
+			}
+
+			return child;
+		}
+			
 		if (child.parent)
 			child.parent.removeChild(child);
 
