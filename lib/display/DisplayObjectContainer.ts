@@ -167,7 +167,7 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 		if (child.parent && child.parent == this) {
 			const childIndex: number = this.getChildIndex(child);
 
-			if (childIndex != index) {
+			if (childIndex != index && index < this._children.length) {
 				this._children.splice(childIndex, 1);
 				this._children.splice(index, 0, child);
 			}
