@@ -695,8 +695,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 			return;
 
 		this._pickObject = (<DisplayObject> value == this)
-							? null
-							: value.pickObjectFromTimeline ? value.clone() : value;
+			? null
+			: value.pickObjectFromTimeline ? value.clone() : value;
 
 		if (this._pickObject) {
 			this._pickObject.mouseChildren = false;
