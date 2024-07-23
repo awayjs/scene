@@ -1179,6 +1179,8 @@ export class TextField extends DisplayObjectContainer {
 
 	public set htmlText(value: string) {
 
+		value = (value == undefined)? "" : value.toString();
+
 		if (value == this._htmlText)
 			return;
 
@@ -1551,7 +1553,7 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	public set text(value: string) {
-		value = (typeof value === 'undefined') ? '' : value.toString();
+		value = (value == undefined)? "" : value.toString();
 
 		value = value.replace(String.fromCharCode(160), ' ');
 
