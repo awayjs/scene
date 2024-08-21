@@ -265,7 +265,8 @@ export class MovieClip extends Sprite {
 				this._stopChannels(sound);
 		} else {
 			for (const key in this._sounds)
-				this._stopChannels(sound);
+				for (const c of this._sounds[key])
+					c.stop();
 		}
 
 		const len: number = this._children.length;
@@ -854,6 +855,10 @@ export class MovieClip extends Sprite {
 		const sound = channel.owner;
 		const channels = this._sounds[sound.id];
 		const index = channels ? channels.indexOf(channel) : -1;
+
+		channel.removeEventListener(BaseAudioChannel.COMPLETE, this._onChannelCompleteStopError);
+		channel.removeEventListener(BaseAudioChannel.STOP, this._onChannelCompleteStopError);
+		channel.removeEventListener(BaseAudioChannel.ERROR, this._onChannelCompleteStopError);
 
 		if (index != -1) {
 			channels.splice(index, 1);
