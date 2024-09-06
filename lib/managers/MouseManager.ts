@@ -718,6 +718,12 @@ export class MouseManager {
 		event.altKey = sourceEvent.altKey;
 		event.shiftKey = sourceEvent.shiftKey;
 
+		//restrict events fired to one type every animation frame
+		const index = pointerData.queuedEvents.indexOf(event);
+
+		if (index != -1)
+			pointerData.queuedEvents.splice(index, 1);
+
 		pointerData.queuedEvents.push(event);
 
 		pointerData.sourceEvent = sourceEvent;
