@@ -402,10 +402,6 @@ export class MouseManager {
 				if (pointerData.dragCollision)
 					this.setupAndDispatchEvent(this._dragMove, pointerData, pointerData.dragCollision);
 
-				// if bubbling is exist, fire to stage late
-				if (this._eventBubbling)
-					this._stage.dispatchEvent(event);
-
 			} else {
 				// MouseEvent.MOUSE_OVER / MouseEvent.MOUSE_OUT / MouseEvent.DRAG_OVER / MouseEvent.DRAG_OUT
 				this.dispatchEvent(event, dispatcher);
