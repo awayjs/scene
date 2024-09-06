@@ -371,12 +371,14 @@ export class SceneImage2D extends BitmapImage2D {
 
 	public unload() {
 		// query async unload
-		const t = this.syncData(true);
+		if (this._imageDataDirty) {
+			const t = this.syncData(true);
 
-		// strict quard
-		if (typeof t !== 'boolean') {
-			t.then(() => super.unload());
-			return;
+			// strict quard
+			if (typeof t !== 'boolean') {
+				t.then(() => super.unload());
+				return;
+			}
 		}
 
 		super.unload();
