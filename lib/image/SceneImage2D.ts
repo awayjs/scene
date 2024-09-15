@@ -81,15 +81,6 @@ export class SceneImage2D extends BitmapImage2D {
 	private static _billboardRoot: DisplayObjectContainer;
 	private static _billboard: Billboard;
 
-	private _imageDataDirty: boolean;
-
-	private _asyncRead: Promise<boolean>;
-
-	private _initalFillColor: number = null;
-
-	private _lastUsedFill: number = null;
-
-	private _internalSync: boolean = false;
 
 	protected _msaaNeedDrop: boolean = false;
 
@@ -141,88 +132,6 @@ export class SceneImage2D extends BitmapImage2D {
 		return this.canUseMSAAInternaly ? this._antialiasQuality : 0;
 	}
 
-	protected syncData(async = false): boolean | Promise<boolean> {
-
-		if (async && this._asyncRead) {
-			return this._asyncRead;
-		}
-
-		if (!async && this._asyncRead) {
-			throw '[SceneImage2D] Synced read not allowed while async read is requested!';
-		}
-
-		this.applySymbol();
-
-		// update data from pixels from GPU
-		if (!this._imageDataDirty) {
-			return async ? Promise.resolve(false) : false;
-		}
-
-		const context = <ContextWebGL> this._stage.context;
-
-		this._stage.setRenderTarget(this, false);
-
-		// when we call syncData, we already loose other data
-		// not require apply symbol etc, because it already should be applied
-		if (!this._data) {
-			this._data = new Uint8ClampedArray(this.width * this.height * 4);
-		}
-
-		// mark that this internal call, avoid reqursion loop
-		this._internalSync = true;
-		this._asyncRead = context.drawToBitmapImage2D(this, false, async);
-		this._internalSync = false;
-
-		this._stage.setRenderTarget(null);
-
-		if (!async) {
-			this._imageDataDirty = false;
-			// we store pixel buffer already as PMA.
-			// we should prevent unpack what already is PMA
-			this._unpackPMA = false;
-			return true;
-		}
-
-		return this._asyncRead.then((_status: boolean) => {
-			this._imageDataDirty = false;
-			this._unpackPMA = false;
-			this._asyncRead = null;
-
-			return true;
-		});
-	}
-
-	/* overide internal */getDataInternal (constructEmpty = true, skipSync = false) {
-
-		// if sync called, check that this is requried
-		if (!skipSync && this._imageDataDirty && !this._internalSync) {
-			// sync data already should fill _data
-			this.syncData(false);
-
-			return this._data;
-		}
-
-		if (this._initalFillColor === null) {
-			return super.getDataInternal(constructEmpty, true);
-		}
-
-		// disable empty buffer filling
-		// and check that buffer is empyt (has now symbol or alpha)
-		const data = super.getDataInternal(false, true);
-
-		// if it empty, fill with initlal value
-		if (!data) {
-
-			// fill rect constuct buffer inside
-			super.fillRect(this.rect, this._initalFillColor);
-			this._initalFillColor = null;
-
-			return this._data;
-		}
-
-		return data;
-	}
-
 	/**
 	 *
 	 * @returns {string}
@@ -265,8 +174,6 @@ export class SceneImage2D extends BitmapImage2D {
 
 		super(width, height, transparent, null, powerOfTwo, stage);
 
-		this._initalFillColor = fillColor;
-		this._lastUsedFill = fillColor;
 	}
 
 	private createRenderer() {
@@ -386,39 +293,6 @@ export class SceneImage2D extends BitmapImage2D {
 
 	protected deepClone(from: BitmapImage2D) {
 		this.copyPixels(from, this._rect, new Point(0,0));
-	}
-
-	/**
-	 * Fills a rectangular area of pixels with a specified ARGB color.
-	 *
-	 * @param rect  The rectangular area to fill.
-	 * @param color The ARGB color value that fills the area. ARGB colors are
-	 *              often specified in hexadecimal format; for example,
-	 *              0xFF336699.
-	 * @throws TypeError The rect is null.
-	 */
-	public fillRect(rect: Rectangle, color: number): void {
-		this.dropAllReferences();
-
-		const argb = ColorUtils.float32ColorToARGB(color);
-		const alpha = this._transparent ? argb[0] / 255 : 1;
-		const isCrop = rect !== this._rect && !this._rect.equals(rect);
-
-		this._stage.setRenderTarget(this, true, 0, 0, true);
-		this._stage.setScissor(rect);
-
-		// we shure that color is fully filled when there are not any crops
-		this._lastUsedFill = isCrop ? null : color;
-
-		this._stage.clear(
-			(argb[1] / 0xff) * alpha,
-			(argb[2] / 0xff) * alpha,
-			(argb[3] / 0xff) * alpha,
-			alpha
-		);
-
-		this._stage.setScissor(null);
-		this._imageDataDirty = true;
 	}
 
 	/**
