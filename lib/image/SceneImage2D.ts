@@ -81,7 +81,6 @@ export class SceneImage2D extends BitmapImage2D {
 	private static _billboardRoot: DisplayObjectContainer;
 	private static _billboard: Billboard;
 
-
 	protected _msaaNeedDrop: boolean = false;
 
 	protected _enforceMSAASupport: boolean = false;
