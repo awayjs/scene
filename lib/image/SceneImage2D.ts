@@ -771,7 +771,6 @@ export class SceneImage2D extends BitmapImage2D {
 		if ((!nativeMSAA || useBlend) && this._initalFillColor !== null)
 			this.fillRect(this._rect, this._initalFillColor);
 
-
 		if (useTemp) {
 			target = SceneImage2D.getTemp(this.width, this.height, this._stage, nativeMSAA);
 
