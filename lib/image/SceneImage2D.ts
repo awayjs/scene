@@ -171,7 +171,7 @@ export class SceneImage2D extends BitmapImage2D {
 		width: number, height: number, transparent: boolean = true,
 		fillColor: number = 0xffffffff, powerOfTwo: boolean = true, stage: Stage = null) {
 
-		super(width, height, transparent, null, powerOfTwo, stage);
+		super(width, height, transparent, fillColor, powerOfTwo, stage);
 
 	}
 
@@ -377,10 +377,8 @@ export class SceneImage2D extends BitmapImage2D {
 			// 	and games that use set/get pixels and copyPixels only for math process not required use GPU copy
 		}
 
-		if (this._initalFillColor !== null) {
+		if (this._initalFillColor !== null)
 			this.fillRect(this._rect, this._initalFillColor);
-			this._initalFillColor = null;
-		}
 
 		let compositeSource: Image2D = source;
 
@@ -666,10 +664,8 @@ export class SceneImage2D extends BitmapImage2D {
 			this.createBillboardRenderer();
 		}
 
-		if (this._initalFillColor !== null) {
+		if (this._initalFillColor !== null)
 			this.fillRect(this._rect, this._initalFillColor);
-			this._initalFillColor = null;
-		}
 
 		const stage = this._stage;
 		const mappedBlend = SceneImage2D._mapSupportedBlendMode(blendMode);
@@ -772,10 +768,9 @@ export class SceneImage2D extends BitmapImage2D {
 		// lazy filling
 		// we require fill image with initial color, because we not doing this immediate
 		// and when blend is required, because we should blend with vald color
-		if ((!nativeMSAA || useBlend) && this._initalFillColor !== null) {
+		if ((!nativeMSAA || useBlend) && this._initalFillColor !== null)
 			this.fillRect(this._rect, this._initalFillColor);
-			this._initalFillColor = null;
-		}
+
 
 		if (useTemp) {
 			target = SceneImage2D.getTemp(this.width, this.height, this._stage, nativeMSAA);
