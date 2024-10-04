@@ -843,8 +843,8 @@ export class SceneImage2D extends BitmapImage2D {
 		//if (!this._locked)
 		//SceneImage2D.scene.view.target=this;
 		//SceneImage2D.scene.renderer.disableClear = !this._locked;
-
 		renderer.render();
+		renderer.stage.context.drawToBitmapImage2D(this)
 
 		// reset render to default value
 		renderer.antiAlias = 0;
