@@ -329,7 +329,7 @@ export class MouseManager {
 				if (pointerData.id == 0)
 					pointerData.dragCollision = collision;
 
-				if (this._eventBubbling && dispatcher)
+				if (dispatcher)
 					this.dispatchEvent(event, dispatcher);
 				else if (this._eventBubbling)
 					this._stage.dispatchEvent(event);
@@ -369,7 +369,7 @@ export class MouseManager {
 
 				if (upRootNode)
 					this.dispatchEvent(event, upRootNode);
-				else if (this._eventBubbling && dispatcher)
+				else if (dispatcher)
 					this.dispatchEvent(event, dispatcher);
 				else if (this._eventBubbling)
 					this._stage.dispatchEvent(event);
@@ -396,7 +396,7 @@ export class MouseManager {
 					this._stage.dispatchEvent(event);
 
 				// fire to picker
-				if (this._eventBubbling && dispatcher)
+				if (dispatcher)
 					this.dispatchEvent(event, dispatcher);
 				else if (this._eventBubbling)
 					this._stage.dispatchEvent(event);
