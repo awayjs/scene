@@ -16,6 +16,8 @@ import { ISceneGraphFactory } from './ISceneGraphFactory';
 
 export class DefaultSceneGraphFactory extends DefaultStageFactory implements ISceneGraphFactory {
 
+	readonly mapMatsForBitmaps: NumberMap<IMaterial> = {};
+
 	readonly awaySymbols: NumberMap<IAsset> = {};
 
 	createMovieClip(timeline: Timeline = null, symbol: any = null): MovieClip {
