@@ -533,6 +533,13 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 	protected removeChildAtInternal(index: number): DisplayObject {
 		const child: DisplayObject = this._children.splice(index, 1)[0];
 
+		if (child.adapter && (<any>child.adapter).dispatchStaticEvent) {
+			(<any>child.adapter).dispatchStaticEvent('removed', child.adapter);
+		}
+		if (this.isOnDisplayList() && (<any>child.adapter).dispatch_REMOVED_FROM_STAGE) {
+			(<any>child.adapter).dispatch_REMOVED_FROM_STAGE(<DisplayObjectContainer>child);
+		}
+
 		child._setParent(null);
 
 		this.dispatchEvent(new ContainerEvent(ContainerEvent.REMOVE_CHILD_AT, child, index));

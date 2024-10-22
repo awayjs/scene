@@ -698,13 +698,6 @@ export class MovieClip extends Sprite {
 
 		child._sessionID = -1;
 
-		if (child.adapter && (<any>child.adapter).dispatchStaticEvent) {
-			(<any>child.adapter).dispatchStaticEvent('removed', child.adapter);
-		}
-		if (this.isOnDisplayList() && (<any>child.adapter).dispatch_REMOVED_FROM_STAGE) {
-			(<any>child.adapter).dispatch_REMOVED_FROM_STAGE(<DisplayObjectContainer>child);
-		}
-
 		return super.removeChildAtInternal(index);
 	}
 
