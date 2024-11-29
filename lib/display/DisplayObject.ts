@@ -916,14 +916,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	 * to or subtracted from 360 to obtain a value within the range.
 	 */
 	public get rotationX(): number {
-		return this._transform.rotation.x * MathConsts.RADIANS_TO_DEGREES;
+		return this._transform.rotation.x;
 	}
 
 	public set rotationX(val: number) {
 		if (this.rotationX == val)
 			return;
 
-		this._transform.rotation.x = val * MathConsts.DEGREES_TO_RADIANS;
+		this._transform.rotation.x = val;
 
 		this._transform.invalidateMatrix3D();
 	}
@@ -936,14 +936,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	 * to or subtracted from 360 to obtain a value within the range.
 	 */
 	public get rotationY(): number {
-		return this._transform.rotation.y * MathConsts.RADIANS_TO_DEGREES;
+		return this._transform.rotation.y;
 	}
 
 	public set rotationY(val: number) {
 		if (this.rotationY == val)
 			return;
 
-		this._transform.rotation.y = val * MathConsts.DEGREES_TO_RADIANS;
+		this._transform.rotation.y = val;
 
 		this._transform.invalidateMatrix3D();
 	}
@@ -956,14 +956,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	 * to or subtracted from 360 to obtain a value within the range.
 	 */
 	public get rotationZ(): number {
-		return this._transform.rotation.z * MathConsts.RADIANS_TO_DEGREES;
+		return this._transform.rotation.z;
 	}
 
 	public set rotationZ(val: number) {
 		if (this.rotationZ == val)
 			return;
 
-		this._transform.rotation.z = val * MathConsts.DEGREES_TO_RADIANS;
+		this._transform.rotation.z = val;
 
 		this._transform.invalidateMatrix3D();
 	}
