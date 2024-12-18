@@ -434,6 +434,7 @@ export class _Pick_Billboard extends _Pick_PickableBase {
 
 		this._onInvalidateElementsDelegate = (event: RenderableEvent) => this._onInvalidateElements(event);
 	}
+
 	/**
      * //TODO
      *
