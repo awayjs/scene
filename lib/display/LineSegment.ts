@@ -162,6 +162,12 @@ export class _Pick_LineSegment extends _Pick_PickableBase {
 	private _lineSegmentSphereDirty: boolean = true;
 	private _onInvalidateElementsDelegate: (event: RenderableEvent) => void;
 
+	constructor() {
+		super();
+
+		this._onInvalidateElementsDelegate = (event: RenderableEvent) => this._onInvalidateElements(event);
+	}
+
 	/**
      * //TODO
      *
@@ -170,10 +176,8 @@ export class _Pick_LineSegment extends _Pick_PickableBase {
      * @param level
      * @param indexOffset
      */
-	constructor(lineSegment: LineSegment, pickEntity: PickEntity) {
-		super(lineSegment, pickEntity);
-
-		this._onInvalidateElementsDelegate = (event: RenderableEvent) => this._onInvalidateElements(event);
+	public init(lineSegment: LineSegment, pickEntity: PickEntity): void {
+		super.init(lineSegment, pickEntity);
 
 		this._asset.addEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
 	}
@@ -187,6 +191,11 @@ export class _Pick_LineSegment extends _Pick_PickableBase {
 		this._asset.removeEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
 
 		super.onClear(event);
+
+		this._lineSegmentBox = null;
+		this._lineSegmentBoxDirty = true;
+		this._lineSegmentSphere = null;
+		this._lineSegmentSphereDirty = true;
 	}
 
 	public hitTestPoint(x: number, y: number, z: number): boolean {

@@ -429,6 +429,11 @@ export class _Pick_Billboard extends _Pick_PickableBase {
 	private _billboardBoxDirty: boolean = true;
 	private _onInvalidateElementsDelegate: (event: RenderableEvent) => void;
 
+	constructor() {
+		super();
+
+		this._onInvalidateElementsDelegate = (event: RenderableEvent) => this._onInvalidateElements(event);
+	}
 	/**
      * //TODO
      *
@@ -437,10 +442,8 @@ export class _Pick_Billboard extends _Pick_PickableBase {
      * @param level
      * @param indexOffset
      */
-	constructor(billboard: Billboard, pickEntity: PickEntity) {
-		super(billboard, pickEntity);
-
-		this._onInvalidateElementsDelegate = (event: RenderableEvent) => this._onInvalidateElements(event);
+	public init(billboard: Billboard, pickEntity: PickEntity): void {
+		super.init(billboard, pickEntity);
 
 		this._asset.addEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
 	}
@@ -453,6 +456,9 @@ export class _Pick_Billboard extends _Pick_PickableBase {
 		this._asset.removeEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
 
 		super.onClear(event);
+
+		this._billboardBox = null;
+		this._billboardBoxDirty = true;
 	}
 
 	public hitTestPoint(x: number, y: number, z: number): boolean {

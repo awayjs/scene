@@ -232,8 +232,8 @@ export class _Render_SkyboxMaterial extends _Render_MaterialPassBase {
 	public _skybox: Skybox;
 	public _texture: _Shader_TextureBase;
 
-	constructor(skybox: Skybox, renderElements: _Render_ElementsBase) {
-		super(skybox, renderElements);
+	public init(skybox: Skybox, renderElements: _Render_ElementsBase): void {
+		super.init(skybox, renderElements);
 
 		this._skybox = skybox;
 

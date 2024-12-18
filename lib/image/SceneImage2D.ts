@@ -828,7 +828,7 @@ export class SceneImage2D extends BitmapImage2D {
 		renderer.view.width = this.width;
 		renderer.view.height = this.height;
 
-		if (rootNode.numChldNodes > 0)
+		if (rootNode.numChildNodes > 0)
 			rootNode.removeChildAt(0);
 
 		const sourceNode: ContainerNode = rootNode.addChildAt(source, 0);
