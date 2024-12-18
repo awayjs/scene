@@ -828,6 +828,9 @@ export class SceneImage2D extends BitmapImage2D {
 		renderer.view.width = this.width;
 		renderer.view.height = this.height;
 
+		if (rootNode.numChldNodes > 0)
+			rootNode.removeChildAt(0);
+
 		const sourceNode: ContainerNode = rootNode.addChildAt(source, 0);
 		const transformDisabled = sourceNode.transformDisabled;
 
@@ -851,8 +854,6 @@ export class SceneImage2D extends BitmapImage2D {
 		// reset render to default value
 		renderer.antiAlias = 0;
 		renderer.disableClear = true;
-
-		rootNode.removeChildAt(0);
 
 		sourceNode.transformDisabled = transformDisabled;
 
