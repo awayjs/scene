@@ -828,10 +828,14 @@ export class SceneImage2D extends BitmapImage2D {
 		renderer.view.width = this.width;
 		renderer.view.height = this.height;
 
-		if (rootNode.numChildNodes > 0)
-			rootNode.removeChildAt(0);
+		let sourceNode: ContainerNode = rootNode.getChildAt(0);
 
-		const sourceNode: ContainerNode = rootNode.addChildAt(source, 0);
+		if (sourceNode?.container != source) {
+			if (sourceNode)
+				rootNode.removeChildAt(0);
+			sourceNode = rootNode.addChildAt(source, 0);
+		}
+
 		const transformDisabled = sourceNode.transformDisabled;
 
 		sourceNode.transformDisabled = true;
