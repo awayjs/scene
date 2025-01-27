@@ -179,18 +179,6 @@ export class Timeline {
 		}
 	}
 
-	// legacy code. no longer used
-	public get_framescript(frame_index: number): string {
-		if (this._framescripts[frame_index] == null)
-			return '';
-
-		if (typeof this._framescripts[frame_index] == 'string')
-			return <string><any> this._framescripts[frame_index];
-		else {
-			throw new Error('Framescript is already translated to Function!!!');
-		}
-	}
-
 	/**
 	* for AS3:
 	* 		- called from constructor of MC
