@@ -634,9 +634,9 @@ export class MovieClip extends Sprite {
 		//changing current frame will ignore advance command for that
 		//update's advanceFrame function, unless advanceFrame has
 		//already been executed
-
+		this._isTimelinePass = true;
 		this._timeline.gotoFrame(this, value, queue_script, false, false);
-
+		this._isTimelinePass = false;
 		return true;
 	}
 
