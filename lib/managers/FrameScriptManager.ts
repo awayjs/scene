@@ -234,9 +234,8 @@ export class FrameScriptManager {
 			&& mc._sessionID >= 0
 			&& mcadapter
 			&& (<any>mcadapter).dispatchStaticEvent) {
-
-			(<any>mcadapter).dispatchStaticEvent('added', mcadapter);
 			(<any>mc).just_added_to_timeline = false;
+			(<any>mcadapter).dispatchStaticEvent('added', mcadapter);
 			mc.hasDispatchedAddedToStage = mc.isOnDisplayList();
 			if (mc.hasDispatchedAddedToStage)
 				(<any>mcadapter).dispatchStaticEvent('addedToStage', mcadapter);
