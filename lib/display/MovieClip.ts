@@ -517,9 +517,6 @@ export class MovieClip extends Sprite {
 		if (resetSelf)
 			super.reset();
 
-		if (this.id == 4115)
-			console.warn('reset', this.id);
-
 		this.resetStreamStopped();
 
 		// time only is relevant for the root mc, as it is the only one that executes the update function
