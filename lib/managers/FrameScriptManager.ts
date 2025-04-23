@@ -3,10 +3,12 @@ import { MovieClip } from '../display/MovieClip';
 import { IMovieClipAdapter } from '../adapters/IMovieClipAdapter';
 import { IDisplayObjectAdapter } from '../adapters/IDisplayObjectAdapter';
 interface IInterval {
+	id: number;
 	f: Function;
 	t: number;
 	dt: number;
 	isTimeout: boolean;
+	isActive: boolean;
 }
 interface IScriptQueue {
 	queued_mcs: MovieClip[],
@@ -33,50 +35,58 @@ export class FrameScriptManager {
 
 	private static _queue: IScriptQueue;
 
-	private static _active_intervals: Object = new Object(); // maps id to function
+	private static _active_intervals: IInterval[] = [];
 
+	private static _index: number = 0;
 	private static _intervalID: number = 0;
-	public static setInterval(fun: Function, time: number): number {
+	public static setInterval(fun: Function, time: number, isTimeout: boolean = false): number {
 		this._intervalID++;
-		// make sure we have at least 4ms intervals
-		if (time < 4) {
-			time = 4;
+		// make sure we have at least 1ms intervals
+		if (time < 1) {
+			time = 1;
 		}
-		this._active_intervals[this._intervalID] = <IInterval>{ 'f': fun, 't': time, 'dt': 0, 'isTimeout': false };
+		this._active_intervals.push({ 'id': this._intervalID, 'f': fun, 't': time, 'dt': 0, 'isTimeout': isTimeout, 'isActive': true });
 		return this._intervalID;
 	}
 
 	public static setTimeOut(fun: Function, time: number): number {
-		this._intervalID++;
-		// make sure we have at least 4ms intervals
-		if (time < 4) {
-			time = 4;
-		}
-		this._active_intervals[this._intervalID] = <IInterval>{ 'f': fun, 't': time, 'dt': 0, 'isTimeout': true };
-		return this._intervalID;
+		return this.setInterval(fun, time, true);
 	}
 
 	public static clearInterval(id: number): void {
-		delete this._active_intervals[id];
+		let i: number = this._active_intervals.length;
+		while (i--) {
+			if(this._active_intervals[i].id == id) {
+				this._active_intervals[i].isActive = false;
+				this._active_intervals.splice(i, 1);
+				if (this._index > i) {
+					//edge case when in the middle of execute_intervals
+					this._index--;
+				}
+				break;
+			}
+		}
 	}
 
 	public static clearTimeout(id: number): void {
-		delete this._active_intervals[id];
+		this.clearInterval(id);
 	}
 
 	public static execute_intervals(dt: number = 0): void {
 		let interval: IInterval;
-		for (const key in this._active_intervals) {
-			interval = this._active_intervals[key];
+		this._index = this._active_intervals.length;
+		while (this._index--) {
+			interval = this._active_intervals[this._index];
 			interval.dt += dt;
 			// keep executing the setInterval for as many times as the dt allows
 			// a setInterval can delete itself, so we need to check if it still exists
-			while (this._active_intervals[key] && interval.dt >= interval.t) {
+			while (interval.isActive && interval.dt >= interval.t) {
+				if (interval.isTimeout) {
+					interval.isActive = false;
+					this._active_intervals.splice(this._index, 1);
+				}
 				interval.dt -= interval.t;
 				interval.f();
-				if (interval.isTimeout) {
-					delete this._active_intervals[key];
-				}
 			}
 		}
 	}
