@@ -56,7 +56,7 @@ export class FrameScriptManager {
 	public static clearInterval(id: number): void {
 		let i: number = this._active_intervals.length;
 		while (i--) {
-			if(this._active_intervals[i].id == id) {
+			if (this._active_intervals[i].id == id) {
 				this._active_intervals[i].isActive = false;
 				this._active_intervals.splice(i, 1);
 				if (this._index > i) {
