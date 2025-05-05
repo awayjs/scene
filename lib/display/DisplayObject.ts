@@ -827,8 +827,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 			this._registrationMatrix3D._rawData[14] = -value.z / this._transform.scale.z;
 		}
 
-		this._registrationMatrix3D!.invalidatePosition();
-
 		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
 
