@@ -21,11 +21,6 @@ interface ILabel {
 	name: string;
 }
 export class MovieClip extends Sprite {
-	public static mcForConstructor: MovieClip;
-	//todo: this 3 are no longer used (?)
-	public static avm1ScriptQueue: MovieClip[] = [];
-	public static avm1ScriptQueueScripts: any[] = [];
-	public static avm1LoadedActions: any[] = [];
 
 	public static movieClipSoundsManagerClass = null;
 
