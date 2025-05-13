@@ -34,7 +34,7 @@ export class FNTGenerator extends FNTGeneratorBase {
 		this._root = new DisplayObjectContainer();
 		this._renderer = <DefaultRenderer> RenderGroup
 			.getInstance(DefaultRenderer)
-			.getRenderer(this._view.getNode(this._root).partition);
+			.getRenderer(this._view.getNode(this._root));
 
 		//set the view properties
 		this._renderer.view.projection = projection;

@@ -870,59 +870,6 @@ export class TextField extends DisplayObjectContainer {
 	public get internalScale(): Vector3D {
 		return this._internalScale;
 	}
-	// public getInternalScale(view:View = null):Vector3D
-	// {
-	// 	if(this.parent)
-	// 		this._internalScale.copyFrom(this.parent.transform.concatenatedMatrix3D.decompose()[3]);
-	// 	else
-	// 		this._internalScale.identity();
-
-	// 	if (view) {
-	// 		this._internalScale.x *= view.focalLength*view.pixelRatio/1000;
-	// 		this._internalScale.y *= view.focalLength/1000;
-	// 	}
-
-	//     this._internalScale.x=1/this._internalScale.x;
-	//     this._internalScale.y=1/this._internalScale.y;
-	// 	return this._internalScale;
-	// }
-	public _iInternalUpdate(): void {
-		super._iInternalUpdate();
-
-		//if (!this.inMaskMode) {
-
-		this.reConstruct(true);
-
-		/*if (this._textFormat
-			&& !this._textFormat.font_table.isAsset(TesselatedFontTable)
-			&& !this._textFormat.material) {
-			// only for FNT font-tables
-			// todo: do we still need this ?
-
-			this.transform.colorTransform || (this.transform.colorTransform = new ColorTransform());
-			this.transform.colorTransform.color = (this.textColor != null) ? this.textColor : this._textFormat.color;
-			this._invalidateHierarchicalProperties(HierarchicalProperties.COLOR_TRANSFORM);
-		}*/
-		//}
-		/*
-		if (projection) {
-			this._strokeScale.x = (<PerspectiveProjection> projection).hFocalLength/1000;
-			this._strokeScale.y = (<PerspectiveProjection> projection).focalLength/1000;
-		}else{
-			this._strokeScale.x = 1;
-			this._strokeScale.y = 1;
-		}
-        this._graphics.updateScale(projection);*/
-
-		//const prevScaleX: number = this._internalScale.x;
-		//const prevScaleY: number = this._internalScale.y;
-		// var scale:Vector3D = this.getInternalScale(view);
-		// if (scale.x == prevScaleX && scale.y == prevScaleY)
-		//      return;
-		// this._internalScale=scale;
-		// this._glyphsDirty=true;
-
-	}
 
 	/**
 	 *
@@ -1941,6 +1888,9 @@ export class TextField extends DisplayObjectContainer {
 	}
 
 	public getEntity(): IPartitionEntity {
+
+		this.reConstruct(true);
+
 		return this._graphics;
 	}
 

@@ -1,6 +1,6 @@
 import { Point, ArgumentError, RangeError } from '@awayjs/core';
 import { IAnimator, IRenderContainer } from '@awayjs/renderer';
-import { PartitionBase, EntityNode, ContainerEvent, ContainerNode } from '@awayjs/view';
+import { ContainerEvent, ContainerNode } from '@awayjs/view';
 import { DisplayObject } from './DisplayObject';
 
 /**
@@ -543,4 +543,3 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 		super._updateMaskMode();
 	}
 }
-PartitionBase.registerAbstraction(EntityNode, DisplayObjectContainer);

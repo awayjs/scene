@@ -1,12 +1,10 @@
 import { WaveAudio, IAudioChannel, EventBase, BaseAudioChannel } from '@awayjs/core';
-import { PartitionBase, EntityNode } from '@awayjs/view';
 import { IMovieClipAdapter } from '../adapters/IMovieClipAdapter';
 import { Timeline } from '../base/Timeline';
 import { MouseEvent } from '../events/MouseEvent';
 import { FrameScriptManager } from '../managers/FrameScriptManager';
 import { DisplayObject } from './DisplayObject';
 import { Sprite } from './Sprite';
-import { DisplayObjectContainer } from './DisplayObjectContainer';
 import { MouseButtons } from '../base/MouseButtons';
 
 interface IScene {
@@ -870,5 +868,3 @@ export class MovieClip extends Sprite {
 			delete MovieClip._activeSounds[sound.id];
 	}
 }
-
-PartitionBase.registerAbstraction(EntityNode, MovieClip);

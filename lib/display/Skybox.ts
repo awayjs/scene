@@ -2,7 +2,7 @@ import { AssetEvent } from '@awayjs/core';
 
 import { BlendMode, ImageCube } from '@awayjs/stage';
 
-import { PickingCollision, PartitionBase, BoundingVolumeType, INode, IPartitionEntity } from '@awayjs/view';
+import { PickingCollision, BoundingVolumeType, INode, IPartitionEntity, ContainerNode } from '@awayjs/view';
 
 import { IAnimationSet, IMaterial, ITexture, RenderableEvent,
 	MaterialEvent, Style, StyleEvent, IRenderContainer, ImageTextureCube, DefaultRenderer } from '@awayjs/renderer';
@@ -247,7 +247,7 @@ export class _Render_SkyboxMaterial extends _Render_MaterialPassBase {
 	public onClear(event: AssetEvent): void {
 		super.onClear(event);
 
-		this._texture.onClear(new AssetEvent(AssetEvent.CLEAR, this._skybox.texture));
+		this._texture.onClear(null);
 		this._texture = null;
 
 		this._skybox = null;
@@ -341,7 +341,7 @@ export class _Render_Skybox extends _Render_RenderableBase {
 }
 
 import { Plane3D } from '@awayjs/core';
-import { IEntityTraverser, EntityNode, PickGroup } from '@awayjs/view';
+import { IEntityTraverser, PickGroup } from '@awayjs/view';
 // import { CacheRenderer } from '@awayjs/renderer';
 
 /**
@@ -349,7 +349,7 @@ import { IEntityTraverser, EntityNode, PickGroup } from '@awayjs/view';
  *
  * @class away.partition.SkyboxNode
  */
-export class SkyboxNode extends EntityNode {
+export class SkyboxNode extends ContainerNode {
 	/**
 	 *
 	 * @param planes
@@ -377,4 +377,3 @@ export class SkyboxNode extends EntityNode {
 //CacheRenderer.registerMaterial(_Render_SkyboxMaterial, Skybox);
 DefaultRenderer.registerMaterial(_Render_SkyboxMaterial, Skybox);
 RenderEntity.registerRenderable(_Render_Skybox, Skybox);
-PartitionBase.registerAbstraction(SkyboxNode, Skybox);

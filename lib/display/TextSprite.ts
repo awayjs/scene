@@ -1,7 +1,7 @@
 ﻿import { Sprite } from './Sprite';
 import { TextField } from './TextField';
 import { TesselatedFontTable } from '../text/TesselatedFontTable';
-import { HierarchicalProperty } from '@awayjs/view';
+import { HierarchicalProperty, IPartitionEntity } from '@awayjs/view';
 
 /**
  * TextSprite is used for masked text.
@@ -10,8 +10,8 @@ import { HierarchicalProperty } from '@awayjs/view';
 export class TextSprite extends Sprite {
 	public parentTextField: TextField;
 
-	public _iInternalUpdate(): void {
-		super._iInternalUpdate();
+	public getEntity(): IPartitionEntity {
+
 		const tf: TextField = this.parentTextField;
 		//tf.reConstruct(true);
 
@@ -19,5 +19,7 @@ export class TextSprite extends Sprite {
 			this.transform.colorTransform.color = (tf.textColor != null) ? tf.textColor : tf._textFormats[0].color;
 			this._invalidateHierarchicalProperty(HierarchicalProperty.COLOR_TRANSFORM);
 		}
+
+		return this._graphics;
 	}
 }

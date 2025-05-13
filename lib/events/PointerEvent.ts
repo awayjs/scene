@@ -36,7 +36,7 @@ export class PointerEvent extends EventBase {
 	/**
 	 * The entity of the picker inside which the event took place.
 	 */
-	public rootNode: ContainerNode;
+	public rootNode: INode;
 
 	/**
 	 * The traversable owner inside which the event took place.
@@ -141,6 +141,6 @@ export class PointerEvent extends EventBase {
 		return sceneNormal;
 	}
 
-	public _dispatchEvent(dispatcher: ContainerNode, target: IPartitionContainer) {
+	public _dispatchEvent(dispatcher: INode, target: IPartitionContainer) {
 	}
 }

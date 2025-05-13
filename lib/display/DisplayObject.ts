@@ -22,7 +22,6 @@ import {
 	HierarchicalProperty,
 	AlignmentMode,
 	OrientationMode,
-	BasicPartition,
 	IPartitionContainer,
 	ContainerNode
 } from '@awayjs/view';
@@ -43,7 +42,6 @@ import { PrimitiveCubePrefab } from '../prefabs/PrimitiveCubePrefab';
 import { PrimitiveSpherePrefab } from '../prefabs/PrimitiveSpherePrefab';
 import { PrimitivePrefabBase } from '../prefabs/PrimitivePrefabBase';
 import { IFilter } from '../adapters/IFilter';
-import { IPartitionClass } from '@awayjs/view';
 import { Sprite } from './Sprite';
 import { Settings } from '../Settings';
 
@@ -201,8 +199,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 
 	public pickObjectFromTimeline: boolean;
 
-	//public _implicitPartition: PartitionBase;
-
 	private _alignmentMode: AlignmentMode = AlignmentMode.REGISTRATION_POINT;
 	private _scale9Grid: Rectangle;
 	protected _transform: Transform;
@@ -237,8 +233,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	public isSlice9ScaledSprite: boolean=false;
 	public avm1Symbol: any;
 	public isAVMScene: boolean=false;
-
-	public partitionClass: IPartitionClass;
 
 	// this is needed for AVM1 - todo: maybe do this on adapters ?
 	public placeObjectTag: any=null;
@@ -1625,6 +1619,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	}
 
 	public getEntity(): IPartitionEntity {
+		if (this._iController)
+			this._iController.update();
+
 		return;
 	}
 
@@ -1782,14 +1779,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	}
 
 	/**
-	 *
-	 */
-	public _iInternalUpdate(): void {
-		if (this._iController)
-			this._iController.update();
-	}
-
-	/**
 	 * @internal
 	 */
 	public get maskId(): number {
@@ -1862,7 +1851,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	protected _updateMaskMode(): void {
 		if (this._maskMode) {
 			this._mouseEnabled = false;
-			this.partitionClass = BasicPartition;
 		}
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.MASK_ID);

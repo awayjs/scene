@@ -1,9 +1,7 @@
 import {
 	PickingCollision,
-	PartitionBase,
 	PickEntity,
 	_Pick_PickableBase,
-	EntityNode,
 	IPartitionEntity,
 } from '@awayjs/view';
 import {
@@ -509,4 +507,3 @@ export class _Pick_Billboard extends _Pick_PickableBase {
 
 RenderEntity.registerRenderable(_Render_Billboard, Billboard);
 PickEntity.registerPickable(_Pick_Billboard, Billboard);
-PartitionBase.registerAbstraction(EntityNode, Billboard);

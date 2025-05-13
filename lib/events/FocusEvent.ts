@@ -63,7 +63,7 @@ export class FocusEvent extends EventBase {
 		return result;
 	}
 
-	public _dispatchEvent(dispatcher: ContainerNode) {
+	public _dispatchEvent(dispatcher: INode) {
 		dispatcher.container.dispatchEvent(this);
 		FrameScriptManager.execute_queue();
 	}

@@ -1,6 +1,6 @@
 import { Vector3D, ProjectionBase, PerspectiveProjection } from '@awayjs/core';
 
-import { PartitionBase, BoundingVolumeType, IPartitionTraverser, EntityNode } from '@awayjs/view';
+import { BoundingVolumeType } from '@awayjs/view';
 
 import { CameraEvent } from '../events/CameraEvent';
 
@@ -74,17 +74,3 @@ export class Camera extends DisplayObjectContainer {
 		return BoundingVolumeType.NULL;
 	}
 }
-
-/**
- * @class away.partition.CameraNode
- */
-export class CameraNode extends EntityNode {
-	/**
-	 * @inheritDoc
-	 */
-	public acceptTraverser(traverser: IPartitionTraverser): void {
-		// todo: dead end for now, if it has a debug sprite, then sure accept that
-	}
-}
-
-PartitionBase.registerAbstraction(CameraNode, Camera);

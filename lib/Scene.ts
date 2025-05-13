@@ -4,15 +4,15 @@ import { TouchPoint } from '@awayjs/stage';
 
 import {
 	View,
-	PartitionBase,
 	TabPicker,
 	RaycastPicker,
 	PickGroup,
 	ContainerNode,
-	EntityNode,
+	INode,
+	IPartitionContainer,
 } from '@awayjs/view';
 
-import { RendererBase, RenderGroup, ImageTexture2D, IRendererClass, DefaultRenderer } from '@awayjs/renderer';
+import { RendererBase, RenderGroup, IRendererClass, DefaultRenderer } from '@awayjs/renderer';
 
 import { MaterialManager } from '@awayjs/graphics';
 
@@ -43,7 +43,8 @@ export class Scene {
 	private _rendererClass: IRendererClass;
 	private _camera: Camera;
 	private _renderer: RendererBase;
-	private _partition: PartitionBase;
+	private _container: IPartitionContainer;
+	private _node: INode;
 	private _view: View;
 	private _pickGroup: PickGroup;
 
@@ -58,33 +59,29 @@ export class Scene {
 	public _mouseX: number;
 	public _mouseY: number;
 
-	public get partition(): PartitionBase {
-		return this._partition;
+	public get container(): IPartitionContainer {
+		return this._container;
 	}
 
-	public set partition(value: PartitionBase) {
-		if (this._partition == value)
+	public set container(value: IPartitionContainer) {
+		if (this._container == value)
 			return;
 
 		if (this._mousePicker)
 			this._mouseManager.unregisterPicker(this._mousePicker);
 
-		this._partition = value;
-		this._mousePicker = this._pickGroup.getRaycastPicker(this._partition);
-		this._tabPicker = this._pickGroup.getTabPicker(this._partition);
+		this._container = value;
+		this._node = this._view.getNode(this._container);
+		this._mousePicker = this._pickGroup.getRaycastPicker(this._node);
+		this._tabPicker = this._pickGroup.getTabPicker(this._node);
 		this._mousePicker.findClosestCollision = true;
 
 		this._mouseManager.registerPicker(this._mousePicker);
 
 		if (this._camera) {
 			this._camera.clear();
-			this._partition.invalidateEntity(this._camera.getAbstraction<EntityNode>(this._partition));
-			//this._camera.partition = this._partition;
+			this._node.invalidate();
 		}
-
-		//this._partition.root.partition = this._partition;
-
-		//this._disposeRenderer();
 	}
 
 	public get view(): View {
@@ -127,14 +124,14 @@ export class Scene {
 	 *
 	 */
 	constructor(
-		partition: PartitionBase = null, camera: Camera = null, view: View = null, rendererClass: IRendererClass = null) {
+		container: IPartitionContainer = null, camera: Camera = null, view: View = null, rendererClass: IRendererClass = null) {
 
 		this._onProjectionChangedDelegate = (event: CameraEvent) => this._onProjectionChanged(event);
 
 		this._rendererClass = rendererClass || DefaultRenderer;
 		this._pickGroup = PickGroup.getInstance();
 		this.view = view || new View();
-		this.partition = partition || this._view.getNode(new DisplayObjectContainer()).partition;
+		this.container = container || new DisplayObjectContainer();
 		this.camera = camera || new Camera();
 
 		//			if (this._shareContext)
@@ -147,7 +144,7 @@ export class Scene {
 		if (!this._renderer)
 			this._renderer = RenderGroup
 				.getInstance(this._rendererClass)
-				.getRenderer(this._partition);
+				.getRenderer(this._node);
 
 		return this._renderer;
 	}
@@ -242,7 +239,7 @@ export class Scene {
 		if (this._view)
 			this._view.projection = this._camera.projection;
 
-		this._partition.invalidateEntity(this._camera.getAbstraction<EntityNode>(this._partition));
+		this._node.invalidate();
 		//this._camera.partition = this._partition;
 	}
 

@@ -1,7 +1,7 @@
 ﻿import { Vector3D, Matrix3D, Box, Sphere } from '@awayjs/core';
 
-import { PickingCollision, PartitionBase, _Pick_PickableBase,
-	PickEntity, IEntityTraverser, EntityNode, IPartitionEntity } from '@awayjs/view';
+import { PickingCollision, _Pick_PickableBase,
+	PickEntity, IEntityTraverser, IPartitionEntity } from '@awayjs/view';
 
 import { RenderableEvent, IMaterial } from '@awayjs/renderer';
 
@@ -255,4 +255,3 @@ export class _Pick_LineSegment extends _Pick_PickableBase {
 
 RenderEntity.registerRenderable(_Render_LineSegment, LineSegment);
 PickEntity.registerPickable(_Pick_LineSegment, LineSegment);
-PartitionBase.registerAbstraction(EntityNode, LineSegment);

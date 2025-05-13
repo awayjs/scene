@@ -1,5 +1,5 @@
 ﻿import { Vector3D } from '@awayjs/core';
-import { EntityNode, IPartitionEntity, PartitionBase } from '@awayjs/view';
+import { IPartitionEntity } from '@awayjs/view';
 import { IMaterial } from '@awayjs/renderer';
 import { Graphics } from '@awayjs/graphics';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
@@ -49,10 +49,8 @@ export class Sprite extends DisplayObjectContainer {
 	 */
 	public get graphics(): Graphics {
 		//create new graphics object if none exists
-		if (!this._graphics) {
+		if (!this._graphics)
 			this.graphics = Graphics.getGraphics();
-			this.invalidate();
-		}
 
 		return this._graphics;
 	}
@@ -61,17 +59,13 @@ export class Sprite extends DisplayObjectContainer {
 		if (this._graphics == value)
 			return;
 
-		if (this._graphics) {
-			this._graphics.usages--;
-
-			//if (!this._graphics.usages)
-			//	this.graphics.dispose();
-		}
+		if (this._graphics)
+			this._graphics.removeOwner(this);
 
 		this._graphics = value;
 
 		if (this._graphics)
-			this._graphics.usages++;
+			this._graphics.addOwner(this);
 
 		this.invalidate();
 	}
@@ -92,6 +86,11 @@ export class Sprite extends DisplayObjectContainer {
 	}
 
 	public getEntity(): IPartitionEntity {
+		super.getEntity();
+
+		if (this._iSourcePrefab)
+			this._iSourcePrefab._iValidate();
+
 		return this._graphics;
 	}
 
@@ -147,20 +146,8 @@ export class Sprite extends DisplayObjectContainer {
 	/**
 	 *
 	 */
-	public _iInternalUpdate(): void {
-		super._iInternalUpdate();
-
-		if (this._iSourcePrefab)
-			this._iSourcePrefab._iValidate();
-	}
-
-	/**
-	 *
-	 */
 	public bakeTransformations(): void {
 		this._graphics.applyTransformation(this.transform.matrix3D);
 		this.transform.clearMatrix3D();
 	}
 }
-
-PartitionBase.registerAbstraction(EntityNode, Sprite);

@@ -1,7 +1,7 @@
 import { Vector3D } from '@awayjs/core';
 import { Stage } from '@awayjs/stage';
 
-import { PickingCollision, RaycastPicker, ContainerNode } from '@awayjs/view';
+import { PickingCollision, RaycastPicker, INode } from '@awayjs/view';
 import { FocusEvent } from '../events/FocusEvent';
 
 import { KeyboardEvent } from '../events/KeyboardEvent';
@@ -27,7 +27,7 @@ export class MouseManager {
 
 	private _updateDirty: boolean;
 
-	private _focusNode: ContainerNode;       // entity currently in focus
+	private _focusNode: INode;       // entity currently in focus
 
 	public allowKeyInput: boolean=true;
 
@@ -216,7 +216,7 @@ export class MouseManager {
 
 	}
 
-	public setFocus(node: ContainerNode) {
+	public setFocus(node: INode) {
 		if (this._focusNode == node)
 			return;
 
@@ -241,7 +241,7 @@ export class MouseManager {
 		return this._focusNode;
 	}
 
-	private dispatchEvent(event: PointerEvent | FocusEvent, dispatcher: ContainerNode) {
+	private dispatchEvent(event: PointerEvent | FocusEvent, dispatcher: INode) {
 		if (!this._eventBubbling) {
 			if (dispatcher) {
 				event._dispatchEvent(dispatcher, dispatcher.container);
@@ -266,7 +266,7 @@ export class MouseManager {
 	}
 
 	private setupAndDispatchEvent(event: PointerEvent, pointerData: PointerData,
-		collision: PickingCollision, commonAncestor: ContainerNode = null) {
+		collision: PickingCollision, commonAncestor: INode = null) {
 
 		const sourceEvent = pointerData.sourceEvent;
 		if (sourceEvent) {
@@ -305,7 +305,7 @@ export class MouseManager {
 		}
 
 		let event: PointerEvent;
-		let dispatcher: ContainerNode;
+		let dispatcher: INode;
 
 		const len = pointerData.queuedEvents.length;
 		for (let i = 0; i < len; ++i) {
@@ -348,8 +348,8 @@ export class MouseManager {
 				// @todo: at this point the object under the mouse might have been changed,
 				// so we need to recheck the collision ?
 
-				let upContainerNode: ContainerNode = null;
-				let upRootNode: ContainerNode = null;
+				let upContainerNode: INode = null;
+				let upRootNode: INode = null;
 				if (this._isAVM1Dragging && pointerData.dragCollision) {
 					// avm1dragging is in process, dispatch the mouse-up on this.
 					// mouseDragEntity instead of the current collision
@@ -415,8 +415,8 @@ export class MouseManager {
 		pointerData.rollOut.commonAncestor = null;
 		pointerData.rollOver.commonAncestor = null;
 
-		const collisionNode: ContainerNode = collision?.rootNode;
-		const prevCollisionNode: ContainerNode = pointerData.prevCollision?.rootNode;
+		const collisionNode: INode = collision?.rootNode;
+		const prevCollisionNode: INode = pointerData.prevCollision?.rootNode;
 
 		if (collisionNode != prevCollisionNode) {
 
@@ -446,13 +446,13 @@ export class MouseManager {
 			}
 			if (prevCollisionNode && collisionNode) {
 				// rollout / rollover find common ancester and only bubble up to that point
-				const parentsPrev: ContainerNode[] = [];
-				let parent: ContainerNode = prevCollisionNode;
+				const parentsPrev: INode[] = [];
+				let parent: INode = prevCollisionNode;
 				while (parent && !parent.container.isAVMScene) {
 					parentsPrev.push(parent);
 					parent = parent.parent;
 				}
-				let commonAncestor: ContainerNode = null;
+				let commonAncestor: INode = null;
 				parent = collisionNode;
 				while (parent && !parent.container.isAVMScene) {
 					const oldParentIdx = parentsPrev.indexOf(parent);
@@ -664,7 +664,7 @@ export class MouseManager {
 	// Private.
 	// ---------------------------------------------------------------------
 	private setUpEvent(event: PointerEvent, pointerData: PointerData,
-		collision: PickingCollision, commonAncestor: ContainerNode = null): PointerEvent {
+		collision: PickingCollision, commonAncestor: INode = null): PointerEvent {
 		event._iAllowedToImmediatlyPropagate = true;
 		event._iAllowedToPropagate = true;
 		// 2D properties.

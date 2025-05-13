@@ -191,7 +191,7 @@ export class SceneImage2D extends BitmapImage2D {
 		SceneImage2D._rootNode = SceneImage2D._view.getNode(SceneImage2D._root);
 		SceneImage2D._renderer = <DefaultRenderer> RenderGroup
 			.getInstance(DefaultRenderer)
-			.getRenderer(SceneImage2D._rootNode.partition);
+			.getRenderer(SceneImage2D._rootNode);
 
 		//set the view properties
 		SceneImage2D._view.backgroundAlpha = 0;
@@ -218,7 +218,7 @@ export class SceneImage2D extends BitmapImage2D {
 		SceneImage2D._billboardRoot = new DisplayObjectContainer();
 		SceneImage2D._billboardRenderer = <DefaultRenderer> RenderGroup
 			.getInstance(DefaultRenderer)
-			.getRenderer(SceneImage2D._billboardView.getNode(SceneImage2D._billboardRoot).partition);
+			.getRenderer(SceneImage2D._billboardView.getNode(SceneImage2D._billboardRoot));
 
 		//SceneImage2D._billboardRoot.partition = SceneImage2D._billboardRenderer.partition;
 
