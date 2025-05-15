@@ -2,7 +2,7 @@ import { AssetEvent } from '@awayjs/core';
 
 import { BlendMode, ImageCube } from '@awayjs/stage';
 
-import { PickingCollision, BoundingVolumeType, INode, IPartitionEntity, ContainerNode } from '@awayjs/view';
+import { PickingCollision, BoundingVolumeType, INode, IEntity, ContainerNode } from '@awayjs/view';
 
 import { IAnimationSet, IMaterial, ITexture, RenderableEvent,
 	MaterialEvent, Style, StyleEvent, IRenderContainer, ImageTextureCube, DefaultRenderer } from '@awayjs/renderer';
@@ -132,7 +132,7 @@ export class Skybox extends DisplayObjectContainer implements IMaterial {
 		}
 	}
 
-	public getEntity(): IPartitionEntity {
+	public getEntity(): IEntity {
 		return this;
 	}
 
@@ -259,10 +259,10 @@ export class _Render_SkyboxMaterial extends _Render_MaterialPassBase {
 	public _pUpdateRender(): void {
 		super._pUpdateRender();
 
-		this.requiresBlending = (this._material.blendMode != BlendMode.NORMAL);
+		this.requiresBlending = ((<IMaterial> this._asset).blendMode != BlendMode.NORMAL);
 
-		this.shader.setBlendMode((this._material.blendMode == BlendMode.NORMAL && this.requiresBlending) ?
-			BlendMode.LAYER : this._material.blendMode);
+		this.shader.setBlendMode(((<IMaterial> this._asset).blendMode == BlendMode.NORMAL && this.requiresBlending) ?
+			BlendMode.LAYER : (<IMaterial> this._asset).blendMode);
 	}
 
 	public _includeDependencies(shader: ShaderBase): void {
@@ -332,7 +332,7 @@ export class _Render_Skybox extends _Render_RenderableBase {
 
 	protected _getRenderMaterial(): _Render_SkyboxMaterial {
 		return this._asset.getAbstraction<_Render_SkyboxMaterial>(
-			this.renderer.getRenderElements(this.stageElements.elements));
+			this.entity.renderer.getRenderElements(this.stageElements.elements));
 	}
 
 	protected _getStyle(): Style {

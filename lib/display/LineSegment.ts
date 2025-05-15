@@ -1,7 +1,7 @@
 ﻿import { Vector3D, Matrix3D, Box, Sphere } from '@awayjs/core';
 
 import { PickingCollision, _Pick_PickableBase,
-	PickEntity, IEntityTraverser, IPartitionEntity } from '@awayjs/view';
+	PickEntity, IEntityTraverser, IEntity } from '@awayjs/view';
 
 import { RenderableEvent, IMaterial } from '@awayjs/renderer';
 
@@ -89,7 +89,7 @@ export class LineSegment extends DisplayObject {
 		this._halfThickness = thickness * 0.5;
 	}
 
-	public getEntity(): IPartitionEntity {
+	public getEntity(): IEntity {
 		return this;
 	}
 
@@ -109,7 +109,7 @@ import { _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase,
  * @class away.pool._Render_LineSegment
  */
 export class _Render_LineSegment extends _Render_RenderableBase {
-	private static _lineGraphics: Object = new Object();
+	private static _lineGraphics: Object = {};
 
 	/**
      * //TODO
@@ -144,7 +144,7 @@ export class _Render_LineSegment extends _Render_RenderableBase {
 	protected _getRenderMaterial(): _Render_MaterialBase {
 		const material: IMaterial = (<LineSegment> this._asset).material || MaterialUtils.getDefaultColorMaterial();
 		return material.getAbstraction<_Render_MaterialBase>(
-			this.renderer.getRenderElements(this.stageElements.elements));
+			this.entity.renderer.getRenderElements(this.stageElements.elements));
 	}
 
 	protected _getStyle(): Style {

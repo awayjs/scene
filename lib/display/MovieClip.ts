@@ -22,7 +22,7 @@ export class MovieClip extends Sprite {
 
 	public static movieClipSoundsManagerClass = null;
 
-	private static _movieClips: Array<MovieClip> = new Array<MovieClip>();
+	private static _movieClips: MovieClip[] = [];
 	private static _activeSounds: Record<number, WaveAudio> = {};
 
 	public static stopSounds(sound?: WaveAudio) {

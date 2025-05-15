@@ -1,4 +1,4 @@
-import { ContainerNode, IPartitionContainer } from '@awayjs/view';
+import { ContainerNode, IContainer } from '@awayjs/view';
 
 import FrameScriptManager from '../managers/FrameScriptManager';
 import { MouseButtons } from '../base/MouseButtons';
@@ -136,7 +136,7 @@ export class MouseEvent extends PointerEvent {
 		return result;
 	}
 
-	public _dispatchEvent(dispatcher: ContainerNode, target: IPartitionContainer) {
+	public _dispatchEvent(dispatcher: ContainerNode, target: IContainer) {
 		if (!dispatcher.isMouseDisabled() || this.type == MouseEvent.MOUSE_OUT || this.type == MouseEvent.ROLL_OUT) {
 			dispatcher.container.dispatchEvent(this, target);
 			FrameScriptManager.execute_queue();

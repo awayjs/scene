@@ -9,7 +9,7 @@ import {
 	PickGroup,
 	ContainerNode,
 	INode,
-	IPartitionContainer,
+	IContainer,
 } from '@awayjs/view';
 
 import { RendererBase, RenderGroup, IRendererClass, DefaultRenderer } from '@awayjs/renderer';
@@ -43,7 +43,7 @@ export class Scene {
 	private _rendererClass: IRendererClass;
 	private _camera: Camera;
 	private _renderer: RendererBase;
-	private _container: IPartitionContainer;
+	private _container: IContainer;
 	private _node: INode;
 	private _view: View;
 	private _pickGroup: PickGroup;
@@ -59,11 +59,11 @@ export class Scene {
 	public _mouseX: number;
 	public _mouseY: number;
 
-	public get container(): IPartitionContainer {
+	public get container(): IContainer {
 		return this._container;
 	}
 
-	public set container(value: IPartitionContainer) {
+	public set container(value: IContainer) {
 		if (this._container == value)
 			return;
 
@@ -124,7 +124,7 @@ export class Scene {
 	 *
 	 */
 	constructor(
-		container: IPartitionContainer = null, camera: Camera = null, view: View = null, rendererClass: IRendererClass = null) {
+		container: IContainer = null, camera: Camera = null, view: View = null, rendererClass: IRendererClass = null) {
 
 		this._onProjectionChangedDelegate = (event: CameraEvent) => this._onProjectionChanged(event);
 

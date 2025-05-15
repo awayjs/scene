@@ -1,4 +1,4 @@
-import { ContainerNode, IPartitionContainer } from '@awayjs/view';
+import { ContainerNode, IContainer } from '@awayjs/view';
 
 import FrameScriptManager from '../managers/FrameScriptManager';
 import { PointerEvent } from './PointerEvent';
@@ -95,7 +95,7 @@ export class TouchEvent extends PointerEvent {
 		return result;
 	}
 
-	public _dispatchEvent(dispatcher: ContainerNode, target: IPartitionContainer) {
+	public _dispatchEvent(dispatcher: ContainerNode, target: IContainer) {
 		if (!dispatcher.isMouseDisabled() || this.type == TouchEvent.TOUCH_OUT || this.type == TouchEvent.TOUCH_ROLL_OUT) {
 			dispatcher.container.dispatchEvent(this, target);
 			FrameScriptManager.execute_queue();

@@ -1,6 +1,6 @@
 import { Point, Vector3D, EventBase } from '@awayjs/core';
 
-import { ContainerNode, INode, ITraversable, View, IPartitionContainer } from '@awayjs/view';
+import { ContainerNode, INode, ITraversable, View, IContainer } from '@awayjs/view';
 
 import { IMaterial } from '@awayjs/renderer';
 
@@ -141,6 +141,6 @@ export class PointerEvent extends EventBase {
 		return sceneNormal;
 	}
 
-	public _dispatchEvent(dispatcher: INode, target: IPartitionContainer) {
+	public _dispatchEvent(dispatcher: INode, target: IContainer) {
 	}
 }

@@ -16,13 +16,12 @@ import {
 	BoundingBox,
 	BoundingSphere,
 	BoundingVolumeType,
-	IPartitionEntity,
+	IEntity,
 	BoundsPicker,
-	HeirarchicalEvent,
 	HierarchicalProperty,
 	AlignmentMode,
 	OrientationMode,
-	IPartitionContainer,
+	IContainer,
 	ContainerNode
 } from '@awayjs/view';
 
@@ -174,7 +173,7 @@ import { Settings } from '../Settings';
  *                         display is not rendering. This is the case when the
  *                         content is either minimized or obscured. </p>
  */
-export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartitionContainer {
+export class DisplayObject extends AssetBase implements IBitmapDrawable, IContainer {
 
 	private _mouseChildren: boolean = true;
 	public _material: IMaterial;
@@ -205,7 +204,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	private _visible: boolean = true;
 	private _maskId: number = -1;
 
-	protected _masks: Array<DisplayObject>;
+	protected _masks: DisplayObject[];
 	protected _scriptMask: DisplayObject;
 
 	private _mouseEnabled: boolean = true;
@@ -1230,7 +1229,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		this.invalidate();
 	}
 
-	public getScrollRectPrimitive(): IPartitionContainer {
+	public getScrollRectPrimitive(): IContainer {
 		if (this._scrollRectPrimitiveDirty) {
 			this._scrollRectPrimitiveDirty = false;
 
@@ -1251,7 +1250,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		return this._scrollRectPrimitive;
 	}
 
-	public getBoundsPrimitive(picker: BoundsPicker): IPartitionContainer {
+	public getBoundsPrimitive(picker: BoundsPicker): IContainer {
 		if (this._boundsPrimitive == null) {
 			switch (this._defaultBoundingVolume) {
 				case BoundingVolumeType.BOX:
@@ -1618,7 +1617,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 		//default to do nothing
 	}
 
-	public getEntity(): IPartitionEntity {
+	public getEntity(): IEntity {
 		if (this._iController)
 			this._iController.update();
 
@@ -1775,7 +1774,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IPartit
 	}
 
 	public _invalidateHierarchicalProperty(propDirty: HierarchicalProperty): void {
-		this.dispatchEvent(new HeirarchicalEvent(HeirarchicalEvent.INVALIDATE_PROPERTY, propDirty));
+		for (const key in this._abstractionPool)
+			(<ContainerNode> this._abstractionPool[key]).invalidateHierarchicalProperty(propDirty);
 	}
 
 	/**

@@ -2,7 +2,7 @@ import { ColorUtils, Matrix, Rectangle, Point, Vector3D } from '@awayjs/core';
 
 import { ImageSampler, Float2Attributes } from '@awayjs/stage';
 
-import { IPartitionEntity } from '@awayjs/view';
+import { IEntity } from '@awayjs/view';
 
 import { Style, TriangleElements } from '@awayjs/renderer';
 
@@ -1887,7 +1887,7 @@ export class TextField extends DisplayObjectContainer {
 		//override for textfield
 	}
 
-	public getEntity(): IPartitionEntity {
+	public getEntity(): IEntity {
 
 		this.reConstruct(true);
 

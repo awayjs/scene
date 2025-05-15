@@ -2,7 +2,7 @@ import {
 	PickingCollision,
 	PickEntity,
 	_Pick_PickableBase,
-	IPartitionEntity,
+	IEntity,
 } from '@awayjs/view';
 import {
 	RenderableEvent,
@@ -194,7 +194,7 @@ export class Billboard extends DisplayObjectContainer {
 		//override for billboard
 	}
 
-	public getEntity(): IPartitionEntity {
+	public getEntity(): IEntity {
 		return this;
 	}
 
@@ -411,7 +411,7 @@ export class _Render_Billboard extends _Render_RenderableBase {
 	protected _getRenderMaterial(): _Render_MaterialBase {
 		const material: IMaterial = (<Billboard> this._asset).material || MaterialUtils.getDefaultColorMaterial();
 		return material.getAbstraction<_Render_MaterialBase>(
-			this.renderer.getRenderElements(this.stageElements.elements));
+			this.entity.renderer.getRenderElements(this.stageElements.elements));
 	}
 
 	protected _getStyle(): Style {

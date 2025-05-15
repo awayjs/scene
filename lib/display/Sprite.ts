@@ -1,5 +1,5 @@
 ﻿import { Vector3D } from '@awayjs/core';
-import { IPartitionEntity } from '@awayjs/view';
+import { IEntity } from '@awayjs/view';
 import { IMaterial } from '@awayjs/renderer';
 import { Graphics } from '@awayjs/graphics';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
@@ -14,7 +14,7 @@ export class Sprite extends DisplayObjectContainer {
 
 	public _iSourcePrefab: PrefabBase;
 
-	private static _sprites: Array<Sprite> = new Array<Sprite>();
+	private static _sprites: Sprite[] = [];
 
 	public static assetType: string = '[asset Sprite]';
 
@@ -33,7 +33,6 @@ export class Sprite extends DisplayObjectContainer {
 		Sprite._sprites = [];
 	}
 
-	private _center: Vector3D;
 	public _graphics: Graphics;
 
 	/**
@@ -85,7 +84,7 @@ export class Sprite extends DisplayObjectContainer {
 		// this.generateBitmapCache = this.generateBitmapCache.bind(this);
 	}
 
-	public getEntity(): IPartitionEntity {
+	public getEntity(): IEntity {
 		super.getEntity();
 
 		if (this._iSourcePrefab)

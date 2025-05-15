@@ -1,6 +1,6 @@
 import { Point, ArgumentError, RangeError } from '@awayjs/core';
 import { IAnimator, IRenderContainer } from '@awayjs/renderer';
-import { ContainerEvent, ContainerNode } from '@awayjs/view';
+import { ContainerNode } from '@awayjs/view';
 import { DisplayObject } from './DisplayObject';
 
 /**
@@ -30,7 +30,7 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 	private static NO_CHILD_ERROR = new ArgumentError('Child parameter is not a child of the caller');
 
 	private _animator: IAnimator;
-	protected _children: Array<DisplayObject> = new Array<DisplayObject>();
+	protected _children: DisplayObject[] = [];
 
 	public doingSwap: boolean = false;
 
@@ -171,7 +171,8 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 
 		child._setParent(this);
 
-		this.dispatchEvent(new ContainerEvent(ContainerEvent.ADD_CHILD_AT, child, index));
+		for (const key in this._abstractionPool)
+			(<ContainerNode> this._abstractionPool[key]).addChildAt(child, index);
 
 		return child;
 	}
@@ -531,7 +532,8 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 
 		child._setParent(null);
 
-		this.dispatchEvent(new ContainerEvent(ContainerEvent.REMOVE_CHILD_AT, child, index));
+		for (const key in this._abstractionPool)
+			(<ContainerNode> this._abstractionPool[key]).removeChildAt(index);
 
 		return child;
 	}

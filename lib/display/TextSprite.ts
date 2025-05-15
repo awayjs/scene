@@ -1,7 +1,7 @@
 ﻿import { Sprite } from './Sprite';
 import { TextField } from './TextField';
 import { TesselatedFontTable } from '../text/TesselatedFontTable';
-import { HierarchicalProperty, IPartitionEntity } from '@awayjs/view';
+import { HierarchicalProperty, IEntity } from '@awayjs/view';
 
 /**
  * TextSprite is used for masked text.
@@ -10,7 +10,7 @@ import { HierarchicalProperty, IPartitionEntity } from '@awayjs/view';
 export class TextSprite extends Sprite {
 	public parentTextField: TextField;
 
-	public getEntity(): IPartitionEntity {
+	public getEntity(): IEntity {
 
 		const tf: TextField = this.parentTextField;
 		//tf.reConstruct(true);

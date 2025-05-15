@@ -1,6 +1,6 @@
 import { EventBase } from '@awayjs/core';
 
-import { IPartitionEntity, View, ITraversable, INode, ContainerNode } from '@awayjs/view';
+import { IEntity, View, ITraversable, INode, ContainerNode } from '@awayjs/view';
 import FrameScriptManager from '../managers/FrameScriptManager';
 /**
  * A FocusEvent is dispatched when a entity is focused
@@ -24,12 +24,12 @@ export class FocusEvent extends EventBase {
 	/**
 	 * The entity inside which the event took place.
 	 */
-	public entity: IPartitionEntity;
+	public entity: IEntity;
 
 	/**
 	 * True if the focus was set by mouse-interaction
 	 */
-	public invokedByMouse: IPartitionEntity;
+	public invokedByMouse: IEntity;
 
 	/**
 	 * The traversable owner inside which the event took place.
