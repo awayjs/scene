@@ -2,12 +2,12 @@ import {
 	Transform,
 	TransformEvent,
 	Sphere,
-	MathConsts,
 	Matrix3D,
 	Rectangle,
 	Vector3D,
 	AssetBase,
 	Loader,
+	IAbstraction,
 } from '@awayjs/core';
 
 import { BlendMode } from '@awayjs/stage';
@@ -22,7 +22,8 @@ import {
 	AlignmentMode,
 	OrientationMode,
 	IContainer,
-	ContainerNode
+	ContainerNode,
+	View
 } from '@awayjs/view';
 
 import {
@@ -1775,7 +1776,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 	public _invalidateHierarchicalProperty(propDirty: HierarchicalProperty): void {
 		for (const key in this._abstractionPool)
-			(<ContainerNode> this._abstractionPool[key]).invalidateHierarchicalProperty(propDirty);
+			if ((<ContainerNode> this._abstractionPool[key]).invalidateHierarchicalProperty)
+				(<ContainerNode> this._abstractionPool[key]).invalidateHierarchicalProperty(propDirty);
 	}
 
 	/**

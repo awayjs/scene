@@ -172,7 +172,8 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 		child._setParent(this);
 
 		for (const key in this._abstractionPool)
-			(<ContainerNode> this._abstractionPool[key]).addChildAt(child, index);
+			if ((<ContainerNode> this._abstractionPool[key]).addChildAt)
+				(<ContainerNode> this._abstractionPool[key]).addChildAt(child, index);
 
 		return child;
 	}
@@ -533,7 +534,8 @@ export class DisplayObjectContainer extends DisplayObject implements IRenderCont
 		child._setParent(null);
 
 		for (const key in this._abstractionPool)
-			(<ContainerNode> this._abstractionPool[key]).removeChildAt(index);
+			if ((<ContainerNode> this._abstractionPool[key]).removeChildAt)
+				(<ContainerNode> this._abstractionPool[key]).removeChildAt(index);
 
 		return child;
 	}
