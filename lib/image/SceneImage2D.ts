@@ -15,14 +15,12 @@ import {
 	CoordinateSystem,
 	Vector3D,
 	Transform,
-	ColorUtils
 } from '@awayjs/core';
 
 import { Stage,
 	BitmapImage2D,
 	_Stage_BitmapImage2D,
 	BlendMode,
-	ContextWebGL,
 	Image2D
 } from '@awayjs/stage';
 

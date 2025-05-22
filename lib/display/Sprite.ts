@@ -1,5 +1,4 @@
-﻿import { Vector3D } from '@awayjs/core';
-import { IEntity } from '@awayjs/view';
+﻿import { IEntity } from '@awayjs/view';
 import { IMaterial } from '@awayjs/renderer';
 import { Graphics } from '@awayjs/graphics';
 import { DisplayObjectContainer } from './DisplayObjectContainer';

@@ -1,6 +1,6 @@
 import { EventBase } from '@awayjs/core';
 
-import { IEntity, View, ITraversable, INode, ContainerNode } from '@awayjs/view';
+import { IEntity, View, ITraversable, INode } from '@awayjs/view';
 import FrameScriptManager from '../managers/FrameScriptManager';
 /**
  * A FocusEvent is dispatched when a entity is focused
