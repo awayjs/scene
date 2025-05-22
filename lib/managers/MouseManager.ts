@@ -223,7 +223,7 @@ export class MouseManager {
 		//  in FP6, a mouseclick on non focus-able object still steal the focus
 		//  in newer FP they only steal the focus if the the new hit is focusable
 		if (this._allowFocusOnUnfocusable || this._focusNode.container.tabEnabled) {
-			if (this._focusNode) {
+			if (this._focusNode && this._focusNode.container) {
 				this.dispatchEvent(this._focusOut, this._focusNode);
 				this._focusNode.container.setFocus(false, true);
 			}
