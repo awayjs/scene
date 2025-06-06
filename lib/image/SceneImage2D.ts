@@ -15,6 +15,7 @@ import {
 	CoordinateSystem,
 	Vector3D,
 	Transform,
+	ColorUtils,
 } from '@awayjs/core';
 
 import { Stage,
@@ -775,6 +776,13 @@ export class SceneImage2D extends BitmapImage2D {
 			// because target image is stupid filled - it not require merging
 			// BUT when blend is required - we shpuld skip color clear and use empty TMP
 			if (!useBlend && this._lastUsedFill !== null) {
+
+				if (this._transparent) {
+					//premulitply fill color!
+					let [a, r, g, b] = ColorUtils.float32ColorToARGB(this._lastUsedFill);
+					a /= 0xFF;
+					this._lastUsedFill = ColorUtils.ARGBtoFloat32(a * 0xFF, r * a | 0, g * a | 0, b * a | 0)
+				}
 				// bitmap was filled plain, go clear TMP to this color too
 				renderer.disableClear = false;
 				renderer.view.backgroundColor = this._lastUsedFill & 0xffffff;
