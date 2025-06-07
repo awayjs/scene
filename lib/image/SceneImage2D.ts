@@ -438,6 +438,9 @@ export class SceneImage2D extends BitmapImage2D {
 		this.dropAllReferences();
 		this.unmarkToUnload();
 
+		if (this._initalFillColor !== null)
+			this.fillRect(this._rect, this._initalFillColor);
+
 		this._stage.threshold(source, this, sourceRect, destPoint, operation, threshold, color, mask, copySource);
 		this._imageDataDirty = true;
 	}
