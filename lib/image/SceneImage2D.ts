@@ -772,6 +772,8 @@ export class SceneImage2D extends BitmapImage2D {
 		// and when blend is required, because we should blend with vald color
 		if ((!nativeMSAA || useBlend) && this._initalFillColor !== null)
 			this.fillRect(this._rect, this._initalFillColor);
+		else
+			this._initalFillColor = null;
 
 		if (useTemp) {
 			target = SceneImage2D.getTemp(this.width, this.height, this._stage, nativeMSAA);
