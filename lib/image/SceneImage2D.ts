@@ -661,6 +661,8 @@ export class SceneImage2D extends BitmapImage2D {
 		source: BitmapImage2D, matrix?: Matrix, colorTransform?: ColorTransform,
 		blendMode?: string, _clipRect?: Rectangle, smoothing?: boolean
 	) {
+		// default global blend mode
+		blendMode = blendMode || BlendMode.LAYER;
 
 		if (!SceneImage2D._billboardRenderer) {
 			this.createBillboardRenderer();
@@ -672,7 +674,7 @@ export class SceneImage2D extends BitmapImage2D {
 		const stage = this._stage;
 		const mappedBlend = SceneImage2D._mapSupportedBlendMode(blendMode);
 		const supportNativeBlend = !blendMode || mappedBlend !== BlendMode.LAYER || blendMode == BlendMode.LAYER;
-		const useTmp = (!supportNativeBlend || this === source);
+		const useTmp = (!supportNativeBlend || this === source) || this._lastUsedFill === null;
 		const target = useTmp ?
 			stage.filterManager.popTemp(this.width, this.height, false)
 			: this;
@@ -690,9 +692,15 @@ export class SceneImage2D extends BitmapImage2D {
 		billboard.material.style.image = source;
 
 		// not all blend modes can be used for rendering
-		billboard.material.blendMode = !useTmp ? SceneImage2D._mapSupportedBlendMode(blendMode) : BlendMode.LAYER;
+		billboard.material.blendMode = !useTmp ? mappedBlend : BlendMode.LAYER;
 
 		(<MaterialBase> billboard.material).useColorTransform = !!colorTransform;
+
+		if (useTmp) {
+			// we clear TMP and render to it, prepare to composing
+			renderer.view.backgroundColor = 0x0;
+			renderer.view.backgroundAlpha = 0;
+		}
 
 		if (matrix) {
 			const m = root.transform.matrix3D;
