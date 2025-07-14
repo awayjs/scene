@@ -308,7 +308,7 @@ export class MorphSprite extends Sprite {
 			this._blendStyle(startPath, endPath, newPath, ratio);
 			this._blendContours(startPath, endPath, newPath, ratio);
 
-			destination.add_queued_path(newPath);
+			destination.add_queued_path(newPath, true);
 		}
 
 		/**
