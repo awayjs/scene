@@ -674,7 +674,7 @@ export class SceneImage2D extends BitmapImage2D {
 		const stage = this._stage;
 		const mappedBlend = SceneImage2D._mapSupportedBlendMode(blendMode);
 		const supportNativeBlend = !blendMode || mappedBlend !== BlendMode.LAYER || blendMode == BlendMode.LAYER;
-		const useTmp = (!supportNativeBlend || this === source) || this._lastUsedFill === null;
+		const useTmp = (!supportNativeBlend || this === source);
 		const target = useTmp ?
 			stage.filterManager.popTemp(this.width, this.height, false)
 			: this;
@@ -771,7 +771,7 @@ export class SceneImage2D extends BitmapImage2D {
 
 		// we should run compositor when blendMode !== LAYER (default)
 		// or when we use MSAA + fill is not flat.
-		const useBlend = blendMode !== BlendMode.LAYER || this._lastUsedFill === null;
+		const useBlend = blendMode !== BlendMode.LAYER || (this._lastUsedFill === null && nativeMSAA);
 
 		const useTemp = useBlend || nativeMSAA;
 
