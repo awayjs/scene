@@ -66,7 +66,7 @@ export class Billboard extends DisplayObjectContainer implements IPickable {
 	public static assetType: string = '[asset Billboard]';
 
 	public _pickObjects: Record<number, _Pick_PickableBase> = {};
-	
+
 	private _width: number;
 	private _height: number;
 	private _billboardWidth: number;
@@ -198,7 +198,6 @@ export class Billboard extends DisplayObjectContainer implements IPickable {
 
 		super.invalidateElements();
 	}
-
 
 	public advanceFrame(): void {
 		//override for billboard

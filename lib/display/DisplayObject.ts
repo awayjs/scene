@@ -176,7 +176,7 @@ import { Settings } from '../Settings';
  */
 export class DisplayObject extends AssetBase implements IBitmapDrawable, IContainer {
 
-	public _renderObjects : Record<number, RenderEntity | _Render_RenderableBase | CacheRenderer> = {};
+	public _renderObjects: Record<number, RenderEntity | _Render_RenderableBase | CacheRenderer> = {};
 	public _containerNodes: Record<number, ContainerNode> = {};
 
 	private _mouseChildren: boolean = true;
