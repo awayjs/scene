@@ -1,6 +1,6 @@
 import { Point, Vector3D, EventBase } from '@awayjs/core';
 
-import { ContainerNode, INode, ITraversable, View, IContainer } from '@awayjs/view';
+import { ContainerNode, INode, View, IContainer, IPickable } from '@awayjs/view';
 
 import { IMaterial } from '@awayjs/renderer';
 
@@ -39,9 +39,9 @@ export class PointerEvent extends EventBase {
 	public rootNode: INode;
 
 	/**
-	 * The traversable owner inside which the event took place.
+	 * The pickable owner inside which the event took place.
 	 */
-	public traversable: ITraversable;
+	public pickable: IPickable;
 
 	/**
 	 * The material of the 3d element inside which the event took place.

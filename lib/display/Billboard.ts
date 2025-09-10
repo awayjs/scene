@@ -3,9 +3,9 @@ import {
 	PickEntity,
 	_Pick_PickableBase,
 	IEntity,
+	IPickable,
 } from '@awayjs/view';
 import {
-	RenderableEvent,
 	MaterialEvent,
 	IMaterial,
 	StyleEvent,
@@ -60,11 +60,13 @@ import { DisplayObjectContainer } from './DisplayObjectContainer';
 * (in away3d Sprite3D extends on ObjectContainer3D)
 */
 
-export class Billboard extends DisplayObjectContainer {
+export class Billboard extends DisplayObjectContainer implements IPickable {
 	private static _billboards: Array<Billboard> = new Array<Billboard>();
 
 	public static assetType: string = '[asset Billboard]';
 
+	public _pickObjects: Record<number, _Pick_PickableBase> = {};
+	
 	private _width: number;
 	private _height: number;
 	private _billboardWidth: number;
@@ -189,6 +191,14 @@ export class Billboard extends DisplayObjectContainer {
 		if (this._sampler)
 			this._sampler.smooth = smoothing;
 	}
+
+	public invalidateElements(): void {
+		for (const key in this._pickObjects)
+			this._pickObjects[key]._onInvalidateElements();
+
+		super.invalidateElements();
+	}
+
 
 	public advanceFrame(): void {
 		//override for billboard
@@ -423,42 +433,6 @@ export class _Render_Billboard extends _Render_RenderableBase {
  * @class away.pool._Render_Shape
  */
 export class _Pick_Billboard extends _Pick_PickableBase {
-	private _billboardBox: Box;
-	private _billboardBoxDirty: boolean = true;
-	private _onInvalidateElementsDelegate: (event: RenderableEvent) => void;
-
-	constructor() {
-		super();
-
-		this._onInvalidateElementsDelegate = (event: RenderableEvent) => this._onInvalidateElements(event);
-	}
-
-	/**
-     * //TODO
-     *
-     * @param renderEntity
-     * @param shape
-     * @param level
-     * @param indexOffset
-     */
-	public init(billboard: Billboard, pickEntity: PickEntity): void {
-		super.init(billboard, pickEntity);
-
-		this._asset.addEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
-	}
-
-	public _onInvalidateElements(event: RenderableEvent): void {
-		this._billboardBoxDirty = true;
-	}
-
-	public onClear(event: AssetEvent): void {
-		this._asset.removeEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
-
-		super.onClear(event);
-
-		this._billboardBox = null;
-		this._billboardBoxDirty = true;
-	}
 
 	public hitTestPoint(x: number, y: number, z: number): boolean {
 		return true;
@@ -467,19 +441,19 @@ export class _Pick_Billboard extends _Pick_PickableBase {
 	public getBoxBounds(
 		matrix3D: Matrix3D = null, strokeFlag: boolean = true, cache: Box = null, target: Box = null): Box {
 
-		if (this._billboardBoxDirty) {
-			this._billboardBoxDirty = false;
+		if (this._orientedBoxBoundsDirty) {
+			this._orientedBoxBoundsDirty = false;
 
 			const billboardRect: Rectangle = (<Billboard> this._asset).billboardRect;
-			this._billboardBox = new Box(
+			this._orientedBoxBounds = new Box(
 				billboardRect.x, billboardRect.y, 0,
 				billboardRect.width, billboardRect.height, 0);
 		}
 
 		return (
 			matrix3D
-				? matrix3D.transformBox(this._billboardBox)
-				: this._billboardBox).union(target, target || cache);
+				? matrix3D.transformBox(this._orientedBoxBounds)
+				: this._orientedBoxBounds).union(target, target || cache);
 	}
 
 	public getSphereBounds(
@@ -496,7 +470,7 @@ export class _Pick_Billboard extends _Pick_PickableBase {
 			collision.rayPosition.x + rayEntryDistance * collision.rayDirection.x,
 			collision.rayPosition.y + rayEntryDistance * collision.rayDirection.y);
 
-		collision.traversable = this._asset;
+		collision.pickable = <IPickable> this._asset;
 		collision.rayEntryDistance = rayEntryDistance;
 		collision.position = position;
 		collision.normal = new Vector3D(0,0,1);

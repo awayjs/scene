@@ -682,7 +682,7 @@ export class MouseManager {
 
 			event.rootNode = collision.rootNode;
 			// Object.
-			event.traversable = collision.traversable;
+			event.pickable = collision.pickable;
 			// UV.
 			event.uv = collision.uv;
 			// Position.
@@ -695,7 +695,7 @@ export class MouseManager {
 			// Set all to null.
 			event.containerNode = null;
 			event.rootNode = null;
-			event.traversable = null;
+			event.pickable = null;
 			event.uv = null;
 			event.position = this._nullVector;
 			event.normal = this._nullVector;

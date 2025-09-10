@@ -4,7 +4,7 @@ import { BlendMode, ImageCube } from '@awayjs/stage';
 
 import { PickingCollision, BoundingVolumeType, INode, IEntity, ContainerNode } from '@awayjs/view';
 
-import { IAnimationSet, IMaterial, ITexture, RenderableEvent,
+import { IAnimationSet, IMaterial, ITexture,
 	MaterialEvent, Style, StyleEvent, IRenderContainer, ImageTextureCube, DefaultRenderer } from '@awayjs/renderer';
 
 import { DisplayObjectContainer } from './DisplayObjectContainer';
@@ -22,7 +22,6 @@ export class Skybox extends DisplayObjectContainer implements IMaterial {
 	private _texture: ImageTextureCube;
 	private _animationSet: IAnimationSet;
 	public _blendMode: string = BlendMode.NORMAL;
-	private _owners: Array<IRenderContainer>;
 	private _onTextureInvalidateDelegate: (event: AssetEvent) => void;
 
 	public animateUVs: boolean = false;
@@ -71,15 +70,6 @@ export class Skybox extends DisplayObjectContainer implements IMaterial {
 	}
 
 	/**
-	 * A list of the IRenderables that use this material
-	 *
-	 * @private
-	 */
-	public get iOwners(): Array<IRenderContainer> {
-		return this._owners;
-	}
-
-	/**
 	* The cube texture to use as the skybox.
 	*/
 	public get texture(): ImageTextureCube {
@@ -121,8 +111,6 @@ export class Skybox extends DisplayObjectContainer implements IMaterial {
 
 		this._onTextureInvalidateDelegate = (event: AssetEvent) => this.onTextureInvalidate(event);
 
-		this._owners = [this];
-
 		this.style = new Style();
 		if (imageColor instanceof ImageCube) {
 			this._style.image = <ImageCube> imageColor;
@@ -149,18 +137,6 @@ export class Skybox extends DisplayObjectContainer implements IMaterial {
 		this.dispatchEvent(new MaterialEvent(MaterialEvent.INVALIDATE_PASSES, this));
 	}
 
-	public invalidateElements(): void {
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
-	}
-
-	public invalidateMaterial(): void {
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
-	}
-
-	public invalidateStyle(): void {
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_STYLE, this));
-	}
-
 	public addTexture(texture: ITexture): void {
 		this._textures.push(texture);
 
@@ -182,7 +158,7 @@ export class Skybox extends DisplayObjectContainer implements IMaterial {
 	}
 
 	public _onInvalidateProperties(event: StyleEvent): void {
-		this.invalidateMaterial();
+		this._invalidateMaterial();
 		this.invalidatePasses();
 	}
 
@@ -209,7 +185,7 @@ export class Skybox extends DisplayObjectContainer implements IMaterial {
 	}
 
 	public testCollision(collision: PickingCollision, closestFlag: boolean): boolean {
-		collision.traversable = null;
+		collision.pickable = null;
 
 		return false;
 	}
@@ -244,10 +220,10 @@ export class _Render_SkyboxMaterial extends _Render_MaterialPassBase {
 		this._pAddPass(this);
 	}
 
-	public onClear(event: AssetEvent): void {
-		super.onClear(event);
+	public onClear(): void {
+		super.onClear();
 
-		this._texture.onClear(null);
+		this._texture.onClear();
 		this._texture = null;
 
 		this._skybox = null;

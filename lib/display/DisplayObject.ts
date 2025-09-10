@@ -7,7 +7,6 @@ import {
 	Vector3D,
 	AssetBase,
 	Loader,
-	IAbstraction,
 } from '@awayjs/core';
 
 import { BlendMode } from '@awayjs/stage';
@@ -23,15 +22,16 @@ import {
 	OrientationMode,
 	IContainer,
 	ContainerNode,
-	View
 } from '@awayjs/view';
 
 import {
 	IMaterial,
 	Style,
 	StyleEvent,
-	RenderableEvent,
 	ElementsType,
+	RenderEntity,
+	_Render_RenderableBase,
+	CacheRenderer,
 } from '@awayjs/renderer';
 
 import { DisplayObjectContainer } from './DisplayObjectContainer';
@@ -175,6 +175,9 @@ import { Settings } from '../Settings';
  *                         content is either minimized or obscured. </p>
  */
 export class DisplayObject extends AssetBase implements IBitmapDrawable, IContainer {
+
+	public _renderObjects : Record<number, RenderEntity | _Render_RenderableBase | CacheRenderer> = {};
+	public _containerNodes: Record<number, ContainerNode> = {};
 
 	private _mouseChildren: boolean = true;
 	public _material: IMaterial;
@@ -1775,9 +1778,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	}
 
 	public _invalidateHierarchicalProperty(propDirty: HierarchicalProperty): void {
-		for (const key in this._abstractionPool)
-			if ((<ContainerNode> this._abstractionPool[key]).invalidateHierarchicalProperty)
-				(<ContainerNode> this._abstractionPool[key]).invalidateHierarchicalProperty(propDirty);
+		for (const key in this._containerNodes)
+			this._containerNodes[key].invalidateHierarchicalProperty(propDirty);
 	}
 
 	/**
@@ -1859,15 +1861,18 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	}
 
 	public _invalidateMaterial(): void {
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_MATERIAL, this));
+		for (const key in this._renderObjects)
+			this._renderObjects[key]._onInvalidateMaterial();
 	}
 
 	private _invalidateStyle(): void {
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_STYLE, this));
+		for (const key in this._renderObjects)
+			this._renderObjects[key]._onInvalidateStyle();
 	}
 
 	public invalidateElements(): void {
-		this.dispatchEvent(new RenderableEvent(RenderableEvent.INVALIDATE_ELEMENTS, this));
+		for (const key in this._renderObjects)
+			this._renderObjects[key]._onInvalidateElements();
 	}
 
 	protected _onInvalidateProperties(_event: StyleEvent = null): void {

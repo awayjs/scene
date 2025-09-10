@@ -118,7 +118,7 @@ export class MouseEvent extends PointerEvent {
 		result.view = this.view;
 		result.containerNode = this.containerNode;
 		result.rootNode = this.rootNode;
-		result.traversable = this.traversable;
+		result.pickable = this.pickable;
 		result.material = this.material;
 		result.uv = this.uv;
 		result.position = this.position;

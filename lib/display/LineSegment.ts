@@ -3,7 +3,7 @@
 import { PickingCollision, _Pick_PickableBase,
 	PickEntity, IEntityTraverser, IEntity } from '@awayjs/view';
 
-import { RenderableEvent, IMaterial } from '@awayjs/renderer';
+import { IMaterial } from '@awayjs/renderer';
 
 import { DisplayObject } from './DisplayObject';
 
@@ -98,8 +98,6 @@ export class LineSegment extends DisplayObject {
 	}
 }
 
-import { AssetEvent } from '@awayjs/core';
-
 import { LineElements } from '@awayjs/renderer';
 
 import { _Stage_ElementsBase, _Render_MaterialBase, _Render_RenderableBase,
@@ -156,47 +154,6 @@ export class _Render_LineSegment extends _Render_RenderableBase {
  * @class away.pool._Render_Shape
  */
 export class _Pick_LineSegment extends _Pick_PickableBase {
-	private _lineSegmentBox: Box;
-	private _lineSegmentBoxDirty: boolean = true;
-	private _lineSegmentSphere: Sphere;
-	private _lineSegmentSphereDirty: boolean = true;
-	private _onInvalidateElementsDelegate: (event: RenderableEvent) => void;
-
-	constructor() {
-		super();
-
-		this._onInvalidateElementsDelegate = (event: RenderableEvent) => this._onInvalidateElements(event);
-	}
-
-	/**
-     * //TODO
-     *
-     * @param renderEntity
-     * @param shape
-     * @param level
-     * @param indexOffset
-     */
-	public init(lineSegment: LineSegment, pickEntity: PickEntity): void {
-		super.init(lineSegment, pickEntity);
-
-		this._asset.addEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
-	}
-
-	public _onInvalidateElements(event: RenderableEvent): void {
-		this._lineSegmentBoxDirty = true;
-		this._lineSegmentSphereDirty = true;
-	}
-
-	public onClear(event: AssetEvent): void {
-		this._asset.removeEventListener(RenderableEvent.INVALIDATE_ELEMENTS, this._onInvalidateElementsDelegate);
-
-		super.onClear(event);
-
-		this._lineSegmentBox = null;
-		this._lineSegmentBoxDirty = true;
-		this._lineSegmentSphere = null;
-		this._lineSegmentSphereDirty = true;
-	}
 
 	public hitTestPoint(x: number, y: number, z: number): boolean {
 		return true;
@@ -204,13 +161,13 @@ export class _Pick_LineSegment extends _Pick_PickableBase {
 
 	public getBoxBounds(matrix3D: Matrix3D = null, strokeFlag: boolean = true,
 		cache: Box = null, target: Box = null): Box {
-		if (this._lineSegmentBoxDirty) {
-			this._lineSegmentBoxDirty = false;
+		if (this._orientedBoxBoundsDirty) {
+			this._orientedBoxBoundsDirty = false;
 
 			const startPosition: Vector3D = (<LineSegment> this._asset).startPosition;
 			const endPosition: Vector3D = (<LineSegment> this._asset).endPosition;
 
-			this._lineSegmentBox = new Box(Math.min(startPosition.x, endPosition.x),
+			this._orientedBoxBounds = new Box(Math.min(startPosition.x, endPosition.x),
 				Math.min(startPosition.y, endPosition.y),
 				Math.min(startPosition.z, endPosition.z),
 				Math.abs(startPosition.x - endPosition.x),
@@ -219,14 +176,14 @@ export class _Pick_LineSegment extends _Pick_PickableBase {
 		}
 
 		return (matrix3D ?
-			matrix3D.transformBox(this._lineSegmentBox) :
-			this._lineSegmentBox).union(target, target || cache);
+			matrix3D.transformBox(this._orientedBoxBounds) :
+			this._orientedBoxBounds).union(target, target || cache);
 	}
 
 	public getSphereBounds(center: Vector3D, matrix3D: Matrix3D = null, strokeFlag: boolean = true,
 		cache: Sphere = null, target: Sphere = null): Sphere {
-		if (this._lineSegmentSphereDirty) {
-			this._lineSegmentSphereDirty = false;
+		if (this._orientedSphereBoundsDirty) {
+			this._orientedSphereBoundsDirty = false;
 
 			const startPosition: Vector3D = (<LineSegment> this._asset).startPosition;
 			const endPosition: Vector3D = (<LineSegment> this._asset).endPosition;
@@ -235,19 +192,19 @@ export class _Pick_LineSegment extends _Pick_PickableBase {
 			const halfHeight: number = (endPosition.y - startPosition.y) / 2;
 			const halfDepth: number = (endPosition.z - startPosition.z) / 2;
 
-			this._lineSegmentSphere = new Sphere(startPosition.x + halfWidth,
+			this._orientedSphereBounds = new Sphere(startPosition.x + halfWidth,
 				startPosition.y + halfHeight,
 				startPosition.z + halfDepth,
 				Math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight + halfDepth * halfDepth));
 		}
 
 		return (matrix3D ?
-			matrix3D.transformSphere(this._lineSegmentSphere) :
-			this._lineSegmentSphere).union(target, target || cache);
+			matrix3D.transformSphere(this._orientedSphereBounds) :
+			this._orientedSphereBounds).union(target, target || cache);
 	}
 
 	public testCollision(collision: PickingCollision, closestFlag: boolean): boolean {
-		collision.traversable = null;
+		collision.pickable = null;
 		//TODO
 		return false;
 	}
