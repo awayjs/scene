@@ -323,8 +323,6 @@ export class Billboard extends DisplayObjectContainer implements IPickable {
 	}
 }
 
-import { AssetEvent } from '@awayjs/core';
-
 import { AttributesBuffer } from '@awayjs/stage';
 
 import {

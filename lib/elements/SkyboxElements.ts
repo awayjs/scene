@@ -122,7 +122,7 @@ export class _Stage_SkyboxElements extends _Stage_TriangleElements {
 
 		//set constants
 		if (shader.sceneMatrixIndex >= 0)
-			shader.sceneMatrix.copyFrom(renderable.renderSceneTransform, true);
+			shader.sceneMatrix.copyFrom(renderable.entity.renderSceneTransform, true);
 
 		shader.viewMatrix.copyFrom(this._skyboxProjection, true);
 
