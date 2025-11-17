@@ -405,14 +405,12 @@ export class _Render_Billboard extends _Render_RenderableBase {
 		return elements.getAbstraction<_Stage_TriangleElements>(this._stage);
 	}
 
-	public executeRender(
-		enableDepthAndStencil: boolean = true,
-		surfaceSelector: number = 0, mipmapSelector: number = 0, maskConfig: number = 0): void {
+	public draw(): void {
 
 		// disable cull, because for render to texture it is bugged
 		// we flip normals
 		this._stage.context.setCulling(ContextGLTriangleFace.NONE);
-		super.executeRender(enableDepthAndStencil, surfaceSelector, mipmapSelector, maskConfig);
+		super.draw();
 	}
 
 	protected _getRenderMaterial(): _Render_MaterialBase {
