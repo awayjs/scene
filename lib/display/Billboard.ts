@@ -73,8 +73,6 @@ export class Billboard extends DisplayObjectContainer implements IPickable {
 	private _billboardHeight: number;
 	private _billboardRect: Rectangle;
 
-	private _sampler: ImageSampler;
-
 	private _onInvalidateTextureDelegate: (event: MaterialEvent) => void;
 
 	public static getNewBillboard(
@@ -144,10 +142,6 @@ export class Billboard extends DisplayObjectContainer implements IPickable {
 		this._invalidateMaterial();
 	}
 
-	public get sampler(): ImageSampler {
-		return this._sampler;
-	}
-
 	/**
 	 *
 	 */
@@ -185,11 +179,12 @@ export class Billboard extends DisplayObjectContainer implements IPickable {
 
 		this._onInvalidateTextureDelegate = (event: MaterialEvent) => this._onInvalidateTexture(event);
 
+		this.style = new Style();
+		this.style.sampler = new ImageSampler(false, smoothing, false);
+
 		this.material = material;
 
 		this._updateDimensions();
-		if (this._sampler)
-			this._sampler.smooth = smoothing;
 	}
 
 	public invalidateElements(): void {
@@ -272,24 +267,19 @@ export class Billboard extends DisplayObjectContainer implements IPickable {
 		const image = this.image;
 
 		if (image && !image.isDisposed) {
-			const texture = this.material.getTextureAt(0);
+			const sampler = this.style.sampler;
 
-			this._sampler = <ImageSampler> (
-					this._style?.getSamplerAt(texture)
-					|| this.material.style?.getSamplerAt(texture)
-					|| texture.getSamplerAt(0)
-					|| ImageUtils.getDefaultImageSampler());
 
-			if (this._sampler.imageRect) {
-				this._billboardWidth = this._sampler.imageRect.width * image.width;
-				this._billboardHeight = this._sampler.imageRect.height * image.height;
+			if (sampler.imageRect) {
+				this._billboardWidth = sampler.imageRect.width * image.width;
+				this._billboardHeight = sampler.imageRect.height * image.height;
 			} else {
 				this._billboardWidth = image.rect.width;
 				this._billboardHeight = image.rect.height;
 			}
 
 			this._billboardRect =
-				this._sampler.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
+				sampler.frameRect || new Rectangle(0, 0, this._billboardWidth, this._billboardHeight);
 		} else {
 			this._billboardWidth = 1;
 			this._billboardHeight = 1;
