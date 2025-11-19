@@ -1,6 +1,6 @@
 
 import { ContainerNode, View } from '@awayjs/view';
-import { MaterialBase, MethodMaterial } from '@awayjs/materials';
+import { MaterialBase } from '@awayjs/materials';
 import { DisplayObjectContainer } from '../display/DisplayObjectContainer';
 import { DisplayObject } from '../display/DisplayObject';
 import { Billboard } from '../display/Billboard';
@@ -25,7 +25,8 @@ import { Stage,
 	Image2D
 } from '@awayjs/stage';
 
-import { DefaultRenderer, RenderGroup, Style } from '@awayjs/renderer';
+import { DefaultRenderer, RenderGroup } from '@awayjs/renderer';
+import { MaterialManager } from '@awayjs/graphics';
 
 // empty matrix for transform reset
 const TMP_POINT = new Point(0,0);
@@ -230,12 +231,7 @@ export class SceneImage2D extends BitmapImage2D {
 		SceneImage2D._billboardRenderer.disableClear = true;
 		SceneImage2D._billboardRenderer.renderableSorter = null;//new RenderableSort2D();
 
-		const mat: MethodMaterial = new MethodMaterial(new BitmapImage2D(128, 128, true, 0x0));
-		mat.bothSides = true;
-		mat.alphaBlending = true;
-
-		SceneImage2D._billboard = new Billboard(mat);
-		SceneImage2D._billboard.style = new Style();
+		SceneImage2D._billboard = new Billboard(MaterialManager.getMaterialForBitmap());
 
 		SceneImage2D._billboardRoot.addChild(SceneImage2D._billboard);
 	}
@@ -683,13 +679,13 @@ export class SceneImage2D extends BitmapImage2D {
 		const root = SceneImage2D._billboardRoot;
 		const billboard = SceneImage2D._billboard;
 
-		billboard.sampler.smooth = smoothing;
+		billboard.style.sampler.smooth = smoothing;
 
 		renderer.disableClear = !useTmp;
 		renderer.view.target = target;
 		renderer.view.projection.scale = 1000 / target.height;
 
-		billboard.material.style.image = source;
+		billboard.style.image = source;
 
 		// not all blend modes can be used for rendering
 		billboard.material.blendMode = !useTmp ? mappedBlend : BlendMode.LAYER;
@@ -741,6 +737,8 @@ export class SceneImage2D extends BitmapImage2D {
 			stage.filterManager.pushTemp(target);
 		}
 
+		//reset material blendMode
+		billboard.material.blendMode = BlendMode.NORMAL;
 	}
 
 	private _drawAsDisplay(

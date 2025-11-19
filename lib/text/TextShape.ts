@@ -2,16 +2,17 @@ import { TriangleElements } from '@awayjs/renderer';
 
 import { Shape } from '@awayjs/graphics';
 
-import { MaterialBase } from '@awayjs/materials';
-
 import { TextFormat } from './TextFormat';
+import { BitmapImage2D } from '@awayjs/stage';
+import { ColorTransform } from '@awayjs/core';
 
 export class TextShape {
 
 	public verts: Array<Float32Array> = [];
 	public uvs: Array<Float32Array> = [];
 	public shape: Shape;
-	public fntMaterial: MaterialBase;
+	public fntBitmap: BitmapImage2D;
+	public fntColorTransform: ColorTransform;
 	public elements: TriangleElements;
 
 	private _length: number = 0;

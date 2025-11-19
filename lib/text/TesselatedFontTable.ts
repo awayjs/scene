@@ -1,12 +1,10 @@
-import { Matrix, AssetBase, Point, Rectangle, ColorTransform, ColorUtils } from '@awayjs/core';
+import { AssetBase, Point, Rectangle, ColorTransform, ColorUtils } from '@awayjs/core';
 
-import { ImageSampler, AttributesBuffer, Float2Attributes, AttributesView, BitmapImage2D, Stage } from '@awayjs/stage';
+import { AttributesBuffer, Float2Attributes, AttributesView, BitmapImage2D, Stage } from '@awayjs/stage';
 
 import { Style, TriangleElements } from '@awayjs/renderer';
 
-import { GraphicsPath, Shape, GraphicsFactoryFills, GraphicsFactoryHelper, MaterialManager, GraphicsPathCommand } from '@awayjs/graphics';
-
-import { MaterialBase, MethodMaterial } from '@awayjs/materials';
+import { GraphicsPath, Shape, GraphicsFactoryFills, GraphicsFactoryHelper, MaterialManager, GraphicsPathCommand, SolidFillStyle, TextureAtlas } from '@awayjs/graphics';
 
 import { TesselatedFontChar } from './TesselatedFontChar';
 import { IFontTable } from './IFontTable';
@@ -357,20 +355,17 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			attributesView.dispose();
 			const elements = new TriangleElements(vertexBuffer);
 			elements.setPositions(new Float2Attributes(vertexBuffer));
+
 			const shape = Shape.getShape(elements);
+			const solid = new SolidFillStyle(0xFFFFFF, 1);
+			const material = MaterialManager.getMaterialForColor(solid);
 
-			const sampler: ImageSampler = new ImageSampler();
-			shape.style = new Style();
+			shape.material = material;
 
-			const color = 0xFFFFFF;
-			const alpha = 1;
-			const obj = MaterialManager.getMaterialForColor(color, alpha);
-
-			shape.material = obj.material;
-			if (obj.colorPos) {
-				shape.style.addSamplerAt(sampler, shape.material.getTextureAt(0));
-				(<MaterialBase> shape.material).animateUVs = true;
-				shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
+			if (material.getNumTextures()) {
+				shape.style = new Style();
+				shape.style.image = TextureAtlas.getTextureForColor(solid);
+				shape.style.uvMatrix = solid.getUVMatrix();
 			}
 			shapes[i] = shape;
 		}
@@ -748,18 +743,12 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 	private _queryShape (tf: TextField, format: TextFormat, channel = -1): TextShape {
 		const textShape = tf.getTextShapeForIdentifierAndFormat(this._cacheKey(format.color, channel), format);
 
-		if (channel >= 0 && !textShape.fntMaterial) {
+		if (channel >= 0 && !textShape.fntBitmap) {
 			const argb = ColorUtils.float32ColorToARGB(format.color);
-			const mat = new MethodMaterial(this._fnt_channels[channel]);
 
-			mat.colorTransform = new ColorTransform(argb[1] / 255, argb[2] / 255, argb[3] / 255);
-			mat.bothSides = true;
-			mat.alphaBlending = true;
-			mat.useColorTransform = true;
-			mat.style.sampler = new ImageSampler(false, true, true);
-
-			textShape.fntMaterial = mat;
-		}
+			textShape.fntBitmap = this._fnt_channels[channel];
+			textShape.fntColorTransform = new ColorTransform(argb[1] / 255, argb[2] / 255, argb[3] / 255)
+		} 
 
 		return textShape;
 	}

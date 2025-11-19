@@ -144,7 +144,7 @@ export class MorphSprite extends Sprite {
 				newTrans.ty = startTrans.ty * ratioStart + endTrans.ty * ratioEnd;
 
 				resultFillStyle = new BitmapFillStyle(
-					startStyle.material,
+					startStyle.image,
 					newTrans,
 					startStyle.repeat,
 					startStyle.smooth);

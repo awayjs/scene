@@ -15,7 +15,7 @@ export class TextSprite extends Sprite {
 		const tf: TextField = this.parentTextField;
 		//tf.reConstruct(true);
 
-		if (tf._textFormats[0] && !tf._textFormats[0].font_table.isAsset(TesselatedFontTable) && !tf._textFormats[0].material) {
+		if (tf._textFormats[0] && !tf._textFormats[0].font_table.isAsset(TesselatedFontTable) && !tf._textFormats[0].bitmap) {
 			this.transform.colorTransform.color = (tf.textColor != null) ? tf.textColor : tf._textFormats[0].color;
 			this._invalidateHierarchicalProperty(HierarchicalProperty.COLOR_TRANSFORM);
 		}

@@ -1,5 +1,5 @@
 import { AssetBase } from '@awayjs/core';
-import { IMaterial } from '@awayjs/renderer';
+import { Image2D } from '@awayjs/stage';
 import { IFontTable } from './IFontTable';
 import { FontStyleName } from './FontStyleName';
 import { TextFormatAlign } from './TextFormatAlign';
@@ -366,7 +366,7 @@ export class TextFormat extends AssetBase {
 	 * The material to use for texturing geometry generated for this text-format.
 	 * this material will be used by the TextField
 	 */
-	public material: IMaterial;
+	public bitmap: Image2D;
 
 	/**
 	 * The uv-values of the colors in textureatlas.

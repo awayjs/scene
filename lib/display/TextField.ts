@@ -6,9 +6,7 @@ import { IEntity } from '@awayjs/view';
 
 import { Style, TriangleElements } from '@awayjs/renderer';
 
-import { MaterialBase } from '@awayjs/materials';
-
-import { Graphics, Shape, GraphicsFactoryHelper, MaterialManager } from '@awayjs/graphics';
+import { Graphics, Shape, GraphicsFactoryHelper, MaterialManager, SolidFillStyle, TextureAtlas } from '@awayjs/graphics';
 
 import { TesselatedFontTable } from '../text/TesselatedFontTable';
 import { AntiAliasType } from '../text/AntiAliasType';
@@ -617,17 +615,18 @@ export class TextField extends DisplayObjectContainer {
 		}
 
 		if (this.cursorShape.style.color !== color) {
-			const alpha = ColorUtils.float32ColorToARGB(color)[0];
+			const solid = new SolidFillStyle(
+				color,
+				ColorUtils.float32ColorToARGB(color)[0]/255 || 1
+			)
+			const material = MaterialManager.getMaterialForColor(solid);
+			const shape = this.cursorShape;
 
-			const obj = MaterialManager.getMaterialForColor(color, (alpha / 255) || 1);
-
-			if (obj.colorPos) {
-				this.cursorShape.style = new Style();
-				const sampler: ImageSampler = new ImageSampler();
-				obj.material.animateUVs = true;
-				this.cursorShape.style.color = color;
-				this.cursorShape.style.addSamplerAt(sampler, obj.material.getTextureAt(0));
-				this.cursorShape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
+			shape.material = material;
+			if (material.getNumTextures()) {
+				shape.style = new Style();
+				shape.style.image = TextureAtlas.getTextureForColor(solid);
+				shape.style.uvMatrix = solid.getUVMatrix();
 			}
 		}
 		this.scrollToCursor(x,y);
@@ -2747,34 +2746,31 @@ export class TextField extends DisplayObjectContainer {
 			textShape.elements.setPositions(attr);
 			textShape.elements.invalidate();
 
-			textShape.shape = <Shape> this.targetGraphics.addShape(Shape.getShape(textShape.elements));
+			const shape = textShape.shape = <Shape> this.targetGraphics.addShape(Shape.getShape(textShape.elements));
 
 			// has BUG for QWOP, temporarily enable it (default)
-			textShape.shape.deepHitCheck = true;
-			textShape.shape.usages++;
+			shape.deepHitCheck = true;
+			shape.usages++;
+			shape.style = new Style();
 
-			const sampler: ImageSampler = new ImageSampler();
-			textShape.shape.style = new Style();
-			if (textShape.format.material && this._textColor == 0) {
-				textShape.shape.material = this._textFormats[0].material;
-				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-				(<MaterialBase> textShape.shape.material).animateUVs = true;
-				textShape.shape.style.uvMatrix =
+			if (textShape.format.bitmap && this._textColor == 0) {
+				shape.material = MaterialManager.getMaterialForBitmap(true);
+				shape.style.image = this._textFormats[0].bitmap;
+				shape.style.uvMatrix =
 					new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
 			} else {
 
 				const color = this.getTextColorForTextFormat(textShape.format);
-				let alpha = ColorUtils.float32ColorToARGB(color)[0];
-				if (alpha == 0) {
-					alpha = 255;
-				}
-				const obj = MaterialManager.getMaterialForColor(color, alpha / 255);
+				const solid = new SolidFillStyle(
+					color,
+					ColorUtils.float32ColorToARGB(color)[0]/255 || 1
+				)
 
-				textShape.shape.material = obj.material;
-				if (obj.colorPos) {
-					textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-					(<MaterialBase> textShape.shape.material).animateUVs = true;
-					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
+				const material = MaterialManager.getMaterialForColor(solid);
+				shape.material = material;
+				if (material.getNumTextures()) {
+					shape.style.image = TextureAtlas.getTextureForColor(solid);
+					shape.style.uvMatrix = solid.getUVMatrix();
 				}
 			}
 		}
@@ -2862,9 +2858,6 @@ export class TextField extends DisplayObjectContainer {
 				continue;
 			}
 
-			const color = this.getTextColorForTextFormat(textShape.format);
-			const alpha = ColorUtils.float32ColorToARGB(color)[0] || 255;
-
 			textShape.elements = new TriangleElements();
 
 			textShape.elements.setPositions(attr);
@@ -2875,37 +2868,41 @@ export class TextField extends DisplayObjectContainer {
 
 			textShape.elements.invalidate();
 
-			textShape.shape = Shape.getShape(textShape.elements);
+			const shape = textShape.shape = Shape.getShape(textShape.elements);
 			// has BUG for QWOP, temporarily enable it (default)
-			textShape.shape.deepHitCheck = true;
-			textShape.shape.usages++;
+			shape.deepHitCheck = true;
+			shape.usages++;
 
-			const sampler: ImageSampler = new ImageSampler(false, true, true);
-			textShape.shape.style = new Style();
+			shape.style = new Style();
+			shape.style.sampler = new ImageSampler(false, true, true);
 
-			if (textShape.fntMaterial) {
+			if (textShape.fntBitmap) {
 				// 	used by FNT fonts
-				textShape.shape.material = textShape.fntMaterial;
-				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
+				shape.material = MaterialManager.getMaterialForBitmap();
+				shape.style.image = textShape.fntBitmap;
 				//(<MaterialBase> textShape.shape.material).colorTransform=new ColorTransform();
 				//(<MaterialBase> textShape.shape.material).colorTransform.color=color;
-			} else if (textShape.format.material && this._textColor == 0) {
+			} else if (textShape.format.bitmap && this._textColor == 0) {
 				// 	used for textfields loaded from awd.
 				//	the material on the format uses textureAtlas from awd
-				textShape.shape.material = this._textFormats[0].material;
-				textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-				(<MaterialBase> textShape.shape.material).animateUVs = true;
-				textShape.shape.style.uvMatrix =
+				shape.material = MaterialManager.getMaterialForBitmap(true);
+				shape.style.image = this._textFormats[0].bitmap;
+				shape.style.uvMatrix =
 					new Matrix(0, 0, 0, 0, textShape.format.uv_values[0], textShape.format.uv_values[1]);
 			} else {
 				// 	used by runtime textureatlas.
 				//	(standart for dynamic created text and text loaded from swf)
-				const obj = MaterialManager.getMaterialForColor(color, alpha / 255);
-				textShape.shape.material = obj.material;
-				if (obj.colorPos) {
-					textShape.shape.style.addSamplerAt(sampler, textShape.shape.material.getTextureAt(0));
-					(<MaterialBase> textShape.shape.material).animateUVs = true;
-					textShape.shape.style.uvMatrix = new Matrix(0, 0, 0, 0, obj.colorPos.x, obj.colorPos.y);
+				const color = this.getTextColorForTextFormat(textShape.format);
+				const solid = new SolidFillStyle(
+					color,
+					ColorUtils.float32ColorToARGB(color)[0]/255 || 1
+				)
+
+				const material = MaterialManager.getMaterialForColor(solid);
+				shape.material = material;
+				if (material.getNumTextures()) {
+					shape.style.image = TextureAtlas.getTextureForColor(solid);
+					shape.style.uvMatrix = solid.getUVMatrix();
 				}
 			}
 		}
