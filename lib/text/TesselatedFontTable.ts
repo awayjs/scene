@@ -747,8 +747,8 @@ export class TesselatedFontTable extends AssetBase implements IFontTable {
 			const argb = ColorUtils.float32ColorToARGB(format.color);
 
 			textShape.fntBitmap = this._fnt_channels[channel];
-			textShape.fntColorTransform = new ColorTransform(argb[1] / 255, argb[2] / 255, argb[3] / 255)
-		} 
+			textShape.fntColorTransform = new ColorTransform(argb[1] / 255, argb[2] / 255, argb[3] / 255);
+		}
 
 		return textShape;
 	}

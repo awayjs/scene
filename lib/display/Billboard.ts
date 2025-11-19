@@ -269,7 +269,6 @@ export class Billboard extends DisplayObjectContainer implements IPickable {
 		if (image && !image.isDisposed) {
 			const sampler = this.style.sampler;
 
-
 			if (sampler.imageRect) {
 				this._billboardWidth = sampler.imageRect.width * image.width;
 				this._billboardHeight = sampler.imageRect.height * image.height;

@@ -617,8 +617,8 @@ export class TextField extends DisplayObjectContainer {
 		if (this.cursorShape.style.color !== color) {
 			const solid = new SolidFillStyle(
 				color,
-				ColorUtils.float32ColorToARGB(color)[0]/255 || 1
-			)
+				ColorUtils.float32ColorToARGB(color)[0] / 255 || 1
+			);
 			const material = MaterialManager.getMaterialForColor(solid);
 			const shape = this.cursorShape;
 
@@ -2763,8 +2763,8 @@ export class TextField extends DisplayObjectContainer {
 				const color = this.getTextColorForTextFormat(textShape.format);
 				const solid = new SolidFillStyle(
 					color,
-					ColorUtils.float32ColorToARGB(color)[0]/255 || 1
-				)
+					ColorUtils.float32ColorToARGB(color)[0] / 255 || 1
+				);
 
 				const material = MaterialManager.getMaterialForColor(solid);
 				shape.material = material;
@@ -2895,8 +2895,8 @@ export class TextField extends DisplayObjectContainer {
 				const color = this.getTextColorForTextFormat(textShape.format);
 				const solid = new SolidFillStyle(
 					color,
-					ColorUtils.float32ColorToARGB(color)[0]/255 || 1
-				)
+					ColorUtils.float32ColorToARGB(color)[0] / 255 || 1
+				);
 
 				const material = MaterialManager.getMaterialForColor(solid);
 				shape.material = material;
