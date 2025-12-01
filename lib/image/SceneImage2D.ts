@@ -258,7 +258,6 @@ export class SceneImage2D extends BitmapImage2D {
 	public dispose(): void {
 		this._clearFromDispose = true;
 
-		this.dropAllReferences();
 		this.unmarkToUnload();
 		this.unuseWeakRef();
 
@@ -285,8 +284,8 @@ export class SceneImage2D extends BitmapImage2D {
 		super.unload();
 	}
 
-	protected deepClone(from: BitmapImage2D) {
-		this.copyPixels(from, this._rect, new Point(0,0));
+	public copyTo(target: SceneImage2D): void {
+		target.copyPixels(this, target.rect, new Point(0,0));
 	}
 
 	/**
@@ -333,7 +332,6 @@ export class SceneImage2D extends BitmapImage2D {
 		alphaBitmapData?: BitmapImage2D, alphaPoint?: Point, mergeAlpha?: boolean): void {
 
 		this._lastUsedFill = null;
-		this.dropAllReferences();
 		this.unmarkToUnload();
 
 		// need drop alpha from source when target is not has alpha
@@ -431,7 +429,6 @@ export class SceneImage2D extends BitmapImage2D {
 	): void {
 
 		this._lastUsedFill = null;
-		this.dropAllReferences();
 		this.unmarkToUnload();
 
 		if (this._initalFillColor !== null)
@@ -446,8 +443,6 @@ export class SceneImage2D extends BitmapImage2D {
 			return false;
 		}
 
-		this.dropAllReferences(false);
-
 		const result = this._stage.filterManager.applyFilter (
 			source,
 			this,
@@ -460,7 +455,6 @@ export class SceneImage2D extends BitmapImage2D {
 	}
 
 	public colorTransform(rect: Rectangle, colorTransform: ColorTransform): void {
-		this.dropAllReferences();
 		this.unmarkToUnload();
 
 		this._lastUsedFill = null;
@@ -622,7 +616,6 @@ export class SceneImage2D extends BitmapImage2D {
 	{
 	/* eslint-enable */
 
-		this.dropAllReferences();
 		this.unmarkToUnload();
 
 		if (source instanceof DisplayObject) {
@@ -906,7 +899,8 @@ export class SceneImage2D extends BitmapImage2D {
 			false
 		);
 
-		image.deepClone(this);
+		this.copyTo(image);
+
 		return  image;
 	}
 }
