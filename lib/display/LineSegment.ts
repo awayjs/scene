@@ -1,8 +1,8 @@
 ﻿import { Vector3D, Matrix3D, Box, Sphere } from '@awayjs/core';
 
 import { PickingCollision, _Pick_PickableBase,
-	PickEntity, IEntityTraverser, IEntity, 
-	IPickable} from '@awayjs/view';
+	PickEntity, IEntityTraverser, IEntity,
+	IPickable } from '@awayjs/view';
 
 import { IMaterial } from '@awayjs/renderer';
 
@@ -154,9 +154,9 @@ export class _Render_LineSegment extends _Render_RenderableBase {
 		return this.entity.renderer
 			.getRenderElements(this.stageElements.elements).abstractions
 			.getAbstraction<_Render_MaterialBase>(
-				(<LineSegment> this.renderable).material
+			(<LineSegment> this.renderable).material
 				|| MaterialUtils.getDefaultColorMaterial()
-			);
+		);
 	}
 
 	protected _getStyle(): Style {
