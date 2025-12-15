@@ -1,7 +1,8 @@
 ﻿import { Vector3D, Matrix3D, Box, Sphere } from '@awayjs/core';
 
 import { PickingCollision, _Pick_PickableBase,
-	PickEntity, IEntityTraverser, IEntity } from '@awayjs/view';
+	PickEntity, IEntityTraverser, IEntity, 
+	IPickable} from '@awayjs/view';
 
 import { IMaterial } from '@awayjs/renderer';
 
@@ -10,12 +11,14 @@ import { DisplayObject } from './DisplayObject';
 /**
  * A Line Segment primitive.
  */
-export class LineSegment extends DisplayObject {
+export class LineSegment extends DisplayObject implements IPickable {
 	public static assetType: string = '[asset LineSegment]';
 
 	public _startPosition: Vector3D;
 	public _endPosition: Vector3D;
 	public _halfThickness: number;
+
+	public _pickObjects: Record<number, _Pick_PickableBase> = {};
 
 	/**
 	 *
@@ -89,6 +92,13 @@ export class LineSegment extends DisplayObject {
 		this._halfThickness = thickness * 0.5;
 	}
 
+	public invalidateElements(): void {
+		for (const key in this._pickObjects)
+			this._pickObjects[key]._onInvalidateElements();
+
+		super.invalidateElements();
+	}
+
 	public getEntity(): IEntity {
 		return this;
 	}
@@ -116,11 +126,12 @@ export class _Render_LineSegment extends _Render_RenderableBase {
      * @protected
      */
 	protected _getStageElements(): _Stage_ElementsBase {
-		const elements: LineElements = _Render_LineSegment._lineGraphics[(<LineSegment> this._asset).id]
-			|| (_Render_LineSegment._lineGraphics[(<LineSegment> this._asset).id] = new LineElements());
+		const lineSegment: LineSegment = <LineSegment> this.renderable;
+		const elements: LineElements = _Render_LineSegment._lineGraphics[lineSegment.id]
+			|| (_Render_LineSegment._lineGraphics[lineSegment.id] = new LineElements());
 
-		const start: Vector3D = (<LineSegment> this._asset).startPosition;
-		const end: Vector3D = (<LineSegment> this._asset).endPosition;
+		const start: Vector3D = lineSegment.startPosition;
+		const end: Vector3D = lineSegment.endPosition;
 
 		const positions: Float32Array = new Float32Array(6);
 		const thickness: Float32Array = new Float32Array(1);
@@ -131,22 +142,25 @@ export class _Render_LineSegment extends _Render_RenderableBase {
 		positions[3] = end.x;
 		positions[4] = end.y;
 		positions[5] = end.z;
-		thickness[0] = (<LineSegment> this._asset).thickness;
+		thickness[0] = lineSegment.thickness;
 
 		elements.setPositions(positions);
 		elements.setThickness(thickness);
 
-		return elements.getAbstraction<_Stage_ElementsBase>(this._stage);
+		return this._stage.abstractions.getAbstraction<_Stage_ElementsBase>(elements);
 	}
 
 	protected _getRenderMaterial(): _Render_MaterialBase {
-		const material: IMaterial = (<LineSegment> this._asset).material || MaterialUtils.getDefaultColorMaterial();
-		return material.getAbstraction<_Render_MaterialBase>(
-			this.entity.renderer.getRenderElements(this.stageElements.elements));
+		return this.entity.renderer
+			.getRenderElements(this.stageElements.elements).abstractions
+			.getAbstraction<_Render_MaterialBase>(
+				(<LineSegment> this.renderable).material
+				|| MaterialUtils.getDefaultColorMaterial()
+			);
 	}
 
 	protected _getStyle(): Style {
-		return (<LineSegment> this._asset).style;
+		return this.renderable.style;
 	}
 }
 
@@ -164,8 +178,9 @@ export class _Pick_LineSegment extends _Pick_PickableBase {
 		if (this._orientedBoxBoundsDirty) {
 			this._orientedBoxBoundsDirty = false;
 
-			const startPosition: Vector3D = (<LineSegment> this._asset).startPosition;
-			const endPosition: Vector3D = (<LineSegment> this._asset).endPosition;
+			const lineSegment: LineSegment = <LineSegment> this.pickable;
+			const startPosition: Vector3D = lineSegment.startPosition;
+			const endPosition: Vector3D = lineSegment.endPosition;
 
 			this._orientedBoxBounds = new Box(Math.min(startPosition.x, endPosition.x),
 				Math.min(startPosition.y, endPosition.y),
@@ -185,8 +200,9 @@ export class _Pick_LineSegment extends _Pick_PickableBase {
 		if (this._orientedSphereBoundsDirty) {
 			this._orientedSphereBoundsDirty = false;
 
-			const startPosition: Vector3D = (<LineSegment> this._asset).startPosition;
-			const endPosition: Vector3D = (<LineSegment> this._asset).endPosition;
+			const lineSegment: LineSegment = <LineSegment> this.pickable;
+			const startPosition: Vector3D = lineSegment.startPosition;
+			const endPosition: Vector3D = lineSegment.endPosition;
 
 			const halfWidth: number = (endPosition.x - startPosition.x) / 2;
 			const halfHeight: number = (endPosition.y - startPosition.y) / 2;

@@ -126,14 +126,14 @@ export class _Stage_SkyboxElements extends _Stage_TriangleElements {
 
 		shader.viewMatrix.copyFrom(this._skyboxProjection, true);
 
-		const context: IContextGL = this._stage.context;
+		const context: IContextGL = (<Stage> this._pool).context;
 		context.setProgramConstantsFromArray(ContextGLProgramType.VERTEX, shader.vertexConstantData);
 		context.setProgramConstantsFromArray(ContextGLProgramType.FRAGMENT, shader.fragmentConstantData);
 
 		if (this._indices)
 			this.getIndexBufferGL().draw(ContextGLDrawMode.TRIANGLES, 0, this.numIndices);
 		else
-			this._stage.context.drawVertices(ContextGLDrawMode.TRIANGLES, offset, count || this.numVertices);
+			(<Stage> this._pool).context.drawVertices(ContextGLDrawMode.TRIANGLES, offset, count || this.numVertices);
 	}
 }
 

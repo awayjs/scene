@@ -341,7 +341,7 @@ export class _Render_Billboard extends _Render_RenderableBase {
      * @returns {away.base.TriangleElements}
      */
 	protected _getStageElements(): _Stage_ElementsBase {
-		const asset = <Billboard> this._asset;
+		const asset = <Billboard> this.renderable;
 		const width = asset.billboardWidth;
 		const height = asset.billboardHeight;
 		const rect = asset.billboardRect;
@@ -391,7 +391,7 @@ export class _Render_Billboard extends _Render_RenderableBase {
 					-billboardRect.x, -billboardRect.y, 0]);
 		}*/
 
-		return elements.getAbstraction<_Stage_TriangleElements>(this._stage);
+		return this._stage.abstractions.getAbstraction<_Stage_TriangleElements>(elements);
 	}
 
 	public draw(): void {
@@ -403,13 +403,16 @@ export class _Render_Billboard extends _Render_RenderableBase {
 	}
 
 	protected _getRenderMaterial(): _Render_MaterialBase {
-		const material: IMaterial = (<Billboard> this._asset).material || MaterialUtils.getDefaultColorMaterial();
-		return material.getAbstraction<_Render_MaterialBase>(
-			this.entity.renderer.getRenderElements(this.stageElements.elements));
+		return this.entity.renderer
+			.getRenderElements(this.stageElements.elements).abstractions
+			.getAbstraction<_Render_MaterialBase>(
+				(<Billboard> this.renderable).material
+				|| MaterialUtils.getDefaultColorMaterial()
+			);
 	}
 
 	protected _getStyle(): Style {
-		return (<Billboard> this._asset).style;
+		return this.renderable.style;
 	}
 }
 
@@ -428,7 +431,7 @@ export class _Pick_Billboard extends _Pick_PickableBase {
 		if (this._orientedBoxBoundsDirty) {
 			this._orientedBoxBoundsDirty = false;
 
-			const billboardRect: Rectangle = (<Billboard> this._asset).billboardRect;
+			const billboardRect: Rectangle = (<Billboard> this.pickable).billboardRect;
 			this._orientedBoxBounds = new Box(
 				billboardRect.x, billboardRect.y, 0,
 				billboardRect.width, billboardRect.height, 0);
@@ -454,7 +457,7 @@ export class _Pick_Billboard extends _Pick_PickableBase {
 			collision.rayPosition.x + rayEntryDistance * collision.rayDirection.x,
 			collision.rayPosition.y + rayEntryDistance * collision.rayDirection.y);
 
-		collision.pickable = <IPickable> this._asset;
+		collision.pickable = this.pickable;
 		collision.rayEntryDistance = rayEntryDistance;
 		collision.position = position;
 		collision.normal = new Vector3D(0,0,1);

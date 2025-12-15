@@ -205,17 +205,14 @@ import { SkyboxElements, _Stage_SkyboxElements } from '../elements/SkyboxElement
  * using material methods to define their appearance.
  */
 export class _Render_SkyboxMaterial extends _Render_MaterialPassBase {
-	public _skybox: Skybox;
 	public _texture: _Shader_TextureBase;
 
 	public init(skybox: Skybox, renderElements: _Render_ElementsBase): void {
 		super.init(skybox, renderElements);
 
-		this._skybox = skybox;
-
 		this._shader = new ShaderBase(renderElements, this, this, this._stage);
 
-		this._texture = this._skybox.texture.getAbstraction<_Shader_TextureBase>(this._shader);
+		this._texture = this._shader.abstractions.getAbstraction<_Shader_TextureBase>((<Skybox> this.material).texture);
 
 		this._pAddPass(this);
 	}
@@ -225,8 +222,6 @@ export class _Render_SkyboxMaterial extends _Render_MaterialPassBase {
 
 		this._texture.onClear();
 		this._texture = null;
-
-		this._skybox = null;
 	}
 
 	/**
@@ -235,10 +230,12 @@ export class _Render_SkyboxMaterial extends _Render_MaterialPassBase {
 	public _pUpdateRender(): void {
 		super._pUpdateRender();
 
-		this.requiresBlending = ((<IMaterial> this._asset).blendMode != BlendMode.NORMAL);
+		const material: IMaterial = this.material;
 
-		this.shader.setBlendMode(((<IMaterial> this._asset).blendMode == BlendMode.NORMAL && this.requiresBlending) ?
-			BlendMode.LAYER : (<IMaterial> this._asset).blendMode);
+		this.requiresBlending = (material.blendMode != BlendMode.NORMAL);
+
+		this.shader.setBlendMode((material.blendMode == BlendMode.NORMAL && this.requiresBlending) ?
+			BlendMode.LAYER : material.blendMode);
 	}
 
 	public _includeDependencies(shader: ShaderBase): void {
@@ -303,16 +300,17 @@ export class _Render_Skybox extends _Render_RenderableBase {
 				-1,-1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1));
 		}
 
-		return elements.getAbstraction<_Stage_SkyboxElements>(this._stage);
+		return this._stage.abstractions.getAbstraction<_Stage_SkyboxElements>(elements);
 	}
 
 	protected _getRenderMaterial(): _Render_SkyboxMaterial {
-		return this._asset.getAbstraction<_Render_SkyboxMaterial>(
-			this.entity.renderer.getRenderElements(this.stageElements.elements));
+		return this.entity.renderer
+			.getRenderElements(this.stageElements.elements).abstractions
+			.getAbstraction<_Render_SkyboxMaterial>(this.renderable);
 	}
 
 	protected _getStyle(): Style {
-		return (<Skybox> this._asset).style;
+		return this.renderable.style;
 	}
 }
 
