@@ -194,7 +194,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 	private _scrollRect: Rectangle;
 	private _scrollRectPrimitive: Sprite;
-	private _scrollRectPrimitiveDirty: boolean;
 
 	protected _parent: DisplayObjectContainer;
 	public _sessionID: number = -1;
@@ -1152,24 +1151,44 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	 * up and down.</p>
 	 */
 	public get scrollRect(): Rectangle {
-		return this._scrollRect;
+		return this._scrollRect?.clone();
 	}
 
 	public set scrollRect(value: Rectangle) {
-		// @todo: check if rectangle has same values as previous
-		//if (this._scrollRect == value)
-		//	return;
 
-		this._scrollRect = value;
+		let invalidatePos = true;
 
-		if (!value && this._scrollRectPrimitive) {
-			const idx = this.masks.indexOf(this._scrollRectPrimitive);
-			this.masks.splice(idx, 1);
-			this._scrollRectPrimitive = null;
+		if (!!this._scrollRect != !!value) {
+			//invalidate masks only if scrollRect is being enabled or disabled
+			this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
+			this._scrollRect = value?.clone();
+		} else if (this._scrollRect && !this._scrollRect.equals(value)) {
+			this._scrollRect.copyFrom(value);
+		} else {
+			//invalidate position only if scrollRect changes
+			invalidatePos = false;
 		}
 
-		this._transform.invalidatePosition();
-		this._scrollRectPrimitiveDirty = true;
+		if (invalidatePos) {
+			this._transform.invalidatePosition();
+
+			if (value) {
+				if (!this._scrollRectPrimitive) {
+					//create ScrollRectPrimitive
+					this._scrollRectPrimitive = new Sprite();
+					this._scrollRectPrimitive.maskMode = true;
+				}
+
+				//update ScrollRectPrimitive
+				this._scrollRectPrimitive.graphics.clear();
+				this._scrollRectPrimitive.graphics.beginFill(0x0000ff, 1);
+				this._scrollRectPrimitive.graphics.drawRect(value.x,value.y,value.width,value.height);
+				this._scrollRectPrimitive.graphics.endFill();
+			} else if (this._scrollRectPrimitive) {
+				//remove ScrollRectPrimitive
+				this._scrollRectPrimitive = null;
+			}
+		}
 	}
 
 	/**
@@ -1234,23 +1253,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	}
 
 	public getScrollRectPrimitive(): IContainer {
-		if (this._scrollRectPrimitiveDirty) {
-			this._scrollRectPrimitiveDirty = false;
-
-			if (!this._scrollRectPrimitive) {
-				this._scrollRectPrimitive = new Sprite();
-				this._scrollRectPrimitive.maskMode = true;
-				if (!this.masks)
-					this.masks = [];
-				this.masks.push(this._scrollRectPrimitive);
-			}
-
-			this._scrollRectPrimitive.graphics.clear();
-			this._scrollRectPrimitive.graphics.beginFill(0x0000ff, 1);
-			this._scrollRectPrimitive.graphics.drawRect(0,0,this._scrollRect.width,this._scrollRect.height);
-			this._scrollRectPrimitive.graphics.endFill();
-		}
-
 		return this._scrollRectPrimitive;
 	}
 

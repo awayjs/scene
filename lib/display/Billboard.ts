@@ -14,7 +14,6 @@ import { Rectangle, Matrix3D, Box, Vector3D, Sphere } from '@awayjs/core';
 import {
 	ImageSampler,
 	Image2D,
-	ImageUtils,
 	ContextGLTriangleFace,
 } from '@awayjs/stage';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
@@ -406,9 +405,8 @@ export class _Render_Billboard extends _Render_RenderableBase {
 		return this.entity.renderer
 			.getRenderElements(this.stageElements.elements).abstractions
 			.getAbstraction<_Render_MaterialBase>(
-			(<Billboard> this.renderable).material
-				|| MaterialUtils.getDefaultColorMaterial()
-		);
+				(<Billboard> this.renderable).material || MaterialUtils.getDefaultColorMaterial()
+			);
 	}
 
 	protected _getStyle(): Style {
