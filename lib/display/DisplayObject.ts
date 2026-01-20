@@ -340,7 +340,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	 * object(2) superimposed on another display object(1).</p>
 	 */
 
-	public _blendMode: BlendMode = BlendMode.LAYER;
+	public _blendMode: BlendMode = BlendMode.NORMAL;
 
 	public set blendMode(v: BlendMode) {
 		if (this._blendMode === v) {
