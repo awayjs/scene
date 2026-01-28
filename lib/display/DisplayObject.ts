@@ -351,6 +351,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		if (v === BlendMode.OVERLAY) {
 			this._transform.invalidateColorTransform();
 		}
+
+		this.invalidate();
 	}
 
 	public get blendMode() {

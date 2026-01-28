@@ -415,6 +415,7 @@ export class SceneImage2D extends BitmapImage2D {
 		}
 
 		this._imageDataDirty = true;
+		this.invalidateOwners();
 	}
 
 	public threshold(
@@ -436,6 +437,7 @@ export class SceneImage2D extends BitmapImage2D {
 
 		this._stage.threshold(source, this, sourceRect, destPoint, operation, threshold, color, mask, copySource);
 		this._imageDataDirty = true;
+		this.invalidateOwners();
 	}
 
 	public applyFilter (source: BitmapImage2D, sourceRect: Rectangle, destPoint: Point, filter: any): boolean {
@@ -451,6 +453,10 @@ export class SceneImage2D extends BitmapImage2D {
 			filter.filterName, filter);
 
 		this._imageDataDirty = result;
+
+		if (result)
+			this.invalidateOwners();
+
 		return result;
 	}
 
@@ -462,6 +468,7 @@ export class SceneImage2D extends BitmapImage2D {
 		this._stage.colorTransform(this, this, rect, colorTransform);
 
 		this._imageDataDirty = true;
+		this.invalidateOwners();
 	}
 
 	public setPixel(x: number, y: number, color: number) {
@@ -626,7 +633,7 @@ export class SceneImage2D extends BitmapImage2D {
 
 		this._lastUsedFill = null;
 		this._imageDataDirty = true;
-		this.invalidate();
+		this.invalidateOwners();
 	}
 
 	private static _mapSupportedBlendMode(blendMode: string = ''): string {

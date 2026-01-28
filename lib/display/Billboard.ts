@@ -9,6 +9,7 @@ import {
 	MaterialEvent,
 	IMaterial,
 	StyleEvent,
+	IRenderable,
 } from '@awayjs/renderer';
 import { Rectangle, Matrix3D, Box, Vector3D, Sphere } from '@awayjs/core';
 import {
@@ -59,7 +60,7 @@ import { DisplayObjectContainer } from './DisplayObjectContainer';
 * (in away3d Sprite3D extends on ObjectContainer3D)
 */
 
-export class Billboard extends DisplayObjectContainer implements IPickable {
+export class Billboard extends DisplayObjectContainer implements IPickable, IRenderable {
 	private static _billboards: Array<Billboard> = new Array<Billboard>();
 
 	public static assetType: string = '[asset Billboard]';
