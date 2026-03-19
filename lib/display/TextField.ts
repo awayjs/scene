@@ -1879,6 +1879,8 @@ export class TextField extends DisplayObjectContainer {
 
 		this._graphics = Graphics.getGraphics(); //unique graphics object for each TextField
 
+		this._graphics.addOwner(this);
+
 		this.mouseEnabled = this._selectable;
 	}
 
