@@ -849,8 +849,6 @@ export class SceneImage2D extends BitmapImage2D {
 		const transformDisabled = sourceNode.transformDisabled;
 
 		sourceNode.transformDisabled = true;
-		// color transform should be enabled!
-		sourceNode.colorTransformDisabled = false;
 		// masks should be enabled!
 		sourceNode.maskDisabled = false;
 
