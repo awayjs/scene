@@ -87,7 +87,7 @@ export class MouseManager {
 
 		// we MUST overrider collision target if present, because draggable !== drag emitter
 		if (collision)
-			this._pointerDataArray[0].dragCollision = collision;
+			(this._pointerDataArray[0] || (this._pointerDataArray[0] = new PointerData(0, true))).dragCollision = collision;
 	}
 
 	public stopDragObject() {
