@@ -18,7 +18,6 @@ export class TextSprite extends Sprite {
 		return TextSprite.assetType;
 	}
 
-
 	public parentTextField: TextField;
 
 	public getEntity(): IEntity {
