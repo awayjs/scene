@@ -8,6 +8,17 @@ import { HierarchicalProperty, IEntity } from '@awayjs/view';
  * It is a child of the textfield that is used to render all visible (masked) graphics
  */
 export class TextSprite extends Sprite {
+
+	public static assetType: string = '[asset TextSprite]';
+
+	/**
+	 *
+	 */
+	public get assetType(): string {
+		return TextSprite.assetType;
+	}
+
+
 	public parentTextField: TextField;
 
 	public getEntity(): IEntity {
