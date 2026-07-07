@@ -566,7 +566,7 @@ export class Timeline {
 		const numMasks = timeline.properties_stream_int[i++];
 
 		if (numMasks === 0) {
-			child.timelineMasks = undefined
+			child.timelineMasks = undefined;
 			return;
 		}
 
