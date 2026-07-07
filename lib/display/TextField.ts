@@ -370,9 +370,9 @@ export class TextField extends DisplayObjectContainer {
 		}
 		// only use masking if needed:
 		if (this._textWidth > this._width || this._textHeight > this._height) {
-			this.textChild.scriptMask = this.maskChild;
+			this.textChild.mask = this.maskChild;
 		} else {
-			this.textChild.scriptMask = null;
+			this.textChild.mask = undefined;
 		}
 		return;
 	}

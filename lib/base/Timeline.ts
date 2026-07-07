@@ -566,7 +566,7 @@ export class Timeline {
 		const numMasks = timeline.properties_stream_int[i++];
 
 		if (numMasks === 0) {
-			child.updateTimelineMask(null);
+			child.timelineMasks = undefined
 			return;
 		}
 
@@ -576,7 +576,7 @@ export class Timeline {
 			masks.push(target_mc.getTimelineChildAtSessionID(timeline.properties_stream_int[i + m]));
 		}
 
-		child.updateTimelineMask(masks);
+		child.timelineMasks = masks;
 	}
 
 	public static update_name(timeline: Timeline, child: DisplayObject, target_mc: MovieClip, i: number): void {
@@ -646,7 +646,7 @@ export class Timeline {
 	}
 
 	public static remove_masks(_timeline: Timeline, child: DisplayObject, _target_mc: MovieClip, _i: number): void {
-		child.updateTimelineMask(null);
+		child.timelineMasks = undefined;
 	}
 
 	public static update_filters(timeline: Timeline, child: DisplayObject, _target_mc: MovieClip, i: number): void {

@@ -207,8 +207,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	private _visible: boolean = true;
 	private _maskId: number = -1;
 
-	protected _masks: DisplayObject[];
-	protected _scriptMask: DisplayObject;
+	protected _timelineMasks: DisplayObject[] | undefined;
+	protected _mask: DisplayObject | undefined;
 
 	private _mouseEnabled: boolean = true;
 
@@ -665,8 +665,24 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	 * first object, and that object's <code>mask</code> property becomes
 	 * <code>null</code>.</p>
 	 */
-	public set mask(value: DisplayObject) {
-		this.scriptMask = value;
+	public get mask(): DisplayObject | undefined {
+		return this._mask;
+	}
+
+	public set mask(value: DisplayObject | undefined) {
+		if (this._mask === value)
+			return;
+
+		// remove older script mask
+		if (this._mask)
+			this._mask.maskMode = false;
+
+		this._mask = value;
+
+		if (value)
+			value.maskMode = true;
+
+		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 	}
 
 	public get maskMode(): boolean {
@@ -1347,23 +1363,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		this._invalidateHierarchicalProperty(HierarchicalProperty.VISIBLE);
 	}
 
-	private _mergeMasks(timeline: Array<DisplayObject> | null, script: DisplayObject | null): Array<DisplayObject> {
-		if (!timeline && !script)
-			return;
-
-		// we can not have mask array, create it
-		if (!timeline && script)
-			return [script];
-
-		// and make sure that we not have same script mask in it
-		if (script && !timeline.includes(script))
-			timeline.push(script);
-
-		return timeline;
-	}
-
-	private _setMasks(masks: Array<DisplayObject> | null): void {
-		const oldMasks: Array<DisplayObject> = this._masks ? this._masks : [];
+	/**
+	 * Update mask from timeline and take account that can be a scriptMask
+	 *
+	 * @param masks Masks from timeline
+	 */
+	public set timelineMasks(masks: DisplayObject[] | undefined) {
+		const oldMasks: Array<DisplayObject> = this._timelineMasks ? this._timelineMasks : [];
 
 		if (masks) {
 
@@ -1389,83 +1395,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		for (let i = oldMasks.length - 1; i >= 0 ; i--)
 			oldMasks[i].maskMode = false;
 
-		this._masks = masks;
-	}
-
-	/**
-	 *
-	 * @param mask Masked element, that can be used from script without corruption of timeline mask
-	 */
-	public set scriptMask(mask: DisplayObject | null) {
-		if (mask === this._scriptMask)
-			return;
-
-		// remove older script mask, _mask array for this case can't be null
-		if (this._scriptMask) {
-			const index = this._masks.indexOf(this._scriptMask);
-
-			if (index !== -1) {
-				this._masks.splice(index, 1);
-				this._scriptMask.maskMode = false;
-			}
-		}
-
-		this._scriptMask = mask;
-
-		this._masks = this._mergeMasks(this._masks, mask);
-
-		if (mask)
-			mask.maskMode = true;
+		this._timelineMasks = masks;
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 	}
 
-	public get scriptMask() {
-		return this._scriptMask;
-	}
-
-	/**
-	 * Update mask from timeline and take account that can be a scriptMask
-	 *
-	 * @param masks Masks from timeline
-	 */
-	public updateTimelineMask(masks: DisplayObject[] | null) {
-		this._setMasks(this._mergeMasks(masks, this._scriptMask));
-
-		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
-	}
-
-	public get masks(): Array<DisplayObject> {
-		return this._masks;
-	}
-
-	/**
-	 * @dangerous Note that we should not use this setter, right way to use `scriptMask` and `updateTimelineMask`
-	 * @param value
-	 */
-	public set masks(value: Array<DisplayObject>) {
-		if (this._masks == value)
-			return;
-
-		// this is edge case, if we set masks direct,
-		// this means that we should reset _scriptMask when it not present in input mask
-		if (!value || !value.length) {
-			this._scriptMask = null;
-		} else {
-			const len = value.length;
-			let hasScriptMask = false;
-
-			for (let i  = 0; i < len; i++)
-				hasScriptMask = hasScriptMask || (value[i] === this._scriptMask);
-
-			//if we had a script mask set but it wasn't present in the new masks value, remove it
-			if (this._scriptMask && !hasScriptMask)
-				this._scriptMask = null;
-		}
-
-		this._setMasks(value);
-
-		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
+	public get timelineMasks(): DisplayObject[] | undefined {
+		return this._timelineMasks;
 	}
 
 	/**
@@ -1671,14 +1607,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		displayObject.isSlice9ScaledMC = this.isSlice9ScaledMC;
 		displayObject.scale9Grid = this.scale9Grid?.clone();
 
-		if (this._masks) {
+		if (this._timelineMasks) {
 			// clone mask tree, to avoid corruption
-			// if _scriptMask is presented, it already was exist in _mask array
-			displayObject._masks = this._masks.slice();
-			displayObject._scriptMask = this._scriptMask;
+			displayObject._timelineMasks = this._timelineMasks.slice();
 			// manually call invalidation
-			displayObject._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
+			//displayObject._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 		}
+
+		displayObject._mask = this._mask;
 
 		this._transform.copyRawDataTo(displayObject._transform);
 	}
@@ -1703,8 +1639,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 		this._pickObject = null;
 
-		this._masks = null;
-		this._scriptMask = null;
+		delete this._timelineMasks;
+		delete this._mask;
 	}
 
 	/**
@@ -1748,7 +1684,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		this._transform.clearColorTransform();
 
 		//this.name="";
-		this.masks = null;
+		this.mask = undefined;
+		this.timelineMasks = undefined;
 
 		this.maskMode = false;
 	}
