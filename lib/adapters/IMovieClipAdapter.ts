@@ -5,6 +5,8 @@ import { IFrameScript } from '../base/IFrameScript';
 
 export interface IMovieClipAdapter extends IDisplayObjectAdapter
 {
+	updateGraphics(): void;
+
 	executeScript(script: IFrameScript[]): void;
 
 	registerScriptObject(child: DisplayObject): void;

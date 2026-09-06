@@ -3,6 +3,7 @@ import { IMaterial } from '@awayjs/renderer';
 import { Graphics } from '@awayjs/graphics';
 import { DisplayObjectContainer } from './DisplayObjectContainer';
 import { PrefabBase } from '../prefabs/PrefabBase';
+import { IMovieClipAdapter } from '../adapters/IMovieClipAdapter';
 
 /**
  * Sprite is an instance of a Graphics, augmenting it with a presence in the scene graph, a material, and an animation
@@ -66,6 +67,9 @@ export class Sprite extends DisplayObjectContainer {
 			this._graphics.addOwner(this);
 
 		this.invalidate();
+
+		if (this._adapter)
+			(<IMovieClipAdapter> this.adapter).updateGraphics();
 	}
 
 	/**
