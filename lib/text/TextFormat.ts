@@ -380,7 +380,7 @@ export class TextFormat extends AssetBase {
 	 * The font-name can be used to get a Font-object from the AssetLibrary.
 	 * A Font object provides a list of Font-table, corresponding to font-table names.
 	 */
-	private _font: Font;
+	private _font: Font = null;
 
 	public get font_name(): string {
 		return this.font?.name;
