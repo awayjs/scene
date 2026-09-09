@@ -9,7 +9,7 @@ import {
 	Loader,
 } from '@awayjs/core';
 
-import { BlendMode } from '@awayjs/stage';
+import { BlendMode, isNativeBlend } from '@awayjs/stage';
 
 import {
 	BoundingBox,
@@ -356,8 +356,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	}
 
 	public get blendMode() {
+		// SWF-safe honor path (E9): native blends (LAYER/ERASE/…) return through so
+		// ContainerNode.renderToImage engages CacheRenderer for Flash transparency
+		// groups. USE_UNSAFE_BLENDS still unlocks non-native blends. Kill-switch:
+		// HONOR_NATIVE_BLENDS=false restores the legacy empty-string gate.
 		if (!Settings.USE_UNSAFE_BLENDS) {
-			return '';
+			if (!Settings.HONOR_NATIVE_BLENDS || !isNativeBlend(this._blendMode)) {
+				return '';
+			}
 		}
 
 		if (Settings.REMAP_BLEND_MODE) {
