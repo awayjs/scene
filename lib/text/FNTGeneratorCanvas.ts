@@ -267,7 +267,16 @@ export class FNTGeneratorCanvas extends FNTGeneratorBase {
 			const data = context.getImageData(0, 0, size, size);
 			const image = new BitmapImage2D(size, size, true, 0, true, this._stage);
 
-			image.setPixels(new Rectangle(0, 0, size, size), data.data);
+			// Canvas ImageData is RGBA; setPixels expects unmultiplied ARGB bytes.
+			const rgba = data.data;
+			const argb = new Uint8ClampedArray(rgba.length);
+			for (let i = 0; i < rgba.length; i += 4) {
+				argb[i] = rgba[i + 3];
+				argb[i + 1] = rgba[i];
+				argb[i + 2] = rgba[i + 1];
+				argb[i + 3] = rgba[i + 2];
+			}
+			image.setPixels(new Rectangle(0, 0, size, size), argb);
 
 			bitmaps.push(image);
 			table.addFNTChannel(image);
