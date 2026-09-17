@@ -498,6 +498,11 @@ export class SceneImage2D extends BitmapImage2D {
 		super.setPixels(rect, buffer);
 	}
 
+	public getPixels(rect: Rectangle): Uint8ClampedArray {
+		this.syncData();
+		return super.getPixels(rect);
+	}
+
 	private _clearFromDispose = false;
 	public clear() {
 		// we call clear in parent class from dispose, call direct
