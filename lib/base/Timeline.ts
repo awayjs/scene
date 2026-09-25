@@ -524,13 +524,22 @@ export class Timeline {
 
 		const new_matrix: Matrix3D = child.transform.matrix3D;
 		const props_stream = timeline.properties_stream_f32_mtx_all;
+		const raw = new_matrix._rawData;
+		const a = props_stream[i], b = props_stream[i + 1], c = props_stream[i + 2];
+		const d = props_stream[i + 3], tx = props_stream[i + 4], ty = props_stream[i + 5];
 
-		new_matrix._rawData[0] = props_stream[i++];
-		new_matrix._rawData[1] = props_stream[i++];
-		new_matrix._rawData[4] = props_stream[i++];
-		new_matrix._rawData[5] = props_stream[i++];
-		new_matrix._rawData[12] = props_stream[i++];
-		new_matrix._rawData[13] = props_stream[i];
+		// Hold-frame placeObject rewrites the same matrix every tick; skip no-ops so
+		// cacheAsBitmap parent RTTs stay sticky (E8 Diggy whole-title dirty loop).
+		if (raw[0] === a && raw[1] === b && raw[4] === c && raw[5] === d
+			&& raw[12] === tx && raw[13] === ty)
+			return;
+
+		raw[0] = a;
+		raw[1] = b;
+		raw[4] = c;
+		raw[5] = d;
+		raw[12] = tx;
+		raw[13] = ty;
 
 		child.transform.invalidateComponents();
 	}
@@ -546,14 +555,16 @@ export class Timeline {
 		const props_stream = timeline.properties_stream_f32_ct;
 		const new_ct = child.transform.colorTransform || (child.transform.colorTransform = new ColorTransform());
 
-		new_ct._rawData[0] = props_stream[i++];
-		new_ct._rawData[1] = props_stream[i++];
-		new_ct._rawData[2] = props_stream[i++];
-		new_ct._rawData[3] = props_stream[i++];
-		new_ct._rawData[4] = props_stream[i++];
-		new_ct._rawData[5] = props_stream[i++];
-		new_ct._rawData[6] = props_stream[i++];
-		new_ct._rawData[7] = props_stream[i];
+		const r = new_ct._rawData;
+		const c0 = props_stream[i], c1 = props_stream[i + 1], c2 = props_stream[i + 2], c3 = props_stream[i + 3];
+		const c4 = props_stream[i + 4], c5 = props_stream[i + 5], c6 = props_stream[i + 6], c7 = props_stream[i + 7];
+
+		if (r[0] === c0 && r[1] === c1 && r[2] === c2 && r[3] === c3
+			&& r[4] === c4 && r[5] === c5 && r[6] === c6 && r[7] === c7)
+			return;
+
+		r[0] = c0; r[1] = c1; r[2] = c2; r[3] = c3;
+		r[4] = c4; r[5] = c5; r[6] = c6; r[7] = c7;
 
 		child.transform.invalidateColorTransform();
 	}
@@ -616,11 +627,17 @@ export class Timeline {
 
 		const new_matrix: Matrix3D = child.transform.matrix3D;
 		const props_stream = timeline.properties_stream_f32_mtx_scale_rot;
+		const raw = new_matrix._rawData;
+		const a = props_stream[i], b = props_stream[i + 1];
+		const c = props_stream[i + 2], d = props_stream[i + 3];
 
-		new_matrix._rawData[0] = props_stream[i++];
-		new_matrix._rawData[1] = props_stream[i++];
-		new_matrix._rawData[4] = props_stream[i++];
-		new_matrix._rawData[5] = props_stream[i];
+		if (raw[0] === a && raw[1] === b && raw[4] === c && raw[5] === d)
+			return;
+
+		raw[0] = a;
+		raw[1] = b;
+		raw[4] = c;
+		raw[5] = d;
 
 		child.transform.invalidateComponents();
 
@@ -634,9 +651,14 @@ export class Timeline {
 		i *= 2;
 
 		const new_matrix = child.transform.matrix3D;
+		const tx = timeline.properties_stream_f32_mtx_pos[i];
+		const ty = timeline.properties_stream_f32_mtx_pos[i + 1];
 
-		new_matrix._rawData[12] = timeline.properties_stream_f32_mtx_pos[i++];
-		new_matrix._rawData[13] = timeline.properties_stream_f32_mtx_pos[i];
+		if (new_matrix._rawData[12] === tx && new_matrix._rawData[13] === ty)
+			return;
+
+		new_matrix._rawData[12] = tx;
+		new_matrix._rawData[13] = ty;
 
 		child.transform.invalidatePosition();
 	}

@@ -6,9 +6,11 @@ export interface ISceneSettings {
 	ALLOW_APPROXIMATION: number;
 	MSAA_MINIMAL_IMAGE_SIZE: number;
 	USE_UNSAFE_CACHE_AS_BITMAP: boolean;
+	HONOR_CACHE_AS_BITMAP: boolean;
 	USE_UNSAFE_SCALE_9_SLICE: boolean;
 	USE_UNSAFE_FILTERS: boolean;
 	USE_UNSAFE_BLENDS: boolean;
+	HONOR_NATIVE_BLENDS: boolean;
 	CPU_COPY_PIXELS_COUNT: number;
 	REMAP_BLEND_MODE: boolean;
 	BLEND_MODE_REMAP_TABLE: Record<string, string>;
@@ -32,9 +34,17 @@ export const Settings: ISceneSettings = ConfigManager.instance.addStore<any>('sc
 	ALLOW_APPROXIMATION: 0, // PLZ not enable yet, not works
 
 	/**
-	 * @description Currently cache-as-bitmap is unsafe feature, and produce a lot of bugs
+	 * @description Legacy enable flag (OR'd with HONOR_CACHE_AS_BITMAP). Kept so existing
+	 * configs that set USE_UNSAFE_CACHE_AS_BITMAP=true keep working.
 	 */
 	USE_UNSAFE_CACHE_AS_BITMAP: false,
+
+	/**
+	 * @description Honor AS3 DisplayObject.cacheAsBitmap. Default true after E8 sticky-cache
+	 * fix (localNode SCENE_TRANSFORM no longer rebuilds RTT every frame). Set false to
+	 * restore the legacy setter no-op if a title regresses.
+	 */
+	HONOR_CACHE_AS_BITMAP: true,
 
 	/**
 	 * @description Currently cache-as-bitmap is unsafe feature, and produce a lot of bugs
@@ -47,9 +57,20 @@ export const Settings: ISceneSettings = ConfigManager.instance.addStore<any>('sc
 	USE_UNSAFE_FILTERS: false,
 
 	/**
-	 * @description Use blend composing, this force cacheAsBitmap
+	 * @description Use blend composing for non-native blends; also forces honor of all blends.
+	 * Native blends (LAYER/ERASE/…) are honored separately via HONOR_NATIVE_BLENDS.
 	 */
 	USE_UNSAFE_BLENDS: false,
+
+	/**
+	 * @description Honor Flash-native DisplayObject.blendMode values (LAYER, ERASE, MULTIPLY,
+	 * ADD, SCREEN, ALPHA, SUBTRACT, NORMAL) so LAYER+ERASE transparency groups engage
+	 * ContainerNode.renderToImage / CacheRenderer as Flash would. Default true (E9).
+	 * Non-native blends (OVERLAY, HARDLIGHT, …) still require USE_UNSAFE_BLENDS.
+	 * Kill-switch: HONOR_NATIVE_BLENDS=false restores the legacy getter empty-string gate.
+	 */
+	HONOR_NATIVE_BLENDS: true,
+
 	/**
 	 * @description Remap blend modes from => to, can be used for remap a Darker to multiple and other
 	 */
