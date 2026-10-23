@@ -1652,6 +1652,7 @@ export class TextField extends DisplayObjectContainer {
 		//}*/
 
 		this._glyphsDirty = true;
+		this._textShapesDirty = true;
 
 		this.invalidate();
 	}
