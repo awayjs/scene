@@ -446,11 +446,26 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	 * and <i>y</i> position is changed).</p>
 	 */
 	private _bitmapCache: boolean;
+	private _bitmapCacheRequested: boolean = false;
 	public get cacheAsBitmap() {
 		return this._bitmapCache;
 	}
 
+	/**
+	 * The last value assigned to <code>cacheAsBitmap</code>, even when bitmap caching
+	 * itself is disabled by <code>Settings.USE_UNSAFE_CACHE_AS_BITMAP</code>. Renderers
+	 * use it for behaviour that depends on the request rather than on the cache, such
+	 * as alpha-channel masking.
+	 */
+	public get cacheAsBitmapRequested(): boolean {
+		return this._bitmapCacheRequested;
+	}
+
 	public set cacheAsBitmap(v: boolean) {
+		v = !!v;
+
+		this._bitmapCacheRequested = v;
+
 		if (v === this._bitmapCache) {
 			return;
 		}
