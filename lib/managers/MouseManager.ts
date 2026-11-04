@@ -250,18 +250,18 @@ export class MouseManager {
 		}
 
 		const target = dispatcher?.container;
+		const path: INode[] = [];
 
-		while (dispatcher) {
-			if (event.commonAncestor && dispatcher == event.commonAncestor) {
-				return;
-			}
-			event._dispatchEvent(dispatcher, target);
+		for (let node: INode | undefined = dispatcher; node; node = node.parent) {
+			if (event.commonAncestor && node == event.commonAncestor)
+				break;
+			path.push(node);
+		}
 
-			if (!event._iAllowedToPropagate) {
-				dispatcher = null;
-			} else {
-				dispatcher = dispatcher.parent;
-			}
+		for (const node of path) {
+			event._dispatchEvent(node, target);
+			if (!event._iAllowedToPropagate)
+				break;
 		}
 	}
 
