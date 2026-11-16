@@ -464,7 +464,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		}
 
 		this._cacheAsBitmap = value;
-		
+
 		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
 
