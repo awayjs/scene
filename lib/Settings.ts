@@ -5,7 +5,6 @@ export interface ISceneSettings {
 	ALLOW_FORCE_MSAA: number;
 	ALLOW_APPROXIMATION: number;
 	MSAA_MINIMAL_IMAGE_SIZE: number;
-	USE_UNSAFE_CACHE_AS_BITMAP: boolean;
 	USE_UNSAFE_SCALE_9_SLICE: boolean;
 	USE_UNSAFE_FILTERS: boolean;
 	USE_UNSAFE_BLENDS: boolean;
@@ -30,11 +29,6 @@ export const Settings: ISceneSettings = ConfigManager.instance.addStore<any>('sc
 	 * @description Try approximate MSAA for unsupported platforms by rendering to N time biggest texture
 	 */
 	ALLOW_APPROXIMATION: 0, // PLZ not enable yet, not works
-
-	/**
-	 * @description Currently cache-as-bitmap is unsafe feature, and produce a lot of bugs
-	 */
-	USE_UNSAFE_CACHE_AS_BITMAP: false,
 
 	/**
 	 * @description Currently cache-as-bitmap is unsafe feature, and produce a lot of bugs

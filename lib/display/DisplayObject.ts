@@ -7,6 +7,10 @@ import {
 	Vector3D,
 	AssetBase,
 	Loader,
+	IAbstractionPool,
+	IAsset,
+	IAbstraction,
+	AbstractionSet,
 } from '@awayjs/core';
 
 import { BlendMode } from '@awayjs/stage';
@@ -174,7 +178,11 @@ import { Settings } from '../Settings';
  *                         display is not rendering. This is the case when the
  *                         content is either minimized or obscured. </p>
  */
-export class DisplayObject extends AssetBase implements IBitmapDrawable, IContainer {
+export class DisplayObject extends AssetBase implements IBitmapDrawable, IContainer, IAbstractionPool {
+
+	private static _store: IAbstraction[] = [];
+
+	readonly abstractions: AbstractionSet;
 
 	public _renderObjects: Record<number, RenderEntity | _Render_RenderableBase | CacheRenderer> = {};
 	public _containerNodes: Record<number, ContainerNode> = {};
@@ -445,27 +453,19 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	 * performance increases when the movie clip is translated(when its <i>x</i>
 	 * and <i>y</i> position is changed).</p>
 	 */
-	private _bitmapCache: boolean;
+	private _cacheAsBitmap: boolean;
 	public get cacheAsBitmap() {
-		return this._bitmapCache;
+		return this._cacheAsBitmap;
 	}
 
-	public set cacheAsBitmap(v: boolean) {
-		if (v === this._bitmapCache) {
+	public set cacheAsBitmap(value: boolean) {
+		if (this._cacheAsBitmap == value) {
 			return;
 		}
 
-		if (!Settings.USE_UNSAFE_CACHE_AS_BITMAP) {
-			return;
-		}
-
-		v && console.warn(
-			'[@scene/DisplayObject] Unsafe cacheAsBitmap is enabled!' +
-			'You can disable it by `Settings.USE_UNSAFE_CACHE_AS_BITMAP = false`'
-			,this.id
-		);
-
-		this._bitmapCache = v;
+		this._cacheAsBitmap = value;
+		
+		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
 
 	/**
@@ -592,6 +592,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 		this._filters = v;
 		this._invalidateStyle();
+		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
 
 	public get filters() {
@@ -1527,6 +1528,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	constructor() {
 		super();
 
+		this.abstractions = new AbstractionSet(this);
 		this.cursorType = '';
 		this._isInFocus = false;
 		this._tabEnabled = false;
@@ -1826,5 +1828,17 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 	protected _getDefaultBoundingVolume(): BoundingVolumeType {
 		return BoundingVolumeType.BOX_BOUNDS_FAST;
+	}
+
+	public requestAbstraction(asset: IAsset): IAbstraction {
+		return DisplayObject._store.length ? DisplayObject._store.pop() : new ContainerNode();
+	}
+
+	public storeAbstraction(abstraction: IAbstraction): void {
+		DisplayObject._store.push(abstraction);
+	}
+
+	public getNode(container: IContainer): ContainerNode {
+		return this.abstractions.getAbstraction<ContainerNode>(container);
 	}
 }

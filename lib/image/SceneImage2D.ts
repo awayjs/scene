@@ -79,6 +79,7 @@ export class SceneImage2D extends BitmapImage2D {
 	private static _root: DisplayObjectContainer;
 	private static _rootNode: ContainerNode;
 	private static _billboardRoot: DisplayObjectContainer;
+	private static _billboardRootNode: ContainerNode;
 	private static _billboard: Billboard;
 
 	protected _msaaNeedDrop: boolean = false;
@@ -188,10 +189,10 @@ export class SceneImage2D extends BitmapImage2D {
 		//create the view
 		SceneImage2D._view = new View(projection, this._stage);
 		SceneImage2D._root = new DisplayObjectContainer();
-		SceneImage2D._rootNode = SceneImage2D._view.getNode(SceneImage2D._root);
+		SceneImage2D._rootNode = SceneImage2D._root.getNode(SceneImage2D._root);
 		SceneImage2D._renderer = <DefaultRenderer> RenderGroup
 			.getInstance(DefaultRenderer)
-			.getRenderer(SceneImage2D._rootNode);
+			.getRenderer(SceneImage2D._view, SceneImage2D._rootNode);
 
 		//set the view properties
 		SceneImage2D._view.backgroundAlpha = 0;
@@ -216,9 +217,10 @@ export class SceneImage2D extends BitmapImage2D {
 		//create the view
 		SceneImage2D._billboardView = new View(projection, this._stage);
 		SceneImage2D._billboardRoot = new DisplayObjectContainer();
+		SceneImage2D._billboardRootNode = SceneImage2D._billboardRoot.getNode(SceneImage2D._billboardRoot);
 		SceneImage2D._billboardRenderer = <DefaultRenderer> RenderGroup
 			.getInstance(DefaultRenderer)
-			.getRenderer(SceneImage2D._billboardView.getNode(SceneImage2D._billboardRoot));
+			.getRenderer(SceneImage2D._billboardView, SceneImage2D._billboardRootNode);
 
 		//SceneImage2D._billboardRoot.partition = SceneImage2D._billboardRenderer.partition;
 
@@ -854,8 +856,6 @@ export class SceneImage2D extends BitmapImage2D {
 		const transformDisabled = sourceNode.transformDisabled;
 
 		sourceNode.transformDisabled = true;
-		// masks should be enabled!
-		sourceNode.maskDisabled = false;
 
 		root.transform.colorTransform = colorTransform;
 		// anyway we not support this =))

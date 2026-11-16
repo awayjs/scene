@@ -7,6 +7,7 @@ import {
 	TabPicker,
 	RaycastPicker,
 	PickGroup,
+	PickPool,
 	ContainerNode,
 	INode,
 	IContainer,
@@ -46,7 +47,7 @@ export class Scene {
 	private _container: IContainer;
 	private _node: INode;
 	private _view: View;
-	private _pickGroup: PickGroup;
+	private _pickPool: PickPool;
 
 	private _time: number = 0;
 	private _deltaTime: number = 0;
@@ -71,9 +72,9 @@ export class Scene {
 			this._mouseManager.unregisterPicker(this._mousePicker);
 
 		this._container = value;
-		this._node = this._view.getNode(this._container);
-		this._mousePicker = this._pickGroup.getRaycastPicker(this._node);
-		this._tabPicker = this._pickGroup.getTabPicker(this._node);
+		this._node = this._container.getNode(this._container);
+		this._mousePicker = this._pickPool.getRaycastPicker(this._node);
+		this._tabPicker = this._pickPool.getTabPicker(this._node);
 		this._mousePicker.findClosestCollision = true;
 
 		this._mouseManager.registerPicker(this._mousePicker);
@@ -129,8 +130,8 @@ export class Scene {
 		this._onProjectionChangedDelegate = (event: CameraEvent) => this._onProjectionChanged(event);
 
 		this._rendererClass = rendererClass || DefaultRenderer;
-		this._pickGroup = PickGroup.getInstance();
 		this.view = view || new View();
+		this._pickPool = PickGroup.getPool(this.view);
 		this.container = container || new DisplayObjectContainer();
 		this.camera = camera || new Camera();
 
@@ -144,7 +145,7 @@ export class Scene {
 		if (!this._renderer)
 			this._renderer = RenderGroup
 				.getInstance(this._rendererClass)
-				.getRenderer(this._node);
+				.getRenderer(this.view, this._node);
 
 		return this._renderer;
 	}
