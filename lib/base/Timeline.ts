@@ -697,8 +697,8 @@ export class Timeline {
 	}
 
 	public static update_rendermode(
-		_timeline: Timeline, _child: DisplayObject, _target_mc: MovieClip, i: number): void {
-		console.log('update rendermode ' + i);
+		_timeline: Timeline, child: DisplayObject, _target_mc: MovieClip, i: number): void {
+		child.cacheAsBitmap = !!i;
 	}
 
 	public dispose() {
