@@ -364,7 +364,12 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	}
 
 	public get blendMode() {
-		if (!Settings.USE_UNSAFE_BLENDS) {
+		// LAYER, ALPHA and ERASE only composite a group with its own alpha,
+		// which renders exactly on the GPU, so they are honoured without the unsafe flag
+		if (!Settings.USE_UNSAFE_BLENDS
+			&& this._blendMode !== BlendMode.LAYER
+			&& this._blendMode !== BlendMode.ALPHA
+			&& this._blendMode !== BlendMode.ERASE) {
 			return '';
 		}
 
