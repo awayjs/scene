@@ -11,6 +11,7 @@ import {
 	IAsset,
 	IAbstraction,
 	AbstractionSet,
+	WeakAssetSet,
 } from '@awayjs/core';
 
 import { BlendMode } from '@awayjs/stage';
@@ -222,8 +223,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	// timeline mask has more than one entry. IHP invalidates these
 	// owners when this mask (or an ancestor) moves.
 	// Named separately from ContainerNode._maskOwners (ancestor nodes
-	// whose masks apply to this node).
-	public _maskedOwners: DisplayObject[] | undefined;
+	// whose masks apply to this node). WeakAssetSet so a disposed owner
+	// can be collected.
+	public _maskedOwners: WeakAssetSet<DisplayObject> | undefined;
 
 	private _mouseEnabled: boolean = true;
 
@@ -1766,20 +1768,16 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 	private _addMaskOwner(owner: DisplayObject): void {
 		if (!this._maskedOwners)
-			this._maskedOwners = [];
-		if (this._maskedOwners.indexOf(owner) === -1)
-			this._maskedOwners.push(owner);
+			this._maskedOwners = new WeakAssetSet<DisplayObject>();
+		this._maskedOwners.add(owner);
 	}
 
 	private _removeMaskOwner(owner: DisplayObject): void {
 		const owners = this._maskedOwners;
 		if (!owners)
 			return;
-		const index = owners.indexOf(owner);
-		if (index === -1)
-			return;
-		owners.splice(index, 1);
-		if (!owners.length) {
+		owners.remove(owner);
+		if (!owners.numAssets) {
 			this._maskedOwners = undefined;
 			this.maskMode = false;
 		}
