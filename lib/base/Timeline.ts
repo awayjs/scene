@@ -533,12 +533,8 @@ export class Timeline {
 		if (!rotScaleChanged && !posChanged)
 			return;
 
-		raw[0] = a;
-		raw[1] = b;
-		raw[4] = c;
-		raw[5] = d;
-		raw[12] = tx;
-		raw[13] = ty;
+		new_matrix.setElements2D(a, b, c, d);
+		new_matrix.setPosition(tx, ty, raw[14]);
 
 		if (rotScaleChanged)
 			child.transform.invalidateComponents();
@@ -633,10 +629,7 @@ export class Timeline {
 		if (raw[0] === a && raw[1] === b && raw[4] === c && raw[5] === d)
 			return;
 
-		raw[0] = a;
-		raw[1] = b;
-		raw[4] = c;
-		raw[5] = d;
+		new_matrix.setElements2D(a, b, c, d);
 
 		child.transform.invalidateComponents();
 	}
@@ -649,8 +642,10 @@ export class Timeline {
 
 		const new_matrix = child.transform.matrix3D;
 
-		new_matrix._rawData[12] = timeline.properties_stream_f32_mtx_pos[i++];
-		new_matrix._rawData[13] = timeline.properties_stream_f32_mtx_pos[i];
+		new_matrix.setPosition(
+			timeline.properties_stream_f32_mtx_pos[i++],
+			timeline.properties_stream_f32_mtx_pos[i],
+			new_matrix._rawData[14]);
 
 		child.transform.invalidatePosition();
 	}

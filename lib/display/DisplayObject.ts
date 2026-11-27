@@ -843,9 +843,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 			if (!this._registrationMatrix3D)
 				return;
 
-			this._registrationMatrix3D._rawData[12] = 0;
-			this._registrationMatrix3D._rawData[13] = 0;
-			this._registrationMatrix3D._rawData[14] = 0;
+			this._registrationMatrix3D.setPosition(0, 0, 0);
 
 			if (this._registrationMatrix3D.isIdentity())
 				this._registrationMatrix3D = null;
@@ -853,9 +851,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 			if (!this._registrationMatrix3D)
 				this._registrationMatrix3D = new Matrix3D();
 
-			this._registrationMatrix3D._rawData[12] = -value.x / this._transform.scale.x;
-			this._registrationMatrix3D._rawData[13] = -value.y / this._transform.scale.y;
-			this._registrationMatrix3D._rawData[14] = -value.z / this._transform.scale.z;
+			this._registrationMatrix3D.setPosition(
+				-value.x / this._transform.scale.x,
+				-value.y / this._transform.scale.y,
+				-value.z / this._transform.scale.z);
 		}
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
@@ -879,9 +878,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 			if (!this._registrationMatrix3D)
 				return;
 
-			this._registrationMatrix3D._rawData[0] = 1;
-			this._registrationMatrix3D._rawData[5] = 1;
-			this._registrationMatrix3D._rawData[10] = 1;
+			this._registrationMatrix3D.setScale(1, 1, 1);
 
 			if (this._registrationMatrix3D.isIdentity())
 				this._registrationMatrix3D = null;
@@ -889,9 +886,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 			if (!this._registrationMatrix3D)
 				this._registrationMatrix3D = new Matrix3D();
 
-			this._registrationMatrix3D._rawData[0] = value.x;
-			this._registrationMatrix3D._rawData[5] = value.y;
-			this._registrationMatrix3D._rawData[10] = value.z;
+			this._registrationMatrix3D.setScale(value.x, value.y, value.z);
 		}
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
@@ -1484,7 +1479,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		if (this._transform.position.x == val)
 			return;
 
-		this._transform.matrix3D._rawData[12] = val;
+		this._transform.matrix3D.setPosition(val, this._transform.position.y, this._transform.position.z);
 
 		this._transform.invalidatePosition();
 	}
@@ -1507,7 +1502,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		if (this._transform.position.y == val)
 			return;
 
-		this._transform.matrix3D._rawData[13] = val;
+		this._transform.matrix3D.setPosition(this._transform.position.x, val, this._transform.position.z);
 
 		this._transform.invalidatePosition();
 	}
@@ -1539,7 +1534,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		if (this._transform.position.z == val)
 			return;
 
-		this._transform.matrix3D._rawData[14] = val;
+		this._transform.matrix3D.setPosition(this._transform.position.x, this._transform.position.y, val);
 
 		this._transform.invalidatePosition();
 	}
@@ -1713,9 +1708,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		if (!this._registrationMatrix3D)
 			this._registrationMatrix3D = new Matrix3D();
 
-		this._registrationMatrix3D._rawData[12] -= dx / this._transform.scale.x;
-		this._registrationMatrix3D._rawData[13] -= dy / this._transform.scale.y;
-		this._registrationMatrix3D._rawData[14] -= dz / this._transform.scale.z;
+		const raw = this._registrationMatrix3D._rawData;
+		this._registrationMatrix3D.setPosition(
+			raw[12] - dx / this._transform.scale.x,
+			raw[13] - dy / this._transform.scale.y,
+			raw[14] - dz / this._transform.scale.z);
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
