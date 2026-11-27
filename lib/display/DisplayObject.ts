@@ -1550,7 +1550,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 		//creation of associated transform object
 		this._transform = new Transform(null);
-		this._transform.enablePositionInvalidation();
+		this._transform.separatePositionInvalidation = true;
 
 		//setup transform listeners
 		this._transform.addEventListener(
