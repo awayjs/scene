@@ -1560,7 +1560,17 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 		this._transform.addEventListener(
 			TransformEvent.INVALIDATE_POSITION,
-			(_event: TransformEvent) => this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_POSITION)
+			(_event: TransformEvent) => {
+				this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_POSITION);
+				// Only the node whose transform moved notifies its parent.
+				// IHP itself is also used for propagation, which must not
+				// recache a parent that already has a sticky SCENE_POSITION.
+				for (const key in this._containerNodes) {
+					const parent = this._containerNodes[key].parent;
+					if (parent)
+						parent.invalidate();
+				}
+			}
 		);
 
 		this._transform.addEventListener(
