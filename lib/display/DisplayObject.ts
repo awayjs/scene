@@ -221,7 +221,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	// Set by the owner's mask / timelineMasks setters. A shared
 	// timeline mask has more than one entry. IHP invalidates these
 	// owners when this mask (or an ancestor) moves.
-	public _maskOwners: DisplayObject[] | undefined;
+	// Named separately from ContainerNode._maskOwners (ancestor nodes
+	// whose masks apply to this node).
+	public _maskedOwners: DisplayObject[] | undefined;
 
 	private _mouseEnabled: boolean = true;
 
@@ -710,7 +712,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 		this._maskId = value ? this.id : -1;
 		if (!value)
-			this._maskOwners = undefined;
+			this._maskedOwners = undefined;
 
 		this._updateMaskMode();
 	}
@@ -1653,14 +1655,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		displayObject.isSlice9ScaledMC = this.isSlice9ScaledMC;
 		displayObject.scale9Grid = this.scale9Grid?.clone();
 
-		if (this._timelineMasks) {
-			// clone mask tree, to avoid corruption
-			displayObject._timelineMasks = this._timelineMasks.slice();
-			// manually call invalidation
-			//displayObject._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
-		}
+		if (this._timelineMasks)
+			displayObject.timelineMasks = this._timelineMasks.slice();
 
-		displayObject._mask = this._mask;
+		displayObject.mask = this._mask;
 
 		this._transform.copyRawDataTo(displayObject._transform);
 	}
@@ -1685,8 +1683,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 		this._pickObject = null;
 
-		delete this._timelineMasks;
-		delete this._mask;
+		this.timelineMasks = undefined;
+		this.mask = undefined;
 	}
 
 	/**
@@ -1770,14 +1768,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	}
 
 	private _addMaskOwner(owner: DisplayObject): void {
-		if (!this._maskOwners)
-			this._maskOwners = [];
-		if (this._maskOwners.indexOf(owner) === -1)
-			this._maskOwners.push(owner);
+		if (!this._maskedOwners)
+			this._maskedOwners = [];
+		if (this._maskedOwners.indexOf(owner) === -1)
+			this._maskedOwners.push(owner);
 	}
 
 	private _removeMaskOwner(owner: DisplayObject): void {
-		const owners = this._maskOwners;
+		const owners = this._maskedOwners;
 		if (!owners)
 			return;
 		const index = owners.indexOf(owner);
@@ -1785,7 +1783,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 			return;
 		owners.splice(index, 1);
 		if (!owners.length) {
-			this._maskOwners = undefined;
+			this._maskedOwners = undefined;
 			this.maskMode = false;
 		}
 	}
