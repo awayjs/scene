@@ -459,18 +459,18 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	 * and <i>y</i> position is changed).</p>
 	 */
 	private _cacheAsBitmap: boolean;
+
 	public get cacheAsBitmap() {
 		return this._cacheAsBitmap;
 	}
 
 	public set cacheAsBitmap(value: boolean) {
-		if (this._cacheAsBitmap == value) {
+		if (this._cacheAsBitmap == value)
 			return;
-		}
 
 		this._cacheAsBitmap = value;
 
-		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
+		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 	}
 
 	/**
@@ -597,7 +597,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 		this._filters = v;
 		this._invalidateStyle();
-		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
+		this.invalidate();
 	}
 
 	public get filters() {
@@ -1375,6 +1375,9 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	 * @param masks Masks from timeline
 	 */
 	public set timelineMasks(masks: DisplayObject[] | undefined) {
+		if (!masks && !this._timelineMasks)
+			return;
+
 		const oldMasks: Array<DisplayObject> = this._timelineMasks ? this._timelineMasks : [];
 
 		if (masks) {
