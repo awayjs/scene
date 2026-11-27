@@ -1194,6 +1194,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		}
 
 		if (invalidatePos) {
+			this.invalidate();
 			this._transform.invalidatePosition();
 
 			if (value) {
@@ -1549,11 +1550,17 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 		//creation of associated transform object
 		this._transform = new Transform(null);
+		this._transform.enablePositionInvalidation();
 
 		//setup transform listeners
 		this._transform.addEventListener(
 			TransformEvent.INVALIDATE_MATRIX3D,
 			(_event: TransformEvent) => this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM)
+		);
+
+		this._transform.addEventListener(
+			TransformEvent.INVALIDATE_POSITION,
+			(_event: TransformEvent) => this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_POSITION)
 		);
 
 		this._transform.addEventListener(
