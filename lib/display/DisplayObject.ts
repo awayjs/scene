@@ -217,10 +217,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 	protected _timelineMasks: DisplayObject[] | undefined;
 	protected _mask: DisplayObject | undefined;
-	// Back-reference for a script or timeline mask. Set by the owner's
-	// mask / timelineMasks setters. No new listener: the existing
-	// transform listener invalidates this owner when the mask moves.
-	private _maskOwner: DisplayObject | undefined;
+	// Display objects that use this object as a script or timeline mask.
+	// Set by the owner's mask / timelineMasks setters. A shared
+	// timeline mask has more than one entry. IHP invalidates these
+	// owners when this mask (or an ancestor) moves.
+	public _maskOwners: DisplayObject[] | undefined;
 
 	private _mouseEnabled: boolean = true;
 
@@ -685,13 +686,13 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 		// remove older script mask
 		if (this._mask)
-			this._mask.maskMode = false;
+			this._mask._removeMaskOwner(this);
 
 		this._mask = value;
 
 		if (value) {
 			value.maskMode = true;
-			value._maskOwner = this;
+			value._addMaskOwner(this);
 		}
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
@@ -709,7 +710,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 		this._maskId = value ? this.id : -1;
 		if (!value)
-			this._maskOwner = undefined;
+			this._maskOwners = undefined;
 
 		this._updateMaskMode();
 	}
@@ -1404,21 +1405,21 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 						oldMasks.splice(index, 1);
 					} else {
 						mask.maskMode = true;
-						mask._maskOwner = this;
 					}
 				}
 			}
 		}
 
-		//set mask mode to false for old masks
+		// Drop this owner from masks no longer applied (keep maskMode
+		// if another owner still shares the mask).
 		for (let i = oldMasks.length - 1; i >= 0 ; i--)
-			oldMasks[i].maskMode = false;
+			oldMasks[i]._removeMaskOwner(this);
 
 		this._timelineMasks = masks;
 		if (masks) {
 			for (let i = 0; i < masks.length; i++) {
 				if (masks[i])
-					masks[i]._maskOwner = this;
+					masks[i]._addMaskOwner(this);
 			}
 		}
 
@@ -1572,7 +1573,6 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 			TransformEvent.INVALIDATE_MATRIX3D,
 			(_event: TransformEvent) => {
 				this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
-				this._invalidateMaskOwner();
 			}
 		);
 
@@ -1588,15 +1588,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 					const parent = node.parent;
 					if (parent)
 						parent.invalidate();
-					// The mask is baked into a cached owner. A position-only
-					// skip would leave it stale when this owner moves and the
-					// mask does not. Setting _invalid here means CacheRenderer
-					// recaches. A parent moving owner and mask together does
-					// not fire this listener, so that skip is kept.
-					if (this._mask || (this._timelineMasks && this._timelineMasks.length))
-						node.invalidate();
 				}
-				this._invalidateMaskOwner();
 			}
 		);
 
@@ -1777,12 +1769,25 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 			this._containerNodes[key].invalidateHierarchicalProperty(propDirty);
 	}
 
-	private _invalidateMaskOwner(): void {
-		const owner = this._maskOwner;
-		if (!owner)
+	private _addMaskOwner(owner: DisplayObject): void {
+		if (!this._maskOwners)
+			this._maskOwners = [];
+		if (this._maskOwners.indexOf(owner) === -1)
+			this._maskOwners.push(owner);
+	}
+
+	private _removeMaskOwner(owner: DisplayObject): void {
+		const owners = this._maskOwners;
+		if (!owners)
 			return;
-		for (const key in owner._containerNodes)
-			owner._containerNodes[key].invalidate();
+		const index = owners.indexOf(owner);
+		if (index === -1)
+			return;
+		owners.splice(index, 1);
+		if (!owners.length) {
+			this._maskOwners = undefined;
+			this.maskMode = false;
+		}
 	}
 
 	/**
