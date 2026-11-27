@@ -709,13 +709,8 @@ export class SceneImage2D extends BitmapImage2D {
 			const m = root.transform.matrix3D;
 
 			m.identity();
-
-			m._rawData[0] = matrix.a;
-			m._rawData[1] = -matrix.b;
-			m._rawData[4] = matrix.c;
-			m._rawData[5] = -matrix.d;
-			m._rawData[12] = matrix.tx;
-			m._rawData[13] = target.height - matrix.ty;
+			m.setElements2D(matrix.a, -matrix.b, matrix.c, -matrix.d);
+			m.setPosition(matrix.tx, target.height - matrix.ty, 0);
 
 			root.transform.invalidateComponents();
 		} else {

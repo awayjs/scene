@@ -1781,7 +1781,7 @@ export class TextField extends DisplayObjectContainer {
 		if (this._transform.position.x == val)
 			return;
 
-		this._transform.matrix3D._rawData[12] = val;
+		this._transform.matrix3D.setPosition(val, this._transform.position.y, this._transform.position.z);
 
 		this._transform.invalidatePosition();
 	}
@@ -2339,10 +2339,12 @@ export class TextField extends DisplayObjectContainer {
 		this._width = 4 + newWidth;
 
 		if (this._autoSize == TextFieldAutoSize.RIGHT) {
-			this._transform.matrix3D._rawData[12] -= this._width - oldSize;
+			const pos = this._transform.position;
+			this._transform.matrix3D.setPosition(pos.x - (this._width - oldSize), pos.y, pos.z);
 			this._transform.invalidatePosition();
 		} else if (this._autoSize == TextFieldAutoSize.CENTER) {
-			this._transform.matrix3D._rawData[12] -= (this._width - oldSize) / 2;
+			const pos = this._transform.position;
+			this._transform.matrix3D.setPosition(pos.x - (this._width - oldSize) / 2, pos.y, pos.z);
 			this._transform.invalidatePosition();
 		}
 	}

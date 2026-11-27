@@ -524,15 +524,22 @@ export class Timeline {
 
 		const new_matrix: Matrix3D = child.transform.matrix3D;
 		const props_stream = timeline.properties_stream_f32_mtx_all;
+		const raw = new_matrix._rawData;
+		const a = props_stream[i], b = props_stream[i + 1], c = props_stream[i + 2], d = props_stream[i + 3];
+		const tx = props_stream[i + 4], ty = props_stream[i + 5];
+		const rotScaleChanged = raw[0] !== a || raw[1] !== b || raw[4] !== c || raw[5] !== d;
+		const posChanged = raw[12] !== tx || raw[13] !== ty;
 
-		new_matrix._rawData[0] = props_stream[i++];
-		new_matrix._rawData[1] = props_stream[i++];
-		new_matrix._rawData[4] = props_stream[i++];
-		new_matrix._rawData[5] = props_stream[i++];
-		new_matrix._rawData[12] = props_stream[i++];
-		new_matrix._rawData[13] = props_stream[i];
+		if (!rotScaleChanged && !posChanged)
+			return;
 
-		child.transform.invalidateComponents();
+		new_matrix.setElements2D(a, b, c, d);
+		new_matrix.setPosition(tx, ty, raw[14]);
+
+		if (rotScaleChanged)
+			child.transform.invalidateComponents();
+		else
+			child.transform.invalidatePosition();
 	}
 
 	public static update_colortransform(
@@ -616,15 +623,15 @@ export class Timeline {
 
 		const new_matrix: Matrix3D = child.transform.matrix3D;
 		const props_stream = timeline.properties_stream_f32_mtx_scale_rot;
+		const raw = new_matrix._rawData;
+		const a = props_stream[i], b = props_stream[i + 1], c = props_stream[i + 2], d = props_stream[i + 3];
 
-		new_matrix._rawData[0] = props_stream[i++];
-		new_matrix._rawData[1] = props_stream[i++];
-		new_matrix._rawData[4] = props_stream[i++];
-		new_matrix._rawData[5] = props_stream[i];
+		if (raw[0] === a && raw[1] === b && raw[4] === c && raw[5] === d)
+			return;
+
+		new_matrix.setElements2D(a, b, c, d);
 
 		child.transform.invalidateComponents();
-
-		child._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
 
 	public static update_mtx_pos(timeline: Timeline, child: DisplayObject, target_mc: MovieClip, i: number): void {
@@ -635,8 +642,10 @@ export class Timeline {
 
 		const new_matrix = child.transform.matrix3D;
 
-		new_matrix._rawData[12] = timeline.properties_stream_f32_mtx_pos[i++];
-		new_matrix._rawData[13] = timeline.properties_stream_f32_mtx_pos[i];
+		new_matrix.setPosition(
+			timeline.properties_stream_f32_mtx_pos[i++],
+			timeline.properties_stream_f32_mtx_pos[i],
+			new_matrix._rawData[14]);
 
 		child.transform.invalidatePosition();
 	}

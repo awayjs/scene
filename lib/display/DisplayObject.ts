@@ -11,6 +11,7 @@ import {
 	IAsset,
 	IAbstraction,
 	AbstractionSet,
+	WeakAssetSet,
 } from '@awayjs/core';
 
 import { BlendMode } from '@awayjs/stage';
@@ -217,6 +218,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 	protected _timelineMasks: DisplayObject[] | undefined;
 	protected _mask: DisplayObject | undefined;
+	// Display objects that use this object as a script or timeline mask.
+	// Set by the owner's mask / timelineMasks setters. A shared
+	// timeline mask has more than one entry. IHP invalidates these
+	// owners when this mask (or an ancestor) moves.
+	// Named separately from ContainerNode._maskOwners (ancestor nodes
+	// whose masks apply to this node). WeakAssetSet so a disposed owner
+	// can be collected.
+	public _maskedOwners: WeakAssetSet<DisplayObject> | undefined;
 
 	private _mouseEnabled: boolean = true;
 
@@ -681,12 +690,14 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 		// remove older script mask
 		if (this._mask)
-			this._mask.maskMode = false;
+			this._mask._removeMaskOwner(this);
 
 		this._mask = value;
 
-		if (value)
+		if (value) {
 			value.maskMode = true;
+			value._addMaskOwner(this);
+		}
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 	}
@@ -702,6 +713,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		this._maskMode = value;
 
 		this._maskId = value ? this.id : -1;
+		if (!value)
+			this._maskedOwners = undefined;
 
 		this._updateMaskMode();
 	}
@@ -832,9 +845,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 			if (!this._registrationMatrix3D)
 				return;
 
-			this._registrationMatrix3D._rawData[12] = 0;
-			this._registrationMatrix3D._rawData[13] = 0;
-			this._registrationMatrix3D._rawData[14] = 0;
+			this._registrationMatrix3D.setPosition(0, 0, 0);
 
 			if (this._registrationMatrix3D.isIdentity())
 				this._registrationMatrix3D = null;
@@ -842,9 +853,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 			if (!this._registrationMatrix3D)
 				this._registrationMatrix3D = new Matrix3D();
 
-			this._registrationMatrix3D._rawData[12] = -value.x / this._transform.scale.x;
-			this._registrationMatrix3D._rawData[13] = -value.y / this._transform.scale.y;
-			this._registrationMatrix3D._rawData[14] = -value.z / this._transform.scale.z;
+			this._registrationMatrix3D.setPosition(
+				-value.x / this._transform.scale.x,
+				-value.y / this._transform.scale.y,
+				-value.z / this._transform.scale.z);
 		}
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
@@ -868,9 +880,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 			if (!this._registrationMatrix3D)
 				return;
 
-			this._registrationMatrix3D._rawData[0] = 1;
-			this._registrationMatrix3D._rawData[5] = 1;
-			this._registrationMatrix3D._rawData[10] = 1;
+			this._registrationMatrix3D.setScale(1, 1, 1);
 
 			if (this._registrationMatrix3D.isIdentity())
 				this._registrationMatrix3D = null;
@@ -878,9 +888,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 			if (!this._registrationMatrix3D)
 				this._registrationMatrix3D = new Matrix3D();
 
-			this._registrationMatrix3D._rawData[0] = value.x;
-			this._registrationMatrix3D._rawData[5] = value.y;
-			this._registrationMatrix3D._rawData[10] = value.z;
+			this._registrationMatrix3D.setScale(value.x, value.y, value.z);
 		}
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
@@ -1194,6 +1202,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		}
 
 		if (invalidatePos) {
+			this.invalidate();
 			this._transform.invalidatePosition();
 
 			if (value) {
@@ -1400,11 +1409,18 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 			}
 		}
 
-		//set mask mode to false for old masks
+		// Drop this owner from masks no longer applied (keep maskMode
+		// if another owner still shares the mask).
 		for (let i = oldMasks.length - 1; i >= 0 ; i--)
-			oldMasks[i].maskMode = false;
+			oldMasks[i]._removeMaskOwner(this);
 
 		this._timelineMasks = masks;
+		if (masks) {
+			for (let i = 0; i < masks.length; i++) {
+				if (masks[i])
+					masks[i]._addMaskOwner(this);
+			}
+		}
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
 	}
@@ -1465,7 +1481,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		if (this._transform.position.x == val)
 			return;
 
-		this._transform.matrix3D._rawData[12] = val;
+		this._transform.matrix3D.setPosition(val, this._transform.position.y, this._transform.position.z);
 
 		this._transform.invalidatePosition();
 	}
@@ -1488,7 +1504,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		if (this._transform.position.y == val)
 			return;
 
-		this._transform.matrix3D._rawData[13] = val;
+		this._transform.matrix3D.setPosition(this._transform.position.x, val, this._transform.position.z);
 
 		this._transform.invalidatePosition();
 	}
@@ -1520,7 +1536,7 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		if (this._transform.position.z == val)
 			return;
 
-		this._transform.matrix3D._rawData[14] = val;
+		this._transform.matrix3D.setPosition(this._transform.position.x, this._transform.position.y, val);
 
 		this._transform.invalidatePosition();
 	}
@@ -1549,11 +1565,30 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 		//creation of associated transform object
 		this._transform = new Transform(null);
+		this._transform.separatePositionInvalidation = true;
 
 		//setup transform listeners
 		this._transform.addEventListener(
 			TransformEvent.INVALIDATE_MATRIX3D,
-			(_event: TransformEvent) => this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM)
+			(_event: TransformEvent) => {
+				this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
+			}
+		);
+
+		this._transform.addEventListener(
+			TransformEvent.INVALIDATE_POSITION,
+			(_event: TransformEvent) => {
+				this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_POSITION);
+				// Only the node whose transform moved notifies its parent.
+				// IHP itself is also used for propagation, which must not
+				// recache a parent that already has a sticky SCENE_POSITION.
+				for (const key in this._containerNodes) {
+					const node = this._containerNodes[key];
+					const parent = node.parent;
+					if (parent)
+						parent.invalidate();
+				}
+			}
 		);
 
 		this._transform.addEventListener(
@@ -1617,14 +1652,10 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		displayObject.isSlice9ScaledMC = this.isSlice9ScaledMC;
 		displayObject.scale9Grid = this.scale9Grid?.clone();
 
-		if (this._timelineMasks) {
-			// clone mask tree, to avoid corruption
-			displayObject._timelineMasks = this._timelineMasks.slice();
-			// manually call invalidation
-			//displayObject._invalidateHierarchicalProperty(HierarchicalProperty.MASKS);
-		}
+		if (this._timelineMasks)
+			displayObject.timelineMasks = this._timelineMasks.slice();
 
-		displayObject._mask = this._mask;
+		displayObject.mask = this._mask;
 
 		this._transform.copyRawDataTo(displayObject._transform);
 	}
@@ -1649,8 +1680,8 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 
 		this._pickObject = null;
 
-		delete this._timelineMasks;
-		delete this._mask;
+		this.timelineMasks = undefined;
+		this.mask = undefined;
 	}
 
 	/**
@@ -1679,9 +1710,11 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 		if (!this._registrationMatrix3D)
 			this._registrationMatrix3D = new Matrix3D();
 
-		this._registrationMatrix3D._rawData[12] -= dx / this._transform.scale.x;
-		this._registrationMatrix3D._rawData[13] -= dy / this._transform.scale.y;
-		this._registrationMatrix3D._rawData[14] -= dz / this._transform.scale.z;
+		const raw = this._registrationMatrix3D._rawData;
+		this._registrationMatrix3D.setPosition(
+			raw[12] - dx / this._transform.scale.x,
+			raw[13] - dy / this._transform.scale.y,
+			raw[14] - dz / this._transform.scale.z);
 
 		this._invalidateHierarchicalProperty(HierarchicalProperty.SCENE_TRANSFORM);
 	}
@@ -1731,6 +1764,23 @@ export class DisplayObject extends AssetBase implements IBitmapDrawable, IContai
 	public _invalidateHierarchicalProperty(propDirty: HierarchicalProperty): void {
 		for (const key in this._containerNodes)
 			this._containerNodes[key].invalidateHierarchicalProperty(propDirty);
+	}
+
+	private _addMaskOwner(owner: DisplayObject): void {
+		if (!this._maskedOwners)
+			this._maskedOwners = new WeakAssetSet<DisplayObject>();
+		this._maskedOwners.add(owner);
+	}
+
+	private _removeMaskOwner(owner: DisplayObject): void {
+		const owners = this._maskedOwners;
+		if (!owners)
+			return;
+		owners.remove(owner);
+		if (!owners.numAssets) {
+			this._maskedOwners = undefined;
+			this.maskMode = false;
+		}
 	}
 
 	/**
